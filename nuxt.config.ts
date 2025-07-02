@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     'nuxt-primevue',
-    // '@nuxtjs/supabase'
+    '@nuxtjs/supabase'
   ],
   css: [
     'primevue/resources/primevue.css',
@@ -19,16 +19,11 @@ export default defineNuxtConfig({
       include: ['Button', 'InputText']
     }
   },
+  // @ts-ignore - Supabase module types
   supabase: {
     url: process.env.NUXT_PUBLIC_SUPABASE_URL,
     key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
-    clientOptions: {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    }
+    redirect: false
   },
   nitro: {
     compatibilityDate: '2025-07-01'

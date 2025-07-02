@@ -55,7 +55,7 @@ const message = ref('')
 const messageType = ref<'success' | 'error' | null>(null)
 
 const handleSubscribe = async () => {
-  // @ts-ignore
+  // @ts-ignore - Supabase composables will be available after dev server restart
   const supabase = useSupabaseClient()
   message.value = ''
   messageType.value = null
