@@ -22,7 +22,6 @@
           <h2 class="animated-text mb-4">Coming Soon</h2>
           <p class="text-xl md:text-2xl text-gray-300 mb-6">Something amazing is brewing...</p>
         </div>
-        
         <div class="flex flex-col items-center mt-8 animate-fade-in-up" style="animation-delay: 0.6s;">
           <div class="w-full flex flex-col items-center">
             <div class="text-gray-300 text-base mb-1 text-center">
@@ -48,7 +47,6 @@
             {{ message }}
           </div>
         </div>
-          
         <!-- Insiders Button -->
         <div class="mt-8 pt-6 border-t border-white/20">
           <Button
@@ -58,39 +56,38 @@
             @click="showPasswordDialog = true"
           />
         </div>
-
-      <!-- Password Dialog -->
-      <div v-if="showPasswordDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Insiders Access</h3>
-          <p class="text-gray-600 mb-4">Enter the password to access the insider area:</p>
-          <InputText
-            v-model="password"
-            type="password"
-            placeholder="Enter password"
-            class="w-full mb-4"
-            @keyup.enter="checkPassword"
-          />
-          <div class="flex space-x-3">
-            <Button
-              label="Cancel"
-              class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700"
-              @click="cancelPassword"
+        <!-- Password Dialog -->
+        <div v-if="showPasswordDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Insiders Access</h3>
+            <p class="text-gray-600 mb-4">Enter the password to access the insider area:</p>
+            <InputText
+              v-model="password"
+              type="password"
+              placeholder="Enter password"
+              class="w-full mb-4"
+              @keyup.enter="checkPassword"
             />
-            <Button
-              label="Enter"
-              class="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
-              @click="checkPassword"
-            />
+            <div class="flex space-x-3">
+              <Button
+                label="Cancel"
+                class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700"
+                @click="cancelPassword"
+              />
+              <Button
+                label="Enter"
+                class="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                @click="checkPassword"
+              />
+            </div>
+            <div v-if="passwordError" class="text-red-500 text-sm mt-2">
+              {{ passwordError }}
+            </div>
           </div>
-          <div v-if="passwordError" class="text-red-500 text-sm mt-2">
-            {{ passwordError }}
-          </div>
-        </div>
-      </div>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">
