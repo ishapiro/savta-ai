@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prebuild": "node build-info.cjs",
+    "prebuild": "tsx build-info.ts",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "cleanup": "pkill -f 'nuxt dev' || true; pkill -f 'vite' || true",
@@ -49,6 +49,7 @@
     "postcss-import": "^16.1.1",
     "primeicons": "^6.0.1",
     "supabase": "^2.26.9",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
   "engines": {

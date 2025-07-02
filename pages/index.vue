@@ -27,6 +27,6 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // No logic needed for static coming soon page
 </script> 
