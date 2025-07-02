@@ -19,15 +19,17 @@ export default defineNuxtConfig({
       include: ['Button', 'InputText']
     }
   },
-  // supabase: {
-  //   clientOptions: {
-  //     auth: {
-  //       persistSession: true,
-  //       autoRefreshToken: true,
-  //       detectSessionInUrl: true
-  //     }
-  //   }
-  // },
+  supabase: {
+    url: process.env.NUXT_PUBLIC_SUPABASE_URL,
+    key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
+    clientOptions: {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }
+  },
   nitro: {
     compatibilityDate: '2025-07-01'
   },
