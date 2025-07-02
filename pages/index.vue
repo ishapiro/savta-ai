@@ -22,11 +22,79 @@
           <h2 class="animated-text mb-4">Coming Soon</h2>
           <p class="text-xl md:text-2xl text-gray-300 mb-6">Something amazing is brewing...</p>
         </div>
+        <div class="flex flex-col items-center mt-8 space-y-4 animate-fade-in-up" style="animation-delay: 0.6s;">
+          <InputText
+            v-model="email"
+            type="email"
+            placeholder="Enter your email"
+            class="w-full max-w-xs"
+            :class="{ 'border-red-500': messageType === 'error' }"
+          />
+          <Button
+            type="button"
+            label="Subscribe"
+            class="w-full max-w-xs bg-blue-600 hover:bg-blue-700 text-white"
+            :loading="loading"
+            @click="handleSubscribe"
+          />
+          <div v-if="message" :class="messageType === 'success' ? 'text-green-500' : 'text-red-500'">
+            {{ message }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// No logic needed for static coming soon page
+import { ref } from 'vue'
+
+const email = ref('')
+const loading = ref(false)
+const message = ref('')
+const messageType = ref<'success' | 'error' | null>(null)
+
+const handleSubscribe = async () => {
+  // @ts-ignore
+  const supabase = useSupabaseClient()
+  message.value = ''
+  messageType.value = null
+
+  if (!email.value || !email.value.includes('@')) {
+    message.value = 'Please enter a valid email address.'
+    messageType.value = 'error'
+    return
+  }
+
+  loading.value = true
+  try {
+    // Check if email exists
+    const { data: existing, error: selectError } = await supabase
+      .from('email_subscriptions')
+      .select('id')
+      .eq('email', email.value)
+      .single()
+
+    if (existing) {
+      message.value = 'You are already subscribed!'
+      messageType.value = 'success'
+    } else {
+      // Insert new email
+      const { error: insertError } = await supabase
+        .from('email_subscriptions')
+        .insert([{ email: email.value }])
+
+      if (insertError) throw insertError
+
+      message.value = 'Thank you! You will receive future updates.'
+      messageType.value = 'success'
+      email.value = ''
+    }
+  } catch (err: any) {
+    message.value = 'An error occurred. Please try again later.'
+    messageType.value = 'error'
+  } finally {
+    loading.value = false
+  }
+}
 </script> 

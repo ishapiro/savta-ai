@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: [
     '@nuxtjs/tailwindcss',
+    'nuxt-primevue',
     // '@nuxtjs/supabase'
   ],
   css: [
@@ -11,6 +12,13 @@ export default defineNuxtConfig({
     'primeicons/primeicons.css',
     '@/assets/css/main.css'
   ],
+  primevue: {
+    cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
+    options: { unstyled: true, ripple: true },
+    components: {
+      include: ['Button', 'InputText']
+    }
+  },
   // supabase: {
   //   clientOptions: {
   //     auth: {
