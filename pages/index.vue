@@ -16,7 +16,7 @@
             <img src="/savta-pink.png" alt="savta.ai Logo" class="h-14 w-auto" />
           </div>
           <h1 class="text-2xl md:text-3xl font-semibold text-white mb-2">Savta AI</h1>
-          <p class="text-gray-300 text-lg">The Future of AI-Powered Solutions</p>
+          <p class="text-gray-300 text-lg">AI-powered family newsletters that turn your weekly photos and memories into beautiful weekend scrapbooks</p>
         </div>
         <div class="mb-8 animate-fade-in-up" style="animation-delay: 0.3s;">
           <h2 class="animated-text mb-4">Coming Soon</h2>
@@ -32,12 +32,12 @@
           />
           <Button
             type="button"
-            label="Subscribe"
-            class="w-full max-w-xs bg-blue-600 hover:bg-blue-700 text-white"
+            label="I want to be notified when it's ready."
+            class="w-full max-w-md bg-purple-600 hover:bg-purple-700 text-white rounded-full py-3 text-lg font-semibold"
             :loading="loading"
             @click="handleSubscribe"
           />
-          <div v-if="message" :class="messageType === 'success' ? 'text-green-500' : 'text-red-500'">
+          <div v-if="message" :class="messageType === 'success' ? 'text-green-500' : 'text-white'">
             {{ message }}
           </div>
         </div>
@@ -60,7 +60,10 @@ const handleSubscribe = async () => {
   message.value = ''
   messageType.value = null
 
-  if (!email.value || !email.value.includes('@')) {
+  // Email validation regex that allows Gmail plus addressing
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  
+  if (!email.value || !emailRegex.test(email.value)) {
     message.value = 'Please enter a valid email address.'
     messageType.value = 'error'
     return
