@@ -1,7 +1,7 @@
 import { defineNuxtConfig } from 'nuxt/config'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   modules: [
     '@nuxtjs/tailwindcss',
     // '@nuxtjs/supabase'
@@ -22,6 +22,10 @@ export default defineNuxtConfig({
   // },
   nitro: {
     compatibilityDate: '2025-07-01'
+  },
+  ssr: true,
+  experimental: {
+    payloadExtraction: false
   },
   runtimeConfig: {
     public: {
