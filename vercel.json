@@ -1,0 +1,11 @@
+{
+  "framework": "nuxtjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".output",
+  "regions": ["iad1"],
+  "env": {
+    "NODE_ENV": "production"
+  }
+} 

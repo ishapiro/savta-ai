@@ -1,0 +1,57 @@
+{
+  "name": "cogitations-reviews",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prebuild": "node build-info.cjs",
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "cleanup": "pkill -f 'nuxt dev' || true; pkill -f 'vite' || true",
+    "dev:clean": "npm run cleanup && sleep 1 && nuxt dev",
+    "dev:port": "nuxt dev --port 3001",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "start": "node .output/server/index.mjs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@cspell/dict-en_us": "^4.4.12",
+    "@nuxtjs/supabase": "^1.5.3",
+    "@nuxtjs/tailwindcss": "^6.11.3",
+    "@supabase/supabase-js": "^2.50.2",
+    "@vercel/analytics": "^1.5.0",
+    "date-fns": "^3.3.1",
+    "didyoumean2": "^7.0.4",
+    "marked": "^11.1.1",
+    "pluralize": "^8.0.0",
+    "primeflex": "^3.3.1",
+    "primevue": "^3.49.1",
+    "string-similarity": "^4.0.4",
+    "tailwind-merge": "^2.2.1",
+    "vue": "^3.4.15",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@nuxt/types": "^2.18.1",
+    "@nuxtjs/eslint-config-typescript": "^12.1.0",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/line-clamp": "^0.4.4",
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/node": "^24.0.3",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^8.56.0",
+    "eslint-plugin-vue": "^9.21.1",
+    "nuxt": "^3.17.5",
+    "postcss": "^8.5.6",
+    "postcss-import": "^16.1.1",
+    "primeicons": "^6.0.1",
+    "supabase": "^2.26.9",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
