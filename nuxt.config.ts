@@ -27,6 +27,16 @@ export default defineNuxtConfig({
   experimental: {
     payloadExtraction: false
   },
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag.startsWith('prime-')
+    }
+  },
+  router: {
+    options: {
+      strict: false
+    }
+  },
   runtimeConfig: {
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'

@@ -26,10 +26,17 @@
   }
   
   .animated-text {
-    @apply text-6xl md:text-8xl font-bold gradient-text animate-glow;
+    @apply text-6xl md:text-8xl font-bold gradient-text;
   }
   
   .floating-element {
     @apply animate-float;
+  }
+}
+
+/* Ensure animations work in both SSR and client */
+@media (prefers-reduced-motion: no-preference) {
+  .animated-text {
+    animation: glow 2s ease-in-out infinite alternate;
   }
 } 

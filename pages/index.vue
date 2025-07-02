@@ -10,21 +10,19 @@
 
     <!-- Main content -->
     <div class="relative z-10 w-full max-w-2xl mx-auto flex-1 flex items-center justify-center">
-      <Card class="coming-soon-card text-center">
-        <template #content>
-          <div class="mb-8 animate-fade-in-down">
-            <div class="w-24 h-24 bg-white mx-auto mb-6 rounded-full flex items-center justify-center floating-element">
-              <img src="/savta-pink.png" alt="savta.ai Logo" class="h-14 w-auto" />
-            </div>
-            <h1 class="text-2xl md:text-3xl font-semibold text-white mb-2">Savta AI</h1>
-            <p class="text-gray-300 text-lg">The Future of AI-Powered Solutions</p>
+      <div class="coming-soon-card text-center">
+        <div class="mb-8 animate-fade-in-down">
+          <div class="w-24 h-24 bg-white mx-auto mb-6 rounded-full flex items-center justify-center floating-element">
+            <img src="/savta-pink.png" alt="savta.ai Logo" class="h-14 w-auto" />
           </div>
-          <div class="mb-8 animate-fade-in-up" style="animation-delay: 0.3s;">
-            <h2 class="animated-text mb-4">Coming Soon</h2>
-            <p class="text-xl md:text-2xl text-gray-300 mb-6">Something amazing is brewing...</p>
-          </div>
-        </template>
-      </Card>
+          <h1 class="text-2xl md:text-3xl font-semibold text-white mb-2">Savta AI</h1>
+          <p class="text-gray-300 text-lg">The Future of AI-Powered Solutions</p>
+        </div>
+        <div class="mb-8 animate-fade-in-up" style="animation-delay: 0.3s;">
+          <h2 class="animated-text mb-4">Coming Soon</h2>
+          <p class="text-xl md:text-2xl text-gray-300 mb-6">Something amazing is brewing...</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
