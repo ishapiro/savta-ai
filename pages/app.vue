@@ -14,7 +14,7 @@
           <span class="text-xl sm:text-2xl">📸</span>
         </div>
         <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Photo Upload</h3>
-        <p class="text-gray-600 text-sm sm:text-base">Upload your weekly photos and let AI organize them into beautiful layouts.</p>
+        <p class="text-gray-600 text-sm sm:text-base">Upload your photos, thoughts, and memories and let AI organize them into beautiful layouts.</p>
       </div>
       <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200">
         <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
@@ -27,8 +27,8 @@
         <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
           <span class="text-xl sm:text-2xl">📧</span>
         </div>
-        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Weekly Delivery</h3>
-        <p class="text-gray-600 text-sm sm:text-base">Beautiful newsletters delivered to your family every weekend.</p>
+        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Monthly Delivery</h3>
+        <p class="text-gray-600 text-sm sm:text-base">Beautiful memories delivered to your family every month.</p>
       </div>
     </div>
     
