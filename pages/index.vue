@@ -12,15 +12,27 @@
     <div class="relative z-10 w-full max-w-lg sm:max-w-2xl mx-auto flex-1 flex items-center justify-center px-2 sm:px-0">
       <div class="text-center w-full px-2 py-8 sm:p-8 rounded-2xl">
         <div class="mb-8 animate-fade-in-down">
-          <div class="w-20 sm:w-24 h-20 sm:h-24 bg-white mx-auto mb-6 rounded-full flex items-center justify-center">
-            <img src="/savta-pink.png" alt="savta.ai Logo" class="h-12 sm:h-14 w-auto" />
+          <div class="relative w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full bg-gray-300 blur-md"></div>
+            <img src="/savta-pink.png" alt="savta.ai Logo" class="relative max-w-[85%] max-h-[85%] object-contain z-10" />
           </div>
-          <h1 class="text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-2">Savta AI</h1>
-          <p class="text-gray-300 text-sm sm:text-base">The simplest way to turn your cherished moments — photos, stories, and milestones — into a family letter, with a sprinkle of AI magic.</p>
+          <h1 class="text-2xl md:text-3xl font-semibold text-gray-300 mb-2">Savta</h1>
+          <div class="max-w-xl mx-auto px-6 py-6 bg-white/10 backdrop-blur-md rounded-xl shadow-lg text-center text-white">
+            <h2 class="text-base md:text-lg font-semibold mb-4 text-white/90">
+              Keep the memories that matter most, beautifully.
+            </h2>
+
+            <p class="text-xs md:text-sm text-white/80 leading-relaxed mb-2">
+              Each month, we turn your family's best photos, stories, and milestones into a themed, shareable booklet — curated with a gentle touch of AI magic.
+            </p>
+
+            <p class="text-xs md:text-sm text-white/70 leading-relaxed">
+              No more scrolling through endless chats. Just one meaningful snapshot of your family's life, preserved with love.
+            </p>
+          </div>
         </div>
         <div class="mb-8 animate-fade-in-up" style="animation-delay: 0.3s;">
           <h2 class="mb-4 text-3xl sm:text-4xl md:text-5xl text-white">Coming Soon</h2>
-          <p class="text-base sm:text-xl md:text-2xl text-gray-300 mb-6">Something amazing is brewing...</p>
         </div>
         <div class="flex flex-col items-center mt-8 animate-fade-in-up" style="animation-delay: 0.6s;">
           <div class="w-full flex flex-col items-center">
@@ -31,7 +43,7 @@
               v-model="email"
               type="email"
               placeholder="Enter your email"
-              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-base py-2 px-3 sm:px-4 rounded border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-base py-2 px-3 sm:px-4 bg-gray-300 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
               :class="{ 'border-red-500': messageType === 'error' }"
             />
           </div>

@@ -28,7 +28,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         root: { class: 'w-full' }
       },
       breadcrumb: {
-        root: { class: 'bg-transparent' }
+        root: { class: 'bg-transparent border-none shadow-none' }
       }
     }
   })

@@ -92,9 +92,11 @@
       </nav>
     </header>
 
-    <!-- Center: Breadcrumb -->
-    <div class="hidden md:flex flex-1 justify-start">
-          <Breadcrumb :model="breadcrumbItems" class="bg-transparent text-sm" />
+    <!-- Breadcrumb aligned with header content -->
+    <div class="hidden md:block">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Breadcrumb :model="breadcrumbItems" class="text-sm outline-none focus:outline-none ring-0" />
+      </div>
     </div>
 
     <!-- Main Content -->
