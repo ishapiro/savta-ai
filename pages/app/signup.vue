@@ -8,118 +8,138 @@
       <div class="absolute top-1/2 right-8 sm:right-20 w-12 sm:w-20 h-12 sm:h-20 bg-cyan-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
     </div>
 
-    <!-- Signup Card -->
-    <div class="relative z-10 w-full max-w-md mx-auto px-4">
-      <Card class="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
-        <template #header>
-          <div class="text-center">
-            <div class="w-16 h-16 bg-white mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg">
-              <img src="/savta-pink.png" alt="Savta AI Logo" class="h-10 w-auto" />
-            </div>
-            <h1 class="text-2xl font-bold text-gray-900">Join Savta AI</h1>
-            <p class="text-gray-600 mt-2">Create your account</p>
+    <!-- Signup Dialog -->
+    <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '380px', maxHeight: '100vh' }" class="z-10" @hide="onDialogHide">
+      <div class="flex flex-col items-center w-full px-2 sm:px-4 py-4 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
+        <!-- Header -->
+        <div class="flex flex-col items-center mb-3 w-full">
+          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center shadow mb-2">
+            <img src="/savta-pink.png" alt="Savta AI Logo" class="h-10 w-auto" />
           </div>
-        </template>
+          <h1 class="text-2xl font-bold text-gray-900 mb-1">Join Savta AI</h1>
+          <p class="text-gray-500 text-base">Create your account</p>
+        </div>
 
-        <template #content>
-          <form @submit.prevent="handleEmailSignup" class="space-y-4">
-            <div>
-              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <InputText
-                id="email"
-                v-model="email"
-                type="email"
-                placeholder="Enter your email"
-                class="w-full"
-                :class="{ 'p-invalid': emailError }"
-                @blur="validateEmail"
-              />
-              <small v-if="emailError" class="text-red-500 text-sm">{{ emailError }}</small>
-            </div>
-
-            <div>
-              <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <Password
-                id="password"
-                v-model="password"
-                placeholder="Create a password"
-                class="w-full"
-                :class="{ 'p-invalid': passwordError }"
-                toggleMask
-              />
-              <small v-if="passwordError" class="text-red-500 text-sm">{{ passwordError }}</small>
-            </div>
-
-            <div>
-              <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-              <Password
-                id="confirmPassword"
-                v-model="confirmPassword"
-                placeholder="Confirm your password"
-                class="w-full"
-                :class="{ 'p-invalid': confirmPasswordError }"
-                :feedback="false"
-                toggleMask
-              />
-              <small v-if="confirmPasswordError" class="text-red-500 text-sm">{{ confirmPasswordError }}</small>
-            </div>
-
-            <div class="flex items-start">
-              <Checkbox
-                v-model="agreeToTerms"
-                :binary="true"
-                inputId="terms"
-                class="mt-1"
-              />
-              <label for="terms" class="text-sm text-gray-600 ml-2">
-                I agree to the 
-                <a href="/terms" class="text-purple-600 hover:text-purple-500">Terms of Service</a>
-                and
-                <a href="/privacy" class="text-purple-600 hover:text-purple-500">Privacy Policy</a>
-              </label>
-            </div>
-
-            <Button
-              type="submit"
-              label="Create Account"
-              class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
-              :loading="emailLoading"
-              :disabled="!email || !password || !confirmPassword || !agreeToTerms"
+        <!-- Signup Form -->
+        <form @submit.prevent="handleEmailSignup" class="flex flex-col gap-3 w-full max-w-xs sm:max-w-sm mx-auto">
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <InputText
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="Enter your email"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
+              :class="{ 'border-red-500': emailError }"
+              @blur="validateEmail"
+              autocomplete="username"
             />
-          </form>
+            <small v-if="emailError" class="text-red-500 text-xs mt-1">{{ emailError }}</small>
+          </div>
 
-          <div class="relative my-6">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <Password
+              id="password"
+              v-model="password"
+              placeholder="Create a password"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
+              :class="{ 'border-red-500': passwordError }"
+              toggleMask
+              autocomplete="new-password"
+              inputClass="w-full border-none bg-transparent focus:ring-0 px-0"
+              panelClass="z-50"
+            />
+            <small v-if="passwordError" class="text-red-500 text-xs mt-1">{{ passwordError }}</small>
+          </div>
+
+          <div>
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <Password
+              id="confirmPassword"
+              v-model="confirmPassword"
+              placeholder="Confirm your password"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
+              :class="{ 'border-red-500': confirmPasswordError }"
+              :feedback="false"
+              toggleMask
+              autocomplete="new-password"
+              inputClass="w-full border-none bg-transparent focus:ring-0 px-0"
+              panelClass="z-50"
+            />
+            <small v-if="confirmPasswordError" class="text-red-500 text-xs mt-1">{{ confirmPasswordError }}</small>
+          </div>
+
+          <div class="flex items-start">
+            <Checkbox
+              v-model="agreeToTerms"
+              :binary="true"
+              inputId="terms"
+              class="mt-1"
+            />
+            <label for="terms" class="text-sm text-gray-600 ml-2">
+              I agree to the 
+              <a href="/terms" class="text-purple-600 hover:text-purple-500">Terms of Service</a>
+              and
+              <a href="/privacy" class="text-purple-600 hover:text-purple-500">Privacy Policy</a>
+            </label>
           </div>
 
           <Button
-            label="Sign up with Google"
-            icon="pi pi-google"
-            class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 py-3"
-            :loading="googleLoading"
-            @click="handleGoogleSignup"
+            type="submit"
+            label="Create Account"
+            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg shadow transition disabled:opacity-60"
+            :loading="emailLoading"
+            :disabled="!email || !password || !confirmPassword || !agreeToTerms"
           />
+        </form>
 
-          <div v-if="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p class="text-red-600 text-sm">{{ error }}</p>
-          </div>
-        </template>
+        <!-- Divider -->
+        <div class="flex items-center w-full my-3">
+          <div class="flex-grow border-t border-gray-200"></div>
+          <span class="mx-2 text-gray-400 text-sm">or</span>
+          <div class="flex-grow border-t border-gray-200"></div>
+        </div>
 
-        <template #footer>
-          <div class="text-center">
-            <p class="text-gray-600 text-sm">
-              Already have an account?
-              <a href="/app/login" class="text-purple-600 hover:text-purple-500 font-medium">Sign in</a>
-            </p>
-          </div>
-        </template>
-      </Card>
-    </div>
+        <!-- Google Signup -->
+        <Button
+          class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold py-2 rounded-lg shadow-sm flex items-center justify-center gap-2 transition"
+          :loading="googleLoading"
+          @click="handleGoogleSignup"
+        >
+          <span class="flex items-center justify-center">
+            <!-- Color Google SVG Icon -->
+            <svg class="h-5 w-5 mr-2" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_17_40)">
+                <path d="M47.532 24.552c0-1.636-.146-3.2-.418-4.684H24.48v9.02h12.98c-.56 3.02-2.24 5.58-4.78 7.3v6.06h7.74c4.54-4.18 7.11-10.34 7.11-17.696z" fill="#4285F4"/>
+                <path d="M24.48 48c6.48 0 11.92-2.14 15.89-5.82l-7.74-6.06c-2.15 1.44-4.9 2.3-8.15 2.3-6.26 0-11.56-4.22-13.46-9.9H2.5v6.22C6.46 43.98 14.7 48 24.48 48z" fill="#34A853"/>
+                <path d="M11.02 28.52c-.5-1.44-.78-2.98-.78-4.52s.28-3.08.78-4.52v-6.22H2.5A23.98 23.98 0 000 24c0 3.98.96 7.74 2.5 11.02l8.52-6.5z" fill="#FBBC05"/>
+                <path d="M24.48 9.48c3.52 0 6.64 1.22 9.12 3.62l6.84-6.84C36.4 2.14 30.96 0 24.48 0 14.7 0 6.46 4.02 2.5 10.98l8.52 6.22c1.9-5.68 7.2-9.9 13.46-9.9z" fill="#EA4335"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_17_40">
+                  <path fill="#fff" d="M0 0h48v48H0z"/>
+                </clipPath>
+              </defs>
+            </svg>
+            <span>Sign up with Google</span>
+          </span>
+        </Button>
+
+        <!-- Error Message -->
+        <div v-if="error" class="mt-4 w-full p-2 bg-red-50 border border-red-200 rounded text-red-600 text-sm text-center">
+          {{ error }}
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-6 w-full text-center">
+          <p class="text-gray-600 text-sm">
+            Already have an account?
+            <a href="/app/login" class="text-purple-600 hover:text-purple-500 font-medium">Sign in</a>
+          </p>
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -140,6 +160,7 @@ const error = ref('')
 const emailError = ref('')
 const passwordError = ref('')
 const confirmPasswordError = ref('')
+const visible = ref(true)
 
 // Get Supabase client
 const supabase = useSupabaseClient()
@@ -239,6 +260,11 @@ const handleGoogleSignup = async () => {
   } finally {
     googleLoading.value = false
   }
+}
+
+const onDialogHide = () => {
+  // When dialog is closed, navigate away (e.g., to /app or /)
+  navigateTo('/app')
 }
 </script>
 

@@ -1,3 +1,5 @@
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: [
@@ -5,7 +7,7 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase'
   ],
   css: [
-    'primevue/resources/themes/lara-light-purple/theme.css',
+    'primevue/resources/themes/mdc-light-deeppurple/theme.css',
     'primevue/resources/primevue.css',
     'primeicons/primeicons.css',
     '@/assets/css/main.css'
@@ -31,7 +33,7 @@ export default defineNuxtConfig({
   },
   vue: {
     compilerOptions: {
-      isCustomElement: (tag) => tag.startsWith('prime-')
+      isCustomElement: (tag: string) => tag.startsWith('prime-')
     }
   },
   router: {
