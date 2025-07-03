@@ -30,12 +30,20 @@
 
           <!-- Profile/Auth -->
           <div class="flex items-center space-x-4">
-            <!-- Commented out profile retrieval for now -->
-            <!-- <div v-if="user" class="flex items-center space-x-2">
-              <img :src="user.avatar_url" :alt="user.name" class="h-8 w-8 rounded-full" />
-              <span class="text-sm text-gray-700">{{ user.name }}</span>
-            </div> -->
-            <Button label="Sign In" class="bg-purple-600 hover:bg-purple-700 text-white" />
+            <div v-if="user" class="flex items-center space-x-2">
+              <span class="text-sm text-gray-700">{{ user.email }}</span>
+              <Button 
+                label="Sign Out" 
+                class="bg-gray-500 hover:bg-gray-600 text-white" 
+                @click="handleSignOut"
+              />
+            </div>
+            <Button 
+              v-else
+              label="Sign In" 
+              class="bg-purple-600 hover:bg-purple-700 text-white" 
+              @click="handleSignIn"
+            />
           </div>
         </div>
       </div>
@@ -91,7 +99,32 @@
   </div>
 </template>
 
-<script setup lang="ts">
-// Commented out profile retrieval for now
-// const user = useSupabaseUser()
+<script setup>
+const user = useSupabaseUser()
+const supabase = useSupabaseClient()
+
+const handleSignOut = async () => {
+  try {
+    // If user is authenticated, sign them out
+    if (user.value) {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Sign out error:', error)
+      }
+    }
+    
+    // Clear insiders access from session storage
+    if (process.client) {
+      sessionStorage.removeItem('insiders-access')
+    }
+    
+    // Stay in the main application - user can still access via insiders
+  } catch (err) {
+    console.error('Sign out error:', err)
+  }
+}
+
+const handleSignIn = () => {
+  navigateTo('/app/login')
+}
 </script> 

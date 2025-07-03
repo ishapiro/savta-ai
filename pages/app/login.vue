@@ -16,7 +16,7 @@
             <div class="w-16 h-16 bg-white mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg">
               <img src="/savta-pink.png" alt="Savta AI Logo" class="h-10 w-auto" />
             </div>
-            <h1 class="text-2xl font-bold text-gray-900">Welcome to Savta AI</h1>
+            <h1 class="text-2xl font-bold text-gray-900">Welcome Back</h1>
             <p class="text-gray-600 mt-2">Sign in to your account</p>
           </div>
         </template>
@@ -45,20 +45,9 @@
                 placeholder="Enter your password"
                 class="w-full"
                 :class="{ 'p-invalid': passwordError }"
-                :feedback="false"
                 toggleMask
               />
               <small v-if="passwordError" class="text-red-500 text-sm">{{ passwordError }}</small>
-            </div>
-
-            <div class="flex items-center justify-between">
-              <Checkbox
-                v-model="rememberMe"
-                :binary="true"
-                inputId="remember"
-              />
-              <label for="remember" class="text-sm text-gray-600">Remember me</label>
-              <a href="#" class="text-sm text-purple-600 hover:text-purple-500">Forgot password?</a>
             </div>
 
             <Button
@@ -105,17 +94,15 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
-
+<script setup>
 // Set the layout for this page
 definePageMeta({
-  layout: 'landing-page'
+  layout: 'default',
+  ssr: false
 })
 
 const email = ref('')
 const password = ref('')
-const rememberMe = ref(false)
 const emailLoading = ref(false)
 const googleLoading = ref(false)
 const error = ref('')
@@ -147,8 +134,6 @@ const validateEmail = () => {
 const validatePassword = () => {
   if (!password.value) {
     passwordError.value = 'Password is required'
-  } else if (password.value.length < 6) {
-    passwordError.value = 'Password must be at least 6 characters'
   } else {
     passwordError.value = ''
   }
@@ -174,9 +159,10 @@ const handleEmailLogin = async () => {
     if (authError) {
       error.value = authError.message
     } else {
-      // Success - user will be redirected by watchEffect
+      // Success - user will be redirected by the watchEffect
+      navigateTo('/app')
     }
-  } catch (err: any) {
+  } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
     console.error('Login error:', err)
   } finally {
@@ -199,7 +185,7 @@ const handleGoogleLogin = async () => {
     if (authError) {
       error.value = authError.message
     }
-  } catch (err: any) {
+  } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
     console.error('Google login error:', err)
   } finally {

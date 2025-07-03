@@ -123,12 +123,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
-
+<script setup>
 // Set the layout for this page
 definePageMeta({
-  layout: 'landing-page'
+  layout: 'default',
+  ssr: false
 })
 
 const email = ref('')
@@ -211,7 +210,7 @@ const handleEmailSignup = async () => {
       // Show success message or redirect
       error.value = 'Please check your email to confirm your account.'
     }
-  } catch (err: any) {
+  } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
     console.error('Signup error:', err)
   } finally {
@@ -234,7 +233,7 @@ const handleGoogleSignup = async () => {
     if (authError) {
       error.value = authError.message
     }
-  } catch (err: any) {
+  } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
     console.error('Google signup error:', err)
   } finally {

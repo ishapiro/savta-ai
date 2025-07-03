@@ -1,10 +1,7 @@
-import { defineNuxtConfig } from 'nuxt/config'
-
 export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: [
     '@nuxtjs/tailwindcss',
-    'nuxt-primevue',
     '@nuxtjs/supabase'
   ],
   css: [
@@ -12,7 +9,6 @@ export default defineNuxtConfig({
     'primeicons/primeicons.css',
     '@/assets/css/main.css'
   ],
-  // @ts-ignore - Supabase module types
   supabase: {
     url: process.env.NUXT_PUBLIC_SUPABASE_URL,
     key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -41,6 +37,14 @@ export default defineNuxtConfig({
     options: {
       strict: false
     }
+  },
+  postcss: {
+    plugins: {
+      'postcss-import': {},
+      'tailwindcss/nesting': {},
+      tailwindcss: {},
+      autoprefixer: {},
+    },
   },
   runtimeConfig: {
     public: {

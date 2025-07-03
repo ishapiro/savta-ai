@@ -89,19 +89,17 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
-
+<script setup>
 // Set the layout for this page
-// @ts-ignore - Nuxt composables
 definePageMeta({
-  layout: 'landing-page'
+  layout: 'landing-page',
+  middleware: 'auth'
 })
 
 const email = ref('')
 const loading = ref(false)
 const message = ref('')
-const messageType = ref<'success' | 'error' | null>(null)
+const messageType = ref(null)
 
 // Password protection
 const showPasswordDialog = ref(false)
@@ -109,11 +107,9 @@ const password = ref('')
 const passwordError = ref('')
 
 // Get runtime config
-// @ts-ignore - Nuxt composables
 const config = useRuntimeConfig()
 
 const handleSubscribe = async () => {
-  // @ts-ignore - Supabase composables will be available after dev server restart
   const supabase = useSupabaseClient()
   message.value = ''
   messageType.value = null
@@ -151,7 +147,7 @@ const handleSubscribe = async () => {
       messageType.value = 'success'
       email.value = ''
     }
-  } catch (err: any) {
+  } catch (err) {
     message.value = 'An error occurred. Please try again later.'
     messageType.value = 'error'
   } finally {
@@ -168,7 +164,6 @@ const checkPassword = () => {
     if (process.client) {
       sessionStorage.setItem('insiders-access', 'true')
     }
-    // @ts-ignore - Nuxt composables
     navigateTo('/app')
   } else {
     passwordError.value = 'Incorrect password. Please try again.'
