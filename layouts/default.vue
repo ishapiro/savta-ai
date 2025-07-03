@@ -109,7 +109,7 @@
       <div class="max-w-full mx-auto px-4 sm:px-8 py-6 flex flex-col md:flex-row items-center justify-between">
         <div class="text-gray-400 text-sm text-center md:text-left w-full md:w-auto">
           Savta is a Cogitations Property.  &copy; 2025 Cogitations, llc.  All rights reserved.
-          <span v-if="buildInfo" class="ml-2 text-xs text-gray-300">Build: {{ buildInfo }}</span>
+          <span v-if="buildInfo" class="ml-2 text-smc text-gray-300">Build: {{ buildInfo }}</span>
         </div>
         <div class="flex space-x-6 mt-4 md:mt-0 w-full md:w-auto justify-center md:justify-end">
           <NuxtLink to="/about" class="text-gray-500 hover:text-purple-600 text-sm">About</NuxtLink>
@@ -131,7 +131,7 @@ const route = useRoute()
 
 const mobileMenuOpen = ref(false)
 const config = useRuntimeConfig()
-const buildDate = config.public.buildDate
+const buildInfo = config.public.buildDate
 
 // Example: dynamic breadcrumb based on route
 const breadcrumbItems = computed(() => {

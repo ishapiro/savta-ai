@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+  <div class="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
     <!-- Animated background elements -->
     <div class="fixed inset-0 pointer-events-none z-0">
       <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/20 rounded-full blur-xl animate-pulse-slow"></div>
@@ -191,12 +191,13 @@ const handleEmailLogin = async () => {
 const handleGoogleLogin = async () => {
   googleLoading.value = true
   error.value = ''
+  const config = useRuntimeConfig()
 
   try {
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/app`
+        redirectTo: `${config.public.siteUrl}/app/confirm`
       }
     })
 

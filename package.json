@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prebuild": "tsx build-info.ts",
+    "prebuild": "node build-info.js",
     "build": "nuxt build",
     "dev": "npm run cleanup && nuxt dev",
     "cleanup": "pkill -f 'nuxt dev' || true; pkill -f 'vite' || true; rm -rf .nuxt node_modules/.vite",

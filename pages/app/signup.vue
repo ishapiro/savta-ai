@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+  <div class="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
     <!-- Animated background elements -->
     <div class="fixed inset-0 pointer-events-none z-0">
       <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/20 rounded-full blur-xl animate-pulse-slow"></div>
@@ -37,36 +37,36 @@
             <small v-if="emailError" class="text-red-500 text-xs mt-1">{{ emailError }}</small>
           </div>
 
-          <div>
+          <div class="mb-3">
             <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <Password
-              id="password"
-              v-model="password"
-              placeholder="Create a password"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
-              :class="{ 'border-red-500': passwordError }"
-              toggleMask
-              autocomplete="new-password"
-              inputClass="w-full border-none bg-transparent focus:ring-0 px-0"
-              panelClass="z-50"
-            />
+            <div>
+              <Password
+                id="password"
+                v-model="password"
+                placeholder="Create a password"
+                class="w-full"
+                inputClass="rounded-lg border-gray-300"
+                toggleMask
+                autocomplete="new-password"
+              />
+            </div>
             <small v-if="passwordError" class="text-red-500 text-xs mt-1">{{ passwordError }}</small>
           </div>
 
-          <div>
+          <div class="mb-3">
             <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-            <Password
-              id="confirmPassword"
-              v-model="confirmPassword"
-              placeholder="Confirm your password"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
-              :class="{ 'border-red-500': confirmPasswordError }"
-              :feedback="false"
-              toggleMask
-              autocomplete="new-password"
-              inputClass="w-full border-none bg-transparent focus:ring-0 px-0"
-              panelClass="z-50"
-            />
+            <div>
+              <Password
+                id="confirmPassword"
+                v-model="confirmPassword"
+                placeholder="Confirm your password"
+                class="w-full"
+                inputClass="rounded-lg border-gray-300"
+                :feedback="false"
+                toggleMask
+                autocomplete="new-password"
+              />
+            </div>
             <small v-if="confirmPasswordError" class="text-red-500 text-xs mt-1">{{ confirmPasswordError }}</small>
           </div>
 
@@ -122,7 +122,7 @@
                 </clipPath>
               </defs>
             </svg>
-            <span>Sign up with Google</span>
+            <span class="text-purple-600">Sign up with Google</span>
           </span>
         </Button>
 
@@ -215,13 +215,16 @@ const handleEmailSignup = async () => {
 
   emailLoading.value = true
   error.value = ''
+  const config = useRuntimeConfig()
+  const siteUrl = config.public.siteUrl
+  console.log("SITE URL:", siteUrl)
 
   try {
     const { error: authError } = await supabase.auth.signUp({
       email: email.value,
       password: password.value,
       options: {
-        emailRedirectTo: `${window.location.origin}/app`
+        emailRedirectTo: `${config.public.siteUrl}/app/confirm`
       }
     })
 
@@ -269,6 +272,10 @@ const onDialogHide = () => {
 </script>
 
 <style scoped>
+.p-password .p-password-icon {
+  right: 0.75rem !important;
+}
+
 .animate-pulse-slow {
   animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
