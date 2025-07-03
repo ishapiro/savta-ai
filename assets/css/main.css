@@ -3,40 +3,133 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-family: 'Inter', system-ui, sans-serif;
+  /* Base styles */
+  button, 
+  .p-button,
+  a[role="button"],
+  .btn-primary,
+  .btn-secondary {
+    text-decoration: none !important;
+    outline: none !important;
   }
-  
-  body {
-    @apply bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen;
+
+  button:focus {
+    outline: none !important;
+  }
+
+  /* Ensure text on images is white */
+  .image-overlay {
+    @apply absolute inset-0 flex items-center justify-center;
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+  }
+
+  .image-overlay * {
+    @apply text-white;
   }
 }
 
 @layer components {
-  .gradient-text {
-    @apply bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent;
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded transition-all focus:outline-none border-0;
   }
   
-  .glass-effect {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  .btn-primary:hover {
+    @apply brightness-90;
   }
   
-  .coming-soon-card {
-    @apply glass-effect rounded-2xl p-8 shadow-2xl;
+  .btn-secondary {
+    @apply bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded transition-all;
   }
-  
-  .animated-text {
-    @apply text-6xl md:text-8xl font-bold gradient-text;
+
+  /* Card styles */
+  .card {
+    @apply bg-surface-card rounded-lg shadow-md p-6;
   }
-  
-  .floating-element {
-    @apply animate-float;
+
+  .input-field {
+    @apply w-full px-3 py-2 border border-surface-border rounded focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+
+  /* Add PrimeVue button overrides */
+  .p-button {
+    @apply text-white no-underline !important;
+  }
+
+  .p-button:hover {
+    @apply brightness-90 no-underline !important;
+  }
+
+  .p-button.p-button-secondary {
+    @apply bg-blue-400 hover:bg-blue-500 text-white no-underline !important;
+  }
+
+  .p-button.p-button-text {
+    @apply text-primary hover:text-primary-hover no-underline !important;
+  }
+
+  /* Remove underlines from button links */
+  a.p-button,
+  button.p-button,
+  a.btn-primary,
+  a.btn-secondary {
+    @apply no-underline !important;
+  }
+
+  /* Image overlay styles */
+  .overlay-card {
+    @apply relative overflow-hidden rounded-lg;
+  }
+
+  .overlay-card::before {
+    @apply absolute inset-0 bg-black bg-opacity-50 transition-opacity;
+    content: '';
+  }
+
+  .overlay-card:hover::before {
+    @apply bg-opacity-60;
+  }
+
+  .overlay-card-content {
+    @apply absolute inset-0 flex flex-col items-center justify-center text-white z-10;
   }
 }
 
-/* Ensure animations work in both SSR and client */
-@media (prefers-reduced-motion: no-preference) {
-  .animated-text {
-    animation: glow 2s ease-in-out infinite alternate;
-  }
+/* Custom styles for markdown content */
+.markdown-content {
+  @apply prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto;
+}
+
+.markdown-content img {
+  @apply rounded-lg shadow-md;
+}
+
+/* Custom styles for review cards */
+.review-card {
+  @apply transition-transform duration-200 hover:scale-[1.02];
+}
+
+/* Custom styles for star ratings */
+.star-rating {
+  @apply text-yellow-400;
+}
+
+/* Custom styles for premium user badge */
+.premium-badge {
+  @apply bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-2 py-1 rounded-full text-xs font-bold;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+body {
+  @apply bg-gray-50 text-gray-800;
+  font-family: 'Inter', sans-serif;
+}
+
+.wide-tooltip {
+  min-width: 250px !important;
+  max-width: 350px !important;
+  white-space: normal !important;
+  text-align: left !important;
 } 

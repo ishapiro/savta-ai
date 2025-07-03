@@ -10,16 +10,16 @@
 
     <!-- Main content -->
     <div class="relative z-10 w-full max-w-lg sm:max-w-2xl mx-auto flex-1 flex items-center justify-center px-2 sm:px-0">
-      <div class="coming-soon-card text-center w-full px-2 py-8 sm:p-8 rounded-2xl">
+      <div class="text-center w-full px-2 py-8 sm:p-8 rounded-2xl">
         <div class="mb-8 animate-fade-in-down">
-          <div class="w-20 sm:w-24 h-20 sm:h-24 bg-white mx-auto mb-6 rounded-full flex items-center justify-center floating-element">
+          <div class="w-20 sm:w-24 h-20 sm:h-24 bg-white mx-auto mb-6 rounded-full flex items-center justify-center">
             <img src="/savta-pink.png" alt="savta.ai Logo" class="h-12 sm:h-14 w-auto" />
           </div>
           <h1 class="text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-2">Savta AI</h1>
           <p class="text-gray-300 text-sm sm:text-base">The simplest way to turn your cherished moments — photos, stories, and milestones — into a family letter, with a sprinkle of AI magic.</p>
         </div>
         <div class="mb-8 animate-fade-in-up" style="animation-delay: 0.3s;">
-          <h2 class="animated-text mb-4 text-3xl sm:text-4xl md:text-5xl">Coming Soon</h2>
+          <h2 class="mb-4 text-3xl sm:text-4xl md:text-5xl text-white">Coming Soon</h2>
           <p class="text-base sm:text-xl md:text-2xl text-gray-300 mb-6">Something amazing is brewing...</p>
         </div>
         <div class="flex flex-col items-center mt-8 animate-fade-in-up" style="animation-delay: 0.6s;">

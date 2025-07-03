@@ -1,0 +1,212 @@
+/* Primary and Surface Palettes */
+/* :root {
+    --p-primary-50: #ecfdf5;
+    --p-primary-100: #d1fae5;
+    --p-primary-200: #a7f3d0;
+    --p-primary-300: #6ee7b7;
+    --p-primary-400: #34d399;
+    --p-primary-500: #10b981;
+    --p-primary-600: #059669;
+    --p-primary-700: #047857;
+    --p-primary-800: #065f46;
+    --p-primary-900: #064e3b;
+    --p-primary-950: #022c22;
+    --p-surface-0: #ffffff;
+    --p-surface-50: #fafafa;
+    --p-surface-100: #f4f4f5;
+    --p-surface-200: #e4e4e7;
+    --p-surface-300: #d4d4d8;
+    --p-surface-400: #a1a1aa;
+    --p-surface-500: #71717a;
+    --p-surface-600: #52525b;
+    --p-surface-700: #3f3f46;
+    --p-surface-800: #27272a;
+    --p-surface-900: #18181b;
+    --p-surface-950: #09090b;
+} */
+
+/* Light Theme */
+:root {
+    --p-primary-color: var(--p-primary-500);
+    --p-primary-hover-color: var(--p-primary-600);
+    --p-primary-active-color: var(--p-primary-700);
+    --p-surface-ground: var(--p-surface-50);
+    --p-surface-section: var(--p-surface-0);
+    --p-surface-card: var(--p-surface-0);
+    --p-surface-overlay: var(--p-surface-0);
+    --p-surface-border: var(--p-surface-200);
+    --p-surface-hover: var(--p-surface-100);
+    --p-surface-text: var(--p-surface-700);
+    --p-surface-text-secondary: var(--p-surface-600);
+}
+
+/* Dark Theme */
+.dark {
+    --p-primary-color: var(--p-primary-400);
+    --p-primary-hover-color: var(--p-primary-500);
+    --p-primary-active-color: var(--p-primary-600);
+    --p-surface-ground: var(--p-surface-900);
+    --p-surface-section: var(--p-surface-800);
+    --p-surface-card: var(--p-surface-800);
+    --p-surface-overlay: var(--p-surface-800);
+    --p-surface-border: var(--p-surface-700);
+    --p-surface-hover: var(--p-surface-700);
+    --p-surface-text: var(--p-surface-50);
+    --p-surface-text-secondary: var(--p-surface-400);
+}
+
+/* Ensure borders are visible on all PrimeVue components */
+.p-inputtext,
+.p-dropdown,
+.p-multiselect,
+.p-calendar,
+.p-inputnumber,
+.p-inputtextarea,
+.p-password,
+.p-rating,
+.p-slider,
+.p-selectbutton,
+.p-togglebutton,
+.p-checkbox,
+.p-radiobutton,
+.p-fileupload,
+.p-colorpicker,
+.p-cascadeselect,
+.p-listbox,
+.p-treeselect,
+.p-autocomplete,
+.p-chips,
+.p-editor,
+.p-inputmask,
+.p-inputswitch,
+.p-knob,
+.p-mention,
+.p-spinner,
+.p-tristatecheckbox {
+    border-color: var(--border-color) !important;
+}
+
+/* Hover state */
+.p-inputtext:hover,
+.p-dropdown:hover,
+.p-multiselect:hover,
+.p-calendar:hover,
+.p-inputnumber:hover,
+.p-inputtextarea:hover,
+.p-password:hover,
+.p-rating:hover,
+.p-slider:hover,
+.p-selectbutton:hover,
+.p-togglebutton:hover,
+.p-checkbox:hover,
+.p-radiobutton:hover,
+.p-fileupload:hover,
+.p-colorpicker:hover,
+.p-cascadeselect:hover,
+.p-listbox:hover,
+.p-treeselect:hover,
+.p-autocomplete:hover,
+.p-chips:hover,
+.p-editor:hover,
+.p-inputmask:hover,
+.p-inputswitch:hover,
+.p-knob:hover,
+.p-mention:hover,
+.p-spinner:hover,
+.p-tristatecheckbox:hover {
+    border-color: var(--border-color-hover) !important;
+}
+
+/* Focus state */
+.p-inputtext:focus,
+.p-dropdown:focus,
+.p-multiselect:focus,
+.p-calendar:focus,
+.p-inputnumber:focus,
+.p-inputtextarea:focus,
+.p-password:focus,
+.p-rating:focus,
+.p-slider:focus,
+.p-selectbutton:focus,
+.p-togglebutton:focus,
+.p-checkbox:focus,
+.p-radiobutton:focus,
+.p-fileupload:focus,
+.p-colorpicker:focus,
+.p-cascadeselect:focus,
+.p-listbox:focus,
+.p-treeselect:focus,
+.p-autocomplete:focus,
+.p-chips:focus,
+.p-editor:focus,
+.p-inputmask:focus,
+.p-inputswitch:focus,
+.p-knob:focus,
+.p-mention:focus,
+.p-spinner:focus,
+.p-tristatecheckbox:focus {
+    border-color: var(--border-color-focus) !important;
+    box-shadow: 0 0 0 2px rgba(144, 238, 144, 0.2) !important;
+}
+
+/* Error state */
+.p-inputtext.p-invalid,
+.p-dropdown.p-invalid,
+.p-multiselect.p-invalid,
+.p-calendar.p-invalid,
+.p-inputnumber.p-invalid,
+.p-inputtextarea.p-invalid,
+.p-password.p-invalid,
+.p-rating.p-invalid,
+.p-slider.p-invalid,
+.p-selectbutton.p-invalid,
+.p-togglebutton.p-invalid,
+.p-checkbox.p-invalid,
+.p-radiobutton.p-invalid,
+.p-fileupload.p-invalid,
+.p-colorpicker.p-invalid,
+.p-cascadeselect.p-invalid,
+.p-listbox.p-invalid,
+.p-treeselect.p-invalid,
+.p-autocomplete.p-invalid,
+.p-chips.p-invalid,
+.p-editor.p-invalid,
+.p-inputmask.p-invalid,
+.p-inputswitch.p-invalid,
+.p-knob.p-invalid,
+.p-mention.p-invalid,
+.p-spinner.p-invalid,
+.p-tristatecheckbox.p-invalid {
+    border-color: var(--border-color-error) !important;
+}
+
+/* Disabled state */
+.p-inputtext:disabled,
+.p-dropdown:disabled,
+.p-multiselect:disabled,
+.p-calendar:disabled,
+.p-inputnumber:disabled,
+.p-inputtextarea:disabled,
+.p-password:disabled,
+.p-rating:disabled,
+.p-slider:disabled,
+.p-selectbutton:disabled,
+.p-togglebutton:disabled,
+.p-checkbox:disabled,
+.p-radiobutton:disabled,
+.p-fileupload:disabled,
+.p-colorpicker:disabled,
+.p-cascadeselect:disabled,
+.p-listbox:disabled,
+.p-treeselect:disabled,
+.p-autocomplete:disabled,
+.p-chips:disabled,
+.p-editor:disabled,
+.p-inputmask:disabled,
+.p-inputswitch:disabled,
+.p-knob:disabled,
+.p-mention:disabled,
+.p-spinner:disabled,
+.p-tristatecheckbox:disabled {
+    border-color: var(--border-color-disabled) !important;
+} 

@@ -6,10 +6,31 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
+import Breadcrumb from 'primevue/breadcrumb'
 
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(PrimeVue, {
-    ripple: true
+    unstyled: false,
+    ripple: true,
+    inputStyle: 'filled',
+    pt: {
+      card: {
+        root: { class: 'bg-white shadow-md rounded-lg' },
+        content: { class: 'p-6' }
+      },
+      button: {
+        root: { class: 'bg-primary-600 hover:bg-primary-700 text-white' }
+      },
+      inputtext: {
+        root: { class: 'w-full' }
+      },
+      password: {
+        root: { class: 'w-full' }
+      },
+      breadcrumb: {
+        root: { class: 'bg-transparent' }
+      }
+    }
   })
   
   // Register components globally
@@ -19,4 +40,5 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component('Password', Password)
   nuxtApp.vueApp.component('Checkbox', Checkbox)
   nuxtApp.vueApp.component('Dialog', Dialog)
+  nuxtApp.vueApp.component('Breadcrumb', Breadcrumb)
 }) 

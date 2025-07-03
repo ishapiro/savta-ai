@@ -1,24 +1,5 @@
 <template>
   <div class="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8">
-    <!-- Header with user info and logout -->
-    <div class="flex justify-between items-center mb-8">
-      <div class="flex items-center space-x-4">
-        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-          <img src="/savta-pink.png" alt="Savta AI" class="h-6 w-auto" />
-        </div>
-        <div>
-          <h1 class="text-xl font-bold text-gray-900">Savta AI</h1>
-          <p class="text-sm text-gray-600">Welcome back, {{ user?.email }}</p>
-        </div>
-      </div>
-      <Button
-        label="Sign Out"
-        icon="pi pi-sign-out"
-        class="bg-gray-500 hover:bg-gray-600 text-white"
-        @click="handleSignOut"
-      />
-    </div>
-
     <div class="text-center mb-8 sm:mb-12">
       <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Your AI Newsletter Dashboard</h2>
       <p class="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
@@ -104,6 +85,6 @@ const handleSignOut = async () => {
 }
 
 const goToReviews = () => {
-  navigateTo('/reviews')
+  navigateTo('/getting-started')
 }
 </script> 
