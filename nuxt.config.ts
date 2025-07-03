@@ -1,5 +1,5 @@
 import { defineNuxtConfig } from 'nuxt/config'
-// https://nuxt.com/docs/api/configuration/nuxt-config
+
 export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: [
@@ -12,18 +12,18 @@ export default defineNuxtConfig({
     'primeicons/primeicons.css',
     '@/assets/css/main.css'
   ],
-  primevue: {
-    cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities',
-    options: { unstyled: true, ripple: true },
-    components: {
-      include: ['Button', 'InputText']
-    }
-  },
   // @ts-ignore - Supabase module types
   supabase: {
     url: process.env.NUXT_PUBLIC_SUPABASE_URL,
     key: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
-    redirect: false
+    redirect: false,
+    clientOptions: {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }
   },
   nitro: {
     compatibilityDate: '2025-07-01'
@@ -45,7 +45,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-      insidersPassword: process.env.INSIDER_PASSWORD || 'savta2025'
+      insidersPassword: process.env.INSIDER_PASSWORD || 'savta2025',
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
+      supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY
     }
   }
 }) 

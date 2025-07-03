@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "tsx build-info.ts",
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "npm run cleanup && sleep 1 && nuxt dev",
     "cleanup": "pkill -f 'nuxt dev' || true; pkill -f 'vite' || true",
     "dev:clean": "npm run cleanup && sleep 1 && nuxt dev",
     "dev:port": "nuxt dev --port 3001",
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@cspell/dict-en_us": "^4.4.12",
-    "@nuxtjs/supabase": "^1.5.3",
+    "@nuxtjs/supabase": "^1.4.1",
     "@nuxtjs/tailwindcss": "^6.11.3",
     "@supabase/supabase-js": "^2.50.2",
     "@vercel/analytics": "^1.5.0",
@@ -50,6 +50,7 @@
     "postcss-import": "^16.1.1",
     "primeicons": "^6.0.1",
     "supabase": "^2.26.9",
+    "tailwindcss-primeui": "^0.1.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },

@@ -164,6 +164,10 @@ const checkPassword = () => {
     showPasswordDialog.value = false
     password.value = ''
     passwordError.value = ''
+    // Set insiders access in session storage
+    if (process.client) {
+      sessionStorage.setItem('insiders-access', 'true')
+    }
     // @ts-ignore - Nuxt composables
     navigateTo('/app')
   } else {

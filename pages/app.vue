@@ -1,11 +1,31 @@
 <template>
   <div class="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8">
+    <!-- Header with user info and logout -->
+    <div class="flex justify-between items-center mb-8">
+      <div class="flex items-center space-x-4">
+        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+          <img src="/savta-pink.png" alt="Savta AI" class="h-6 w-auto" />
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-gray-900">Savta AI</h1>
+          <p class="text-sm text-gray-600">Welcome back, {{ user?.email }}</p>
+        </div>
+      </div>
+      <Button
+        label="Sign Out"
+        icon="pi pi-sign-out"
+        class="bg-gray-500 hover:bg-gray-600 text-white"
+        @click="handleSignOut"
+      />
+    </div>
+
     <div class="text-center mb-8 sm:mb-12">
-      <h1 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Welcome to Savta AI</h1>
+      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Your AI Newsletter Dashboard</h2>
       <p class="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
-        Your AI-powered family newsletter platform. Create beautiful weekly scrapbooks from your photos and memories.
+        Create beautiful weekly scrapbooks from your photos and memories with AI assistance.
       </p>
     </div>
+    
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
       <!-- Feature Cards -->
       <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200">
@@ -30,16 +50,50 @@
         <p class="text-gray-600 text-sm sm:text-base">Beautiful newsletters delivered to your family every weekend.</p>
       </div>
     </div>
+    
     <div class="mt-8 text-center">
       <Button 
         label="Get Started" 
         class="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold rounded-lg w-full max-w-xs sm:max-w-md mx-auto"
-        @click="() => navigateTo('/reviews')"
+        @click="goToReviews"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// No additional setup needed
+// Set the layout for this page
+definePageMeta({
+  layout: 'default',
+  middleware: 'auth'
+})
+
+// Get user and Supabase client
+const user = useSupabaseUser()
+const supabase = useSupabaseClient()
+
+const handleSignOut = async () => {
+  try {
+    // Clear insiders access from session storage
+    if (process.client) {
+      sessionStorage.removeItem('insiders-access')
+    }
+    
+    // If user is authenticated, sign them out
+    if (user.value) {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Sign out error:', error)
+      }
+    }
+    
+    navigateTo('/')
+  } catch (err) {
+    console.error('Sign out error:', err)
+  }
+}
+
+const goToReviews = () => {
+  navigateTo('/reviews')
+}
 </script> 
