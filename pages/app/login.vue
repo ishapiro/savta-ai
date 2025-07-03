@@ -9,7 +9,7 @@
     </div>
 
     <!-- Login Dialog -->
-    <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '380px', maxHeight: '100vh' }" class="z-10" @hide="onDialogHide">
+    <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '500px', maxHeight: '100vh' }" class="z-10" @hide="onDialogHide">
       <div class="flex flex-col items-center w-full px-2 sm:px-4 py-4 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
         <!-- Header -->
         <div class="flex flex-col items-center mb-3 w-full">
@@ -90,7 +90,7 @@
                 </clipPath>
               </defs>
             </svg>
-            <span>Sign in with Google</span>
+            <span class="text-purple-600">Sign in with Google</span>
           </span>
         </Button>
 
