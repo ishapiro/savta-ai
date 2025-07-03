@@ -12,6 +12,9 @@ export default defineNuxtConfig({
     'primeicons/primeicons.css',
     '@/assets/css/main.css'
   ],
+  build: {
+    transpile: ['primevue']
+  },
   // @ts-ignore
   supabase: {
     // @ts-ignore
@@ -51,6 +54,11 @@ export default defineNuxtConfig({
       tailwindcss: {},
       autoprefixer: {},
     },
+  },
+  vite: {
+    optimizeDeps: {
+      include: ['primevue']
+    }
   },
   runtimeConfig: {
     public: {
