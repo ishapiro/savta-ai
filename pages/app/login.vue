@@ -8,89 +8,85 @@
       <div class="absolute top-1/2 right-8 sm:right-20 w-12 sm:w-20 h-12 sm:h-20 bg-cyan-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
     </div>
 
-    <!-- Login Card -->
-    <div class="relative z-10 w-full max-w-md mx-auto px-4">
-      <Card class="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
-        <template #header>
-          <div class="text-center">
-            <div class="w-16 h-16 bg-white mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg">
-              <img src="/savta-pink.png" alt="Savta AI Logo" class="h-10 w-auto" />
-            </div>
-            <h1 class="text-2xl font-bold text-gray-900">Welcome Back</h1>
-            <p class="text-gray-600 mt-2">Sign in to your account</p>
-          </div>
-        </template>
+    <!-- Login Dialog -->
+    <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100%', maxWidth: '420px' }" class="z-10" @hide="onDialogHide">
+      <template #header>
+        <div class="w-16 h-16 bg-white mx-auto mb-2 rounded-full flex items-center justify-center shadow-lg">
+          <img src="/savta-pink.png" alt="Savta AI Logo" class="h-10 w-auto" />
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900 text-center">Welcome Back</h1>
+        <p class="text-gray-600 mt-2 text-center">Sign in to your account</p>
+      </template>
 
-        <template #content>
-          <form @submit.prevent="handleEmailLogin" class="space-y-4">
-            <div>
-              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <InputText
-                id="email"
-                v-model="email"
-                type="email"
-                placeholder="Enter your email"
-                class="w-full"
-                :class="{ 'p-invalid': emailError }"
-                @blur="validateEmail"
-              />
-              <small v-if="emailError" class="text-red-500 text-sm">{{ emailError }}</small>
-            </div>
-
-            <div>
-              <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <Password
-                id="password"
-                v-model="password"
-                placeholder="Enter your password"
-                class="w-full"
-                :class="{ 'p-invalid': passwordError }"
-                toggleMask
-              />
-              <small v-if="passwordError" class="text-red-500 text-sm">{{ passwordError }}</small>
-            </div>
-
-            <Button
-              type="submit"
-              label="Sign In"
-              class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
-              :loading="emailLoading"
-              :disabled="!email || !password"
-            />
-          </form>
-
-          <div class="relative my-6">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
-          </div>
-
-          <Button
-            label="Sign in with Google"
-            icon="pi pi-google"
-            class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 py-3"
-            :loading="googleLoading"
-            @click="handleGoogleLogin"
+      <form @submit.prevent="handleEmailLogin" class="space-y-4 mt-4">
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <InputText
+            id="email"
+            v-model="email"
+            type="email"
+            placeholder="Enter your email"
+            class="w-full"
+            :class="{ 'p-invalid': emailError }"
+            @blur="validateEmail"
+            autocomplete="username"
           />
+          <small v-if="emailError" class="text-red-500 text-sm">{{ emailError }}</small>
+        </div>
 
-          <div v-if="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p class="text-red-600 text-sm">{{ error }}</p>
-          </div>
-        </template>
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <Password
+            id="password"
+            v-model="password"
+            placeholder="Enter your password"
+            class="w-full"
+            :class="{ 'p-invalid': passwordError }"
+            toggleMask
+            autocomplete="current-password"
+          />
+          <small v-if="passwordError" class="text-red-500 text-sm">{{ passwordError }}</small>
+        </div>
 
-        <template #footer>
-          <div class="text-center">
-            <p class="text-gray-600 text-sm">
-              Don't have an account?
-              <a href="/app/signup" class="text-purple-600 hover:text-purple-500 font-medium">Sign up</a>
-            </p>
-          </div>
-        </template>
-      </Card>
-    </div>
+        <Button
+          type="submit"
+          label="Sign In"
+          class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
+          :loading="emailLoading"
+          :disabled="!email || !password"
+        />
+      </form>
+
+      <div class="relative my-6">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-300"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="px-2 bg-white text-gray-500">Or continue with</span>
+        </div>
+      </div>
+
+      <Button
+        label="Sign in with Google"
+        icon="pi pi-google"
+        class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 py-3"
+        :loading="googleLoading"
+        @click="handleGoogleLogin"
+      />
+
+      <div v-if="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+        <p class="text-red-600 text-sm">{{ error }}</p>
+      </div>
+
+      <template #footer>
+        <div class="text-center w-full">
+          <p class="text-gray-600 text-sm">
+            Don't have an account?
+            <a href="/app/signup" class="text-purple-600 hover:text-purple-500 font-medium">Sign up</a>
+          </p>
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -108,6 +104,7 @@ const googleLoading = ref(false)
 const error = ref('')
 const emailError = ref('')
 const passwordError = ref('')
+const visible = ref(true)
 
 // Get Supabase client
 const supabase = useSupabaseClient()
@@ -191,6 +188,11 @@ const handleGoogleLogin = async () => {
   } finally {
     googleLoading.value = false
   }
+}
+
+const onDialogHide = () => {
+  // When dialog is closed, navigate away (e.g., to /app or /)
+  navigateTo('/app')
 }
 </script>
 

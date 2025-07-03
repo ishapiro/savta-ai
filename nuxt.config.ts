@@ -5,6 +5,7 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase'
   ],
   css: [
+    'primevue/resources/themes/lara-light-purple/theme.css',
     'primevue/resources/primevue.css',
     'primeicons/primeicons.css',
     '@/assets/css/main.css'
