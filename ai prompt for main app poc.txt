@@ -1,13 +1,161 @@
-Savta.ai is an application that collect family memories.  These memories consisting of photos, stories, social media post, recipices and more and collected in beautifully designed pages, which are collected in books.  The books are then available output as PDFs and available for digital and print distribution.
 
-These new capabilites need to be added to this existing application.  The default nuxt layout has already been implemented with pages/index.vue insider of it.  The new features should be add to the menu already implemented in the default layout.
+You’re building a proof of concept (POC) for new features in this existing Nuxt 3 + Supabase application called Savta.ai. This app collects family memories (photos, stories, social media posts, recipes, etc.) and assembles them into beautifully designed memory books, available as PDFs for digital and print distribution.
 
-DO NOT CHANGE THE sign in, sign up and sign (log) out implementation.  This is working well.
+⸻
 
-The new features are only available to people who sign into the app.
+✅ EXISTING SYSTEM CONTEXT
+	•	App built with Nuxt 3
+	•	Hosted at http://localhost:3000/app
+	•	Uses Supabase for database + storage + authentication
+	•	Has a working default layout and navigation menu
+	•	Authentication (sign in, sign up, log out) is implemented and must not be changed
+	•	Supabase schema is defined in /supabase/schema.sql
+	•	A working pages/index.vue is already integrated into the default layout
 
-The database already resides at supabase in the cloud and already has a schema.sql definition in the supabase directory.   All new schema definition need to be added here.  Any migrations or changes to the db need to be designed to preserve existing data.
+⸻
 
-The schema definition should include reasonable triggers and policies to maintain data consitancy.  When updating triggers and policies drop them first then redefine them.  When maintaining tables use alter if the table already exists and create if it is new.  The schema.db should be rerunable without existing data at anytime.
+🧑‍💻 USER ROLES
+
+Users can be in one of several states:
+	•	Not logged in
+	•	Logged in
+	•	Logged in with editor or admin privileges
+(Note: all admins have implied editor rights)
+
+Additionally:
+	•	Users can have regular or premium subscriptions
+(billing system to be implemented later)
+
+⸻
+
+🔐 ACCESS RULES
+	•	New features are only available to logged-in users
+	•	Admins can manage all users and promote/demote roles
+	•	Editors can maintain memory book themes and help users
+
+⸻
+
+🧠 NEW FUNCTIONALITY TO BUILD
+
+The following features need to be implemented as new pages and added to the existing menu in the default layout:
+
+1. Asset Upload
+	•	Users can upload:
+	•	Photos (stored in Supabase Storage)
+	•	Text (stories, captions, etc.)
+	•	Upon upload:
+	•	AI generates tags
+	•	AI writes a caption/description
+	•	AI identifies people or objects in the image
+
+2. Memory Book Generation
+	•	Run periodically (monthly) or on demand
+	•	Auto-generates PDF “books” by combining assets:
+	•	Configurable by size, layout, quality, page count, and medium
+	•	A notification is sent to the user that a new memory book is ready
+
+3. User Review & Approval
+	•	User can:
+	•	Approve or reject assets/captions for inclusion
+	•	Keep the UX simple – no custom layouts
+	•	Upon approval:
+	•	The PDF is finalized and marked “ready for distribution”
+
+Note: Distribution logic (email, print, WhatsApp) is out of scope for this POC.
+
+⸻
+
+⚙️ ADMIN INTERFACE
+
+Admins can:
+	•	View, update, suspend and soft-delete users
+	•	Promote/demote users to editor/admin
+
+Editors can:
+	•	Manage memory book themes
+	•	View and support user submissions
+
+⸻
+
+🧱 DATABASE DESIGN REQUIREMENTS
+
+Use Supabase and update /supabase/schema.sql. All schema updates must:
+	•	Preserve existing data
+	•	Use ALTER TABLE where applicable
+	•	Be re-runnable
+	•	Include reasonable triggers and Row-Level Security (RLS) policies
+	•	Drop and recreate triggers/policies when needed
+
+✅ General Rules for Tables:
+	•	All tables must include:
+	•	id, created_at, updated_at, deleted (soft delete)
+	•	Include foreign keys and indexes as needed
+
+📦 Tables to Implement (add more if helpful):
+
+profiles
+	•	user_id, email, phone, address, subscription_type, role (user/editor/admin)
+
+families
+	•	id, user_id, name, relationship, contact_info, delivery_method, frequency
+
+memory_preferences
+	•	user_id, layout_type, page_count, print_size, quality, medium
+
+assets
+	•	id, user_id, type (photo, text), storage_url, user_caption, ai_caption, tags, people_detected
+
+tags
+	•	id, name
+	•	Many-to-many relationship with assets
+
+memory_books
+	•	id, user_id, status (draft, ready, approved), pdf_url, review_notes, created_from_assets
+
+activity_log
+	•	id, user_id, action, timestamp, details
+
+Track all user activity at the function/task level.
+
+⸻
+
+🧪 TECHNICAL GUIDELINES
+	•	Use only the technologies already in the project (Nuxt 3, Supabase, Tailwind, PrimeVue)
+	•	Use Supabase Storage for media files
+	•	Supabase Auth is already used for login/logout
+	•	AI classification and captions can be done via OpenAI in NUXT service side code
+    •	I have API keys for all of the services in .evn
+    •	The production code is hosted at vercel.com
+
+    
+
+⸻
+
+🔧 AI TASKS (for later refinement)
+	•	Classify uploaded images by theme, event, and emotion
+	•	Generate playful and meaningful captions
+	•	Identify people (if labeled previously by user)
+    •	Generate the layouts
+
+⸻
+
+📌 REMINDER
+
+Do not alter or replace the login, registration, or authentication flows already implemented.
+
+⸻
+
+🤖 OBJECTIVE
+
+Create the complete code and database schema changes required to deliver this MVP, with mock data where needed. Prioritize:
+	•	Functionality
+	•	Simplicity
+	•	Extendibility
+	•	Prioritize code legibility over brevity
+	•	Make the code SOLID
+
+
+
+
 
 
