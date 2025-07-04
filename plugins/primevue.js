@@ -180,24 +180,29 @@ const breadcrumbDefaults = {
       'flex items-center space-x-2 text-sm'
     ]
   },
-  home: {
+  menu: {
     class: [
-      'text-gray-400 hover:text-lara-500 transition'
-    ]
-  },
-  separator: {
-    class: [
-      'text-gray-300'
+      'flex items-center space-x-2'
     ]
   },
   menuitem: {
     class: [
-      'text-gray-500 hover:text-lara-500 transition'
+      'flex items-center'
     ]
   },
-  menuitemLink: {
+  action: {
     class: [
-      'text-gray-500 hover:text-lara-500 transition'
+      'text-gray-500 hover:text-lara-500 transition no-underline outline-none focus:outline-none'
+    ]
+  },
+  label: {
+    class: [
+      'text-gray-500 no-underline'
+    ]
+  },
+  separator: {
+    class: [
+      'mx-1 text-gray-300'
     ]
   }
 }

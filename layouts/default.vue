@@ -95,7 +95,11 @@
     <!-- Breadcrumb aligned with header content -->
     <div class="hidden md:block">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Breadcrumb :model="breadcrumbItems" class="text-sm outline-none focus:outline-none ring-0" />
+        <Breadcrumb
+          :model="breadcrumbItems"
+          separatorIcon="pi pi-chevron-right"
+          class="text-sm flex items-center space-x-2 list-none p-0 m-0 [&_ol]:flex [&_ol]:flex-row [&_li]:m-0 [&_li]:p-0 [&_li]:list-none [&_.p-breadcrumb-separator]:mx-2 [&_.p-breadcrumb-separator]:inline-flex [&_.p-breadcrumb-separator]:items-center"
+        />
       </div>
     </div>
 
@@ -133,14 +137,21 @@ const mobileMenuOpen = ref(false)
 const config = useRuntimeConfig()
 const buildInfo = config.public.buildDate
 
-// Example: dynamic breadcrumb based on route
+// Improved: dynamic breadcrumb for nested routes
 const breadcrumbItems = computed(() => {
-  // Simple example: Home > Current Page
-  const crumbs = [
-    { label: 'Home', to: '/' }
-  ]
-  if (route.name && route.name !== 'index') {
-    crumbs.push({ label: route.name.charAt(0).toUpperCase() + route.name.slice(1) })
+  const crumbs = []
+  const pathArray = route.path.split('/').filter(Boolean)
+  let path = ''
+  if (pathArray.length === 0) {
+    crumbs.push({ label: 'Home', to: '/' })
+  } else {
+    crumbs.push({ label: 'Home', to: '/' })
+    pathArray.forEach((segment, idx) => {
+      path += '/' + segment
+      // Capitalize and replace dashes/underscores
+      const label = segment.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      crumbs.push({ label, to: idx === pathArray.length - 1 ? undefined : path })
+    })
   }
   return crumbs
 })

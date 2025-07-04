@@ -20,7 +20,8 @@
   /* Ensure text on images is white */
   .image-overlay {
     @apply absolute inset-0 flex items-center justify-center;
-    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+
+    background: linear-gradient(rgb(0 0 0 / 40%), rgb(0 0 0 / 60%));
   }
 
   .image-overlay * {
@@ -82,6 +83,7 @@
 
   .overlay-card::before {
     @apply absolute inset-0 bg-black bg-opacity-50 transition-opacity;
+
     content: '';
   }
 
@@ -124,7 +126,8 @@ html, body {
 
 body {
   @apply bg-gray-50 text-gray-800;
-  font-family: 'Inter', sans-serif;
+
+  font-family: Inter, sans-serif;
 }
 
 .wide-tooltip {
@@ -132,4 +135,37 @@ body {
   max-width: 350px !important;
   white-space: normal !important;
   text-align: left !important;
-} 
+}
+
+/* PrimeVue 4 Breadcrumb fixes */
+.p-breadcrumb {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
+.p-breadcrumb .p-menuitem {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.p-breadcrumb .p-menuitem::before,
+.p-breadcrumb .p-menuitem::after {
+  display: none !important;
+}
+
+.p-breadcrumb .p-menuitem-text::before,
+.p-breadcrumb .p-menuitem-text::after {
+  display: none !important;
+}
+
+/* Remove any numbering that PrimeVue 4 might add */
+.p-breadcrumb .p-menuitem-text {
+  display: inline !important;
+}
+
+.p-breadcrumb .p-menuitem-link {
+  text-decoration: none !important;
+}
+
+ 
