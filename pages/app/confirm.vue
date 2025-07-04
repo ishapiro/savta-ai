@@ -12,84 +12,76 @@
     <Dialog 
       v-model:visible="visible" 
       modal 
-      :closable="true" 
+      :closable="false" 
       :dismissableMask="true" 
       :style="{ width: '100vw', maxWidth: '600px', maxHeight: '100vh' }" 
       class="z-10"
       @hide="onDialogHide"
     >
-      <div class="flex flex-col items-center w-full px-4 sm:px-6 py-6 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
-        <!-- Header with Close Button -->
-        <div class="flex justify-between items-start w-full mb-4">
-          <div class="flex-1"></div>
-          <Button
-            icon="pi pi-times"
-            rounded
-            text
-            severity="secondary"
-            @click="onDialogHide"
-            class="text-gray-400 hover:text-gray-600"
-          />
-        </div>
+      <!-- Custom Close Button (top right) -->
+      <div class="flex justify-end w-full mb-2">
+        <Button
+          icon="pi pi-times"
+          rounded
+          class="bg-pink-500 hover:bg-pink-600 text-white"
+          @click="onDialogHide"
+          style="box-shadow: none;"
+        />
+      </div>
 
-        <!-- Main Content -->
-        <div class="text-center mb-6 w-full">
-          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span class="text-3xl">{{ isNewUser ? '🎉' : '✅' }}</span>
-          </div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            {{ isNewUser ? 'Welcome to Savta AI!' : 'Welcome Back!' }}
-          </h1>
-          <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
-            {{ isNewUser ? 'Thank you for joining Savta AI. Your account is now active and ready to use.' : 'You are now successfully logged in to your Savta AI account.' }}
-          </p>
+      <!-- Main Content -->
+      <div class="text-center mb-4 w-full">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span class="text-3xl">{{ isNewUser ? '🎉' : '✅' }}</span>
         </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          {{ isNewUser ? 'Welcome to Savta AI!' : 'Welcome Back!' }}
+        </h1>
+        <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+          {{ isNewUser ? 'Thank you for joining Savta AI. Your account is now active and ready to use.' : 'You are now successfully logged in to your Savta AI account.' }}
+        </p>
+      </div>
 
-        <!-- User Information Card -->
-        <div v-if="user" class="bg-gray-50 rounded-lg p-4 sm:p-6 mb-6 w-full">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+      <!-- User Information Card -->
+      <div v-if="user" class="bg-gray-50 rounded-lg p-3 sm:p-4 mb-3 w-full">
+        <h3 class="text-base font-semibold text-gray-900 mb-2 flex items-center">
             <span class="text-purple-600 mr-2">👤</span>
             Your Account Details
           </h3>
-          
-          <div class="space-y-3">
+          <div class="space-y-1">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
               <span class="text-gray-600 font-medium">Email Address:</span>
-              <span class="text-gray-900 font-mono text-sm sm:text-base">{{ user.email }}</span>
+              <span class="text-gray-900 font-mono text-xs sm:text-sm">{{ user.email }}</span>
             </div>
-            
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
               <span class="text-gray-600 font-medium">Account Status:</span>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                <span class="w-2 h-2 bg-green-400 rounded-full mr-1.5"></span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span class="w-2 h-2 bg-green-400 rounded-full mr-1"></span>
                 {{ isNewUser ? 'New Account' : 'Active' }}
               </span>
             </div>
-            
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
               <span class="text-gray-600 font-medium">Signup Date:</span>
-              <span class="text-gray-900">{{ formatDate(user.created_at) }}</span>
+              <span class="text-gray-900 text-xs sm:text-sm">{{ formatDate(user.created_at) }}</span>
             </div>
-            
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
               <span class="text-gray-600 font-medium">Last Sign In:</span>
-              <span class="text-gray-900">{{ formatDate(user.last_sign_in_at) }}</span>
+              <span class="text-gray-900 text-xs sm:text-sm">{{ formatDate(user.last_sign_in_at) }}</span>
             </div>
-            
             <div v-if="user.user_metadata" class="flex flex-col sm:flex-row sm:items-center justify-between">
               <span class="text-gray-600 font-medium">Provider:</span>
-              <span class="text-gray-900 capitalize">{{ user.app_metadata?.provider || 'Email' }}</span>
+              <span class="text-gray-900 capitalize text-xs sm:text-sm">{{ user.app_metadata?.provider || 'Email' }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Next Steps -->
-        <div class="bg-blue-50 rounded-lg p-4 sm:p-6 mb-6 w-full">
-          <h3 class="text-lg font-semibold text-blue-900 mb-3 flex items-center">
+      <!-- Next Steps -->
+      <div class="bg-blue-50 rounded-lg p-3 sm:p-4 mb-3 w-full">
+        <h3 class="text-base font-semibold text-blue-900 mb-1 flex items-center">
             <span class="text-blue-600 mr-2">🚀</span>
             What's Next?
           </h3>
-          <ul class="space-y-2 text-blue-800">
+          <ul class="space-y-1 text-blue-800 text-sm">
             <li class="flex items-start">
               <span class="text-blue-600 mr-2 mt-1">•</span>
               <span>Explore your personalized dashboard</span>
@@ -105,19 +97,18 @@
           </ul>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row gap-3 justify-center w-full">
-          <Button 
-            label="Go to Dashboard" 
-            class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold"
-            @click="goToDashboard"
-          />
-          <Button 
-            label="Learn More" 
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold"
-            @click="goToAbout"
-          />
-        </div>
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-3 justify-center w-full">
+        <Button 
+          label="Go to Dashboard" 
+          class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold"
+          @click="goToDashboard"
+        />
+        <Button 
+          label="Learn More" 
+          class="bg-grey-500 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold"
+          @click="goToAbout"
+        />
       </div>
     </Dialog>
   </div>

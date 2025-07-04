@@ -192,6 +192,7 @@ const handleGoogleLogin = async () => {
   googleLoading.value = true
   error.value = ''
   const config = useRuntimeConfig()
+  console.log("Debug:config.public.siteUrl", config.public.siteUrl)
 
   try {
     const { error: authError } = await supabase.auth.signInWithOAuth({
