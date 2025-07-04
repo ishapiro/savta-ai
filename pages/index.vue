@@ -69,29 +69,33 @@
         </div>
         <!-- Password Dialog -->
         <div v-if="showPasswordDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-md mx-2 sm:mx-4">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Insiders Access</h3>
-            <p class="text-gray-600 mb-4">Enter the password to access the insider area:</p>
+          <div class="bg-white rounded-2xl shadow-2xl border border-surface-100 w-full max-w-sm mx-4 p-6 flex flex-col items-center">
+            <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center shadow mb-4">
+              <img src="/savta-pink.png" alt="Savta AI Logo" class="h-8 w-auto" />
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2 text-center">Insiders Access</h3>
+            <p class="text-gray-600 mb-5 text-center text-base">Enter the password to access the insider area:</p>
             <InputText
               v-model="password"
               type="password"
               placeholder="Enter password"
-              class="w-full mb-4"
+              class="w-full mb-4 max-w-xs text-center"
               @keyup.enter="checkPassword"
+              autocomplete="current-password"
             />
-            <div class="flex flex-col sm:flex-row gap-2 sm:space-x-3">
+            <div class="flex w-full gap-3 mb-2">
               <Button
                 label="Cancel"
-                class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700"
+                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 border border-gray-200"
                 @click="cancelPassword"
               />
               <Button
                 label="Enter"
-                class="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                class="flex-1"
                 @click="checkPassword"
               />
             </div>
-            <div v-if="passwordError" class="text-red-500 text-sm mt-2">
+            <div v-if="passwordError" class="text-red-500 text-sm mt-1 text-center w-full">
               {{ passwordError }}
             </div>
           </div>

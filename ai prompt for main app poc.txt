@@ -1,0 +1,13 @@
+Savta.ai is an application that collect family memories.  These memories consisting of photos, stories, social media post, recipices and more and collected in beautifully designed pages, which are collected in books.  The books are then available output as PDFs and available for digital and print distribution.
+
+These new capabilites need to be added to this existing application.  The default nuxt layout has already been implemented with pages/index.vue insider of it.  The new features should be add to the menu already implemented in the default layout.
+
+DO NOT CHANGE THE sign in, sign up and sign (log) out implementation.  This is working well.
+
+The new features are only available to people who sign into the app.
+
+The database already resides at supabase in the cloud and already has a schema.sql definition in the supabase directory.   All new schema definition need to be added here.  Any migrations or changes to the db need to be designed to preserve existing data.
+
+The schema definition should include reasonable triggers and policies to maintain data consitancy.  When updating triggers and policies drop them first then redefine them.  When maintaining tables use alter if the table already exists and create if it is new.  The schema.db should be rerunable without existing data at anytime.
+
+
