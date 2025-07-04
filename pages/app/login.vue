@@ -29,7 +29,7 @@
               v-model="email"
               type="email"
               placeholder="Enter your email"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
+              class="w-full"
               :class="{ 'border-red-500': emailError }"
               @blur="validateEmail"
               autocomplete="username"
@@ -43,11 +43,11 @@
               id="password"
               v-model="password"
               placeholder="Enter your password"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition"
+              class="w-full"
               :class="{ 'border-red-500': passwordError }"
               toggleMask
               autocomplete="current-password"
-              inputClass="w-full border-none bg-transparent focus:ring-0 px-0"
+              inputClass="w-full"
               panelClass="z-50"
             />
             <small v-if="passwordError" class="text-red-500 text-xs mt-1">{{ passwordError }}</small>
