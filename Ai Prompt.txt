@@ -1,3 +1,156 @@
+You’re building a proof of concept (POC) for new features in this existing Nuxt 3 + Supabase application called Savta.ai. This app collects family memories (photos, stories, social media posts, recipes, etc.) and assembles them into beautifully designed memory books, available as PDFs for digital and print distribution.
+
+EXISTING SYSTEM CONTEXT
+	•	App built with Nuxt 3
+	•	Use Javascript and NOT typescript
+	•	Review the existing working code approach for Supabase, etc.
+	•	Hosted at http://localhost:3000/app
+	•	Uses Supabase for database, storage, and authentication
+	•	Has a working default layout and navigation menu
+	•	Authentication (sign in, sign up, log out) is implemented and must not be changed
+	•	Supabase schema is defined in /supabase/schema.sql
+	•	A working pages/index.vue is already integrated into the default layout
+
+DATABASE ACCESS
+	•	Review the code in index.vue to see how supabase access is working
+	•	Use the same approach as index.vue
+	•	Only add row level security on tables with PII
+	•	Do not repeat database code put it in a libary that is shared
+	•	If a user is able to log in but has no profile create one for them
+	•	ONLY do this in the app/confirm.vue page.  There is no need to do this anywhere else
+
+USER INTERFACE
+	•	All the new pages should take over the content area of the layout
+	•	Make sure any middleware allows anyone to access the login, signup, confirm, and landing-page
+
+USER ROLES
+
+Users can be in one of several states:
+	•	Not logged in
+	•	Logged in
+	•	Logged in with editor or admin privileges (note: all admins have implied editor rights)
+
+Additionally:
+	•	Users can have regular or premium subscriptions (billing system to be implemented later)
+
+ACCESS RULES
+	•	New features are only available to logged-in users
+	•	Admins can manage all users and promote/demote roles
+	•	Editors can maintain memory book themes and help users
+
+NEW FUNCTIONALITY TO BUILD
+
+The following features need to be implemented as new pages and added to the existing menu in the default layout:
+	1.	Asset Upload
+
+	•	Users can upload:
+	•	Photos (stored in Supabase Storage)
+	•	Text (stories, captions, etc.)
+	•	Upon upload:
+	•	AI generates tags
+	•	AI writes a caption/description
+	•	AI identifies people or objects in the image
+
+	2.	Memory Book Generation
+
+	•	Run periodically (monthly) or on demand
+	•	Auto-generates PDF books by combining assets:
+	•	Configurable by size, layout, quality, page count, and medium
+	•	A notification is sent to the user that a new memory book is ready
+
+	3.	User Review and Approval
+
+	•	User can:
+	•	Approve or reject assets and captions for inclusion
+	•	Keep the UX simple – no custom layouts
+	•	Upon approval:
+	•	The PDF is finalized and marked ready for distribution
+
+Note: Distribution logic (email, print, WhatsApp) is out of scope for this POC.
+
+ADMIN INTERFACE
+
+Admins can:
+	•	View, update, suspend and soft-delete users
+	•	Promote or demote users to editor or admin
+
+Editors can:
+	•	Manage memory book themes
+	•	View and support user submissions
+
+DATABASE DESIGN REQUIREMENTS
+
+Use Supabase and update /supabase/schema.sql. All schema updates must:
+	•	Preserve existing data
+	•	Use ALTER TABLE where applicable
+	•	Be re-runnable
+	•	Include reasonable triggers and Row-Level Security (RLS) policies
+	•	Drop and recreate triggers and policies when needed
+
+General Rules for Tables:
+	•	All tables must include:
+	•	id, created_at, updated_at, deleted (soft delete)
+	•	Include foreign keys and indexes as needed
+
+Tables to Implement (add more if helpful):
+
+profiles
+	•	user_id, email, phone, address, subscription_type, role (user/editor/admin)
+
+families
+	•	id, user_id, name, relationship, contact_info, delivery_method, frequency
+
+memory_preferences
+	•	user_id, layout_type, page_count, print_size, quality, medium
+
+assets
+	•	id, user_id, type (photo, text), storage_url, user_caption, ai_caption, tags, people_detected
+
+tags
+	•	id, name
+	•	Many-to-many relationship with assets
+
+memory_books
+	•	id, user_id, status (draft, ready, approved), pdf_url, review_notes, created_from_assets
+
+activity_log
+	•	id, user_id, action, timestamp, details
+
+Track all user activity at the function or task level.
+
+TECHNICAL GUIDELINES
+	•	Use only the technologies already in the project: Nuxt 3, Supabase, Tailwind, PrimeVue
+	•	Use Supabase Storage for media files
+	•	Supabase Auth is already used for login/logout
+	•	AI classification and captions can be done via OpenAI in Nuxt server-side code
+	•	I have API keys for all of the services in .env
+	•	The production code is hosted at vercel.com
+
+AI TASKS (for later refinement)
+	•	Classify uploaded images by theme, event, and emotion
+	•	Generate playful and meaningful captions
+	•	Identify people (if labeled previously by user)
+	•	Generate the layouts
+
+REMINDER
+Do not alter or replace the login, registration, or authentication flows already implemented.
+
+OBJECTIVE
+
+Create the complete code and database schema changes required to deliver this MVP, with mock data where needed. Prioritize:
+	•	Functionality
+	•	Simplicity
+	•	Extendibility
+	•	Prioritize code legibility over brevity
+	•	Make the code SOLID
+
+EXISTING DATABASE
+
+The following database already exists on Supabase.  Start with this and modify as needed.  You can drop all of these tables and start over if neccesary.
+
+-- schema.sql
+-- Table for storing email subscriptions
+
 create table if not exists email_subscriptions (
   id uuid primary key default gen_random_uuid(),
   email text unique not null,
