@@ -89,9 +89,31 @@ INSIDER_PASSWORD=your-secret-password
    ```
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Development Troubleshooting
+If you encounter issues after stopping the dev server with Ctrl+C, especially import errors like `useSupabaseSession`, use these cleanup scripts:
+
+```bash
+# Quick cleanup (recommended for most issues)
+npm run cleanup
+
+# Clean and restart dev server
+npm run dev:clean
+
+# Complete reset (for severe cache corruption)
+npm run dev:reset
+```
+
+**Common Issues:**
+- **`useSupabaseSession` import error**: This occurs when the Nuxt Supabase module cache gets corrupted after abrupt termination. Use `npm run cleanup` to fix.
+- **Port already in use**: The cleanup script automatically kills processes on ports 3000 and 3001.
+- **Module cache issues**: The comprehensive cleanup clears all Nuxt, Vite, and Node.js caches.
+
 ### Useful Scripts
 ```bash
 npm run dev        # Start local dev server
+npm run dev:clean  # Clean cache and start dev server
+npm run dev:reset  # Complete reset (cleanup + npm install + dev)
+npm run cleanup    # Comprehensive cache cleanup
 npm run build      # Build for production
 npm run preview    # Preview production build
 npm run generate   # Generate static site

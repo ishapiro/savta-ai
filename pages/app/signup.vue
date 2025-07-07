@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
+  <div class="h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
     <!-- Animated background elements -->
     <div class="fixed inset-0 pointer-events-none z-0">
       <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/20 rounded-full blur-xl animate-pulse-slow"></div>
@@ -10,18 +10,18 @@
 
     <!-- Signup Dialog -->
     <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '500px', maxHeight: '100vh' }" class="z-10" @hide="onDialogHide">
-      <div class="flex flex-col items-center w-full px-2 sm:px-4 py-4 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
+      <div class="flex flex-col items-center w-full px-2 sm:px-4 py-3 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
         <!-- Header -->
-        <div class="flex flex-col items-center mb-3 w-full">
-          <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center shadow mb-2">
-            <img src="/savta-pink.png" alt="Savta AI Logo" class="h-10 w-auto" />
+        <div class="flex flex-col items-center mb-2 w-full">
+          <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center shadow mb-1">
+            <img src="/savta-pink.png" alt="Savta AI Logo" class="h-8 w-auto" />
           </div>
-          <h1 class="text-2xl font-bold text-gray-900 mb-1">Join Savta AI</h1>
-          <p class="text-gray-500 text-base">Create your account</p>
+          <h1 class="text-xl font-bold text-gray-900 mb-1">Join Savta AI</h1>
+          <p class="text-gray-500 text-sm">Create your account</p>
         </div>
 
         <!-- Signup Form -->
-        <form @submit.prevent="handleEmailSignup" class="flex flex-col gap-3 w-full max-w-xs sm:max-w-sm mx-auto">
+        <form @submit.prevent="handleEmailSignup" class="flex flex-col gap-2 w-full max-w-xs sm:max-w-sm mx-auto">
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <InputText
@@ -37,7 +37,7 @@
             <small v-if="emailError" class="text-red-500 text-xs mt-1">{{ emailError }}</small>
           </div>
 
-          <div class="mb-3">
+          <div class="mb-2">
             <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <div>
               <Password
@@ -53,7 +53,7 @@
             <small v-if="passwordError" class="text-red-500 text-xs mt-1">{{ passwordError }}</small>
           </div>
 
-          <div class="mb-3">
+          <div class="mb-2">
             <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
             <div>
               <Password
@@ -77,7 +77,7 @@
               inputId="terms"
               class="mt-1"
             />
-            <label for="terms" class="text-sm text-gray-600 ml-2">
+            <label for="terms" class="text-xs text-gray-600 ml-2">
               I agree to the 
               <a href="/terms" class="text-purple-600 hover:text-purple-500">Terms of Service</a>
               and
@@ -95,7 +95,7 @@
         </form>
 
         <!-- Divider -->
-        <div class="flex items-center w-full my-3">
+        <div class="flex items-center w-full my-2">
           <div class="flex-grow border-t border-gray-200"></div>
           <span class="mx-2 text-gray-400 text-sm">or</span>
           <div class="flex-grow border-t border-gray-200"></div>
@@ -127,12 +127,12 @@
         </Button>
 
         <!-- Error Message -->
-        <div v-if="error" class="mt-4 w-full p-2 bg-red-50 border border-red-200 rounded text-red-600 text-sm text-center">
+        <div v-if="error" class="mt-3 w-full p-2 bg-red-50 border border-red-200 rounded text-red-600 text-sm text-center">
           {{ error }}
         </div>
 
         <!-- Footer -->
-        <div class="mt-6 w-full text-center">
+        <div class="mt-4 w-full text-center">
           <p class="text-gray-600 text-sm">
             Already have an account?
             <a href="/app/login" class="text-purple-600 hover:text-purple-500 font-medium">Sign in</a>

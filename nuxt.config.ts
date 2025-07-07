@@ -49,11 +49,7 @@ export default defineNuxtConfig({
     componentIslands: false,
     asyncContext: true
   },
-  vue: {
-    compilerOptions: {
-      isCustomElement: (tag: string) => tag.startsWith('prime-')
-    }
-  },
+
   router: {
     options: {
       strict: false
@@ -62,7 +58,6 @@ export default defineNuxtConfig({
   postcss: {
     plugins: {
       'postcss-import': {},
-      'tailwindcss/nesting': {},
       tailwindcss: {},
       autoprefixer: {},
     },
@@ -70,10 +65,16 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       include: ['primevue']
+    },
+    ssr: {
+      noExternal: ['primevue']
+    },
+    define: {
+      // Prevent PrimeVue from accessing pt configuration
+      'process.env.PRIMEVUE_PT': 'undefined'
     }
   },
   runtimeConfig: {
-    pt: {},
     public: {
       // @ts-ignore
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
@@ -83,8 +84,7 @@ export default defineNuxtConfig({
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
       // @ts-ignore
       supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
-      buildDate,
-      pt: {}
+      buildDate
     }
   }
 }) 
