@@ -1,387 +1,112 @@
-You’re building a proof of concept (POC) for new features in this existing Nuxt 3 + Supabase application called Savta.ai. This app collects family memories (photos, stories, social media posts, recipes, etc.) and assembles them into beautifully designed memory books, available as PDFs for digital and print distribution.
-
-EXISTING SYSTEM CONTEXT
-	•	App built with Nuxt 3
-	•	Use Javascript and NOT typescript
-	•	Review the existing working code approach for Supabase, etc.
-	•	Hosted at http://localhost:3000/app
-	•	Uses Supabase for database, storage, and authentication
-	•	Has a working default layout and navigation menu
-	•	Authentication (sign in, sign up, log out) is implemented and must not be changed
-	•	Supabase schema is defined in /supabase/schema.sql
-	•	A working pages/index.vue is already integrated into the default layout
+Context:
+You are building a POC for new features in Savta.ai, an existing Nuxt 3 + Supabase application.  
+The app collects family memories (photos, stories, posts, recipes, etc.) and assembles them into memory books (PDFs for print/digital use). Target audience: Grandparents.
+
+---
+
+1. STACK & PROJECT CONSTRAINTS
+- Nuxt 3, PrimeVue 3.x, Tailwind CSS, Supabase
+- JavaScript ONLY (No TypeScript)
+- Use existing code patterns for Supabase (see pages/index.vue)
+- Supabase: auth, DB, storage
+- Production hosting is on Vercel
+- Do not touch authentication flows (login, registration, etc.)
+- All new features/pages must integrate with existing layout & navigation
+
+---
+
+2. USER & ROLE MODEL
+- States: Not logged in, Logged in, Logged in as editor/admin
+- Users: regular, premium (billing out of scope)
+- Admin: manage users & roles
+- Editor: maintain memory book themes, assist users
+
+---
+
+3. FEATURE SCOPE (BUILD THESE)
+ASSET UPLOAD
+- Upload photos/text
+- Store files in Supabase Storage
+- AI auto-tags, writes captions, identifies people/objects (OpenAI via server-side Nuxt API)
+- Store metadata (tags, captions, entities) in DB
+
+MEMORY BOOK GENERATION
+- Monthly/On-demand job
+- Combine assets into PDFs (configurable: size, layout, quality, page count, medium)
+- Notify user (notification logic: out of scope, just set status/flag in DB)
+
+USER REVIEW & APPROVAL
+- Simple UX: Users approve/reject assets & captions (no custom layouts)
+- On approval: finalize PDF, mark as ready in DB
+
+ADMIN/EDITOR INTERFACE
+- Admin: CRUD + soft delete users, change roles
+- Editor: manage book themes, view/support user submissions
+
+---
+
+4. ACCESS & MIDDLEWARE
+- Only logged-in users access new features
+- Admins: manage all users
+- Editors: maintain themes, assist users
+- Middleware must allow unauthenticated access to login, signup, confirm, landing-page
+
+---
+
+5. DATABASE REQUIREMENTS
+- Use/update /supabase/schema.sql
+- Preserve existing data; use ALTER TABLE where possible
+- All tables: id, created_at, updated_at, deleted
+- Add FK, indexes as needed
+- All schema changes must be re-runnable
+- Use reasonable triggers & RLS (see below)
+
+KEY TABLES (extend as needed):
+- profiles (user_id, email, phone, subscription_type, role)
+- families (user_id, name, relationship, delivery, freq)
+- memory_preferences (user_id, layout_type, page_count, print_size, quality, medium)
+- assets (user_id, type, storage_url, captions, tags, people_detected, etc.)
+- tags (name, many-to-many with assets)
+- memory_books (user_id, status, pdf_url, review_notes, asset refs)
+- activity_log (user_id, action, timestamp, details)
+
+POLICIES:
+- Row-level security only on PII tables (profiles, families, memory_preferences)
+- Application logic controls access elsewhere (do NOT enable RLS on non-PII tables)
+- Profile auto-create: Only in /app/confirm.vue
+- Never repeat DB logic: put all reusable code in a shared library
+
+---
+
+6. AI TASKS (INITIAL POC)
+- Tag/classify images (theme/event/emotion)
+- Store classifications per asset
+- Use them to group assets for publication layouts
+- Generate captions (playful/meaningful, use OpenAI API)
+- Identify people if labeled by user
+
+---
+
+7. TECHNICAL RULES
+- Use only: Nuxt 3, Supabase, PrimeVue 3.x, Tailwind
+- All styling: Tailwind + PrimeVue, no other UI libraries
+- Supabase Storage: for all media assets
+- Use .env for API/service keys
+- Prioritize: functionality, code clarity, extendibility (over brevity)
+- All code must be readable and SOLID
+- Mock data where needed
+- Track all user actions in activity_log at function/task level
+
+---
+
+8. DELIVERY & OUTPUT
+- Implement all required code and schema changes for this MVP
+- Output: full source for new/changed pages, shared lib(s), server-side API integrations, schema.sql changes, any new DB triggers
+- Include seed/mock data where useful
+- Comment code where logic is not obvious
+- If something is unclear, make a reasoned forward-thinking assumption and document it inline
 
-DATABASE ACCESS
-	•	Review the code in index.vue to see how supabase access is working
-	•	Use the same approach as index.vue
-	•	Only add row level security on tables with PII
-	•	Do not repeat database code put it in a libary that is shared
-	•	If a user is able to log in but has no profile create one for them
-	•	ONLY do this in the app/confirm.vue page.  There is no need to do this anywhere else
+---
 
-USER INTERFACE
-	•	All the new pages should take over the content area of the layout
-	•	Make sure any middleware allows anyone to access the login, signup, confirm, and landing-page
-
-USER ROLES
-
-Users can be in one of several states:
-	•	Not logged in
-	•	Logged in
-	•	Logged in with editor or admin privileges (note: all admins have implied editor rights)
-
-Additionally:
-	•	Users can have regular or premium subscriptions (billing system to be implemented later)
-
-ACCESS RULES
-	•	New features are only available to logged-in users
-	•	Admins can manage all users and promote/demote roles
-	•	Editors can maintain memory book themes and help users
-
-NEW FUNCTIONALITY TO BUILD
-
-The following features need to be implemented as new pages and added to the existing menu in the default layout:
-	1.	Asset Upload
-
-	•	Users can upload:
-	•	Photos (stored in Supabase Storage)
-	•	Text (stories, captions, etc.)
-	•	Upon upload:
-	•	AI generates tags
-	•	AI writes a caption/description
-	•	AI identifies people or objects in the image
-
-	2.	Memory Book Generation
-
-	•	Run periodically (monthly) or on demand
-	•	Auto-generates PDF books by combining assets:
-	•	Configurable by size, layout, quality, page count, and medium
-	•	A notification is sent to the user that a new memory book is ready
-
-	3.	User Review and Approval
-
-	•	User can:
-	•	Approve or reject assets and captions for inclusion
-	•	Keep the UX simple – no custom layouts
-	•	Upon approval:
-	•	The PDF is finalized and marked ready for distribution
-
-Note: Distribution logic (email, print, WhatsApp) is out of scope for this POC.
-
-ADMIN INTERFACE
-
-Admins can:
-	•	View, update, suspend and soft-delete users
-	•	Promote or demote users to editor or admin
-
-Editors can:
-	•	Manage memory book themes
-	•	View and support user submissions
-
-DATABASE DESIGN REQUIREMENTS
-
-Use Supabase and update /supabase/schema.sql. All schema updates must:
-	•	Preserve existing data
-	•	Use ALTER TABLE where applicable
-	•	Be re-runnable
-	•	Include reasonable triggers and Row-Level Security (RLS) policies
-	•	Drop and recreate triggers and policies when needed
-
-General Rules for Tables:
-	•	All tables must include:
-	•	id, created_at, updated_at, deleted (soft delete)
-	•	Include foreign keys and indexes as needed
-
-Tables to Implement (add more if helpful):
-
-profiles
-	•	user_id, email, phone, address, subscription_type, role (user/editor/admin)
-
-families
-	•	id, user_id, name, relationship, contact_info, delivery_method, frequency
-
-memory_preferences
-	•	user_id, layout_type, page_count, print_size, quality, medium
-
-assets
-	•	id, user_id, type (photo, text), storage_url, user_caption, ai_caption, tags, people_detected
-
-tags
-	•	id, name
-	•	Many-to-many relationship with assets
-
-memory_books
-	•	id, user_id, status (draft, ready, approved), pdf_url, review_notes, created_from_assets
-
-activity_log
-	•	id, user_id, action, timestamp, details
-
-Track all user activity at the function or task level.
-
-TECHNICAL GUIDELINES
-	•	Use only the technologies already in the project: Nuxt 3, Supabase, Tailwind, PrimeVue
-	•	Use Supabase Storage for media files
-	•	Supabase Auth is already used for login/logout
-	•	AI classification and captions can be done via OpenAI in Nuxt server-side code
-	•	I have API keys for all of the services in .env
-	•	The production code is hosted at vercel.com
-
-AI TASKS (for later refinement)
-	•	Classify uploaded images by theme, event, and emotion
-	•	Generate playful and meaningful captions
-	•	Identify people (if labeled previously by user)
-	•	Generate the layouts
-
-REMINDER
-Do not alter or replace the login, registration, or authentication flows already implemented.
-
-OBJECTIVE
-
-Create the complete code and database schema changes required to deliver this MVP, with mock data where needed. Prioritize:
-	•	Functionality
-	•	Simplicity
-	•	Extendibility
-	•	Prioritize code legibility over brevity
-	•	Make the code SOLID
-
-EXISTING DATABASE
-
-The following database already exists on Supabase.  Start with this and modify as needed.  You can drop all of these tables and start over if neccesary.
-
--- schema.sql
--- Table for storing email subscriptions
-
-create table if not exists email_subscriptions (
-  id uuid primary key default gen_random_uuid(),
-  email text unique not null,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
--- Enable necessary extensions
-create extension if not exists "uuid-ossp";
-
--- Profiles table (extends Supabase auth.users)
-create table if not exists profiles (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade unique not null,
-  email text not null,
-  first_name text,
-  last_name text,
-  phone text,
-  address text,
-  subscription_type text default 'regular' check (subscription_type in ('regular', 'premium')),
-  role text default 'user' check (role in ('user', 'editor', 'admin')),
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false
-);
-
--- Families table
-create table if not exists families (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade not null,
-  name text not null,
-  relationship text not null,
-  contact_info jsonb,
-  delivery_method text default 'email' check (delivery_method in ('email', 'print', 'whatsapp')),
-  frequency text default 'monthly' check (frequency in ('weekly', 'monthly', 'quarterly')),
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false
-);
-
--- Memory preferences table
-create table if not exists memory_preferences (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade unique not null,
-  layout_type text default 'standard' check (layout_type in ('standard', 'modern', 'vintage', 'minimal')),
-  page_count integer default 20 check (page_count between 10 and 100),
-  print_size text default 'a4' check (print_size in ('a4', 'a5', 'letter', 'square')),
-  quality text default 'standard' check (quality in ('standard', 'premium', 'ultra')),
-  medium text default 'digital' check (medium in ('digital', 'print', 'both')),
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false
-);
-
--- Tags table
-create table if not exists tags (
-  id uuid primary key default gen_random_uuid(),
-  name text unique not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false
-);
-
--- Assets table
-create table if not exists assets (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade not null,
-  type text not null check (type in ('photo', 'text')),
-  storage_url text,
-  user_caption text,
-  ai_caption text,
-  tags text[] default array[]::text[],
-  people_detected jsonb default '[]'::jsonb,
-  ai_processed boolean default false,
-  approved boolean default false,
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false
-);
-
--- Asset tags junction table (many-to-many)
-create table if not exists asset_tags (
-  id uuid primary key default gen_random_uuid(),
-  asset_id uuid references assets(id) on delete cascade not null,
-  tag_id uuid references tags(id) on delete cascade not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  unique(asset_id, tag_id)
-);
-
--- Memory books table
-create table if not exists memory_books (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade not null,
-  status text default 'draft' check (status in ('draft', 'ready', 'approved', 'distributed')),
-  pdf_url text,
-  review_notes text,
-  created_from_assets uuid[] default array[]::uuid[],
-  generated_at timestamp with time zone,
-  approved_at timestamp with time zone,
-  distributed_at timestamp with time zone,
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false
-);
-
--- Activity log table
-create table if not exists activity_log (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade,
-  action text not null,
-  timestamp timestamp with time zone default timezone('utc'::text, now()),
-  details jsonb default '{}'::jsonb,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
--- Create indexes for better performance
-create index if not exists idx_profiles_user_id on profiles(user_id);
-create index if not exists idx_profiles_email on profiles(email);
-create index if not exists idx_profiles_role on profiles(role);
-create index if not exists idx_families_user_id on families(user_id);
-create index if not exists idx_memory_preferences_user_id on memory_preferences(user_id);
-create index if not exists idx_assets_user_id on assets(user_id);
-create index if not exists idx_assets_type on assets(type);
-create index if not exists idx_assets_approved on assets(approved);
-create index if not exists idx_asset_tags_asset_id on asset_tags(asset_id);
-create index if not exists idx_asset_tags_tag_id on asset_tags(tag_id);
-create index if not exists idx_memory_books_user_id on memory_books(user_id);
-create index if not exists idx_memory_books_status on memory_books(status);
-create index if not exists idx_activity_log_user_id on activity_log(user_id);
-create index if not exists idx_activity_log_action on activity_log(action);
-create index if not exists idx_activity_log_timestamp on activity_log(timestamp);
-
--- Create updated_at trigger function
-create or replace function update_updated_at_column()
-returns trigger as $$
-begin
-  new.updated_at = timezone('utc'::text, now());
-  return new;
-end;
-$$ language plpgsql;
-
--- Create triggers for updated_at
-drop trigger if exists update_profiles_updated_at on profiles;
-create trigger update_profiles_updated_at before update on profiles for each row execute function update_updated_at_column();
-
-drop trigger if exists update_families_updated_at on families;
-create trigger update_families_updated_at before update on families for each row execute function update_updated_at_column();
-
-drop trigger if exists update_memory_preferences_updated_at on memory_preferences;
-create trigger update_memory_preferences_updated_at before update on memory_preferences for each row execute function update_updated_at_column();
-
-drop trigger if exists update_tags_updated_at on tags;
-create trigger update_tags_updated_at before update on tags for each row execute function update_updated_at_column();
-
-drop trigger if exists update_assets_updated_at on assets;
-create trigger update_assets_updated_at before update on assets for each row execute function update_updated_at_column();
-
-drop trigger if exists update_memory_books_updated_at on memory_books;
-create trigger update_memory_books_updated_at before update on memory_books for each row execute function update_updated_at_column();
-
--- Row Level Security (RLS) Policies
-
--- Enable RLS on profiles table
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-
--- Only allow users to view, update, and create their own profile
-DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
-CREATE POLICY "Users can view own profile"
-  ON profiles
-  FOR SELECT
-  USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
-CREATE POLICY "Users can update own profile"
-  ON profiles
-  FOR UPDATE
-  USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can create own profile" ON profiles;
-CREATE POLICY "Users can create own profile"
-  ON profiles
-  FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
--- NOTE: Admin policies are NOT included here because policies with subqueries on the same table cause infinite recursion in Postgres RLS.
--- If you need admin access, handle it in application logic or with a Supabase service key.
-
--- (Leave RLS enabled on families and memory_preferences as before)
-ALTER TABLE families ENABLE ROW LEVEL SECURITY;
-ALTER TABLE memory_preferences ENABLE ROW LEVEL SECURITY;
-
--- Note: Profiles table RLS is disabled to avoid infinite recursion
--- All profile access control is handled in the application logic in useDatabase.js
--- This ensures users can only access their own profiles through proper user_id filtering
-
--- Families policies
-drop policy if exists "Users can manage own families" on families;
-create policy "Users can manage own families" on families for all using (auth.uid() = user_id);
-
--- Memory preferences policies
-drop policy if exists "Users can manage own preferences" on memory_preferences;
-create policy "Users can manage own preferences" on memory_preferences for all using (auth.uid() = user_id);
-
--- Tags, Assets, Asset Tags, Memory Books, and Activity Log tables
--- do not have RLS enabled as they don't contain PII.
--- Access control is handled by application logic in useDatabase.js
-
--- Function to create profile on user signup
-create or replace function public.handle_new_user()
-returns trigger as $$
-begin
-  insert into public.profiles (user_id, email)
-  values (new.id, new.email);
-  return new;
-end;
-$$ language plpgsql security definer;
-
--- Trigger to create profile on user signup
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
-
--- Function to log activity
-create or replace function public.log_activity(
-  p_user_id uuid,
-  p_action text,
-  p_details jsonb default '{}'::jsonb
-)
-returns void as $$
-begin
-  insert into public.activity_log (user_id, action, details)
-  values (p_user_id, p_action, p_details);
-end;
-$$ language plpgsql security definer; 
+Bottom line:
+Build a full-featured, maintainable POC for the above, integrating cleanly with the existing stack. No unfinished stubs. If you must make architectural decisions, prefer extensibility and clean separation of concerns.
