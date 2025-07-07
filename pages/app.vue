@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8">
     <div class="text-center mb-8 sm:mb-12">
-      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Your AI Newsletter Dashboard</h2>
+      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Your Savta Scrapbook Dashboard</h2>
       <p class="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
         Create beautiful weekly scrapbooks from your photos and memories with AI assistance.
       </p>

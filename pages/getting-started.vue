@@ -13,7 +13,7 @@
         </div>
         <h2 class="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">Coming Soon</h2>
         <p class="text-gray-600 mb-6 text-base sm:text-lg">
-          This page will use a wizard to walk the user throught the creation of their first newsletter (family scrabook)
+          This page will use a wizard to walk the user throught the creation of their first Savta Scrapbook (family scrabook)
         </p>
         <Button 
           label="Back to Home" 
