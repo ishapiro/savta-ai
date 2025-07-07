@@ -266,8 +266,8 @@ const handleGoogleSignup = async () => {
 }
 
 const onDialogHide = () => {
-  // When dialog is closed, navigate away (e.g., to /app or /)
-  navigateTo('/app')
+  // When dialog is closed, navigate away (e.g., to /app/dashboard or /)
+  navigateTo('/app/dashboard')
 }
 </script>
 

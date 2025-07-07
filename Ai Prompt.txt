@@ -12,6 +12,8 @@ The app collects family memories (photos, stories, posts, recipes, etc.) and ass
 - Production hosting is on Vercel
 - Do not touch authentication flows (login, registration, etc.)
 - All new features/pages must integrate with existing layout & navigation
+- Use primevue components anywhere possible and use primevue colors
+- We want to be able to easily retheme this project
 
 ---
 

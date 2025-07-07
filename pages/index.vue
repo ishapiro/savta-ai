@@ -183,7 +183,7 @@ const checkPassword = () => {
     if (process.client) {
       sessionStorage.setItem('insiders-access', 'true')
     }
-    navigateTo('/app')
+    navigateTo('/app/dashboard')
   } else {
     passwordError.value = 'Incorrect password. Please try again.'
     password.value = ''

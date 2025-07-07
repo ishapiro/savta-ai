@@ -75,6 +75,9 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    // Server-side environment variables
+    openaiApiKey: process.env.OPENAI_API_KEY,
+    
     public: {
       // @ts-ignore
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',

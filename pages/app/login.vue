@@ -178,7 +178,7 @@ const handleEmailLogin = async () => {
       error.value = authError.message
     } else {
       // Success - user will be redirected by the watchEffect
-      navigateTo('/app')
+      navigateTo('/app/dashboard')
     }
   } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
@@ -214,8 +214,8 @@ const handleGoogleLogin = async () => {
 }
 
 const onDialogHide = () => {
-  // When dialog is closed, navigate away (e.g., to /app or /)
-  navigateTo('/app')
+  // When dialog is closed, navigate away (e.g., to /app/dashboard or /)
+  navigateTo('/app/dashboard')
 }
 </script>
 

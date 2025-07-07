@@ -39,16 +39,6 @@
         @click="goToReviews"
       />
     </div>
-
-    <!--
-      IMPORTANT: DO NOT REMOVE - Nuxt 3 Route Nesting Explanation
-      -----------------------------------------------------------
-      In Nuxt 3, if you have a file at pages/app.vue, it acts as a parent route for all child routes under /app/* (such as /app/login, /app/signup, etc).
-      To allow these child routes to render their own content, you must include <NuxtPage /> in the parent (app.vue) template.
-      Without <NuxtPage />, navigating to a child route like /app/login will still render the parent (dashboard) content, not the child page.
-      By adding <NuxtPage />, Nuxt will render the appropriate child page component when a nested route is visited.
-    -->
-    <NuxtPage />
   </div>
 </template>
 
