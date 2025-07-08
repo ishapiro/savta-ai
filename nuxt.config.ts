@@ -77,6 +77,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Server-side environment variables
     openaiApiKey: process.env.OPENAI_API_KEY,
+    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     
     public: {
       // @ts-ignore

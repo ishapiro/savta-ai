@@ -17,6 +17,31 @@ export const useDatabase = () => {
     
     if (error) {
       console.error('Error fetching profile:', error)
+      
+      // If profile doesn't exist, try to create one
+      if (error.code === 'PGRST116') {
+        try {
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert([{
+              user_id: user.value.id,
+              email: user.value.email
+            }])
+            .select()
+            .single()
+          
+          if (createError) {
+            console.error('Error creating profile:', createError)
+            return null
+          }
+          
+          return newProfile
+        } catch (createError) {
+          console.error('Error creating profile:', createError)
+          return null
+        }
+      }
+      
       return null
     }
     
@@ -238,16 +263,29 @@ export const useDatabase = () => {
     uploadAsset: async (assetData, file = null) => {
       if (!user.value) throw new Error('User not authenticated')
       
+      console.log('🚀 Starting asset upload...')
+      console.log('📊 Asset data:', assetData)
+      console.log('👤 User ID:', user.value.id)
+      
       let storageUrl = null
       
       // Upload file to Supabase Storage if provided
       if (file) {
-        const fileName = `${user.value.id}/${Date.now()}-${file.name}`
+        console.log('📁 Uploading file to storage...')
+        // Use user-specific folder structure for organization
+        const fileName = `${user.value.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+        console.log('📄 File name:', fileName)
+        
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('assets')
           .upload(fileName, file)
         
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error('❌ Storage upload error:', uploadError)
+          throw uploadError
+        }
+        
+        console.log('✅ File uploaded to storage:', uploadData)
         
         // Get public URL
         const { data: urlData } = supabase.storage
@@ -255,20 +293,30 @@ export const useDatabase = () => {
           .getPublicUrl(fileName)
         
         storageUrl = urlData.publicUrl
+        console.log('🔗 Storage URL:', storageUrl)
       }
       
       // Create asset record
+      console.log('💾 Creating asset record in database...')
+      const assetRecord = {
+        user_id: user.value.id,
+        storage_url: storageUrl,
+        ...assetData
+      }
+      console.log('📝 Asset record to insert:', assetRecord)
+      
       const { data, error } = await supabase
         .from('assets')
-        .insert([{
-          user_id: user.value.id,
-          storage_url: storageUrl,
-          ...assetData
-        }])
+        .insert([assetRecord])
         .select()
         .single()
       
-      if (error) throw error
+      if (error) {
+        console.error('❌ Database insert error:', error)
+        throw error
+      }
+      
+      console.log('✅ Asset created successfully:', data)
       
       await logActivity('asset_uploaded', { 
         assetId: data.id, 

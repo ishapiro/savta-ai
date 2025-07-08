@@ -1,16 +1,17 @@
+-- Enable necessary extensions
+create extension if not exists "uuid-ossp";
+
+-- Email subscriptions table
 create table if not exists email_subscriptions (
   id uuid primary key default gen_random_uuid(),
   email text unique not null,
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
 
--- Enable necessary extensions
-create extension if not exists "uuid-ossp";
-
 -- Profiles table (extends Supabase auth.users)
 create table if not exists profiles (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade unique not null,
+  user_id uuid not null,
   email text not null,
   first_name text,
   last_name text,
@@ -20,13 +21,23 @@ create table if not exists profiles (
   role text default 'user' check (role in ('user', 'editor', 'admin')),
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
+  deleted boolean default false,
+  unique(user_id)
+);
+
+-- Tags table (no foreign keys, create early)
+create table if not exists tags (
+  id uuid primary key default gen_random_uuid(),
+  name text unique not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()),
+  updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false
 );
 
 -- Families table
 create table if not exists families (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade not null,
+  user_id uuid not null,
   name text not null,
   relationship text not null,
   contact_info jsonb,
@@ -40,7 +51,7 @@ create table if not exists families (
 -- Memory preferences table
 create table if not exists memory_preferences (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade unique not null,
+  user_id uuid not null,
   layout_type text default 'standard' check (layout_type in ('standard', 'modern', 'vintage', 'minimal')),
   page_count integer default 20 check (page_count between 10 and 100),
   print_size text default 'a4' check (print_size in ('a4', 'a5', 'letter', 'square')),
@@ -48,22 +59,14 @@ create table if not exists memory_preferences (
   medium text default 'digital' check (medium in ('digital', 'print', 'both')),
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false
-);
-
--- Tags table
-create table if not exists tags (
-  id uuid primary key default gen_random_uuid(),
-  name text unique not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false
+  deleted boolean default false,
+  unique(user_id)
 );
 
 -- Assets table
 create table if not exists assets (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade not null,
+  user_id uuid not null,
   type text not null check (type in ('photo', 'text')),
   storage_url text,
   user_caption text,
@@ -80,8 +83,8 @@ create table if not exists assets (
 -- Asset tags junction table (many-to-many)
 create table if not exists asset_tags (
   id uuid primary key default gen_random_uuid(),
-  asset_id uuid references assets(id) on delete cascade not null,
-  tag_id uuid references tags(id) on delete cascade not null,
+  asset_id uuid not null,
+  tag_id uuid not null,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   unique(asset_id, tag_id)
 );
@@ -89,7 +92,7 @@ create table if not exists asset_tags (
 -- Memory books table
 create table if not exists memory_books (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade not null,
+  user_id uuid not null,
   status text default 'draft' check (status in ('draft', 'ready', 'approved', 'distributed')),
   pdf_url text,
   review_notes text,
@@ -105,7 +108,7 @@ create table if not exists memory_books (
 -- Activity log table
 create table if not exists activity_log (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(user_id) on delete cascade,
+  user_id uuid,
   action text not null,
   timestamp timestamp with time zone default timezone('utc'::text, now()),
   details jsonb default '{}'::jsonb,
@@ -159,10 +162,15 @@ create trigger update_memory_books_updated_at before update on memory_books for 
 
 -- Row Level Security (RLS) Policies
 
--- Enable RLS on profiles table
+-- Enable RLS on all tables
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE families ENABLE ROW LEVEL SECURITY;
+ALTER TABLE memory_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE assets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE memory_books ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
 
--- Only allow users to view, update, and create their own profile
+-- Profiles policies
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 CREATE POLICY "Users can view own profile"
   ON profiles
@@ -181,54 +189,190 @@ CREATE POLICY "Users can create own profile"
   FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
--- NOTE: Admin policies are NOT included here because policies with subqueries on the same table cause infinite recursion in Postgres RLS.
--- If you need admin access, handle it in application logic or with a Supabase service key.
-
--- (Leave RLS enabled on families and memory_preferences as before)
-ALTER TABLE families ENABLE ROW LEVEL SECURITY;
-ALTER TABLE memory_preferences ENABLE ROW LEVEL SECURITY;
-
--- Note: Profiles table RLS is disabled to avoid infinite recursion
--- All profile access control is handled in the application logic in useDatabase.js
--- This ensures users can only access their own profiles through proper user_id filtering
-
 -- Families policies
-drop policy if exists "Users can manage own families" on families;
-create policy "Users can manage own families" on families for all using (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage own families" ON families;
+CREATE POLICY "Users can manage own families" ON families FOR ALL USING (auth.uid() = user_id);
 
 -- Memory preferences policies
-drop policy if exists "Users can manage own preferences" on memory_preferences;
-create policy "Users can manage own preferences" on memory_preferences for all using (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage own preferences" ON memory_preferences;
+CREATE POLICY "Users can manage own preferences" ON memory_preferences FOR ALL USING (auth.uid() = user_id);
 
--- Tags, Assets, Asset Tags, Memory Books, and Activity Log tables
--- do not have RLS enabled as they don't contain PII.
--- Access control is handled by application logic in useDatabase.js
+-- Assets policies
+DROP POLICY IF EXISTS "Users can manage own assets" ON assets;
+CREATE POLICY "Users can manage own assets" ON assets FOR ALL USING (auth.uid() = user_id);
 
--- Function to create profile on user signup
-create or replace function public.handle_new_user()
-returns trigger as $$
-begin
-  insert into public.profiles (user_id, email)
-  values (new.id, new.email);
-  return new;
-end;
+-- Admin policy for assets (allows admins to view all assets)
+DROP POLICY IF EXISTS "Admins can view all assets" ON assets;
+CREATE POLICY "Admins can view all assets" ON assets 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE user_id = auth.uid() 
+      AND role = 'admin'
+    )
+  );
+
+-- Memory books policies
+DROP POLICY IF EXISTS "Users can manage own memory books" ON memory_books;
+CREATE POLICY "Users can manage own memory books" ON memory_books FOR ALL USING (auth.uid() = user_id);
+
+-- Activity log policies
+DROP POLICY IF EXISTS "Users can view own activity" ON activity_log;
+CREATE POLICY "Users can view own activity" ON activity_log FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own activity" ON activity_log;
+CREATE POLICY "Users can insert own activity" ON activity_log FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Function to create profile on user signup (with improved error handling)
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  -- Check if profile already exists to avoid duplicates
+  IF NOT EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE user_id = NEW.id
+  ) THEN
+    INSERT INTO public.profiles (user_id, email)
+    VALUES (NEW.id, NEW.email);
+  END IF;
+  RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Log the error but don't fail the trigger
+    RAISE WARNING 'Error creating profile for user %: %', NEW.id, SQLERRM;
+    RETURN NEW;
+END;
 $$ language plpgsql security definer;
 
 -- Trigger to create profile on user signup
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
 -- Function to log activity
-create or replace function public.log_activity(
+CREATE OR REPLACE FUNCTION public.log_activity(
   p_user_id uuid,
   p_action text,
-  p_details jsonb default '{}'::jsonb
+  p_details jsonb DEFAULT '{}'::jsonb
 )
-returns void as $$
-begin
-  insert into public.activity_log (user_id, action, details)
-  values (p_user_id, p_action, p_details);
-end;
-$$ language plpgsql security definer; 
+RETURNS void AS $$
+BEGIN
+  INSERT INTO public.activity_log (user_id, action, details)
+  VALUES (p_user_id, p_action, p_details);
+END;
+$$ language plpgsql security definer;
+
+-- Create missing profiles for existing users (safe to rerun)
+INSERT INTO public.profiles (user_id, email)
+SELECT 
+  au.id as user_id,
+  au.email
+FROM auth.users au
+LEFT JOIN public.profiles p ON au.id = p.user_id
+WHERE p.user_id IS NULL
+  AND au.email IS NOT NULL
+ON CONFLICT (user_id) DO NOTHING;
+
+-- Add any missing columns to profiles table (safe to rerun)
+DO $$
+BEGIN
+  -- Add missing columns if they don't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'profiles' 
+      AND column_name = 'first_name'
+  ) THEN
+    ALTER TABLE profiles ADD COLUMN first_name text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'profiles' 
+      AND column_name = 'last_name'
+  ) THEN
+    ALTER TABLE profiles ADD COLUMN last_name text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'profiles' 
+      AND column_name = 'phone'
+  ) THEN
+    ALTER TABLE profiles ADD COLUMN phone text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'profiles' 
+      AND column_name = 'address'
+  ) THEN
+    ALTER TABLE profiles ADD COLUMN address text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'profiles' 
+      AND column_name = 'subscription_type'
+  ) THEN
+    ALTER TABLE profiles ADD COLUMN subscription_type text DEFAULT 'regular';
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'profiles' 
+      AND column_name = 'role'
+  ) THEN
+    ALTER TABLE profiles ADD COLUMN role text DEFAULT 'user';
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'profiles' 
+      AND column_name = 'deleted'
+  ) THEN
+    ALTER TABLE profiles ADD COLUMN deleted boolean DEFAULT false;
+  END IF;
+END $$;
+
+-- Add constraints if they don't exist (safe to rerun)
+DO $$
+BEGIN
+  -- Add unique constraint on user_id if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'profiles_user_id_key'
+  ) THEN
+    ALTER TABLE profiles ADD CONSTRAINT profiles_user_id_key UNIQUE (user_id);
+  END IF;
+  
+  -- Add check constraint for subscription_type if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'profiles_subscription_type_check'
+  ) THEN
+    ALTER TABLE profiles ADD CONSTRAINT profiles_subscription_type_check 
+      CHECK (subscription_type in ('regular', 'premium'));
+  END IF;
+  
+  -- Add check constraint for role if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'profiles_role_check'
+  ) THEN
+    ALTER TABLE profiles ADD CONSTRAINT profiles_role_check 
+      CHECK (role in ('user', 'editor', 'admin'));
+  END IF;
+END $$; 
+
+-- Add new columns for AI data (safe to rerun)
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS ai_objects jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS ai_raw jsonb; 
