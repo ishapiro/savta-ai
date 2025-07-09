@@ -1,14 +1,7 @@
 import { defineNuxtConfig } from 'nuxt/config'
-import { readFileSync } from 'fs'
-import { join } from 'path'
 
-// Read build date from file
-let buildDate = 'unknown'
-try {
-  buildDate = readFileSync(join(process.cwd(), '.build-date'), 'utf-8').trim()
-} catch (error) {
-  console.warn('Could not read .build-date file:', (error as Error).message)
-}
+// Add build timestamp for cache busting
+const buildTimestamp = new Date().toISOString()
 
 export default defineNuxtConfig({
   devtools: { enabled: false },
@@ -90,7 +83,7 @@ export default defineNuxtConfig({
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
       // @ts-ignore
       supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY,
-      buildDate
+      buildTimestamp
     }
   }
 }) 
