@@ -1,3 +1,18 @@
+/**
+ * MANUAL PRIMEVUE SETUP
+ * 
+ * This is a MANUAL PrimeVue integration using a custom plugin.
+ * DO NOT replace this with @nuxtjs/primevue or primevue/nuxt modules.
+ * 
+ * This setup provides:
+ * - Manual component registration for better control
+ * - Custom configuration without module conflicts
+ * - Direct access to PrimeVue features
+ * 
+ * If you see PrimeVue component errors, check this plugin first.
+ * Do not attempt to install Nuxt PrimeVue modules.
+ */
+
 import { defineNuxtPlugin } from 'nuxt/app'
 import PrimeVue from 'primevue/config'
 import Button from 'primevue/button'
@@ -14,12 +29,17 @@ import Textarea from 'primevue/textarea'
 import Chip from 'primevue/chip'
 import Tag from 'primevue/tag'
 import Password from 'primevue/password'
+import Dropdown from 'primevue/dropdown'
+import Tooltip from 'primevue/tooltip'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  // Install PrimeVue with minimal configuration for v3
+  // Install PrimeVue with configuration
   nuxtApp.vueApp.use(PrimeVue, {
     ripple: true,
-    inputStyle: 'filled'
+    inputStyle: 'filled',
+    pt: {
+      // Disable PT to prevent runtime errors
+    }
   })
   
   // Register services
@@ -27,16 +47,27 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(ConfirmationService)
   
   // Register components globally
-  nuxtApp.vueApp.component('Button', Button)
-  nuxtApp.vueApp.component('InputText', InputText)
-  nuxtApp.vueApp.component('Dialog', Dialog)
-  nuxtApp.vueApp.component('Toast', Toast)
-  nuxtApp.vueApp.component('Breadcrumb', Breadcrumb)
-  nuxtApp.vueApp.component('Card', Card)
-  nuxtApp.vueApp.component('TabView', TabView)
-  nuxtApp.vueApp.component('TabPanel', TabPanel)
-  nuxtApp.vueApp.component('Textarea', Textarea)
-  nuxtApp.vueApp.component('Chip', Chip)
-  nuxtApp.vueApp.component('Tag', Tag)
-  nuxtApp.vueApp.component('Password', Password)
+  const components = {
+    Button,
+    InputText,
+    Dialog,
+    Toast,
+    Breadcrumb,
+    Card,
+    TabView,
+    TabPanel,
+    Textarea,
+    Chip,
+    Tag,
+    Password,
+    Dropdown
+  }
+  
+  // Register all components
+  Object.entries(components).forEach(([name, component]) => {
+    nuxtApp.vueApp.component(name, component)
+  })
+  
+  // Register directives
+  nuxtApp.vueApp.directive('tooltip', Tooltip)
 }) 

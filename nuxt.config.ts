@@ -15,6 +15,8 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxtjs/supabase'
+    // NOTE: PrimeVue is handled manually via plugins/primevue.ts
+    // DO NOT add primevue/nuxt or @nuxtjs/primevue modules here
   ],
   css: [
     'primevue/resources/themes/lara-light-purple/theme.css',

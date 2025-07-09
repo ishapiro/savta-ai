@@ -249,6 +249,10 @@ export const useDatabase = () => {
         query = query.eq('ai_processed', filters.ai_processed)
       }
       
+      if (filters.limit) {
+        query = query.limit(filters.limit)
+      }
+      
       const { data, error } = await query
       
       if (error) {
@@ -376,6 +380,40 @@ export const useDatabase = () => {
       if (error) throw error
       
       await logActivity('asset_deleted', { assetId })
+    },
+
+    // Get deleted assets
+    getDeletedAssets: async () => {
+      if (!user.value) return []
+      
+      const { data, error } = await supabase
+        .from('assets')
+        .select('*')
+        .eq('user_id', user.value.id)
+        .eq('deleted', true)
+        .order('updated_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error fetching deleted assets:', error)
+        return []
+      }
+      
+      return data || []
+    },
+
+    // Restore asset
+    restoreAsset: async (assetId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      
+      const { error } = await supabase
+        .from('assets')
+        .update({ deleted: false })
+        .eq('id', assetId)
+        .eq('user_id', user.value.id)
+      
+      if (error) throw error
+      
+      await logActivity('asset_restored', { assetId })
     }
   }
 

@@ -1,6 +1,31 @@
 # Savta AI
 
-A modern AI-powered family newsletter app built with Nuxt 3, PrimeVue, Tailwind CSS, and Supabase.
+A family memory sharing platform that uses AI to help organize and caption family photos and stories.
+
+## 🚀 Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+## 🎨 UI Framework
+
+### PrimeVue Setup
+This project uses a **manual PrimeVue integration** via `plugins/primevue.ts`. 
+
+**Important Notes:**
+- ✅ PrimeVue is configured manually (not via Nuxt modules)
+- ❌ Do NOT install `@nuxtjs/primevue` or `primevue/nuxt` modules
+- ❌ Do NOT add PrimeVue modules to `nuxt.config.ts`
+- ✅ All components are registered in `plugins/primevue.ts`
+
+**If you see PrimeVue component errors:**
+1. Check `plugins/primevue.ts` for missing component registrations
+2. Ensure the plugin is loading correctly
+3. Do NOT attempt to install Nuxt PrimeVue modules
+
+## 🛠️ Development
 
 ## Features & Tech Stack
 - ✨ Animated splash (landing) page with email subscription and insiders access

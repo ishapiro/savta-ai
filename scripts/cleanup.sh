@@ -18,6 +18,10 @@ rm -rf .nuxt/supabase 2>/dev/null || true
 echo "🗂️ Clearing Node.js module cache..."
 rm -rf node_modules/.cache 2>/dev/null || true
 
+# Additional comprehensive cleanup
+echo "🧹 Additional comprehensive cleanup..."
+rm -rf .nuxt node_modules/.vite node_modules/.cache
+
 # Kill any remaining Node processes related to development
 echo "🔪 Killing Node development processes..."
 pkill -f "nuxt\|vite\|node.*dev" 2>/dev/null || true

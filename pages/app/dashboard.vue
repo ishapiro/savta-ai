@@ -33,11 +33,13 @@
     </div>
     
     <div class="mt-8 text-center">
-      <Button 
-        label="Get Started" 
-        class="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold rounded-lg w-full max-w-xs sm:max-w-md mx-auto"
+      <button
+        class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full max-w-xs sm:max-w-md mx-auto"
         @click="goToReviews"
-      />
+      >
+        <i class="pi pi-book text-2xl animate-bounce"></i>
+        Get Started
+      </button>
     </div>
   </div>
 </template>

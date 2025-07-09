@@ -1,6 +1,26 @@
 <template>
-  <div class="min-h-screen surface-ground p-4">
-    <div class="max-w-4xl mx-auto">
+  <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
+    <div class="max-w-7xl mx-auto">
+      <!-- Top Bar -->
+      <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+        <div class="flex-1 flex gap-2">
+          <button
+            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            @click="navigateTo('/app/review')"
+          >
+            <i class="pi pi-list text-2xl animate-bounce"></i>
+            View All Memories
+          </button>
+          <button
+            class="p-3 text-blue-600 hover:text-blue-700 bg-white rounded-full shadow border border-blue-100 transition-colors"
+            v-tooltip.top="'How to use this page'"
+            @click="showHelpModal = true"
+          >
+            <i class="pi pi-info-circle text-2xl"></i>
+          </button>
+        </div>
+      </div>
+
       <!-- Header -->
       <div class="mb-6">
         <h1 class="text-3xl font-bold text-color mb-2">Upload Memories</h1>
@@ -22,7 +42,7 @@
                     @drop.prevent="handleFileDrop"
                     @dragover.prevent
                     @dragenter.prevent
-                    class="border-2 border-dashed border-surface-border rounded-lg p-6 text-center hover:border-primary transition-colors"
+                    class="border-2 border-dashed border-surface-border rounded-lg p-6 text-center hover:border-primary transition-colors bg-white shadow"
                     :class="{ 'border-primary bg-primary-50': isDragOver }"
                   >
                     <div class="space-y-4">
@@ -125,16 +145,22 @@
                     <div class="flex items-center space-x-4">
                       <Button
                         type="submit"
-                        label="Share Story"
+                        icon="pi pi-send"
                         :loading="submittingStory"
                         :disabled="!textStory.title || !textStory.content"
-                      />
+                        v-tooltip.top="'Share Story'"
+                      >
+                        <span class="hidden sm:inline ml-1">Share Story</span>
+                      </Button>
                       <Button
                         type="button"
-                        label="Clear"
+                        icon="pi pi-times"
                         severity="secondary"
+                        v-tooltip.top="'Clear Form'"
                         @click="clearTextStory"
-                      />
+                      >
+                        <span class="hidden sm:inline ml-1">Clear</span>
+                      </Button>
                     </div>
                   </form>
                 </template>
@@ -147,92 +173,123 @@
       <!-- Recent Uploads -->
       <div class="mt-8">
         <h2 class="text-xl font-semibold text-color mb-4">Recent Uploads</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <p class="text-sm text-color-secondary mb-4">
+          Showing your 25 most recent uploads. Visit the Review page to see all your memories and manage them.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           <Card
             v-for="asset in recentAssets"
             :key="asset.id"
-            class="hover:shadow-md transition-shadow"
+            class="bg-white rounded-2xl shadow-xl p-0 flex flex-col justify-between hover:shadow-2xl transition-shadow border border-gray-100 text-xs"
           >
             <template #content>
-              <!-- Photo Asset -->
-              <div v-if="asset.type === 'photo'" class="space-y-3">
-                <div class="aspect-w-16 aspect-h-9 surface-100 rounded-lg overflow-hidden">
-                  <img
-                    v-if="asset.storage_url"
-                    :src="asset.storage_url"
-                    :alt="asset.user_caption || 'Family photo'"
-                    class="w-full h-full object-cover"
-                  />
-                  <div v-else class="w-full h-full flex items-center justify-center text-color-secondary">
-                    <i class="pi pi-image text-2xl"></i>
-                  </div>
+              <!-- Photo -->
+              <div class="rounded-t-2xl overflow-hidden">
+                <img
+                  v-if="asset.storage_url"
+                  :src="asset.storage_url"
+                  :alt="asset.user_caption || 'Family photo'"
+                  class="w-full h-40 object-cover object-center"
+                />
+                <div v-else class="w-full h-40 flex items-center justify-center text-color-secondary bg-slate-100">
+                  <i class="pi pi-image text-2xl"></i>
                 </div>
-                
-                <div class="space-y-2">
-                  <p class="text-sm text-color font-medium">
-                    {{ asset.user_caption || 'Family photo' }}
-                  </p>
-                  <p v-if="asset.ai_caption" class="text-xs text-color-secondary italic">
-                    "{{ asset.ai_caption }}"
-                  </p>
+              </div>
+              <div class="flex-1 flex flex-col p-2">
+                <!-- User Caption -->
+                <div class="mb-1">
+                  <label class="block text-xs font-semibold text-color mb-1">Your Caption</label>
+                  <InputText
+                    v-model="asset.user_caption"
+                    placeholder="Add your caption"
+                    class="w-full text-xs rounded"
+                    @blur="updateAssetCaption(asset.id, asset.user_caption)"
+                  />
+                </div>
+                <!-- AI Caption -->
+                <div v-if="asset.ai_caption" class="mb-1">
+                  <label class="block text-xs font-semibold text-color mb-1">AI Caption</label>
+                  <div class="italic text-xs text-color-secondary bg-slate-50 rounded p-1">"{{ asset.ai_caption }}"</div>
+                </div>
+                <!-- Tags -->
+                <div v-if="asset.tags && asset.tags.length > 0" class="mb-1">
+                  <label class="block text-xs font-semibold text-color mb-1">Tags</label>
                   <div class="flex flex-wrap gap-1">
                     <Chip
                       v-for="tag in asset.tags"
                       :key="tag"
                       :label="tag"
-                      class="text-xs"
+                      class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5"
                     />
                   </div>
-                  <div class="flex items-center justify-between text-xs text-color-secondary">
-                    <span>{{ formatDate(asset.created_at) }}</span>
-                    <Tag
-                      :value="asset.approved ? 'Approved' : 'Pending'"
-                      :severity="asset.approved ? 'success' : 'warning'"
+                </div>
+                <!-- People Detected -->
+                <div v-if="asset.people_detected && asset.people_detected.length > 0" class="mb-1">
+                  <label class="block text-xs font-semibold text-color mb-1">People/Objects</label>
+                  <div class="flex flex-wrap gap-1">
+                    <Chip
+                      v-for="person in asset.people_detected"
+                      :key="person"
+                      :label="person"
+                      class="text-xs bg-pink-100 text-pink-700 px-2 py-0.5"
                     />
                   </div>
                 </div>
               </div>
-
-              <!-- Text Asset -->
-              <div v-else class="space-y-3">
-                <div class="w-full h-24 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg flex items-center justify-center">
-                  <i class="pi pi-file-edit text-3xl text-primary"></i>
-                </div>
-                
-                <div class="space-y-2">
-                  <p class="text-sm text-color font-medium">
-                    {{ asset.user_caption || 'Family story' }}
-                  </p>
-                  <p v-if="asset.ai_caption" class="text-xs text-color-secondary italic">
-                    "{{ asset.ai_caption }}"
-                  </p>
-                  <div class="flex flex-wrap gap-1">
-                    <Chip
-                      v-for="tag in asset.tags"
-                      :key="tag"
-                      :label="tag"
-                      class="text-xs"
-                    />
-                  </div>
-                  <div class="flex items-center justify-between text-xs text-color-secondary">
-                    <span>{{ formatDate(asset.created_at) }}</span>
-                    <Tag
-                      :value="asset.approved ? 'Approved' : 'Pending'"
-                      :severity="asset.approved ? 'success' : 'warning'"
-                    />
-                  </div>
-                </div>
+              <!-- Action Bar -->
+              <div class="rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-4 py-3 flex items-center justify-center gap-4 border-t border-gray-200">
+                <span class="inline-block px-3 py-1 rounded-full bg-orange-200 text-orange-800 font-semibold text-xs shadow">{{ asset.approved ? 'Approved' : 'Pending' }}</span>
               </div>
             </template>
           </Card>
         </div>
       </div>
+
+      <!-- Help Modal -->
+      <Dialog
+        v-model:visible="showHelpModal"
+        modal
+        :closable="true"
+        :dismissableMask="true"
+        header="How to Use the Upload Page"
+        class="w-full max-w-2xl"
+      >
+        <div class="space-y-6">
+          <div>
+            <h3 class="text-lg font-semibold text-color mb-3">Overview</h3>
+            <p class="text-color-secondary">
+              Use this page to upload new photos and stories. Recent uploads are shown below. To manage or approve your memories, go to the Review page.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-color mb-3">What does "Pending" mean?</h3>
+            <p class="text-color-secondary">
+              <b>Pending</b> means your memory is waiting for your review and approval before it can be included in a memory book. You can approve, edit, or delete pending memories on the Review page.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-color mb-3">Recent Uploads</h3>
+            <p class="text-color-secondary">
+              Recent uploads are displayed as cards. Each card shows your caption, AI-generated caption, tags, and people/objects detected. The status badge shows if the memory is approved or pending review.
+            </p>
+          </div>
+          <div class="surface-100 rounded p-4">
+            <h3 class="text-lg font-semibold text-color mb-2">💡 Tips</h3>
+            <ul class="space-y-1 text-sm text-color-secondary">
+              <li>• Click "View All Memories" to manage and approve your uploads</li>
+              <li>• Only approved memories appear in memory books</li>
+              <li>• Use the Review page to edit captions, approve, or delete memories</li>
+            </ul>
+          </div>
+        </div>
+      </Dialog>
     </div>
   </div>
 </template>
 
 <script setup>
 // Set the layout for this page
+import { ref } from 'vue'
 definePageMeta({
   layout: 'default',
   middleware: 'auth'
@@ -247,6 +304,7 @@ const isDragOver = ref(false)
 const uploadingFiles = ref([])
 const recentAssets = ref([])
 const submittingStory = ref(false)
+const showHelpModal = ref(false)
 
 // Text story form
 const textStory = ref({
@@ -263,7 +321,7 @@ onMounted(async () => {
 // Load recent assets
 const loadRecentAssets = async () => {
   try {
-    const assets = await db.assets.getAssets({ limit: 6 })
+    const assets = await db.assets.getAssets({ limit: 25 })
     recentAssets.value = assets
   } catch (error) {
     console.error('Error loading recent assets:', error)
