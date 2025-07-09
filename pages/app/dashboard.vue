@@ -47,36 +47,59 @@
 <script setup>
 // Set the layout for this page
 definePageMeta({
-  layout: 'default',
-  middleware: 'auth'
+  layout: 'default'
 })
 
 // Get user and Supabase client
 const user = useSupabaseUser()
 const supabase = useSupabaseClient()
+const { hasInsidersAccess, checkInsidersAccess } = useInsidersAccess()
+
+// Refresh insiders access state when component mounts
+onMounted(() => {
+  checkInsidersAccess()
+  console.log('Dashboard mounted, insiders access:', hasInsidersAccess.value)
+})
 
 const handleSignOut = async () => {
   try {
-    // Clear insiders access from session storage
-    if (process.client) {
-      sessionStorage.removeItem('insiders-access')
-    }
+    console.log('Starting sign out process...')
+    console.log('Current user state:', user.value ? 'Authenticated' : 'Not authenticated')
     
-    // If user is authenticated, sign them out
+    // Always try to sign out from Supabase if user exists
     if (user.value) {
+      console.log('Signing out from Supabase...')
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error('Sign out error:', error)
+      } else {
+        console.log('Successfully signed out from Supabase')
       }
+    } else {
+      console.log('No authenticated user to sign out')
     }
     
+    // Clear insiders access
+    console.log('Clearing insiders access...')
+    const { clearInsidersAccess } = useInsidersAccess()
+    clearInsidersAccess()
+    
+    // Force a small delay to ensure state updates
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    console.log('Navigating to landing page...')
+    // Navigate back to landing page
     navigateTo('/')
   } catch (err) {
     console.error('Sign out error:', err)
+    // Even if there's an error, still clear insiders access and navigate
+    const { clearInsidersAccess } = useInsidersAccess()
+    clearInsidersAccess()
+    navigateTo('/')
   }
 }
 
 const goToReviews = () => {
-  navigateTo('/getting-started')
+  navigateTo('/app/upload')
 }
 </script> 

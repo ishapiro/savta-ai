@@ -331,8 +331,7 @@
 <script setup>
 // Set the layout for this page
 definePageMeta({
-  layout: 'default',
-  middleware: 'auth'
+  layout: 'default'
 })
 
 const { $toast } = useNuxtApp()

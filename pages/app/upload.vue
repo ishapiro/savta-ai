@@ -291,8 +291,7 @@
 // Set the layout for this page
 import { ref } from 'vue'
 definePageMeta({
-  layout: 'default',
-  middleware: 'auth'
+  layout: 'default'
 })
 
 const { $toast } = useNuxtApp()

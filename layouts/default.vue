@@ -1,65 +1,62 @@
 <template>
   <div class="min-h-screen flex flex-col surface-ground">
     <!-- Header -->
-    <header class="surface-section shadow-sm">
-      <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex">
-            <NuxtLink to="/" class="flex items-center no-underline transition-all hover:opacity-80 focus:outline-none">
-              <SavtaIcon :iconClass="'inline-block h-14 w-14'" />
+    <header class="surface-section border-b border-surface-border sticky top-0 z-40 bg-white/95 backdrop-blur-sm">
+      <nav class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center">
+            <NuxtLink to="/" class="flex items-center space-x-2">
+              <SavtaIcon class="w-8 h-8" />
+              <span class="text-xl font-bold text-gray-900">Savta</span>
             </NuxtLink>
-            <span class="pb-1 pl-2 text-2xl font-extrabold text-pink-500 self-end font-sans tracking-tight">savta</span>
-            <span class="ml-3 pb-2 self-end">
-              <span class="inline-block bg-pink-100 text-pink-600 text-xs font-semibold px-3 py-1 rounded-full border border-pink-200 align-middle shadow-sm">beta: no warranty, no support</span>
-            </span>
           </div>
 
           <!-- Desktop Navigation -->
-          <div class="hidden md:flex items-center space-x-4">
+          <div class="hidden lg:flex items-center space-x-4">
             <NuxtLink to="/app/dashboard" class="no-underline">
               <button class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                 <i class="pi pi-home text-xl"></i>
-                <span class="hidden sm:inline">Home</span>
+                <span>Home</span>
               </button>
             </NuxtLink>
-            
-            <template v-if="user">
+            <template v-if="user || hasInsidersAccess">
               <!-- App Navigation -->
               <div class="flex items-center space-x-2">
                 <NuxtLink to="/app/upload" class="no-underline">
                   <button class="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-upload text-xl"></i>
-                    <span class="hidden sm:inline">Upload</span>
+                    <span>Upload</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink to="/app/review" class="no-underline">
                   <button class="flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-check-circle text-xl"></i>
-                    <span class="hidden sm:inline">Review</span>
+                    <span>Review</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink to="/app/memory-books" class="no-underline">
                   <button class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-book text-xl"></i>
-                    <span class="hidden sm:inline">Books</span>
+                    <span>Books</span>
                   </button>
                 </NuxtLink>
                 
-                <!-- Admin/Editor Navigation -->
-                <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
+                <!-- Admin/Editor Navigation - Only for authenticated users -->
+                <template v-if="user && userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
                   <NuxtLink to="/app/editor" class="no-underline">
                     <button class="flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                       <i class="pi pi-palette text-xl"></i>
-                      <span class="hidden sm:inline">Editor</span>
+                      <span>Editor</span>
                     </button>
                   </NuxtLink>
                 </template>
                 
-                <template v-if="userProfile && userProfile.role === 'admin'">
+                <template v-if="user && userProfile && userProfile.role === 'admin'">
                   <NuxtLink to="/app/admin" class="no-underline">
                     <button class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                       <i class="pi pi-cog text-xl"></i>
-                      <span class="hidden sm:inline">Admin</span>
+                      <span>Admin</span>
                     </button>
                   </NuxtLink>
                 </template>
@@ -67,19 +64,87 @@
               
               <button @click="handleSignOut" class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200">
                 <i class="pi pi-sign-out text-xl"></i>
-                <span class="hidden sm:inline">Sign out</span>
+                <span>Sign out</span>
               </button>
             </template>
             <template v-else>
               <NuxtLink to="/app/login" class="no-underline">
                 <button class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                   <i class="pi pi-sign-in text-xl"></i>
-                  <span class="hidden sm:inline">Sign in</span>
+                  <span>Sign in</span>
                 </button>
               </NuxtLink>
               <NuxtLink to="/app/signup" class="no-underline">
                 <button class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                   <i class="pi pi-user-plus text-xl"></i>
+                  <span>Sign up</span>
+                </button>
+              </NuxtLink>
+            </template>
+          </div>
+
+          <!-- Tablet Navigation (Compact) -->
+          <div class="hidden md:flex lg:hidden items-center space-x-2">
+            <NuxtLink to="/app/dashboard" class="no-underline">
+              <button class="flex items-center justify-center gap-1 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
+                <i class="pi pi-home text-lg"></i>
+                <span class="hidden sm:inline">Home</span>
+              </button>
+            </NuxtLink>
+            <template v-if="user || hasInsidersAccess">
+              <NuxtLink to="/app/upload" class="no-underline">
+                <button class="flex items-center justify-center gap-1 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
+                  <i class="pi pi-upload text-lg"></i>
+                  <span class="hidden sm:inline">Upload</span>
+                </button>
+              </NuxtLink>
+              <NuxtLink to="/app/review" class="no-underline">
+                <button class="flex items-center justify-center gap-1 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
+                  <i class="pi pi-check-circle text-lg"></i>
+                  <span class="hidden sm:inline">Review</span>
+                </button>
+              </NuxtLink>
+              <NuxtLink to="/app/memory-books" class="no-underline">
+                <button class="flex items-center justify-center gap-1 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
+                  <i class="pi pi-book text-lg"></i>
+                  <span class="hidden sm:inline">Books</span>
+                </button>
+              </NuxtLink>
+              
+              <!-- Admin/Editor Navigation - Only for authenticated users -->
+              <template v-if="user && userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
+                <NuxtLink to="/app/editor" class="no-underline">
+                  <button class="flex items-center justify-center gap-1 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
+                    <i class="pi pi-palette text-lg"></i>
+                    <span class="hidden sm:inline">Editor</span>
+                  </button>
+                </NuxtLink>
+              </template>
+              
+              <template v-if="user && userProfile && userProfile.role === 'admin'">
+                <NuxtLink to="/app/admin" class="no-underline">
+                  <button class="flex items-center justify-center gap-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
+                    <i class="pi pi-cog text-lg"></i>
+                    <span class="hidden sm:inline">Admin</span>
+                  </button>
+                </NuxtLink>
+              </template>
+              
+              <button @click="handleSignOut" class="flex items-center justify-center gap-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200">
+                <i class="pi pi-sign-out text-lg"></i>
+                <span class="hidden sm:inline">Sign out</span>
+              </button>
+            </template>
+            <template v-else>
+              <NuxtLink to="/app/login" class="no-underline">
+                <button class="flex items-center justify-center gap-1 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
+                  <i class="pi pi-sign-in text-lg"></i>
+                  <span class="hidden sm:inline">Sign in</span>
+                </button>
+              </NuxtLink>
+              <NuxtLink to="/app/signup" class="no-underline">
+                <button class="flex items-center justify-center gap-1 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
+                  <i class="pi pi-user-plus text-lg"></i>
                   <span class="hidden sm:inline">Sign up</span>
                 </button>
               </NuxtLink>
@@ -92,99 +157,198 @@
               @click="mobileMenuOpen = !mobileMenuOpen"
               icon="pi pi-bars"
               rounded
+              class="bg-gray-100 hover:bg-gray-200 text-gray-700"
               aria-label="Toggle mobile menu"
             />
           </div>
         </div>
 
         <!-- Mobile Navigation -->
-        <div v-show="mobileMenuOpen" class="md:hidden border-t border-surface-border surface-section">
-          <div class="px-2 pt-2 pb-3 space-y-1">
-            <NuxtLink 
-              to="/app/dashboard" 
-              class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 mb-2 no-underline"
-              @click="mobileMenuOpen = false"
-            >
-              <i class="pi pi-home mr-3 text-xl"></i>
-              Home
-            </NuxtLink>
-            
-            <template v-if="user">
-              <!-- App Navigation -->
+        <div v-show="mobileMenuOpen" class="md:hidden border-t border-surface-border surface-section bg-white/95 backdrop-blur-sm">
+          <div class="px-4 py-6 space-y-3">
+            <!-- User Status -->
+            <div class="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+                  <i class="pi pi-user text-white text-lg"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">
+                    {{ user ? 'Authenticated User' : hasInsidersAccess ? 'Insiders Access' : 'Guest' }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    {{ user ? user.email : 'Limited access mode' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="space-y-2">
               <NuxtLink 
-                to="/app/upload" 
-                class="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 mb-2 no-underline"
+                to="/app/dashboard" 
+                class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
                 @click="mobileMenuOpen = false"
               >
-                <i class="pi pi-upload mr-3 text-xl"></i>
-                Upload
-              </NuxtLink>
-              <NuxtLink 
-                to="/app/review" 
-                class="flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 mb-2 no-underline"
-                @click="mobileMenuOpen = false"
-              >
-                <i class="pi pi-check-circle mr-3 text-xl"></i>
-                Review
-              </NuxtLink>
-              <NuxtLink 
-                to="/app/memory-books" 
-                class="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 mb-2 no-underline"
-                @click="mobileMenuOpen = false"
-              >
-                <i class="pi pi-book mr-3 text-xl"></i>
-                Books
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="pi pi-home text-xl"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold">Dashboard</p>
+                    <p class="text-xs opacity-80">Your main workspace</p>
+                  </div>
+                </div>
+                <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
               </NuxtLink>
               
-              <!-- Admin/Editor Navigation -->
-              <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
+              <template v-if="user || hasInsidersAccess">
+                <!-- App Navigation -->
                 <NuxtLink 
-                  to="/app/editor" 
-                  class="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 mb-2 no-underline"
+                  to="/app/upload" 
+                  class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
                   @click="mobileMenuOpen = false"
                 >
-                  <i class="pi pi-palette mr-3 text-xl"></i>
-                  Editor
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <i class="pi pi-upload text-xl"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold">Upload</p>
+                      <p class="text-xs opacity-80">Add photos & memories</p>
+                    </div>
+                  </div>
+                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
                 </NuxtLink>
-              </template>
-              
-              <template v-if="userProfile && userProfile.role === 'admin'">
+                
                 <NuxtLink 
-                  to="/app/admin" 
-                  class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 mb-2 no-underline"
+                  to="/app/review" 
+                  class="flex items-center justify-between p-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
                   @click="mobileMenuOpen = false"
                 >
-                  <i class="pi pi-cog mr-3 text-xl"></i>
-                  Admin
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <i class="pi pi-check-circle text-xl"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold">Review</p>
+                      <p class="text-xs opacity-80">Review & approve content</p>
+                    </div>
+                  </div>
+                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
                 </NuxtLink>
+                
+                <NuxtLink 
+                  to="/app/memory-books" 
+                  class="flex items-center justify-between p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
+                  @click="mobileMenuOpen = false"
+                >
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <i class="pi pi-book text-xl"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold">Memory Books</p>
+                      <p class="text-xs opacity-80">View your collections</p>
+                    </div>
+                  </div>
+                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </NuxtLink>
+                
+                <!-- Admin/Editor Navigation - Only for authenticated users -->
+                <template v-if="user && userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
+                  <NuxtLink 
+                    to="/app/editor" 
+                    class="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
+                    @click="mobileMenuOpen = false"
+                  >
+                    <div class="flex items-center space-x-3">
+                      <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="pi pi-palette text-xl"></i>
+                      </div>
+                      <div>
+                        <p class="font-semibold">Editor</p>
+                        <p class="text-xs opacity-80">Content management</p>
+                      </div>
+                    </div>
+                    <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                  </NuxtLink>
+                </template>
+                
+                <template v-if="user && userProfile && userProfile.role === 'admin'">
+                  <NuxtLink 
+                    to="/app/admin" 
+                    class="flex items-center justify-between p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
+                    @click="mobileMenuOpen = false"
+                  >
+                    <div class="flex items-center space-x-3">
+                      <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="pi pi-cog text-xl"></i>
+                      </div>
+                      <div>
+                        <p class="font-semibold">Admin</p>
+                        <p class="text-xs opacity-80">System administration</p>
+                      </div>
+                    </div>
+                    <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                  </NuxtLink>
+                </template>
+                
+                <!-- Sign Out Button -->
+                <button
+                  @click="handleSignOut"
+                  class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
+                >
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <i class="pi pi-sign-out text-xl"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold">Sign Out</p>
+                      <p class="text-xs opacity-80">End your session</p>
+                    </div>
+                  </div>
+                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </button>
               </template>
               
-              <button
-                @click="handleSignOut"
-                class="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 w-full mb-2"
-              >
-                <i class="pi pi-sign-out mr-3 text-xl"></i>
-                Sign out
-              </button>
-            </template>
-            <template v-else>
-              <NuxtLink 
-                to="/app/login" 
-                class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 mb-2 no-underline"
-                @click="mobileMenuOpen = false"
-              >
-                <i class="pi pi-sign-in mr-3 text-xl"></i>
-                Sign in
-              </NuxtLink>
-              <NuxtLink 
-                to="/app/signup" 
-                class="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 mb-2 no-underline"
-                @click="mobileMenuOpen = false"
-              >
-                <i class="pi pi-user-plus mr-3 text-xl"></i>
-                Sign up
-              </NuxtLink>
-            </template>
+              <template v-else>
+                <!-- Auth Buttons -->
+                <NuxtLink 
+                  to="/app/login" 
+                  class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
+                  @click="mobileMenuOpen = false"
+                >
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <i class="pi pi-sign-in text-xl"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold">Sign In</p>
+                      <p class="text-xs opacity-80">Access your account</p>
+                    </div>
+                  </div>
+                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </NuxtLink>
+                
+                <NuxtLink 
+                  to="/app/signup" 
+                  class="flex items-center justify-between p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
+                  @click="mobileMenuOpen = false"
+                >
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <i class="pi pi-user-plus text-xl"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold">Sign Up</p>
+                      <p class="text-xs opacity-80">Create new account</p>
+                    </div>
+                  </div>
+                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </NuxtLink>
+              </template>
+            </div>
           </div>
         </div>
       </nav>
@@ -222,10 +386,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-const client = useSupabaseClient()
-const user = useSupabaseUser()
 const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 const route = useRoute()
+const { hasInsidersAccess, checkInsidersAccess } = useInsidersAccess()
+
+// Check insiders access immediately
+checkInsidersAccess()
 
 const mobileMenuOpen = ref(false)
 const config = useRuntimeConfig()
@@ -246,6 +413,17 @@ watch(user, async (newUser) => {
   }
 }, { immediate: true })
 
+// Refresh insiders access state when route changes
+watch(route, () => {
+  checkInsidersAccess()
+  console.log('Route changed, checking insiders access:', hasInsidersAccess.value)
+}, { immediate: true })
+
+// Monitor insiders access state changes
+watch(hasInsidersAccess, (newValue) => {
+  console.log('Insiders access state changed:', newValue)
+})
+
 // Example: dynamic breadcrumb based on route
 const breadcrumbItems = computed(() => {
   // Simple example: Home > Current Page
@@ -260,17 +438,39 @@ const breadcrumbItems = computed(() => {
 
 const handleSignOut = async () => {
   try {
+    console.log('Starting sign out process...')
+    console.log('Current user state:', user.value ? 'Authenticated' : 'Not authenticated')
+    
+    // Always try to sign out from Supabase if user exists
     if (user.value) {
+      console.log('Signing out from Supabase...')
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error('Sign out error:', error)
+      } else {
+        console.log('Successfully signed out from Supabase')
       }
+    } else {
+      console.log('No authenticated user to sign out')
     }
-    if (process.client) {
-      sessionStorage.removeItem('insiders-access')
-    }
+    
+    // Clear insiders access
+    console.log('Clearing insiders access...')
+    const { clearInsidersAccess } = useInsidersAccess()
+    clearInsidersAccess()
+    
+    // Force a small delay to ensure state updates
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    console.log('Navigating to landing page...')
+    // Navigate back to landing page
+    navigateTo('/')
   } catch (err) {
     console.error('Sign out error:', err)
+    // Even if there's an error, still clear insiders access and navigate
+    const { clearInsidersAccess } = useInsidersAccess()
+    clearInsidersAccess()
+    navigateTo('/')
   }
 }
 
