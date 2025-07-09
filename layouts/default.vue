@@ -6,10 +6,12 @@
         <div class="flex justify-between h-16">
           <div class="flex">
             <NuxtLink to="/" class="flex items-center no-underline transition-all hover:opacity-80 focus:outline-none">
-              <img src="/savta.webp" alt="savta.ai Logo" class="h-14 w-auto" />
+              <SavtaIcon :iconClass="'inline-block h-14 w-14'" />
             </NuxtLink>
-            <span class="pb-1 pl-2 text-xl font-bold text-primary self-end">savta</span>
-            <span class="pb-2 pl-5 text-sm font-bold text-primary-300 self-end">(beta: no warranty, no support)</span>
+            <span class="pb-1 pl-2 text-2xl font-extrabold text-pink-500 self-end font-sans tracking-tight">savta</span>
+            <span class="ml-3 pb-2 self-end">
+              <span class="inline-block bg-pink-100 text-pink-600 text-xs font-semibold px-3 py-1 rounded-full border border-pink-200 align-middle shadow-sm">beta: no warranty, no support</span>
+            </span>
           </div>
 
           <!-- Desktop Navigation -->
@@ -275,4 +277,6 @@ const handleSignOut = async () => {
 const handleSignIn = () => {
   navigateTo('/app/login')
 }
+
+import SavtaIcon from '~/components/SavtaIcon.vue'
 </script> 

@@ -14,9 +14,12 @@
         <div class="mb-4 animate-fade-in-down">
           <div class="relative w-16 h-16 mx-auto mb-3 flex items-center justify-center">
             <div class="absolute inset-0 rounded-full bg-gray-300 blur-md"></div>
-            <img src="/savta-pink.png" alt="savta.ai Logo" class="relative max-w-[85%] max-h-[85%] object-contain z-10" />
+            <SavtaIcon :iconClass="'relative max-w-[85%] max-h-[85%] object-contain z-10 block w-14 h-14 mx-auto'" />
           </div>
-          <h1 class="text-xl md:text-2xl font-semibold text-gray-300 mb-1">Savta</h1>
+          <div class="flex flex-col items-center gap-1">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-pink-500 font-sans tracking-tight mb-0">Savta</h1>
+            <span class="inline-block bg-pink-100 text-pink-600 text-xs font-semibold px-3 py-1 rounded-full border border-pink-200 align-middle shadow-sm mt-1">beta: no warranty, no support</span>
+          </div>
           <div class="max-w-xl mx-auto px-4 py-4 bg-white/10 backdrop-blur-md rounded-xl shadow-lg text-center text-white">
             <h2 class="text-sm md:text-base font-semibold mb-2 text-white/90">
               Keep the memories that matter most, beautifully.
@@ -195,4 +198,6 @@ const cancelPassword = () => {
   password.value = ''
   passwordError.value = ''
 }
+
+import SavtaIcon from '~/components/SavtaIcon.vue'
 </script> 
