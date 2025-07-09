@@ -93,6 +93,13 @@ create table if not exists asset_tags (
 create table if not exists memory_books (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null,
+  title text,
+  layout_type text,
+  page_count integer,
+  print_size text,
+  quality text,
+  medium text,
+  theme text,
   status text default 'draft' check (status in ('draft', 'ready', 'approved', 'distributed')),
   pdf_url text,
   review_notes text,
@@ -102,7 +109,9 @@ create table if not exists memory_books (
   distributed_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false
+  deleted boolean default false,
+  include_captions boolean default true,
+  include_tags boolean default true
 );
 
 -- Activity log table

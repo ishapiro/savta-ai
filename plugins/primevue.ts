@@ -31,6 +31,8 @@ import Tag from 'primevue/tag'
 import Password from 'primevue/password'
 import Dropdown from 'primevue/dropdown'
 import Tooltip from 'primevue/tooltip'
+import InputNumber from 'primevue/inputnumber'
+import Checkbox from 'primevue/checkbox'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // Install PrimeVue with configuration
@@ -45,6 +47,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Register services
   nuxtApp.vueApp.use(ToastService)
   nuxtApp.vueApp.use(ConfirmationService)
+
+  // Inject $toast globally for all pages
+  nuxtApp.provide('toast', ToastService)
   
   // Register components globally
   const components = {
@@ -60,7 +65,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     Chip,
     Tag,
     Password,
-    Dropdown
+    Dropdown,
+    InputNumber,
+    Checkbox
   }
   
   // Register all components

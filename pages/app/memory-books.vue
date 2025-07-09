@@ -3,8 +3,19 @@
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="mb-6">
-        <h1 class="text-3xl font-bold text-color mb-2">Memory Books</h1>
-        <p class="text-color-secondary">View and manage your generated memory books.</p>
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-color mb-2">Memory Books</h1>
+            <p class="text-color-secondary">View and manage your generated memory books.</p>
+          </div>
+          <Button
+            icon="pi pi-refresh"
+            label="Refresh"
+            severity="secondary"
+            size="small"
+            @click="loadMemoryBooks"
+          />
+        </div>
       </div>
 
       <!-- Create New Book -->
@@ -24,86 +35,66 @@
       </Card>
 
       <!-- Memory Books Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         <Card
           v-for="book in memoryBooks"
           :key="book.id"
-          class="hover:shadow-md transition-shadow"
+          class="bg-white rounded-2xl shadow-xl p-0 flex flex-col justify-between hover:shadow-2xl transition-shadow border border-gray-100 text-xs"
         >
           <template #content>
             <!-- Book Cover -->
-            <div class="aspect-w-16 aspect-h-12 bg-gradient-to-br from-primary-50 to-primary-100 rounded-t-lg flex items-center justify-center">
+            <div class="rounded-t-2xl overflow-hidden flex items-center justify-center h-32 bg-gradient-to-br from-primary-50 to-primary-100">
               <div class="text-center">
                 <i class="pi pi-book text-4xl mb-2 block text-primary"></i>
                 <p class="text-sm font-medium text-color">Memory Book</p>
               </div>
             </div>
-
-            <!-- Book Details -->
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-color">Memory Book #{{ book.id.slice(-6) }}</h3>
-                <Tag
-                  :value="getStatusText(book.status)"
-                  :severity="getStatusSeverity(book.status)"
-                />
+            <div class="flex-1 flex flex-col p-3">
+              <div class="mb-1 flex items-center justify-between">
+                <h3 class="text-base font-bold text-color">Memory Book #{{ book.id.slice(-6) }}</h3>
+                <Tag :value="getStatusText(book.status)" :severity="getStatusSeverity(book.status)" />
               </div>
-
-              <div class="space-y-2 text-sm text-color-secondary">
-                <div class="flex justify-between">
-                  <span>Created:</span>
-                  <span>{{ formatDate(book.created_at) }}</span>
-                </div>
-                <div v-if="book.generated_at" class="flex justify-between">
-                  <span>Generated:</span>
-                  <span>{{ formatDate(book.generated_at) }}</span>
-                </div>
-                <div v-if="book.approved_at" class="flex justify-between">
-                  <span>Approved:</span>
-                  <span>{{ formatDate(book.approved_at) }}</span>
-                </div>
-                <div v-if="book.created_from_assets" class="flex justify-between">
-                  <span>Assets:</span>
-                  <span>{{ book.created_from_assets.length }}</span>
-                </div>
+              <div class="space-y-1 text-xs text-color-secondary mb-2">
+                <div class="flex justify-between"><span>Created:</span><span>{{ formatDate(book.created_at) }}</span></div>
+                <div v-if="book.generated_at" class="flex justify-between"><span>Generated:</span><span>{{ formatDate(book.generated_at) }}</span></div>
+                <div v-if="book.approved_at" class="flex justify-between"><span>Approved:</span><span>{{ formatDate(book.approved_at) }}</span></div>
+                <div v-if="book.created_from_assets" class="flex justify-between"><span>Assets:</span><span>{{ book.created_from_assets.length }}</span></div>
               </div>
-
-              <!-- Review Notes -->
-              <div v-if="book.review_notes" class="surface-100 rounded p-2">
-                <p class="text-xs text-color-secondary">{{ book.review_notes }}</p>
-              </div>
-
-              <!-- Actions -->
-              <div class="flex items-center justify-between pt-3 border-t border-surface-border">
-                <div class="flex items-center space-x-2">
-                  <Button
-                    v-if="book.status === 'ready'"
-                    label="Download PDF"
-                    severity="success"
-                    size="small"
-                    @click="downloadPDF(book)"
-                  />
-                  <Button
-                    v-if="book.status === 'draft'"
-                    label="Generate PDF"
-                    severity="info"
-                    size="small"
-                    @click="generatePDF(book)"
-                  />
-                  <Button
-                    v-if="book.status === 'ready'"
-                    label="Approve"
-                    size="small"
-                    @click="approveBook(book.id)"
-                  />
-                </div>
-                <Button
-                  label="View Details"
-                  severity="secondary"
-                  size="small"
-                  @click="viewBookDetails(book)"
-                />
-              </div>
+              <div v-if="book.review_notes" class="surface-100 rounded p-2 text-xs text-color-secondary mb-2">{{ book.review_notes }}</div>
+            </div>
+            <!-- Action Bar -->
+            <div class="rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-4 py-3 flex items-center justify-center gap-6 border-t border-gray-200">
+              <button
+                v-if="book.status === 'ready'"
+                class="p-2 text-green-600 hover:text-green-700 bg-white rounded-full shadow transition-colors"
+                v-tooltip.top="'Download PDF'"
+                @click="downloadPDF(book)"
+              >
+                <i class="pi pi-download text-2xl"></i>
+              </button>
+              <button
+                v-if="book.status === 'draft'"
+                class="p-2 text-blue-600 hover:text-blue-700 bg-white rounded-full shadow transition-colors"
+                v-tooltip.top="'Generate PDF'"
+                @click="generatePDF(book)"
+              >
+                <i class="pi pi-play text-2xl"></i>
+              </button>
+              <button
+                v-if="book.status === 'ready'"
+                class="p-2 text-purple-600 hover:text-purple-700 bg-white rounded-full shadow transition-colors"
+                v-tooltip.top="'Approve Book'"
+                @click="approveBook(book.id)"
+              >
+                <i class="pi pi-check text-2xl"></i>
+              </button>
+              <button
+                class="p-2 text-gray-600 hover:text-gray-800 bg-white rounded-full shadow transition-colors"
+                v-tooltip.top="'View Details'"
+                @click="viewBookDetails(book)"
+              >
+                <i class="pi pi-eye text-2xl"></i>
+              </button>
             </div>
           </template>
         </Card>
@@ -392,12 +383,14 @@ const loadMemoryBooks = async () => {
     memoryBooks.value = books
   } catch (error) {
     console.error('Error loading memory books:', error)
-    $toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to load memory books',
-      life: 3000
-    })
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to load memory books',
+        life: 3000
+      })
+    }
   }
 }
 
@@ -412,12 +405,14 @@ const createMemoryBook = async () => {
     const approvedAssets = await db.assets.getAssets({ approved: true })
     
     if (approvedAssets.length === 0) {
-      $toast.add({
-        severity: 'warn',
-        summary: 'No Assets',
-        detail: 'No approved assets available for memory book',
-        life: 3000
-      })
+      if ($toast && $toast.add) {
+        $toast.add({
+          severity: 'warn',
+          summary: 'No Assets',
+          detail: 'No approved assets available for memory book',
+          life: 3000
+        })
+      }
       return
     }
 
@@ -436,12 +431,14 @@ const createMemoryBook = async () => {
       status: 'draft'
     })
 
-    $toast.add({
-      severity: 'success',
-      summary: 'Created',
-      detail: 'Memory book created successfully',
-      life: 3000
-    })
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Created',
+        detail: 'Memory book created successfully',
+        life: 3000
+      })
+    }
 
     // Reset form and close modal
     newBook.value = {
@@ -462,12 +459,14 @@ const createMemoryBook = async () => {
 
   } catch (error) {
     console.error('Error creating memory book:', error)
-    $toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to create memory book',
-      life: 3000
-    })
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to create memory book',
+        life: 3000
+      })
+    }
   } finally {
     creatingBook.value = false
   }
@@ -476,57 +475,75 @@ const createMemoryBook = async () => {
 // Generate PDF
 const generatePDF = async (book) => {
   try {
-    await db.memoryBooks.generateMemoryBook(book.id)
+    await db.memoryBooks.generateMemoryBook(book.id, book.created_from_assets || [])
     
-    $toast.add({
-      severity: 'success',
-      summary: 'Generated',
-      detail: 'PDF generated successfully',
-      life: 3000
-    })
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Generated',
+        detail: 'PDF generated successfully',
+        life: 3000
+      })
+    }
 
     // Reload memory books
     await loadMemoryBooks()
 
   } catch (error) {
     console.error('Error generating PDF:', error)
-    $toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to generate PDF',
-      life: 3000
-    })
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to generate PDF',
+        life: 3000
+      })
+    }
   }
 }
 
 // Download PDF
 const downloadPDF = async (book) => {
   try {
-    const pdfUrl = await db.memoryBooks.downloadMemoryBook(book.id)
+    // Call the API endpoint to get the download URL
+    const response = await $fetch(`/api/memory-books/download/${book.id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${(await useSupabaseClient().auth.getSession()).data.session?.access_token}`
+      }
+    })
+    
+    if (!response.success || !response.downloadUrl) {
+      throw new Error('Failed to get download URL')
+    }
     
     // Create download link
     const link = document.createElement('a')
-    link.href = pdfUrl
+    link.href = response.downloadUrl
     link.download = `memory-book-${book.id.slice(-6)}.pdf`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
 
-    $toast.add({
-      severity: 'success',
-      summary: 'Downloaded',
-      detail: 'PDF downloaded successfully',
-      life: 3000
-    })
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Downloaded',
+        detail: 'PDF download started',
+        life: 3000
+      })
+    }
 
   } catch (error) {
     console.error('Error downloading PDF:', error)
-    $toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to download PDF',
-      life: 3000
-    })
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to download PDF',
+        life: 3000
+      })
+    }
   }
 }
 
@@ -538,24 +555,28 @@ const approveBook = async (bookId) => {
       approved_at: new Date().toISOString()
     })
 
-    $toast.add({
-      severity: 'success',
-      summary: 'Approved',
-      detail: 'Memory book approved',
-      life: 3000
-    })
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Approved',
+        detail: 'Memory book approved',
+        life: 3000
+      })
+    }
 
     // Reload memory books
     await loadMemoryBooks()
 
   } catch (error) {
     console.error('Error approving book:', error)
-    $toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to approve memory book',
-      life: 3000
-    })
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to approve memory book',
+        life: 3000
+      })
+    }
   }
 }
 

@@ -496,6 +496,18 @@ export const useDatabase = () => {
       
       await logActivity('memory_book_generated', { bookId, assetCount: assetIds.length })
       return data
+    },
+
+    // Download memory book PDF (placeholder implementation)
+    downloadMemoryBook: async (bookId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      
+      // For now, return a placeholder URL
+      // In a real implementation, this would generate and return the actual PDF
+      const placeholderUrl = `https://example.com/memory-book-${bookId}.pdf`
+      
+      await logActivity('memory_book_downloaded', { bookId })
+      return placeholderUrl
     }
   }
 
