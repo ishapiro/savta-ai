@@ -89,7 +89,7 @@ export default defineEventHandler(async (event) => {
     console.log('🔄 PDF URL not found, generating new PDF...')
     // Otherwise, generate and upload the PDF
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('PDF generation timeout')), 30000)
+      setTimeout(() => reject(new Error('PDF generation timeout')), 60000)
     })
     const pdfPromise = generatePDFWithTimeout(supabase, book, config, user)
     const result = await Promise.race([pdfPromise, timeoutPromise])

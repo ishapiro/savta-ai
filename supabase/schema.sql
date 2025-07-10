@@ -124,7 +124,7 @@ create table if not exists pdf_status (
   message text,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
-  unique(book_id)
+  unique(book_id, user_id)
 );
 
 -- Activity log table
