@@ -640,7 +640,7 @@ const pollPdfStatus = async () => {
   if (!currentBookId.value) return
 
   try {
-    const response = await $fetch(`/api/memory-books/pdf-status/${currentBookId.value}`, {
+    const response = await $fetch(`/api/memory-books/status/${currentBookId.value}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${(await useSupabaseClient().auth.getSession()).data.session?.access_token}`
@@ -649,27 +649,23 @@ const pollPdfStatus = async () => {
 
     console.log('PDF status response:', response)
 
-    if (response.success && response.status) {
-      const status = response.status
+    if (response) {
+      const status = response
       
       // Update progress based on status
-      if (status.status === 'Generating custom background') {
+      if (status.pdf_status === 'generating_background') {
         currentProgress.value = 10
         currentProgressMessage.value = 'Generating custom background image...'
-      } else if (status.status.includes('Creating') && status.status.includes('page')) {
-        const pageMatch = status.status.match(/(\d+)/)
-        if (pageMatch) {
-          const pageNum = parseInt(pageMatch[1])
-          currentProgress.value = 20 + (pageNum * 15)
-          currentProgressMessage.value = status.status
-        }
-      } else if (status.status === 'Custom background ready, creating pages') {
-        currentProgress.value = 15
-        currentProgressMessage.value = 'Background ready, creating pages...'
-      } else if (status.status === 'Finalizing PDF...') {
+      } else if (status.pdf_status === 'background_ready') {
+        currentProgress.value = 20
+        currentProgressMessage.value = 'Background ready, generating PDF...'
+      } else if (status.pdf_status === 'generating_pdf') {
+        currentProgress.value = 50
+        currentProgressMessage.value = 'Creating PDF pages...'
+      } else if (status.pdf_status === 'finalizing') {
         currentProgress.value = 90
         currentProgressMessage.value = 'Finalizing PDF...'
-      } else if (status.status === 'done') {
+      } else if (status.pdf_status === 'completed') {
         currentProgress.value = 100
         currentProgressMessage.value = 'PDF generation complete!'
         
@@ -679,14 +675,17 @@ const pollPdfStatus = async () => {
           showProgressDialog.value = false
           loadMemoryBooks() // Reload to show updated status
         }, 1000)
-      } else if (status.status === 'error') {
-        currentProgressMessage.value = 'PDF generation failed'
+      } else if (status.pdf_status === 'error') {
+        currentProgressMessage.value = status.pdf_error || 'PDF generation failed'
         setTimeout(() => {
           stopProgressPolling()
           showProgressDialog.value = false
         }, 2000)
+      } else if (status.pdf_status === 'not_started') {
+        currentProgress.value = 5
+        currentProgressMessage.value = 'Starting PDF generation...'
       } else {
-        currentProgressMessage.value = status.status || 'Processing...'
+        currentProgressMessage.value = status.pdf_status || 'Processing...'
       }
     } else {
       // Fallback: show generic progress if no status available
