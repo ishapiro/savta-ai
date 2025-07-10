@@ -38,10 +38,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Install PrimeVue with configuration
   nuxtApp.vueApp.use(PrimeVue, {
     ripple: true,
-    inputStyle: 'filled',
-    pt: {
-      // Disable PT to prevent runtime errors
-    }
+    inputStyle: 'filled'
   })
   
   // Register services

@@ -35,7 +35,14 @@
       </Card>
 
       <!-- Memory Books Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-12">
+        <div class="text-center">
+          <i class="pi pi-spin pi-spinner text-4xl mb-4 text-primary"></i>
+          <p class="text-color-secondary">Loading memory books...</p>
+        </div>
+      </div>
+      
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         <Card
           v-for="book in memoryBooks"
           :key="book.id"
@@ -101,7 +108,7 @@
       </div>
 
       <!-- Empty State -->
-      <div v-if="memoryBooks.length === 0" class="text-center py-12">
+      <div v-if="!loadingMemoryBooks && memoryBooks.length === 0" class="text-center py-12">
         <div class="text-color-secondary mb-4">
           <i class="pi pi-book text-6xl"></i>
         </div>
@@ -318,6 +325,7 @@ const route = useRoute()
 
 // Reactive data
 const memoryBooks = ref([])
+const loadingMemoryBooks = ref(true)
 const showCreateModal = ref(false)
 const showDetailsModal = ref(false)
 const selectedBook = ref(null)
@@ -377,6 +385,7 @@ onMounted(async () => {
 
 // Load memory books
 const loadMemoryBooks = async () => {
+  loadingMemoryBooks.value = true
   try {
     const books = await db.memoryBooks.getMemoryBooks()
     memoryBooks.value = books
@@ -390,6 +399,8 @@ const loadMemoryBooks = async () => {
         life: 3000
       })
     }
+  } finally {
+    loadingMemoryBooks.value = false
   }
 }
 
