@@ -169,7 +169,7 @@ const user = useSupabaseUser()
 // Redirect if already logged in
 watchEffect(() => {
   if (user.value) {
-    navigateTo('/app')
+          navigateTo('/app/dashboard')
   }
 })
 

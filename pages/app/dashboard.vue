@@ -87,15 +87,15 @@ const handleSignOut = async () => {
     // Force a small delay to ensure state updates
     await new Promise(resolve => setTimeout(resolve, 100))
     
-    console.log('Navigating to landing page...')
-    // Navigate back to landing page
-    navigateTo('/')
+    console.log('Navigating to dashboard...')
+    // Navigate back to dashboard
+    navigateTo('/app/dashboard')
   } catch (err) {
     console.error('Sign out error:', err)
     // Even if there's an error, still clear insiders access and navigate
     const { clearInsidersAccess } = useInsidersAccess()
     clearInsidersAccess()
-    navigateTo('/')
+    navigateTo('/app/dashboard')
   }
 }
 

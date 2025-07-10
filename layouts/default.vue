@@ -20,7 +20,7 @@
                 <span>Home</span>
               </button>
             </NuxtLink>
-            <template v-if="user || hasInsidersAccess">
+            <template v-if="user">
               <!-- App Navigation -->
               <div class="flex items-center space-x-2">
                 <NuxtLink to="/app/upload" class="no-underline">
@@ -43,7 +43,7 @@
                 </NuxtLink>
                 
                 <!-- Admin/Editor Navigation - Only for authenticated users -->
-                <template v-if="user && userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
+                <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
                   <NuxtLink to="/app/editor" class="no-underline">
                     <button class="flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                       <i class="pi pi-palette text-xl"></i>
@@ -52,7 +52,7 @@
                   </NuxtLink>
                 </template>
                 
-                <template v-if="user && userProfile && userProfile.role === 'admin'">
+                <template v-if="userProfile && userProfile.role === 'admin'">
                   <NuxtLink to="/app/admin" class="no-underline">
                     <button class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                       <i class="pi pi-cog text-xl"></i>
@@ -91,7 +91,7 @@
                 <span class="hidden sm:inline">Home</span>
               </button>
             </NuxtLink>
-            <template v-if="user || hasInsidersAccess">
+            <template v-if="user">
               <NuxtLink to="/app/upload" class="no-underline">
                 <button class="flex items-center justify-center gap-1 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
                   <i class="pi pi-upload text-lg"></i>
@@ -112,7 +112,7 @@
               </NuxtLink>
               
               <!-- Admin/Editor Navigation - Only for authenticated users -->
-              <template v-if="user && userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
+              <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
                 <NuxtLink to="/app/editor" class="no-underline">
                   <button class="flex items-center justify-center gap-1 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
                     <i class="pi pi-palette text-lg"></i>
@@ -121,7 +121,7 @@
                 </NuxtLink>
               </template>
               
-              <template v-if="user && userProfile && userProfile.role === 'admin'">
+              <template v-if="userProfile && userProfile.role === 'admin'">
                 <NuxtLink to="/app/admin" class="no-underline">
                   <button class="flex items-center justify-center gap-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
                     <i class="pi pi-cog text-lg"></i>
@@ -174,7 +174,7 @@
                 </div>
                 <div>
                   <p class="text-sm font-semibold text-gray-900">
-                    {{ user ? 'Authenticated User' : hasInsidersAccess ? 'Insiders Access' : 'Guest' }}
+                    {{ user ? 'Authenticated User' : 'Guest' }}
                   </p>
                   <p class="text-xs text-gray-500">
                     {{ user ? user.email : 'Limited access mode' }}
@@ -202,7 +202,7 @@
                 <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
               </NuxtLink>
               
-              <template v-if="user || hasInsidersAccess">
+              <template v-if="user">
                 <!-- App Navigation -->
                 <NuxtLink 
                   to="/app/upload" 
@@ -256,7 +256,7 @@
                 </NuxtLink>
                 
                 <!-- Admin/Editor Navigation - Only for authenticated users -->
-                <template v-if="user && userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
+                <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
                   <NuxtLink 
                     to="/app/editor" 
                     class="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
@@ -275,7 +275,7 @@
                   </NuxtLink>
                 </template>
                 
-                <template v-if="user && userProfile && userProfile.role === 'admin'">
+                <template v-if="userProfile && userProfile.role === 'admin'">
                   <NuxtLink 
                     to="/app/admin" 
                     class="flex items-center justify-between p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
@@ -462,15 +462,15 @@ const handleSignOut = async () => {
     // Force a small delay to ensure state updates
     await new Promise(resolve => setTimeout(resolve, 100))
     
-    console.log('Navigating to landing page...')
+    console.log('Navigating to dashboard...')
     // Navigate back to landing page
-    navigateTo('/')
+    navigateTo('/app/dashboard')
   } catch (err) {
     console.error('Sign out error:', err)
     // Even if there's an error, still clear insiders access and navigate
     const { clearInsidersAccess } = useInsidersAccess()
     clearInsidersAccess()
-    navigateTo('/')
+    navigateTo('/app/dashboard')
   }
 }
 

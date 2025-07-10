@@ -18,7 +18,7 @@
         <Button 
           label="Back to Home" 
           class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg w-full max-w-xs mx-auto"
-          @click="() => navigateTo('/app')"
+          @click="() => navigateTo('/app/dashboard')"
         />
       </div>
     </div>

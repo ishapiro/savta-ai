@@ -163,7 +163,7 @@ const formatDate = (dateString) => {
 // Navigation functions
 const goToDashboard = () => {
   visible.value = false
-  navigateTo('/app')
+  navigateTo('/app/dashboard')
 }
 
 const goToAbout = () => {
@@ -173,7 +173,7 @@ const goToAbout = () => {
 
 const onDialogHide = () => {
   // When dialog is closed, navigate to dashboard
-  navigateTo('/app')
+  navigateTo('/app/dashboard')
 }
 
 // Handle OAuth callback and user state
