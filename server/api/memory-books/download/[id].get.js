@@ -93,12 +93,16 @@ export default defineEventHandler(async (event) => {
 })
 
 async function updatePdfStatus(supabase, bookId, userId, status) {
-  await supabase.from('pdf_status').upsert({
-    book_id: bookId,
-    user_id: userId,
-    status,
-    updated_at: new Date().toISOString()
-  }, { onConflict: ['book_id', 'user_id'] })
+  try {
+    await supabase.from('pdf_status').upsert({
+      book_id: bookId,
+      user_id: userId,
+      status,
+      updated_at: new Date().toISOString()
+    }, { onConflict: ['book_id', 'user_id'] })
+  } catch (error) {
+    console.log('PDF status table might not exist yet, continuing without status updates:', error.message)
+  }
 }
 
 // Generate PDF with step-by-step approach

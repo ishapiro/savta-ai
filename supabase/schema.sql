@@ -114,6 +114,19 @@ create table if not exists memory_books (
   include_tags boolean default true
 );
 
+-- PDF status tracking table
+create table if not exists pdf_status (
+  id uuid primary key default gen_random_uuid(),
+  book_id uuid not null,
+  user_id uuid not null,
+  status text not null,
+  progress integer default 0 check (progress between 0 and 100),
+  message text,
+  created_at timestamp with time zone default timezone('utc'::text, now()),
+  updated_at timestamp with time zone default timezone('utc'::text, now()),
+  unique(book_id)
+);
+
 -- Activity log table
 create table if not exists activity_log (
   id uuid primary key default gen_random_uuid(),
@@ -137,6 +150,8 @@ create index if not exists idx_asset_tags_asset_id on asset_tags(asset_id);
 create index if not exists idx_asset_tags_tag_id on asset_tags(tag_id);
 create index if not exists idx_memory_books_user_id on memory_books(user_id);
 create index if not exists idx_memory_books_status on memory_books(status);
+create index if not exists idx_pdf_status_book_id on pdf_status(book_id);
+create index if not exists idx_pdf_status_user_id on pdf_status(user_id);
 create index if not exists idx_activity_log_user_id on activity_log(user_id);
 create index if not exists idx_activity_log_action on activity_log(action);
 create index if not exists idx_activity_log_timestamp on activity_log(timestamp);
@@ -169,6 +184,9 @@ create trigger update_assets_updated_at before update on assets for each row exe
 drop trigger if exists update_memory_books_updated_at on memory_books;
 create trigger update_memory_books_updated_at before update on memory_books for each row execute function update_updated_at_column();
 
+drop trigger if exists update_pdf_status_updated_at on pdf_status;
+create trigger update_pdf_status_updated_at before update on pdf_status for each row execute function update_updated_at_column();
+
 -- Row Level Security (RLS) Policies
 
 -- Enable RLS on all tables
@@ -177,6 +195,7 @@ ALTER TABLE families ENABLE ROW LEVEL SECURITY;
 ALTER TABLE memory_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE memory_books ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pdf_status ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
@@ -225,6 +244,10 @@ CREATE POLICY "Admins can view all assets" ON assets
 -- Memory books policies
 DROP POLICY IF EXISTS "Users can manage own memory books" ON memory_books;
 CREATE POLICY "Users can manage own memory books" ON memory_books FOR ALL USING (auth.uid() = user_id);
+
+-- PDF status policies
+DROP POLICY IF EXISTS "Users can manage own pdf status" ON pdf_status;
+CREATE POLICY "Users can manage own pdf status" ON pdf_status FOR ALL USING (auth.uid() = user_id);
 
 -- Activity log policies
 DROP POLICY IF EXISTS "Users can view own activity" ON activity_log;

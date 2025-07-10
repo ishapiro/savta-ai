@@ -310,6 +310,30 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- PDF Progress Dialog -->
+    <Dialog
+      v-model:visible="showProgressDialog"
+      modal
+      header="Generating PDF"
+      :style="{ width: '400px' }"
+      :closable="false"
+    >
+      <div class="text-center py-4">
+        <div class="mb-4">
+          <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+        </div>
+        <h3 class="text-lg font-medium text-color mb-2">Processing...</h3>
+        <p class="text-color-secondary mb-4">{{ currentProgressMessage }}</p>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            class="bg-primary h-2 rounded-full transition-all duration-300"
+            :style="{ width: currentProgress + '%' }"
+          ></div>
+        </div>
+        <p class="text-sm text-color-secondary mt-2">{{ currentProgress }}% complete</p>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -330,6 +354,13 @@ const showCreateModal = ref(false)
 const showDetailsModal = ref(false)
 const selectedBook = ref(null)
 const creatingBook = ref(false)
+
+// PDF Progress tracking
+const showProgressDialog = ref(false)
+const currentProgress = ref(0)
+const currentProgressMessage = ref('')
+const currentBookId = ref(null)
+const progressInterval = ref(null)
 
 // New book form
 const newBook = ref({
@@ -381,6 +412,11 @@ const themeOptions = ref([
 // Load memory books
 onMounted(async () => {
   await loadMemoryBooks()
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  stopProgressPolling()
 })
 
 // Load memory books
@@ -482,25 +518,144 @@ const createMemoryBook = async () => {
   }
 }
 
+// Poll PDF status
+const pollPdfStatus = async () => {
+  if (!currentBookId.value) return
+
+  try {
+    const response = await $fetch(`/api/memory-books/pdf-status/${currentBookId.value}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${(await useSupabaseClient().auth.getSession()).data.session?.access_token}`
+      }
+    })
+
+    console.log('PDF status response:', response)
+
+    if (response.success && response.status) {
+      const status = response.status
+      
+      // Update progress based on status
+      if (status.status === 'Generating custom background') {
+        currentProgress.value = 10
+        currentProgressMessage.value = 'Generating custom background image...'
+      } else if (status.status.includes('Creating') && status.status.includes('page')) {
+        const pageMatch = status.status.match(/(\d+)/)
+        if (pageMatch) {
+          const pageNum = parseInt(pageMatch[1])
+          currentProgress.value = 20 + (pageNum * 15)
+          currentProgressMessage.value = status.status
+        }
+      } else if (status.status === 'Custom background ready, creating pages') {
+        currentProgress.value = 15
+        currentProgressMessage.value = 'Background ready, creating pages...'
+      } else if (status.status === 'Finalizing PDF...') {
+        currentProgress.value = 90
+        currentProgressMessage.value = 'Finalizing PDF...'
+      } else if (status.status === 'done') {
+        currentProgress.value = 100
+        currentProgressMessage.value = 'PDF generation complete!'
+        
+        // Stop polling and close dialog after a short delay
+        setTimeout(() => {
+          stopProgressPolling()
+          showProgressDialog.value = false
+          loadMemoryBooks() // Reload to show updated status
+        }, 1000)
+      } else if (status.status === 'error') {
+        currentProgressMessage.value = 'PDF generation failed'
+        setTimeout(() => {
+          stopProgressPolling()
+          showProgressDialog.value = false
+        }, 2000)
+      } else {
+        currentProgressMessage.value = status.status || 'Processing...'
+      }
+    } else {
+      // Fallback: show generic progress if no status available
+      console.log('No status available, showing generic progress')
+      if (currentProgress.value < 90) {
+        currentProgress.value += 5
+        currentProgressMessage.value = 'Processing PDF...'
+      }
+    }
+  } catch (error) {
+    console.error('Error polling PDF status:', error)
+    // Fallback: show generic progress on error
+    if (currentProgress.value < 90) {
+      currentProgress.value += 5
+      currentProgressMessage.value = 'Processing PDF...'
+    }
+  }
+}
+
+// Start progress polling
+const startProgressPolling = (bookId) => {
+  console.log('startProgressPolling called with bookId:', bookId)
+  currentBookId.value = bookId
+  currentProgress.value = 0
+  currentProgressMessage.value = 'Starting PDF generation...'
+  showProgressDialog.value = true
+  console.log('showProgressDialog set to:', showProgressDialog.value)
+  
+  // Poll every 3 seconds
+  progressInterval.value = setInterval(pollPdfStatus, 3000)
+  
+  // Initial poll
+  pollPdfStatus()
+  
+  // Timeout after 60 seconds to close dialog
+  setTimeout(() => {
+    if (showProgressDialog.value) {
+      console.log('PDF generation timeout, closing dialog')
+      stopProgressPolling()
+      showProgressDialog.value = false
+      loadMemoryBooks() // Reload to check if PDF was actually generated
+    }
+  }, 60000)
+}
+
+// Stop progress polling
+const stopProgressPolling = () => {
+  if (progressInterval.value) {
+    clearInterval(progressInterval.value)
+    progressInterval.value = null
+  }
+  currentBookId.value = null
+}
+
 // Generate PDF
 const generatePDF = async (book) => {
+  console.log('generatePDF called for book:', book.id)
   try {
-    await db.memoryBooks.generateMemoryBook(book.id, book.created_from_assets || [])
+    // Start progress polling
+    console.log('Starting progress polling...')
+    startProgressPolling(book.id)
+    console.log('Progress dialog should be visible:', showProgressDialog.value)
     
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'success',
-        summary: 'Generated',
-        detail: 'PDF generated successfully',
-        life: 3000
-      })
+    // Call the API endpoint to generate PDF
+    console.log('Calling PDF generation API...')
+    const response = await $fetch(`/api/memory-books/download/${book.id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${(await useSupabaseClient().auth.getSession()).data.session?.access_token}`
+      }
+    })
+    
+    console.log('PDF generation response:', response)
+    
+    if (!response.success) {
+      throw new Error('Failed to generate PDF')
     }
 
-    // Reload memory books
-    await loadMemoryBooks()
+    // The polling will handle the progress updates and dialog closing
+    // No need to show success toast here as the dialog will show completion
 
   } catch (error) {
     console.error('Error generating PDF:', error)
+    stopProgressPolling()
+    showProgressDialog.value = false
+    
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'error',
