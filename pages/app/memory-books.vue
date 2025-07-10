@@ -8,13 +8,21 @@
             <h1 class="text-3xl font-bold text-color mb-2">Memory Books</h1>
             <p class="text-color-secondary">View and manage your generated memory books.</p>
           </div>
-          <Button
-            icon="pi pi-refresh"
-            label="Refresh"
-            severity="secondary"
-            size="small"
-            @click="loadMemoryBooks"
-          />
+          <div class="flex gap-2">
+            <Button
+              icon="pi pi-refresh"
+              label="Refresh"
+              severity="secondary"
+              size="small"
+              @click="loadMemoryBooks"
+            />
+            <Button
+              label="Test Dialog"
+              severity="info"
+              size="small"
+              @click="testProgressDialog"
+            />
+          </div>
         </div>
       </div>
 
@@ -70,37 +78,49 @@
               <div v-if="book.review_notes" class="surface-100 rounded p-2 text-xs text-color-secondary mb-2">{{ book.review_notes }}</div>
             </div>
             <!-- Action Bar -->
-            <div class="rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-4 py-3 flex items-center justify-center gap-6 border-t border-gray-200">
+            <div class="rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-2 py-2 flex items-center justify-center gap-3 border-t border-gray-200">
+              <!-- Download Button -->
               <button
-                v-if="book.status === 'ready'"
-                class="p-2 text-green-600 hover:text-green-700 bg-white rounded-full shadow transition-colors"
+                class="p-1 text-green-600 hover:text-green-700 bg-white rounded-full shadow transition-colors"
                 v-tooltip.top="'Download PDF'"
-                @click="downloadPDF(book)"
+                @click="onDownloadClick(book)"
               >
-                <i class="pi pi-download text-2xl"></i>
+                <i class="pi pi-download text-lg"></i>
               </button>
+              <!-- Generate Button (only for draft) -->
               <button
                 v-if="book.status === 'draft'"
-                class="p-2 text-blue-600 hover:text-blue-700 bg-white rounded-full shadow transition-colors"
-                v-tooltip.top="'Generate PDF'"
-                @click="generatePDF(book)"
+                class="p-1 text-blue-600 hover:text-blue-700 bg-white rounded-full shadow transition-colors"
+                v-tooltip.top="'Generate memory book'"
+                @click="onGenerateClick(book)"
               >
-                <i class="pi pi-play text-2xl"></i>
+                <i class="pi pi-magic text-lg"></i>
               </button>
+              <!-- Regenerate Button (only for ready) -->
               <button
                 v-if="book.status === 'ready'"
-                class="p-2 text-purple-600 hover:text-purple-700 bg-white rounded-full shadow transition-colors"
+                class="p-1 text-yellow-600 hover:text-yellow-700 bg-white rounded-full shadow transition-colors"
+                v-tooltip.top="'Regenerate with new background'"
+                @click="onRegenerateClick(book)"
+              >
+                <i class="pi pi-refresh text-lg"></i>
+              </button>
+              <!-- Approve Button -->
+              <button
+                v-if="book.status === 'ready'"
+                class="p-1 text-purple-600 hover:text-purple-700 bg-white rounded-full shadow transition-colors"
                 v-tooltip.top="'Approve Book'"
                 @click="approveBook(book.id)"
               >
-                <i class="pi pi-check text-2xl"></i>
+                <i class="pi pi-check text-lg"></i>
               </button>
+              <!-- View Details Button -->
               <button
-                class="p-2 text-gray-600 hover:text-gray-800 bg-white rounded-full shadow transition-colors"
+                class="p-1 text-gray-600 hover:text-gray-800 bg-white rounded-full shadow transition-colors"
                 v-tooltip.top="'View Details'"
                 @click="viewBookDetails(book)"
               >
-                <i class="pi pi-eye text-2xl"></i>
+                <i class="pi pi-eye text-lg"></i>
               </button>
             </div>
           </template>
@@ -318,7 +338,12 @@
       header="Generating PDF"
       :style="{ width: '400px' }"
       :closable="false"
+      :z-index="9999"
     >
+      <!-- Debug info -->
+      <div v-if="showProgressDialog" class="text-xs text-red-500 mb-2">
+        Debug: Dialog is visible, progress: {{ currentProgress }}%, message: {{ currentProgressMessage }}
+      </div>
       <div class="text-center py-4">
         <div class="mb-4">
           <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
@@ -332,6 +357,37 @@
           ></div>
         </div>
         <p class="text-sm text-color-secondary mt-2">{{ currentProgress }}% complete</p>
+      </div>
+    </Dialog>
+
+    <!-- Generate Confirmation Dialog -->
+    <Dialog v-model:visible="showGenerateDialog" modal header="Generate Memory Book" :style="{ width: '400px' }">
+      <div class="py-4">
+        <p>Generate this memory book? This may take a little time.</p>
+        <div class="flex justify-end gap-2 mt-4">
+          <Button label="Cancel" severity="secondary" @click="cancelDialog" />
+          <Button label="Generate" severity="primary" @click="confirmGenerate" />
+        </div>
+      </div>
+    </Dialog>
+    <!-- Regenerate Confirmation Dialog -->
+    <Dialog v-model:visible="showRegenerateDialog" modal header="Regenerate Memory Book" :style="{ width: '400px' }">
+      <div class="py-4">
+        <p>Regenerate this memory book with a new AI-generated background? If you just want to download the current version, use the download button (faster).</p>
+        <div class="flex justify-end gap-2 mt-4">
+          <Button label="Cancel" severity="secondary" @click="cancelDialog" />
+          <Button label="Regenerate" severity="warning" @click="confirmRegenerate" />
+        </div>
+      </div>
+    </Dialog>
+    <!-- Download Draft Dialog -->
+    <Dialog v-model:visible="showDownloadDraftDialog" modal header="Memory Book Not Generated" :style="{ width: '400px' }">
+      <div class="py-4">
+        <p>You need to generate the memory book before downloading. Would you like to generate it now? This may take a little time.</p>
+        <div class="flex justify-end gap-2 mt-4">
+          <Button label="Cancel" severity="secondary" @click="cancelDialog" />
+          <Button label="Generate Now" severity="primary" @click="confirmDownloadDraft" />
+        </div>
       </div>
     </Dialog>
   </div>
@@ -409,6 +465,53 @@ const themeOptions = ref([
   { label: 'Minimalist', value: 'minimalist' }
 ])
 
+// Dialog state
+const showGenerateDialog = ref(false)
+const showRegenerateDialog = ref(false)
+const showDownloadDraftDialog = ref(false)
+const pendingBook = ref(null)
+
+// Action handlers
+const onGenerateClick = (book) => {
+  pendingBook.value = book
+  showGenerateDialog.value = true
+}
+const onRegenerateClick = (book) => {
+  pendingBook.value = book
+  showRegenerateDialog.value = true
+}
+const onDownloadClick = (book) => {
+  if (book.status === 'draft') {
+    pendingBook.value = book
+    showDownloadDraftDialog.value = true
+  } else {
+    downloadPDF(book)
+  }
+}
+
+// Confirm actions
+const confirmGenerate = () => {
+  showGenerateDialog.value = false
+  if (pendingBook.value) generatePDF(pendingBook.value)
+  pendingBook.value = null
+}
+const confirmRegenerate = () => {
+  showRegenerateDialog.value = false
+  if (pendingBook.value) generatePDF(pendingBook.value)
+  pendingBook.value = null
+}
+const confirmDownloadDraft = () => {
+  showDownloadDraftDialog.value = false
+  if (pendingBook.value) generatePDF(pendingBook.value)
+  pendingBook.value = null
+}
+const cancelDialog = () => {
+  showGenerateDialog.value = false
+  showRegenerateDialog.value = false
+  showDownloadDraftDialog.value = false
+  pendingBook.value = null
+}
+
 // Load memory books
 onMounted(async () => {
   await loadMemoryBooks()
@@ -418,6 +521,20 @@ onMounted(async () => {
 onUnmounted(() => {
   stopProgressPolling()
 })
+
+// Debug watcher for progress dialog
+watch(showProgressDialog, (newVal) => {
+  console.log('showProgressDialog changed to:', newVal)
+})
+
+// Test function to manually trigger the dialog
+const testProgressDialog = () => {
+  console.log('Testing progress dialog...')
+  showProgressDialog.value = true
+  currentProgress.value = 50
+  currentProgressMessage.value = 'Test message'
+  console.log('Dialog should be visible now:', showProgressDialog.value)
+}
 
 // Load memory books
 const loadMemoryBooks = async () => {

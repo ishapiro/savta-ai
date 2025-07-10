@@ -66,23 +66,24 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Always generate a new PDF, do not check or update book.pdf_url
-    // (Remove any caching logic)
-    // Set timeout for the entire operation (30 seconds)
+    // If pdf_url exists, return it directly (fast download)
+    if (book.pdf_url && book.pdf_url.startsWith('https://')) {
+      return {
+        success: true,
+        downloadUrl: book.pdf_url
+      }
+    }
+
+    // Otherwise, generate and upload the PDF
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('PDF generation timeout')), 30000)
     })
-
-    // Generate PDF with timeout
     const pdfPromise = generatePDFWithTimeout(supabase, book, config, user)
-    
     const result = await Promise.race([pdfPromise, timeoutPromise])
-    
-    return { 
-      success: true, 
-      downloadUrl: result 
+    return {
+      success: true,
+      downloadUrl: result
     }
-    
   } catch (error) {
     console.error('Memory book download error:', error)
     throw createError({
@@ -323,33 +324,38 @@ async function generatePDFWithTimeout(supabase, book, config, user) {
       })
     }
     await updatePdfStatus(supabase, book.id, user.id, 'Finalizing PDF...')
-    // 5. Save PDF and return as data URL
+    // 5. Save PDF and upload to Supabase Storage
     console.log('Saving PDF...')
     const pdfBytes = await pdfDoc.save()
-    
-    // Convert to base64 data URL
-    const base64 = Buffer.from(pdfBytes).toString('base64')
-    const dataUrl = `data:application/pdf;base64,${base64}`
-    
-    console.log('PDF generated successfully as data URL')
-    
-    // Update the book with the data URL
-    console.log('Updating book record with PDF data URL...')
+    const fileName = `memory-books/${book.id}.pdf`
+    // Upload to Supabase Storage (memory-books bucket)
+    const { error: uploadError } = await supabase.storage.from('memory-books').upload(fileName, pdfBytes, {
+      contentType: 'application/pdf',
+      upsert: true
+    })
+    if (uploadError) {
+      throw new Error('Failed to upload PDF to storage: ' + uploadError.message)
+    }
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage.from('memory-books').getPublicUrl(fileName)
+    const publicUrl = publicUrlData?.publicUrl
+    if (!publicUrl) {
+      throw new Error('Failed to get public URL for PDF')
+    }
+    // Update the book with the public URL
     const { error: updateError } = await supabase
       .from('memory_books')
-      .update({ pdf_url: dataUrl })
+      .update({ pdf_url: publicUrl })
       .eq('id', book.id)
-    
     if (updateError) {
       console.error('Error updating book:', updateError)
     }
-    
-    console.log('PDF generated successfully')
+    console.log('PDF generated and uploaded successfully')
     await updatePdfStatus(supabase, book.id, user.id, 'done')
     setTimeout(() => {
       supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
     }, 10000)
-    return dataUrl
+    return publicUrl
     
   } catch (error) {
     await updatePdfStatus(supabase, book.id, user.id, 'error')
