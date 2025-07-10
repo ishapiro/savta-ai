@@ -5,10 +5,12 @@ import { PDFDocument, rgb } from 'pdf-lib'
 
 export default defineEventHandler(async (event) => {
   try {
+    console.log('🚀 Starting memory book download endpoint')
     const config = useRuntimeConfig()
     const { createClient } = await import('@supabase/supabase-js')
     
     // Use the service role key for server-side operations
+    console.log('🔧 Creating Supabase client with service role')
     const supabase = createClient(
       config.public.supabaseUrl,
       config.supabaseServiceRoleKey || config.public.supabaseKey
@@ -16,6 +18,7 @@ export default defineEventHandler(async (event) => {
     
     // Get the book ID from the URL
     const bookId = getRouterParam(event, 'id')
+    console.log('📖 Book ID from URL:', bookId)
     
     if (!bookId) {
       throw createError({
@@ -25,6 +28,7 @@ export default defineEventHandler(async (event) => {
     }
     
     // Get user from auth token
+    console.log('🔐 Getting user from auth token')
     const authHeader = getHeader(event, 'authorization')
     if (!authHeader) {
       throw createError({
@@ -34,16 +38,20 @@ export default defineEventHandler(async (event) => {
     }
     
     const token = authHeader.replace('Bearer ', '')
+    console.log('🔑 Token extracted, getting user...')
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
+      console.error('❌ Auth error:', authError)
       throw createError({
         statusCode: 401,
         statusMessage: 'Invalid token'
       })
     }
+    console.log('✅ User authenticated:', user.id)
     
     // Verify the memory book exists and belongs to the user
+    console.log('📚 Fetching memory book from database...')
     const { data: book, error: bookError } = await supabase
       .from('memory_books')
       .select('*')
@@ -52,14 +60,17 @@ export default defineEventHandler(async (event) => {
       .single()
     
     if (bookError || !book) {
+      console.error('❌ Book error:', bookError)
       throw createError({
         statusCode: 404,
         statusMessage: 'Memory book not found'
       })
     }
+    console.log('✅ Memory book found:', book.id, 'Status:', book.status)
     
     // Check if the book is ready for download
     if (book.status !== 'ready') {
+      console.log('❌ Book not ready for download, status:', book.status)
       throw createError({
         statusCode: 400,
         statusMessage: 'Memory book is not ready for download'
@@ -68,24 +79,27 @@ export default defineEventHandler(async (event) => {
 
     // If pdf_url exists, return it directly (fast download)
     if (book.pdf_url && book.pdf_url.startsWith('https://')) {
+      console.log('✅ PDF URL already exists, returning:', book.pdf_url)
       return {
         success: true,
         downloadUrl: book.pdf_url
       }
     }
 
+    console.log('🔄 PDF URL not found, generating new PDF...')
     // Otherwise, generate and upload the PDF
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('PDF generation timeout')), 30000)
     })
     const pdfPromise = generatePDFWithTimeout(supabase, book, config, user)
     const result = await Promise.race([pdfPromise, timeoutPromise])
+    console.log('✅ PDF generation completed successfully')
     return {
       success: true,
       downloadUrl: result
     }
   } catch (error) {
-    console.error('Memory book download error:', error)
+    console.error('❌ Memory book download error:', error)
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage: error.statusMessage || 'Failed to generate download URL'
@@ -95,25 +109,33 @@ export default defineEventHandler(async (event) => {
 
 async function updatePdfStatus(supabase, bookId, userId, status) {
   try {
-    await supabase.from('pdf_status').upsert({
+    console.log('📊 Updating PDF status:', status, 'for book:', bookId)
+    const { data, error } = await supabase.from('pdf_status').upsert({
       book_id: bookId,
       user_id: userId,
       status,
       updated_at: new Date().toISOString()
     }, { onConflict: ['book_id', 'user_id'] })
+    
+    if (error) {
+      console.error('❌ PDF status update error:', error)
+    } else {
+      console.log('✅ PDF status updated successfully')
+    }
   } catch (error) {
-    console.log('PDF status table might not exist yet, continuing without status updates:', error.message)
+    console.log('⚠️ PDF status table might not exist yet, continuing without status updates:', error.message)
   }
 }
 
 // Generate PDF with step-by-step approach
 async function generatePDFWithTimeout(supabase, book, config, user) {
   try {
-    await updatePdfStatus(supabase, book.id, user.id, 'Generating custom background')
-    console.log('Starting PDF generation for book:', book.id)
+    await updatePdfStatus(supabase, book.id, user.id, 'Starting PDF generation...')
+    console.log('🎨 Starting PDF generation for book:', book.id)
     
     // 1. Fetch approved assets for this book
-    console.log('Fetching assets for book:', book.created_from_assets)
+    await updatePdfStatus(supabase, book.id, user.id, 'Fetching your photos and memories...')
+    console.log('📸 Fetching assets for book:', book.created_from_assets)
     const { data: assets, error: assetsError } = await supabase
       .from('assets')
       .select('*')
@@ -122,11 +144,11 @@ async function generatePDFWithTimeout(supabase, book, config, user) {
       .eq('deleted', false)
 
     if (assetsError) {
-      console.error('Error fetching assets:', assetsError)
+      console.error('❌ Error fetching assets:', assetsError)
       throw new Error(`Failed to fetch assets: ${assetsError.message}`)
     }
 
-    console.log('Found assets:', assets?.length || 0)
+    console.log('✅ Found assets:', assets?.length || 0)
 
     if (!assets || assets.length === 0) {
       throw new Error('No approved assets found for this book')
@@ -137,7 +159,10 @@ async function generatePDFWithTimeout(supabase, book, config, user) {
       assets.flatMap(asset => Array.isArray(asset.tags) ? asset.tags : [])
     ))
     const tagsPrompt = allTags.length > 0 ? `, theme: ${allTags.join(', ')}` : ''
+    
     // 2. Generate a DALL-E 3 background image (one per book)
+    await updatePdfStatus(supabase, book.id, user.id, 'Creating beautiful background design...')
+    console.log('🎨 Generating DALL-E background image...')
     const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
     if (!openaiApiKey) throw new Error('Missing OpenAI API key')
     const dallePrompt = `scrapbook page background, soft colors, subtle texture, no text, no people, no objects, DO NOT INCLUDE ANY IMAGES OF PEOPLE OR ANIMALS${tagsPrompt}`
@@ -156,28 +181,39 @@ async function generatePDFWithTimeout(supabase, book, config, user) {
     })
     if (!dalleRes.ok) {
       const errorText = await dalleRes.text()
+      console.error('❌ OpenAI DALL-E API error:', dalleRes.status, errorText)
       throw new Error(`OpenAI DALL-E API error: ${dalleRes.status} - ${errorText}`)
     }
     const dalleData = await dalleRes.json()
     const backgroundUrl = dalleData.data[0].url
+    console.log('✅ DALL-E background generated:', backgroundUrl)
+    
     // Download the background image
+    await updatePdfStatus(supabase, book.id, user.id, 'Downloading background design...')
+    console.log('⬇️ Downloading background image...')
     const bgRes = await fetch(backgroundUrl)
     const bgBuffer = Buffer.from(await bgRes.arrayBuffer())
+    console.log('✅ Background image downloaded, size:', bgBuffer.length, 'bytes')
+    
     // We'll embed as PNG (DALL-E returns PNG)
     // 3. Create PDF document
+    await updatePdfStatus(supabase, book.id, user.id, 'Setting up PDF document...')
+    console.log('📄 Creating PDF document...')
     const pdfDoc = await PDFDocument.create()
     const pdfBgImage = await pdfDoc.embedPng(bgBuffer)
+    console.log('✅ PDF document created with background image')
     
-    await updatePdfStatus(supabase, book.id, user.id, 'Custom background ready, creating pages')
+    await updatePdfStatus(supabase, book.id, user.id, 'Background ready, creating pages...')
     // 4. Layout assets into pages (4 assets per page in a 2x2 grid)
     const assetsPerPage = 4
     const totalPages = Math.ceil(assets.length / assetsPerPage)
     
-    console.log(`Generating PDF with ${totalPages} pages for ${assets.length} assets`)
+    console.log(`📄 Generating PDF with ${totalPages} pages for ${assets.length} assets`)
     
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
       const pageNumStr = (pageIndex + 1) + (pageIndex === 0 ? 'st' : pageIndex === 1 ? 'nd' : pageIndex === 2 ? 'rd' : 'th')
-      await updatePdfStatus(supabase, book.id, user.id, `Creating ${pageNumStr} page`)
+      await updatePdfStatus(supabase, book.id, user.id, `Creating ${pageNumStr} page (${pageIndex + 1}/${totalPages})`)
+      console.log(`📄 Creating page ${pageIndex + 1}/${totalPages}`)
       const startIndex = pageIndex * assetsPerPage
       const pageAssets = assets.slice(startIndex, startIndex + assetsPerPage)
       
@@ -224,6 +260,8 @@ async function generatePDFWithTimeout(supabase, book, config, user) {
       
       for (let i = 0; i < pageAssets.length; i++) {
         const asset = pageAssets[i]
+        await updatePdfStatus(supabase, book.id, user.id, `Processing ${asset.type} ${i + 1}/${pageAssets.length} on page ${pageIndex + 1}`)
+        console.log(`🖼️ Processing asset ${i + 1}/${pageAssets.length}:`, asset.id, 'Type:', asset.type)
         const col = i % gridCols
         const row = Math.floor(i / gridCols)
         
@@ -235,15 +273,24 @@ async function generatePDFWithTimeout(supabase, book, config, user) {
         
         if (asset.type === 'photo' && asset.storage_url) {
           try {
+            console.log(`📸 Downloading image from storage URL:`, asset.storage_url)
             // Download the image from storage_url
             const imageRes = await fetch(asset.storage_url)
+            if (!imageRes.ok) {
+              console.error('❌ Failed to fetch image:', imageRes.status, imageRes.statusText)
+              throw new Error(`Failed to fetch image: ${imageRes.status}`)
+            }
             const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+            console.log(`✅ Image downloaded, size:`, imageBuffer.length, 'bytes')
+            
             let pdfImage
             if (asset.storage_url.endsWith('.png')) {
               pdfImage = await pdfDoc.embedPng(imageBuffer)
             } else {
               pdfImage = await pdfDoc.embedJpg(imageBuffer)
             }
+            console.log(`✅ Image embedded in PDF`)
+            
             // Get image dimensions
             const imgDims = pdfImage.scale(1)
             // Calculate scale to fit image inside cell (no cropping, no rotation)
@@ -278,7 +325,7 @@ async function generatePDFWithTimeout(supabase, book, config, user) {
               })
             }
           } catch (err) {
-            console.error('Failed to embed image for asset', asset.id, err)
+            console.error('❌ Failed to embed image for asset', asset.id, err)
             // Fallback: draw placeholder rectangle
             page.drawRectangle({
               x,
@@ -305,6 +352,7 @@ async function generatePDFWithTimeout(supabase, book, config, user) {
             }
           }
         } else if (asset.type === 'text') {
+          console.log(`📝 Processing text asset:`, asset.id)
           // For text assets, draw the text content
           page.drawText(asset.user_caption || asset.ai_caption || 'Text content', {
             x: x + 10,
@@ -323,46 +371,70 @@ async function generatePDFWithTimeout(supabase, book, config, user) {
         color: rgb(0.5, 0.5, 0.5)
       })
     }
-    await updatePdfStatus(supabase, book.id, user.id, 'Finalizing PDF...')
+    await updatePdfStatus(supabase, book.id, user.id, 'Finalizing PDF document...')
     // 5. Save PDF and upload to Supabase Storage
-    console.log('Saving PDF...')
+    console.log('💾 Saving PDF to buffer...')
     const pdfBytes = await pdfDoc.save()
+    console.log('✅ PDF saved, size:', pdfBytes.length, 'bytes')
+    
     const fileName = `memory-books/${book.id}.pdf`
+    await updatePdfStatus(supabase, book.id, user.id, 'Uploading PDF to cloud storage...')
+    console.log('📤 Uploading PDF to Supabase Storage:', fileName)
+    
     // Upload to Supabase Storage (memory-books bucket)
-    const { error: uploadError } = await supabase.storage.from('memory-books').upload(fileName, pdfBytes, {
+    const { data: uploadData, error: uploadError } = await supabase.storage.from('memory-books').upload(fileName, pdfBytes, {
       contentType: 'application/pdf',
       upsert: true
     })
+    
     if (uploadError) {
+      console.error('❌ Failed to upload PDF to storage:', uploadError)
       throw new Error('Failed to upload PDF to storage: ' + uploadError.message)
     }
+    console.log('✅ PDF uploaded to storage successfully:', uploadData)
+    
     // Get public URL
+    await updatePdfStatus(supabase, book.id, user.id, 'Generating download link...')
+    console.log('🔗 Getting public URL for uploaded PDF...')
     const { data: publicUrlData } = supabase.storage.from('memory-books').getPublicUrl(fileName)
     const publicUrl = publicUrlData?.publicUrl
     if (!publicUrl) {
+      console.error('❌ Failed to get public URL for PDF')
       throw new Error('Failed to get public URL for PDF')
     }
+    console.log('✅ Public URL generated:', publicUrl)
+    
     // Update the book with the public URL
-    const { error: updateError } = await supabase
+    await updatePdfStatus(supabase, book.id, user.id, 'Saving PDF link to database...')
+    console.log('📝 Updating memory book with PDF URL...')
+    const { data: updateData, error: updateError } = await supabase
       .from('memory_books')
       .update({ pdf_url: publicUrl })
       .eq('id', book.id)
+      .select()
+    
     if (updateError) {
-      console.error('Error updating book:', updateError)
+      console.error('❌ Error updating book with PDF URL:', updateError)
+      // Don't throw here, as the PDF was successfully uploaded
+    } else {
+      console.log('✅ Memory book updated with PDF URL successfully')
     }
-    console.log('PDF generated and uploaded successfully')
-    await updatePdfStatus(supabase, book.id, user.id, 'done')
+    
+    await updatePdfStatus(supabase, book.id, user.id, 'PDF ready for download!')
+    console.log('🎉 PDF generated and uploaded successfully')
     setTimeout(() => {
+      console.log('🧹 Cleaning up PDF status...')
       supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
     }, 10000)
     return publicUrl
     
   } catch (error) {
-    await updatePdfStatus(supabase, book.id, user.id, 'error')
+    console.error('❌ PDF generation error:', error)
+    await updatePdfStatus(supabase, book.id, user.id, 'Error: ' + error.message)
     setTimeout(() => {
+      console.log('🧹 Cleaning up PDF status after error...')
       supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
     }, 10000)
-    console.error('PDF generation error:', error)
     throw error
   }
 } 
