@@ -166,14 +166,53 @@ The platform features a comprehensive memory book system that creates beautiful,
 - **Animations**: Custom animations (e.g., `fade-in-up`, `glow`, `pulse-slow`) are defined in `tailwind.config.js` and used throughout the UI.
 
 ## Supabase Database & Auth
+
+### Custom Supabase Plugin
+This project uses a **custom Supabase plugin** instead of the official Nuxt Supabase module to resolve development issues.
+
+**Why Custom Plugin:**
+- ✅ Resolves `Ctrl+C` and `npm run dev` issues with auto-imports
+- ✅ More reliable development experience
+- ✅ Better control over Supabase client configuration
+- ❌ Do NOT install `@nuxtjs/supabase` module
+- ❌ Do NOT add Supabase modules to `nuxt.config.ts`
+
+**Implementation:**
+- **Plugin**: `plugins/custom-supabase.ts` - Creates and provides Supabase client
+- **Composable**: `composables/useSupabase.js` - Provides reactive user state
+- **Database**: `composables/useDatabase.js` - Centralized database operations
+
+**If you see Supabase errors:**
+1. Check `plugins/custom-supabase.ts` for client configuration
+2. Ensure environment variables are set correctly
+3. Do NOT attempt to install Nuxt Supabase modules
+
+### Database Features
 - **Email Subscriptions**: The `supabase/schema.sql` defines a table `email_subscriptions` for storing newsletter signups from the splash page.
 - **User Management**: Comprehensive user system with roles (user, editor, admin)
 - **Asset Storage**: Photos and text stories with AI processing metadata
 - **Memory Books**: Complete memory book system with background and PDF storage
-- **Auth**: The app uses Supabase authentication for user sign up, login, and session management. Auth state is persisted and auto-refreshed via Nuxt module config.
+- **Auth**: The app uses Supabase authentication for user sign up, login, and session management. Auth state is managed via the custom plugin and composables.
 - **Usage**: All `/app` routes are protected by middleware and require authentication or insiders access.
 
 ## Supabase Setup
+
+### Environment Variables
+Set up your environment variables in a `.env` file:
+
+```bash
+# Supabase Configuration
+NUXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NUXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# OpenAI Configuration (for AI features)
+OPENAI_API_KEY=your_openai_api_key
+
+# Site Configuration
+NUXT_PUBLIC_SITE_URL=http://localhost:3000
+INSIDER_PASSWORD=savta2025
+```
 
 ### Database Schema
 1. Run the database schema:
