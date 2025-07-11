@@ -82,7 +82,7 @@
                           </div>
                         </div>
                         <div class="flex items-center space-x-2">
-                          <div v-if="file.processing" class="text-xs text-info">AI Processing...</div>
+                          <div v-if="file.processing" class="text-xs text-info">Magic is happening...</div>
                           <div v-else-if="file.uploading" class="text-xs text-color-secondary">Uploading...</div>
                           <div v-else-if="file.error" class="text-xs text-danger">{{ file.error }}</div>
                           <div v-else class="text-xs text-success">Complete</div>
@@ -290,11 +290,14 @@
 <script setup>
 // Set the layout for this page
 import { ref } from 'vue'
+import { useToast } from 'primevue/usetoast'
+
 definePageMeta({
   layout: 'default'
 })
 
-const { $toast } = useNuxtApp()
+const toast = useToast()
+
 const db = useDatabase()
 
 // Reactive data
@@ -323,17 +326,12 @@ const loadRecentAssets = async () => {
     const assets = await db.assets.getAssets({ limit: 25 })
     recentAssets.value = assets
   } catch (error) {
-    console.error('Error loading recent assets:', error)
-    // Use PrimeVue toast service directly
-    const { $toast } = useNuxtApp()
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to load recent assets',
-        life: 3000
-      })
-    }
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load recent assets',
+      life: 3000
+    })
   }
 }
 
@@ -352,17 +350,9 @@ const handleFileDrop = (event) => {
 
 // Upload files
 const uploadFiles = async (files) => {
-  const { $toast } = useNuxtApp()
-  
-  // Ensure toast service is available
-  if (!$toast) {
-    console.warn('Toast service not available')
-    return
-  }
-  
   for (const file of files) {
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      $toast.add({
+      toast.add({
         severity: 'error',
         summary: 'File Too Large',
         detail: `${file.name} is too large. Maximum size is 10MB.`,
@@ -406,28 +396,29 @@ const uploadFiles = async (files) => {
 
       uploadFile.processing = false
       
-      $toast.add({
+      toast.add({
         severity: 'success',
         summary: 'Upload Complete',
         detail: `${file.name} uploaded and processed successfully`,
         life: 3000
       })
-
-      // Reload recent assets
+      // Remove file from uploadingFiles immediately
+      uploadingFiles.value = uploadingFiles.value.filter(f => f.id !== uploadFile.id)
       await loadRecentAssets()
 
     } catch (error) {
-      console.error('Upload error:', error)
       uploadFile.error = error.message
       uploadFile.uploading = false
       uploadFile.processing = false
       
-      $toast.add({
+      toast.add({
         severity: 'error',
         summary: 'Upload Failed',
         detail: `Failed to upload ${file.name}: ${error.message}`,
         life: 3000
       })
+      // Remove file from uploadingFiles immediately on error
+      uploadingFiles.value = uploadingFiles.value.filter(f => f.id !== uploadFile.id)
     }
   }
 }
@@ -437,7 +428,6 @@ const submitTextStory = async () => {
   if (!textStory.value.title || !textStory.value.content) return
 
   submittingStory.value = true
-  const { $toast } = useNuxtApp()
 
   try {
     // Upload text asset
@@ -457,7 +447,7 @@ const submitTextStory = async () => {
       }
     })
 
-    $toast.add({
+    toast.add({
       severity: 'success',
       summary: 'Story Shared',
       detail: 'Your story has been uploaded and processed successfully',
@@ -469,8 +459,7 @@ const submitTextStory = async () => {
     await loadRecentAssets()
 
   } catch (error) {
-    console.error('Story submission error:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Upload Failed',
       detail: 'Failed to upload your story',

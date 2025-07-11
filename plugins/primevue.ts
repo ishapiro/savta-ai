@@ -45,9 +45,8 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(ToastService)
   nuxtApp.vueApp.use(ConfirmationService)
 
-  // Inject $toast globally for all pages
-  nuxtApp.provide('toast', ToastService)
-  nuxtApp.provide('$toast', ToastService)
+  // In PrimeVue 3.x, toast is used via useToast() composable
+  // We don't need to provide it globally
   
   // Register components globally
   const components = {

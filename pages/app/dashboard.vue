@@ -34,10 +34,17 @@
     
     <div class="mt-8 text-center">
       <button
-        class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full max-w-xs sm:max-w-md mx-auto"
-        @click="goToReviews"
+        :class="[
+          'flex items-center justify-center gap-2 font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full max-w-xs sm:max-w-md mx-auto',
+          user === null
+            ? 'bg-gray-300 text-white opacity-60 cursor-not-allowed'
+            : 'bg-green-500 hover:bg-green-600 text-white cursor-pointer'
+        ]"
+        @click="handleGetStarted"
+        :disabled="user === null"
+        :aria-disabled="user === null"
       >
-        <i class="pi pi-book text-2xl animate-bounce"></i>
+        <i :class="['pi pi-book text-2xl', user === null ? '' : 'animate-bounce']"></i>
         Get Started
       </button>
     </div>
@@ -45,38 +52,34 @@
 </template>
 
 <script setup>
-// Set the layout for this page
+import { useSupabaseUser } from '~/composables/useSupabase'
+import { watchEffect } from 'vue'
+
+const user = useSupabaseUser()
+
 definePageMeta({
   layout: 'default'
 })
 
-// Get user and Supabase client
-  // const user = useSupabaseUser()
-  // const supabase = useSupabaseClient()
-
-const supabase = useNuxtApp().$supabase
-let user = null
-const { data } = await supabase.auth.getUser()
-user = data.user
-
-
 const { hasInsidersAccess, checkInsidersAccess } = useInsidersAccess()
 
-// Refresh insiders access state when component mounts
 onMounted(() => {
   checkInsidersAccess()
   console.log('Dashboard mounted, insiders access:', hasInsidersAccess.value)
+})
+
+watchEffect(() => {
+  console.log('[Dashboard] watchEffect user:', user)
+  console.log('[Dashboard] watchEffect user.value:', user?.value)
 })
 
 const handleSignOut = async () => {
   try {
     console.log('Starting sign out process...')
     console.log('Current user state:', user.value ? 'Authenticated' : 'Not authenticated')
-    
-    // Always try to sign out from Supabase if user exists
     if (user.value) {
       console.log('Signing out from Supabase...')
-      const { error } = await supabase.auth.signOut()
+      const { error } = await useNuxtApp().$supabase.auth.signOut()
       if (error) {
         console.error('Sign out error:', error)
       } else {
@@ -85,28 +88,31 @@ const handleSignOut = async () => {
     } else {
       console.log('No authenticated user to sign out')
     }
-    
-    // Clear insiders access
     console.log('Clearing insiders access...')
     const { clearInsidersAccess } = useInsidersAccess()
     clearInsidersAccess()
-    
-    // Force a small delay to ensure state updates
     await new Promise(resolve => setTimeout(resolve, 100))
-    
     console.log('Navigating to dashboard...')
-    // Navigate back to dashboard
     navigateTo('/app/dashboard')
   } catch (err) {
     console.error('Sign out error:', err)
-    // Even if there's an error, still clear insiders access and navigate
     const { clearInsidersAccess } = useInsidersAccess()
     clearInsidersAccess()
     navigateTo('/app/dashboard')
   }
 }
 
-const goToReviews = () => {
-  navigateTo('/app/upload')
+async function handleGetStarted() {
+  console.log('[Dashboard] handleGetStarted user:', user)
+  console.log('[Dashboard] handleGetStarted user.value:', user.value)
+  if (user.value) {
+    console.log('[Dashboard] Navigating to /app/upload')
+    await navigateTo('/app/upload')
+    console.log('[Dashboard] Navigation to /app/upload complete')
+  } else {
+    console.log('[Dashboard] Navigating to /app/login')
+    await navigateTo('/app/login')
+    console.log('[Dashboard] Navigation to /app/login complete')
+  }
 }
 </script> 

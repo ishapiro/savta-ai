@@ -27,7 +27,8 @@
         <div class="flex flex-col gap-4 mt-6">
           <button
             class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full max-w-xs mx-auto"
-            @click="() => navigateTo('/app/upload')"
+            @click="handleGetStarted"
+            :disabled="user === null"
           >
             <i class="pi pi-plus-circle text-2xl animate-bounce"></i>
             Add Your First Memories
@@ -46,5 +47,18 @@
 </template>
 
 <script setup>
-// No additional setup needed
+import { useSupabaseUser } from '~/composables/useSupabase'
+const user = useSupabaseUser()
+
+function handleGetStarted() {
+  // Debug log
+  console.log('[GettingStarted] handleGetStarted user.value:', user.value)
+  if (user.value) {
+    console.log('[GettingStarted] Navigating to /app/upload')
+    navigateTo('/app/upload')
+  } else {
+    console.log('[GettingStarted] Navigating to /app/login')
+    navigateTo('/app/login')
+  }
+}
 </script> 
