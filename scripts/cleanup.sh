@@ -118,6 +118,10 @@ find . -name "*.tmp" -delete 2>/dev/null || true
 find . -name "*.temp" -delete 2>/dev/null || true
 find . -name ".DS_Store" -delete 2>/dev/null || true
 
+# Install dependencies to ensure everything is properly set up
+echo "📦 Installing dependencies..."
+npm install
+
 echo "✅ Comprehensive cleanup completed!"
 
 # Provide helpful next steps

@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
     console.log('✅ Memory book found:', book.id, 'Status:', book.status)
     
     // Check if the book has background ready
-    if (book.status !== 'background_ready' && book.status !== 'ready') {
+    if (book.status !== 'background_ready' && book.status !== 'ready' && book.status !== 'draft') {
       console.log('❌ Book not ready for PDF generation, status:', book.status)
       throw createError({
         statusCode: 400,

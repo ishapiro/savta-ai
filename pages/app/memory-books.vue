@@ -61,7 +61,7 @@
             </div>
             <div class="flex-1 flex flex-col p-3">
               <div class="mb-1 flex items-center justify-between">
-                <h3 class="text-base font-bold text-color">Memory Book #{{ book.id.slice(-6) }}</h3>
+                <h3 class="text-base font-bold text-color">{{ book.title || ('Memory Book #' + book.id.slice(-6)) }}</h3>
                 <Tag :value="getStatusText(book.status)" :severity="getStatusSeverity(book.status)" />
               </div>
               <div class="space-y-1 text-xs text-color-secondary mb-2">
@@ -73,10 +73,10 @@
               <div v-if="book.review_notes" class="surface-100 rounded p-2 text-xs text-color-secondary mb-2">{{ book.review_notes }}</div>
             </div>
             <!-- Action Bar -->
-            <div class="rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-2 py-2 flex items-center justify-center gap-3 border-t border-gray-200">
+            <div class="rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 border-t border-gray-200 flex items-center justify-center gap-3 py-2">
               <!-- Download Button -->
               <button
-                class="p-1 text-green-600 hover:text-green-700 bg-white rounded-full shadow transition-colors"
+                class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-green-600 hover:text-green-700 transition-colors"
                 v-tooltip.top="'Download PDF'"
                 @click="onDownloadClick(book)"
               >
@@ -85,17 +85,17 @@
               <!-- Generate Button (only for draft) -->
               <button
                 v-if="book.status === 'draft'"
-                class="p-1 text-blue-600 hover:text-blue-700 bg-white rounded-full shadow transition-colors"
+                class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-green-600 hover:text-green-700 transition-colors"
                 v-tooltip.top="'Generate memory book'"
                 @click="onGenerateClick(book)"
               >
-                <i class="pi pi-magic text-lg"></i>
+                <i class="pi pi-bolt text-lg text-purple-600"></i>
               </button>
               <!-- Regenerate Button (only for ready) -->
               <button
                 v-if="book.status === 'ready'"
-                class="p-1 text-yellow-600 hover:text-yellow-700 bg-white rounded-full shadow transition-colors"
-                v-tooltip.top="'Regenerate with new background'"
+                class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-yellow-600 hover:text-yellow-700 transition-colors"
+                v-tooltip.top="'Create a new magic AI background'"
                 @click="onRegenerateClick(book)"
               >
                 <i class="pi pi-refresh text-lg"></i>
@@ -103,15 +103,15 @@
               <!-- Approve Button -->
               <button
                 v-if="book.status === 'ready'"
-                class="p-1 text-purple-600 hover:text-purple-700 bg-white rounded-full shadow transition-colors"
-                v-tooltip.top="'Approve Book'"
+                class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-purple-600 hover:text-purple-700 transition-colors"
+                v-tooltip.top="'Approve this memory book for printing and sharing'"
                 @click="approveBook(book.id)"
               >
                 <i class="pi pi-check text-lg"></i>
               </button>
               <!-- View Details Button -->
               <button
-                class="p-1 text-gray-600 hover:text-gray-800 bg-white rounded-full shadow transition-colors"
+                class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-gray-600 hover:text-gray-800 transition-colors"
                 v-tooltip.top="'View Details'"
                 @click="viewBookDetails(book)"
               >
@@ -268,60 +268,117 @@
     <Dialog
       v-model:visible="showDetailsModal"
       modal
-      header="Memory Book Details"
-      :style="{ width: '600px' }"
+      :style="{ width: '100%', maxWidth: '500px', maxHeight: '95vh', padding: '0' }"
+      class="!rounded-[16px] !shadow-xl !border-0 !overflow-hidden w-full sm:max-w-[500px]"
     >
-      <div v-if="selectedBook" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-color mb-1">Book ID</label>
-            <p class="text-sm text-color-secondary">{{ selectedBook.id }}</p>
+      <div v-if="selectedBook" class="p-2 sm:p-3 bg-white space-y-2">
+        <!-- Super Compact Top: Icon, Book #, Status -->
+        <div class="flex flex-col items-center mb-1">
+          <div class="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full mb-1 hidden sm:flex">
+            <i class="pi pi-book text-lg text-purple-600"></i>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-color mb-1">Status</label>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-base text-gray-800">{{ selectedBook.title || ('#' + selectedBook.id.slice(-6)) }}</span>
             <Tag
               :value="getStatusText(selectedBook.status)"
               :severity="getStatusSeverity(selectedBook.status)"
+              class="text-xs px-2 py-0.5"
             />
           </div>
-          <div>
-            <label class="block text-sm font-medium text-color mb-1">Created</label>
-            <p class="text-sm text-color-secondary">{{ formatDate(selectedBook.created_at) }}</p>
+        </div>
+
+        <!-- Ultra Compact Info Tags -->
+        <div class="flex flex-wrap gap-1 justify-center">
+          <div class="flex items-center gap-1 bg-blue-50 rounded-full px-2 py-0.5 border border-blue-200 text-xs">
+            <i class="pi pi-calendar text-blue-600 text-xs"></i>
+            <span>{{ formatDate(selectedBook.created_at) }}</span>
           </div>
-          <div v-if="selectedBook.generated_at">
-            <label class="block text-sm font-medium text-color mb-1">Generated</label>
-            <p class="text-sm text-color-secondary">{{ formatDate(selectedBook.generated_at) }}</p>
+          <div v-if="selectedBook.generated_at" class="flex items-center gap-1 bg-green-50 rounded-full px-2 py-0.5 border border-green-200 text-xs">
+            <i class="pi pi-bolt text-purple-600 text-xs"></i>
+            <span>{{ formatDate(selectedBook.generated_at) }}</span>
+          </div>
+          <div v-if="selectedBook.approved_at" class="flex items-center gap-1 bg-purple-50 rounded-full px-2 py-0.5 border border-purple-200 text-xs">
+            <i class="pi pi-check-circle text-purple-600 text-xs"></i>
+            <span>{{ formatDate(selectedBook.approved_at) }}</span>
+          </div>
+          <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="flex items-center gap-1 bg-pink-50 rounded-full px-2 py-0.5 border border-pink-200 text-xs">
+            <i class="pi pi-images text-pink-600 text-xs"></i>
+            <span>{{ selectedBook.created_from_assets.length }} assets</span>
           </div>
         </div>
 
-        <div v-if="selectedBook.review_notes">
-          <label class="block text-sm font-medium text-color mb-1">Review Notes</label>
-          <div class="surface-100 rounded p-3">
-            <p class="text-sm text-color-secondary">{{ selectedBook.review_notes }}</p>
-          </div>
+        <!-- Compact Review Notes -->
+        <div v-if="selectedBook.review_notes" class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded p-2 border border-yellow-200 text-xs text-gray-600 italic">
+          "{{ selectedBook.review_notes }}"
         </div>
 
-        <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0">
-          <label class="block text-sm font-medium text-color mb-1">Included Assets</label>
-          <div class="grid grid-cols-2 gap-2">
+        <!-- Ultra Compact Asset Thumbnails -->
+        <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded p-2 border border-indigo-200">
+          <div class="flex items-center mb-1 text-xs text-gray-700 font-semibold">
+            <i class="pi pi-images text-indigo-600 mr-1 text-xs"></i>
+            Memory Assets
+          </div>
+          <div class="grid grid-cols-8 sm:grid-cols-6 gap-0.5">
             <div
-              v-for="assetId in selectedBook.created_from_assets"
+              v-for="assetId in selectedBook.created_from_assets.slice(0, 16)"
               :key="assetId"
-              class="surface-100 rounded p-2 text-xs text-color-secondary"
+              class="aspect-square bg-white rounded border border-indigo-100 overflow-hidden w-7 h-7 sm:w-9 sm:h-9"
             >
-              Asset #{{ assetId.slice(-6) }}
+              <img 
+                v-if="getAssetThumbnail(assetId)"
+                :src="getAssetThumbnail(assetId)"
+                :alt="`Asset ${assetId.slice(-4)}`"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center bg-gray-100">
+                <i class="pi pi-image text-indigo-400 text-xs"></i>
+              </div>
             </div>
+            <div v-if="selectedBook.created_from_assets.length > 16" class="aspect-square bg-white rounded border border-indigo-100 flex items-center justify-center text-xs text-gray-500 w-7 h-7 sm:w-9 sm:h-9">
+              +{{ selectedBook.created_from_assets.length - 16 }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Compact PDF Section -->
+        <div v-if="selectedBook.pdf_url" class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded p-2 border border-emerald-200">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center text-xs font-semibold text-gray-800">
+              <i class="pi pi-file-pdf text-emerald-600 mr-1 text-xs"></i>
+              PDF
+            </div>
+            <button
+              class="flex items-center justify-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full px-2 py-1 text-xs shadow"
+              @click="viewPDF(selectedBook.pdf_url)"
+            >
+              <i class="pi pi-external-link text-xs"></i>
+              View
+            </button>
           </div>
         </div>
       </div>
 
       <template #footer>
-        <div class="flex justify-end">
-          <Button
-            label="Close"
-            severity="secondary"
-            @click="showDetailsModal = false"
-          />
+        <div class="flex justify-between items-center p-2 bg-white border-t border-gray-200">
+          <div>
+            <button
+              v-if="selectedBook && selectedBook.status === 'approved'"
+              class="flex items-center justify-center gap-1 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full px-3 py-1 text-xs shadow"
+              @click="unapproveBook(selectedBook.id)"
+            >
+              <i class="pi pi-times text-xs"></i>
+              Unapprove
+            </button>
+          </div>
+          <div>
+            <button
+              class="flex items-center justify-center gap-1 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-1 text-xs shadow"
+              @click="showDetailsModal = false"
+            >
+              <i class="pi pi-times text-xs"></i>
+              Close
+            </button>
+          </div>
         </div>
       </template>
     </Dialog>
@@ -353,7 +410,7 @@
     </Dialog>
 
     <!-- Generate Confirmation Dialog -->
-    <Dialog v-model:visible="showGenerateDialog" modal header="Generate Memory Book" :style="{ width: '400px' }">
+    <Dialog v-model:visible="showGenerateDialog" modal header="Give It Another Magical Spin" :style="{ width: '400px' }">
       <div class="py-4">
         <p>Generate this memory book? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
@@ -363,12 +420,24 @@
       </div>
     </Dialog>
     <!-- Regenerate Confirmation Dialog -->
-    <Dialog v-model:visible="showRegenerateDialog" modal header="Regenerate Memory Book" :style="{ width: '400px' }">
+    <Dialog v-model:visible="showRegenerateDialog" modal header="" :style="{ width: '440px' }">
       <div class="py-4">
         <p>Regenerate this memory book with a new AI-generated background? If you just want to download the current version, use the download button (faster).</p>
-        <div class="flex justify-end gap-2 mt-4">
-          <Button label="Cancel" severity="secondary" @click="cancelDialog" />
-          <Button label="Regenerate" severity="warning" @click="confirmRegenerate" />
+        <div class="flex justify-center gap-4 mt-6">
+          <button
+            class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-7 py-2 text-sm shadow transition-all duration-200 min-w-[150px]"
+            @click="cancelDialog"
+          >
+            <i class="pi pi-times text-base"></i>
+            Cancel
+          </button>
+          <button
+            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-7 py-2 text-sm shadow transition-all duration-200 min-w-[180px]"
+            @click="confirmRegenerate"
+          >
+            <i class="pi pi-refresh text-base"></i>
+            Reapply AI Magic
+          </button>
         </div>
       </div>
     </Dialog>
@@ -404,6 +473,7 @@ const showCreateModal = ref(false)
 const showDetailsModal = ref(false)
 const selectedBook = ref(null)
 const creatingBook = ref(false)
+const assetThumbnails = ref({})
 
 // PDF Progress tracking
 const showProgressDialog = ref(false)
@@ -636,6 +706,21 @@ const pollPdfStatus = async () => {
     if (response) {
       const status = response
       
+      // Check if pdf_url is available (PDF is ready for download)
+      if (status.pdf_url && status.pdf_url.startsWith('https://')) {
+        console.log('✅ PDF URL found, closing dialog:', status.pdf_url)
+        currentProgress.value = 100
+        currentProgressMessage.value = 'PDF ready for download!'
+        
+        // Stop polling and close dialog after a short delay
+        setTimeout(() => {
+          stopProgressPolling()
+          showProgressDialog.value = false
+          loadMemoryBooks() // Reload to show updated status
+        }, 1000)
+        return
+      }
+      
       // Update progress based on status
       if (status.pdf_status === 'generating_background') {
         currentProgress.value = 10
@@ -668,6 +753,24 @@ const pollPdfStatus = async () => {
       } else if (status.pdf_status === 'not_started') {
         currentProgress.value = 5
         currentProgressMessage.value = 'Starting PDF generation...'
+      } else if (status.pdf_status === 'Creating beautiful background design...') {
+        currentProgress.value = 15
+        currentProgressMessage.value = 'Creating beautiful background design...'
+      } else if (status.pdf_status === 'Downloading background design...') {
+        currentProgress.value = 25
+        currentProgressMessage.value = 'Downloading background design...'
+      } else if (status.pdf_status === 'Saving background to storage...') {
+        currentProgress.value = 30
+        currentProgressMessage.value = 'Saving background to storage...'
+      } else if (status.pdf_status === 'Background ready for PDF generation') {
+        currentProgress.value = 35
+        currentProgressMessage.value = 'Background ready for PDF generation'
+      } else if (status.pdf_status === 'Setting up PDF document...') {
+        currentProgress.value = 40
+        currentProgressMessage.value = 'Setting up PDF document...'
+      } else if (status.pdf_status === 'Background ready, creating pages...') {
+        currentProgress.value = 45
+        currentProgressMessage.value = 'Background ready, creating pages...'
       } else {
         currentProgressMessage.value = status.pdf_status || 'Processing...'
       }
@@ -732,6 +835,22 @@ const generatePDF = async (book) => {
     console.log('Starting progress polling...')
     startProgressPolling(book.id)
     console.log('Progress dialog should be visible:', showProgressDialog.value)
+    
+    // For regeneration, clear existing background and PDF URLs first
+    if (book.status === 'ready' && (book.background_url || book.pdf_url)) {
+      console.log('🔄 Regenerating memory book, clearing existing URLs...')
+      try {
+        await db.memoryBooks.updateMemoryBook(book.id, {
+          background_url: null,
+          pdf_url: null,
+          status: 'draft'
+        })
+        console.log('✅ Cleared existing URLs for regeneration')
+      } catch (clearError) {
+        console.warn('⚠️ Failed to clear existing URLs:', clearError)
+        // Continue anyway, the backend will handle it
+      }
+    }
     
     // Call the API endpoint to generate PDF
     console.log('Calling PDF generation API...')
@@ -845,10 +964,54 @@ const approveBook = async (bookId) => {
   }
 }
 
+// Unapprove book
+const unapproveBook = async (bookId) => {
+  try {
+    await db.memoryBooks.updateMemoryBook(bookId, {
+      status: 'ready',
+      approved_at: null
+    })
+
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Unapproved',
+        detail: 'Memory book unapproved',
+        life: 3000
+      })
+    }
+
+    // Reload memory books and close modal
+    await loadMemoryBooks()
+    showDetailsModal.value = false
+
+  } catch (error) {
+    console.error('Error unapproving book:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to unapprove memory book',
+        life: 3000
+      })
+    }
+  }
+}
+
 // View book details
-const viewBookDetails = (book) => {
+const viewBookDetails = async (book) => {
   selectedBook.value = book
   showDetailsModal.value = true
+  
+  // Load asset thumbnails for this book
+  await loadAssetThumbnails(book)
+}
+
+// View PDF in new window
+const viewPDF = (pdfUrl) => {
+  if (pdfUrl) {
+    window.open(pdfUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes')
+  }
 }
 
 // Get status text
@@ -882,6 +1045,30 @@ const getStatusClass = (status) => {
     'archived': 'bg-gray-100 text-gray-700'
   }
   return classMap[status] || 'bg-gray-100 text-gray-700'
+}
+
+// Get asset thumbnail
+const getAssetThumbnail = (assetId) => {
+  return assetThumbnails.value[assetId] || null
+}
+
+// Load asset thumbnails for a book
+const loadAssetThumbnails = async (book) => {
+  if (!book.created_from_assets || book.created_from_assets.length === 0) return
+  
+  try {
+    // Get assets for this book using the dedicated function
+    const bookAssets = await db.assets.getAssetsByBook(book.created_from_assets, 12)
+    
+    // Store thumbnails in reactive data
+    bookAssets.forEach(asset => {
+      if (asset.storage_url) {
+        assetThumbnails.value[asset.id] = asset.storage_url
+      }
+    })
+  } catch (error) {
+    console.error('Error loading asset thumbnails:', error)
+  }
 }
 
 // Format date helper

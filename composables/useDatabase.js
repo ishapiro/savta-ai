@@ -401,6 +401,29 @@ export const useDatabase = () => {
       if (error) throw error
       
       await logActivity('asset_restored', { assetId })
+    },
+
+    // Get assets by book (for memory book thumbnails)
+    getAssetsByBook: async (assetIds, limit = 12) => {
+      if (!user.value) return []
+      
+      if (!assetIds || assetIds.length === 0) return []
+      
+      const { data, error } = await supabase
+        .from('assets')
+        .select('id, storage_url, user_caption, ai_caption')
+        .eq('user_id', user.value.id)
+        .eq('deleted', false)
+        .in('id', assetIds)
+        .limit(limit)
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error fetching assets by book:', error)
+        return []
+      }
+      
+      return data || []
     }
   }
 

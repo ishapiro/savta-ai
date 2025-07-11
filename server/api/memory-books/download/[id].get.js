@@ -75,12 +75,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // If book is draft, we need to generate it first
-    if (book.status === 'draft') {
-      console.log('📝 Book is draft, generating PDF...')
-      // Continue to PDF generation below
-    }
-
     // If pdf_url exists, return it directly (fast download)
     if (book.pdf_url && book.pdf_url.startsWith('https://')) {
       console.log('✅ PDF URL already exists, returning:', book.pdf_url)
@@ -90,103 +84,197 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    console.log('🔄 PDF URL not found, generating simple PDF...')
+    console.log('🔄 PDF URL not found, starting generation process...')
     
-    // For now, create a simple placeholder PDF instead of the complex generation
-    // This will help us test the download flow
-    try {
-      // Create a simple PDF using pdf-lib
-      console.log('📄 Importing pdf-lib...')
-      const pdfLib = await import('pdf-lib')
-      console.log('✅ pdf-lib imported successfully')
+    // For regeneration, clear existing files from storage
+    if (book.status === 'ready' && (book.background_url || book.pdf_url)) {
+      console.log('🔄 Regenerating memory book, clearing existing files...')
       
-      const pdfDoc = await pdfLib.PDFDocument.create()
-      const page = pdfDoc.addPage([595, 842]) // A4 size
-      
-      // Add a simple title
-      page.drawText('Memory Book', {
-        x: 50,
-        y: 750,
-        size: 24,
-        color: pdfLib.rgb(0.2, 0.2, 0.2)
-      })
-      
-      page.drawText(`Book ID: ${book.id}`, {
-        x: 50,
-        y: 700,
-        size: 12,
-        color: pdfLib.rgb(0.5, 0.5, 0.5)
-      })
-      
-      page.drawText('This is a placeholder PDF. Full PDF generation is being implemented.', {
-        x: 50,
-        y: 650,
-        size: 14,
-        color: pdfLib.rgb(0.3, 0.3, 0.3)
-      })
-      
-      // Save PDF
-      console.log('💾 Saving PDF to buffer...')
-      const pdfBytes = await pdfDoc.save()
-      console.log('✅ Simple PDF created, size:', pdfBytes.length, 'bytes')
-      
-      // Upload to Supabase Storage
-      const fileName = `${user.id}/memory_book/pdfs/${book.id}.pdf`
-      console.log('📤 Uploading PDF to Supabase Storage:', fileName)
-      console.log('📊 PDF size:', pdfBytes.length, 'bytes')
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('assets')
-        .upload(fileName, pdfBytes, {
-          contentType: 'application/pdf',
-          upsert: true
-        })
-      
-      if (uploadError) {
-        console.error('❌ Failed to upload PDF to storage:', uploadError)
-        console.error('❌ Upload error details:', {
-          message: uploadError.message,
-          statusCode: uploadError.statusCode,
-          statusMessage: uploadError.statusMessage
-        })
-        throw new Error('Failed to upload PDF to storage: ' + uploadError.message)
+      // Clear background file if it exists
+      if (book.background_url) {
+        try {
+          const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}.png`
+          await supabase.storage.from('assets').remove([bgFileName])
+          console.log('✅ Cleared existing background file')
+        } catch (clearError) {
+          console.warn('⚠️ Failed to clear background file:', clearError)
+        }
       }
       
-      console.log('✅ PDF uploaded successfully:', uploadData)
-      
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('assets')
-        .getPublicUrl(fileName)
-      
-      const publicUrl = publicUrlData?.publicUrl
-      if (!publicUrl) {
-        console.error('❌ Failed to get public URL for PDF')
-        throw new Error('Failed to get public URL for PDF')
+      // Clear PDF file if it exists
+      if (book.pdf_url) {
+        try {
+          const pdfFileName = `${user.id}/memory_book/pdfs/${book.id}.pdf`
+          await supabase.storage.from('assets').remove([pdfFileName])
+          console.log('✅ Cleared existing PDF file')
+        } catch (clearError) {
+          console.warn('⚠️ Failed to clear PDF file:', clearError)
+        }
       }
       
-      // Update the book with the PDF URL
-      const { error: updateError } = await supabase
+      // Clear URLs from database
+      await supabase
         .from('memory_books')
         .update({ 
-          pdf_url: publicUrl,
-          status: 'ready'
+          background_url: null,
+          pdf_url: null,
+          status: 'draft'
         })
         .eq('id', book.id)
       
-      if (updateError) {
-        console.error('❌ Error updating book with PDF URL:', updateError)
+      console.log('✅ Cleared existing URLs from database')
+    }
+    
+    // Step 1: Generate background if not already present
+    if (!book.background_url) {
+      console.log('🎨 Background not ready, generating background...')
+      
+      try {
+        // Update status to indicate background generation
+        await updatePdfStatus(supabase, book.id, user.id, 'Creating beautiful background design...')
+        
+        // Fetch approved assets for this book to get tags
+        console.log('📸 Fetching assets for book:', book.created_from_assets)
+        const { data: assets, error: assetsError } = await supabase
+          .from('assets')
+          .select('*')
+          .in('id', book.created_from_assets || [])
+          .eq('approved', true)
+          .eq('deleted', false)
+
+        if (assetsError) {
+          console.error('❌ Error fetching assets:', assetsError)
+          throw new Error(`Failed to fetch assets: ${assetsError.message}`)
+        }
+
+        console.log('✅ Found assets:', assets?.length || 0)
+
+        if (!assets || assets.length === 0) {
+          throw new Error('No approved assets found for this book')
+        }
+
+        // Gather all unique tags from the assets
+        const allTags = Array.from(new Set(
+          assets.flatMap(asset => Array.isArray(asset.tags) ? asset.tags : [])
+        ))
+        const tagsPrompt = allTags.length > 0 ? `, theme: ${allTags.join(', ')}` : ''
+        
+        // Generate a DALL-E 3 background image
+        console.log('🎨 Generating DALL-E background image...')
+        const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
+        if (!openaiApiKey) throw new Error('Missing OpenAI API key')
+        const dallePrompt = `scrapbook page background, soft colors, subtle texture, no text, no people, no objects, DO NOT INCLUDE ANY IMAGES OF PEOPLE OR ANIMALS${tagsPrompt}`
+        
+        const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openaiApiKey}`
+          },
+          body: JSON.stringify({
+            model: 'dall-e-3',
+            prompt: dallePrompt,
+            n: 1,
+            size: '1024x1024'
+          })
+        })
+        
+        if (!dalleRes.ok) {
+          const errorText = await dalleRes.text()
+          console.error('❌ OpenAI DALL-E API error:', dalleRes.status, errorText)
+          throw new Error(`OpenAI DALL-E API error: ${dalleRes.status} - ${errorText}`)
+        }
+        
+        const dalleData = await dalleRes.json()
+        const backgroundUrl = dalleData.data[0].url
+        console.log('✅ DALL-E background generated:', backgroundUrl)
+        
+        // Download the background image
+        await updatePdfStatus(supabase, book.id, user.id, 'Downloading background design...')
+        console.log('⬇️ Downloading background image...')
+        const bgRes = await fetch(backgroundUrl)
+        const bgBuffer = Buffer.from(await bgRes.arrayBuffer())
+        console.log('✅ Background image downloaded, size:', bgBuffer.length, 'bytes')
+        
+        // Upload background to Supabase Storage
+        await updatePdfStatus(supabase, book.id, user.id, 'Saving background to storage...')
+        console.log('📤 Uploading background to storage...')
+        const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}.png`
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('assets')
+          .upload(bgFileName, bgBuffer, {
+            contentType: 'image/png',
+            upsert: true
+          })
+        
+        if (uploadError) {
+          console.error('❌ Failed to upload background to storage:', uploadError)
+          throw new Error('Failed to upload background to storage: ' + uploadError.message)
+        }
+        
+        // Get public URL for background
+        const { data: bgUrlData } = supabase.storage
+          .from('assets')
+          .getPublicUrl(bgFileName)
+        
+        const backgroundStorageUrl = bgUrlData?.publicUrl
+        if (!backgroundStorageUrl) {
+          console.error('❌ Failed to get public URL for background')
+          throw new Error('Failed to get public URL for background')
+        }
+        
+        console.log('✅ Background uploaded to storage:', backgroundStorageUrl)
+        
+        // Update the book with background URL
+        console.log('📝 Updating memory book with background URL...')
+        const { data: updateData, error: updateError } = await supabase
+          .from('memory_books')
+          .update({ 
+            background_url: backgroundStorageUrl,
+            status: 'background_ready'
+          })
+          .eq('id', book.id)
+          .select()
+        
+        if (updateError) {
+          console.error('❌ Error updating book with background URL:', updateError)
+        } else {
+          console.log('✅ Memory book updated with background URL successfully')
+        }
+        
+        await updatePdfStatus(supabase, book.id, user.id, 'Background ready for PDF generation')
+        console.log('🎉 Background generation completed successfully')
+        
+      } catch (backgroundError) {
+        console.error('❌ Background generation failed:', backgroundError)
+        throw new Error('Failed to generate background: ' + backgroundError.message)
+      }
+    }
+    
+    // Step 2: Generate the PDF
+    console.log('📄 Generating PDF with background...')
+    try {
+      // Call the PDF generation endpoint
+      const pdfResponse = await $fetch(`/api/memory-books/generate-pdf/${bookId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (!pdfResponse.success) {
+        throw new Error('Failed to generate PDF')
       }
       
-      console.log('✅ PDF generated and uploaded successfully')
+      console.log('✅ PDF generation completed successfully')
       return {
         success: true,
-        downloadUrl: publicUrl
+        downloadUrl: pdfResponse.downloadUrl
       }
-      
-    } catch (error) {
-      console.error('❌ PDF generation failed:', error)
-      throw new Error('Failed to generate PDF: ' + error.message)
+    } catch (pdfError) {
+      console.error('❌ PDF generation failed:', pdfError)
+      throw new Error('Failed to generate PDF: ' + pdfError.message)
     }
     
   } catch (error) {
@@ -202,4 +290,24 @@ export default defineEventHandler(async (event) => {
       statusMessage: error.statusMessage || 'Failed to generate download URL: ' + error.message
     })
   }
-}) 
+})
+
+async function updatePdfStatus(supabase, bookId, userId, status) {
+  try {
+    console.log('📊 Updating PDF status:', status, 'for book:', bookId)
+    const { data, error } = await supabase.from('pdf_status').upsert({
+      book_id: bookId,
+      user_id: userId,
+      status,
+      updated_at: new Date().toISOString()
+    }, { onConflict: ['book_id', 'user_id'] })
+    
+    if (error) {
+      console.error('❌ PDF status update error:', error)
+    } else {
+      console.log('✅ PDF status updated successfully')
+    }
+  } catch (error) {
+    console.log('⚠️ PDF status table might not exist yet, continuing without status updates:', error.message)
+  }
+} 

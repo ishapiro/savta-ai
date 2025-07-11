@@ -7,8 +7,6 @@
     "build:clean": "rm -rf .nuxt .output && npm run build",
     "dev": "nuxt dev",
     "cleanup": "bash scripts/cleanup.sh",
-    "dev:clean": "npm run cleanup && sleep 1 && nuxt dev",
-    "dev:reset": "npm run cleanup && npm install && sleep 2 && nuxt dev",
     "dev:port": "nuxt dev --port 3001",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
