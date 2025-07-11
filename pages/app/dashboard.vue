@@ -51,8 +51,15 @@ definePageMeta({
 })
 
 // Get user and Supabase client
-const user = useSupabaseUser()
-const supabase = useSupabaseClient()
+  // const user = useSupabaseUser()
+  // const supabase = useSupabaseClient()
+
+const supabase = useNuxtApp().$supabase
+let user = null
+const { data } = await supabase.auth.getUser()
+user = data.user
+
+
 const { hasInsidersAccess, checkInsidersAccess } = useInsidersAccess()
 
 // Refresh insiders access state when component mounts

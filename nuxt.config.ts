@@ -7,10 +7,11 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: [
     '@nuxtjs/tailwindcss',
-    '@nuxtjs/supabase'
+    // '@nuxtjs/supabase'
     // NOTE: PrimeVue is handled manually via plugins/primevue.ts
     // DO NOT add primevue/nuxt or @nuxtjs/primevue modules here
   ],
+
   css: [
     'primevue/resources/themes/lara-light-purple/theme.css',
     'primevue/resources/primevue.css',
@@ -36,7 +37,10 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
-    compatibilityDate: '2025-07-01'
+    compatibilityDate: '2025-07-01',
+    externals: {
+      external: ['@supabase/ssr', 'cookie']
+    }
   },
   ssr: true,
   experimental: {

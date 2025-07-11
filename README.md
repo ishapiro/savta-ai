@@ -325,6 +325,10 @@ This comprehensive cleanup script will:
 
 The project is configured for Vercel deployment with the `vercel.json` configuration file. Simply connect your repository to Vercel and deploy.
 
+- `vercel deploy --prod --force`
+
+This will do a complete rebuild and redeploy the the app.
+
 ## Contributing
 
 1. Fork the repository

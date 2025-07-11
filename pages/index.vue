@@ -131,7 +131,8 @@ const passwordError = ref('')
 const config = useRuntimeConfig()
 
 const handleSubscribe = async () => {
-  const supabase = useSupabaseClient()
+  // const supabase = useSupabaseClient()
+  const supabase = useNuxtApp().$supabase
   message.value = ''
   messageType.value = null
 

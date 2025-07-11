@@ -6,7 +6,17 @@
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "#app": [".nuxt/types/app"],
+      "#imports": [".nuxt/imports"]
+    }
   },
+  "include": [
+    "nuxt.config.ts",
+    "plugins/**/*",
+    ".nuxt/**/*"
+  ],
   "exclude": ["node_modules"]
 }

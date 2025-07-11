@@ -2,7 +2,7 @@
 // This library centralizes all database logic to avoid repetition
 
 export const useDatabase = () => {
-  const supabase = useSupabaseClient()
+  const supabase = useNuxtApp().$supabase
   const user = useSupabaseUser()
 
   // Helper function to get current user's profile

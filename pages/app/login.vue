@@ -118,6 +118,8 @@ definePageMeta({
   ssr: false
 })
 
+import { useSupabaseUser } from '~/composables/useSupabase'
+
 const email = ref('')
 const password = ref('')
 const emailLoading = ref(false)
@@ -128,7 +130,7 @@ const passwordError = ref('')
 const visible = ref(true)
 
 // Get Supabase client
-const supabase = useSupabaseClient()
+const supabase = useNuxtApp().$supabase
 const user = useSupabaseUser()
 
 // Redirect if already logged in

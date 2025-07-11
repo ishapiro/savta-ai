@@ -47,6 +47,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Inject $toast globally for all pages
   nuxtApp.provide('toast', ToastService)
+  nuxtApp.provide('$toast', ToastService)
   
   // Register components globally
   const components = {

@@ -270,6 +270,8 @@
       modal
       :style="{ width: '100%', maxWidth: '500px', maxHeight: '95vh', padding: '0' }"
       class="!rounded-[16px] !shadow-xl !border-0 !overflow-hidden w-full sm:max-w-[500px]"
+      :auto-z-index="false"
+      :z-index="1000"
     >
       <div v-if="selectedBook" class="p-2 sm:p-3 bg-white space-y-2">
         <!-- Super Compact Top: Icon, Book #, Status -->
@@ -463,8 +465,12 @@ definePageMeta({
 const { $toast } = useNuxtApp()
 const db = useDatabase()
 const route = useRoute()
-const supabase = useSupabaseClient()
-const user = useSupabaseUser()
+// const supabase = useSupabaseClient()
+// const user = useSupabaseUser()
+const supabase = useNuxtApp().$supabase
+let user = null
+const { data } = await supabase.auth.getUser()
+user = data.user
 
 // Reactive data
 const memoryBooks = ref([])
@@ -694,10 +700,13 @@ const pollPdfStatus = async () => {
   if (!currentBookId.value) return
 
   try {
+    const supabase = useNuxtApp().$supabase
+    const { data: sessionData } = await supabase.auth.getSession()
+
     const response = await $fetch(`/api/memory-books/status/${currentBookId.value}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${(await useSupabaseClient().auth.getSession()).data.session?.access_token}`
+        'Authorization': `Bearer ${sessionData.session?.access_token}`
       }
     })
 
@@ -854,10 +863,14 @@ const generatePDF = async (book) => {
     
     // Call the API endpoint to generate PDF
     console.log('Calling PDF generation API...')
+    const supabase = useNuxtApp().$supabase
+
+    const { data: sessionData } = await supabase.auth.getSession()
+
     const response = await $fetch(`/api/memory-books/download/${book.id}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${(await useSupabaseClient().auth.getSession()).data.session?.access_token}`
+        'Authorization': `Bearer ${sessionData.session?.access_token}`
       }
     })
     
@@ -890,10 +903,14 @@ const generatePDF = async (book) => {
 const downloadPDF = async (book) => {
   try {
     // Call the API endpoint to get the download URL
+    const supabase = useNuxtApp().$supabase
+
+    const { data: sessionData } = await supabase.auth.getSession()
+
     const response = await $fetch(`/api/memory-books/download/${book.id}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${(await useSupabaseClient().auth.getSession()).data.session?.access_token}`
+        'Authorization': `Bearer ${sessionData.session?.access_token}`
       }
     })
     
@@ -1000,11 +1017,25 @@ const unapproveBook = async (bookId) => {
 
 // View book details
 const viewBookDetails = async (book) => {
-  selectedBook.value = book
-  showDetailsModal.value = true
-  
-  // Load asset thumbnails for this book
-  await loadAssetThumbnails(book)
+  try {
+    // Reset state first
+    selectedBook.value = null
+    showDetailsModal.value = false
+    
+    // Small delay to ensure clean state
+    await new Promise(resolve => setTimeout(resolve, 10))
+    
+    selectedBook.value = book
+    showDetailsModal.value = true
+    
+    // Load asset thumbnails for this book
+    await loadAssetThumbnails(book)
+  } catch (error) {
+    console.error('Error viewing book details:', error)
+    // Fallback: just show the modal without thumbnails
+    selectedBook.value = book
+    showDetailsModal.value = true
+  }
 }
 
 // View PDF in new window
@@ -1054,18 +1085,20 @@ const getAssetThumbnail = (assetId) => {
 
 // Load asset thumbnails for a book
 const loadAssetThumbnails = async (book) => {
-  if (!book.created_from_assets || book.created_from_assets.length === 0) return
+  if (!book || !book.created_from_assets || book.created_from_assets.length === 0) return
   
   try {
     // Get assets for this book using the dedicated function
     const bookAssets = await db.assets.getAssetsByBook(book.created_from_assets, 12)
     
     // Store thumbnails in reactive data
-    bookAssets.forEach(asset => {
-      if (asset.storage_url) {
-        assetThumbnails.value[asset.id] = asset.storage_url
-      }
-    })
+    if (bookAssets && Array.isArray(bookAssets)) {
+      bookAssets.forEach(asset => {
+        if (asset && asset.storage_url) {
+          assetThumbnails.value[asset.id] = asset.storage_url
+        }
+      })
+    }
   } catch (error) {
     console.error('Error loading asset thumbnails:', error)
   }

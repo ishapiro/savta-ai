@@ -380,14 +380,19 @@
         </div>
       </div>
     </footer>
+    
+    <!-- Toast component for notifications -->
+    <Toast />
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-const supabase = useSupabaseClient()
+import { useSupabaseUser } from '~/composables/useSupabase'
+const supabase = useNuxtApp().$supabase
 const user = useSupabaseUser()
+
 const route = useRoute()
 const { hasInsidersAccess, checkInsidersAccess } = useInsidersAccess()
 
@@ -400,7 +405,7 @@ const buildInfo = config.public.buildDate
 const userProfile = ref(null)
 
 // Load user profile when user changes
-watch(user, async (newUser) => {
+watch(() => user.value, async (newUser) => {
   if (newUser) {
     try {
       const db = useDatabase()

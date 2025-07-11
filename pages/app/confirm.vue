@@ -121,9 +121,12 @@ definePageMeta({
   ssr: false
 })
 
+import { useSupabaseUser } from '~/composables/useSupabase'
+
 // Get Supabase user data
+const supabase = useNuxtApp().$supabase
 const user = useSupabaseUser()
-const supabase = useSupabaseClient()
+
 
 // Dialog state
 const visible = ref(true)
@@ -178,6 +181,12 @@ const onDialogHide = () => {
 
 // Handle OAuth callback and user state
 onMounted(async () => {
+  // Clean up URL fragments from OAuth callback
+  if (window.location.hash) {
+    // Remove the hash fragment to clean up the URL
+    window.history.replaceState(null, '', window.location.pathname + window.location.search)
+  }
+  
   // Check if this is an OAuth callback
   const { data: { session }, error } = await supabase.auth.getSession()
   

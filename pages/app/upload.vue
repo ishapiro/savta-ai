@@ -326,7 +326,7 @@ const loadRecentAssets = async () => {
     console.error('Error loading recent assets:', error)
     // Use PrimeVue toast service directly
     const { $toast } = useNuxtApp()
-    if ($toast) {
+    if ($toast && $toast.add) {
       $toast.add({
         severity: 'error',
         summary: 'Error',
@@ -354,16 +354,20 @@ const handleFileDrop = (event) => {
 const uploadFiles = async (files) => {
   const { $toast } = useNuxtApp()
   
+  // Ensure toast service is available
+  if (!$toast) {
+    console.warn('Toast service not available')
+    return
+  }
+  
   for (const file of files) {
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      if ($toast) {
-        $toast.add({
-          severity: 'error',
-          summary: 'File Too Large',
-          detail: `${file.name} is too large. Maximum size is 10MB.`,
-          life: 3000
-        })
-      }
+      $toast.add({
+        severity: 'error',
+        summary: 'File Too Large',
+        detail: `${file.name} is too large. Maximum size is 10MB.`,
+        life: 3000
+      })
       continue
     }
 
@@ -402,14 +406,12 @@ const uploadFiles = async (files) => {
 
       uploadFile.processing = false
       
-      if ($toast) {
-        $toast.add({
-          severity: 'success',
-          summary: 'Upload Complete',
-          detail: `${file.name} uploaded and processed successfully`,
-          life: 3000
-        })
-      }
+      $toast.add({
+        severity: 'success',
+        summary: 'Upload Complete',
+        detail: `${file.name} uploaded and processed successfully`,
+        life: 3000
+      })
 
       // Reload recent assets
       await loadRecentAssets()
@@ -420,14 +422,12 @@ const uploadFiles = async (files) => {
       uploadFile.uploading = false
       uploadFile.processing = false
       
-      if ($toast) {
-        $toast.add({
-          severity: 'error',
-          summary: 'Upload Failed',
-          detail: `Failed to upload ${file.name}: ${error.message}`,
-          life: 3000
-        })
-      }
+      $toast.add({
+        severity: 'error',
+        summary: 'Upload Failed',
+        detail: `Failed to upload ${file.name}: ${error.message}`,
+        life: 3000
+      })
     }
   }
 }
@@ -457,14 +457,12 @@ const submitTextStory = async () => {
       }
     })
 
-    if ($toast) {
-      $toast.add({
-        severity: 'success',
-        summary: 'Story Shared',
-        detail: 'Your story has been uploaded and processed successfully',
-        life: 3000
-      })
-    }
+    $toast.add({
+      severity: 'success',
+      summary: 'Story Shared',
+      detail: 'Your story has been uploaded and processed successfully',
+      life: 3000
+    })
 
     // Clear form and reload assets
     clearTextStory()
@@ -472,14 +470,12 @@ const submitTextStory = async () => {
 
   } catch (error) {
     console.error('Story submission error:', error)
-    if ($toast) {
-      $toast.add({
-        severity: 'error',
-        summary: 'Upload Failed',
-        detail: 'Failed to upload your story',
-        life: 3000
-      })
-    }
+    $toast.add({
+      severity: 'error',
+      summary: 'Upload Failed',
+      detail: 'Failed to upload your story',
+      life: 3000
+    })
   } finally {
     submittingStory.value = false
   }

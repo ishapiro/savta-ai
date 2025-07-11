@@ -3,7 +3,8 @@
 
 export default defineEventHandler(async (event) => {
   try {
-    const supabase = useSupabaseClient()
+    // const supabase = useSupabaseClient()
+    const supabase = useNuxtApp().$supabase
     
     // Check if we're in development mode
     if (process.env.NODE_ENV === 'production') {
