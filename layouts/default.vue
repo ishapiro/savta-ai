@@ -355,9 +355,9 @@
     </header>
 
     <!-- Breadcrumb aligned with header content -->
-    <div class="hidden md:block">
+    <div class="hidden md:block bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Breadcrumb :model="breadcrumbItems" class="text-sm outline-none focus:outline-none ring-0" />
+        <Breadcrumb :model="breadcrumbItems" class="text-sm outline-none focus:outline-none ring-0 border-0 bg-gray-50" />
       </div>
     </div>
 
