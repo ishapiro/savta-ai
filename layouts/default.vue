@@ -6,9 +6,9 @@
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
           <div class="flex items-center">
-            <NuxtLink to="/" class="flex items-center space-x-2">
-              <SavtaIcon class="w-8 h-8" />
-              <span class="text-xl font-bold text-gray-900">Savta</span>
+            <NuxtLink to="/" class="flex items-center space-x-4 no-underline">
+              <SavtaIcon class="h-10 w-auto" />
+              <span class="text-xl font-bold text-pink-500 no-underline">Savta</span>
             </NuxtLink>
           </div>
 

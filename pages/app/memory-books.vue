@@ -1025,11 +1025,11 @@ const viewBookDetails = async (book) => {
     // Small delay to ensure clean state
     await new Promise(resolve => setTimeout(resolve, 10))
     
-    selectedBook.value = book
-    showDetailsModal.value = true
-    
-    // Load asset thumbnails for this book
-    await loadAssetThumbnails(book)
+  selectedBook.value = book
+  showDetailsModal.value = true
+  
+  // Load asset thumbnails for this book
+  await loadAssetThumbnails(book)
   } catch (error) {
     console.error('Error viewing book details:', error)
     // Fallback: just show the modal without thumbnails
@@ -1093,11 +1093,11 @@ const loadAssetThumbnails = async (book) => {
     
     // Store thumbnails in reactive data
     if (bookAssets && Array.isArray(bookAssets)) {
-      bookAssets.forEach(asset => {
+    bookAssets.forEach(asset => {
         if (asset && asset.storage_url) {
-          assetThumbnails.value[asset.id] = asset.storage_url
-        }
-      })
+        assetThumbnails.value[asset.id] = asset.storage_url
+      }
+    })
     }
   } catch (error) {
     console.error('Error loading asset thumbnails:', error)

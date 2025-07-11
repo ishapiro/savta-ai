@@ -6,12 +6,12 @@ let authListenerInitialized = false
 export function useSupabaseUser() {
   if (!authListenerInitialized) {
     try {
-      const supabase = useNuxtApp().$supabase
+    const supabase = useNuxtApp().$supabase
       
       // Get initial user
       const getUser = async () => {
         try {
-          const { data } = await supabase.auth.getUser()
+    const { data } = await supabase.auth.getUser()
           console.log('Getting user:', data.user?.email)
           globalUser.value = data.user
         } catch (error) {
@@ -39,4 +39,4 @@ export function useSupabaseUser() {
   }
   
   return globalUser
-}
+  }

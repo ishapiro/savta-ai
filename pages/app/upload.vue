@@ -327,11 +327,11 @@ const loadRecentAssets = async () => {
     recentAssets.value = assets
   } catch (error) {
     toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to load recent assets',
-      life: 3000
-    })
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to load recent assets',
+        life: 3000
+      })
   }
 }
 
@@ -353,11 +353,11 @@ const uploadFiles = async (files) => {
   for (const file of files) {
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
       toast.add({
-        severity: 'error',
-        summary: 'File Too Large',
-        detail: `${file.name} is too large. Maximum size is 10MB.`,
-        life: 3000
-      })
+          severity: 'error',
+          summary: 'File Too Large',
+          detail: `${file.name} is too large. Maximum size is 10MB.`,
+          life: 3000
+        })
       continue
     }
 
@@ -397,11 +397,11 @@ const uploadFiles = async (files) => {
       uploadFile.processing = false
       
       toast.add({
-        severity: 'success',
-        summary: 'Upload Complete',
-        detail: `${file.name} uploaded and processed successfully`,
-        life: 3000
-      })
+          severity: 'success',
+          summary: 'Upload Complete',
+          detail: `${file.name} uploaded and processed successfully`,
+          life: 3000
+        })
       // Remove file from uploadingFiles immediately
       uploadingFiles.value = uploadingFiles.value.filter(f => f.id !== uploadFile.id)
       await loadRecentAssets()
@@ -412,11 +412,11 @@ const uploadFiles = async (files) => {
       uploadFile.processing = false
       
       toast.add({
-        severity: 'error',
-        summary: 'Upload Failed',
-        detail: `Failed to upload ${file.name}: ${error.message}`,
-        life: 3000
-      })
+          severity: 'error',
+          summary: 'Upload Failed',
+          detail: `Failed to upload ${file.name}: ${error.message}`,
+          life: 3000
+        })
       // Remove file from uploadingFiles immediately on error
       uploadingFiles.value = uploadingFiles.value.filter(f => f.id !== uploadFile.id)
     }
@@ -448,11 +448,11 @@ const submitTextStory = async () => {
     })
 
     toast.add({
-      severity: 'success',
-      summary: 'Story Shared',
-      detail: 'Your story has been uploaded and processed successfully',
-      life: 3000
-    })
+        severity: 'success',
+        summary: 'Story Shared',
+        detail: 'Your story has been uploaded and processed successfully',
+        life: 3000
+      })
 
     // Clear form and reload assets
     clearTextStory()
@@ -460,11 +460,11 @@ const submitTextStory = async () => {
 
   } catch (error) {
     toast.add({
-      severity: 'error',
-      summary: 'Upload Failed',
-      detail: 'Failed to upload your story',
-      life: 3000
-    })
+        severity: 'error',
+        summary: 'Upload Failed',
+        detail: 'Failed to upload your story',
+        life: 3000
+      })
   } finally {
     submittingStory.value = false
   }
