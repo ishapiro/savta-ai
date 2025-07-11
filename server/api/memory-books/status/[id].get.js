@@ -1,18 +1,45 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
-  const { data: { user } } = await getServerSupabaseClient(event).auth.getUser()
-
-  if (!user) {
+  
+  // Get the authorization header
+  const authHeader = getHeader(event, 'authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Unauthorized'
+      statusMessage: 'Unauthorized - No valid token'
+    })
+  }
+
+  const token = authHeader.replace('Bearer ', '')
+  
+  // Create Supabase client with service role
+  const config = useRuntimeConfig()
+  const { createClient } = await import('@supabase/supabase-js')
+  const supabase = createClient(
+    config.public.supabaseUrl,
+    config.supabaseServiceRoleKey || config.public.supabaseKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+
+  // Verify the token and get user
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+  
+  if (authError || !user) {
+    console.log('Auth error:', authError)
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized - Invalid token'
     })
   }
 
   console.log(`[STATUS] Checking status for book ${id} by user ${user.id}`)
 
   try {
-    const supabase = getServerSupabaseClient(event)
     
     // Get the memory book
     const { data: book, error: bookError } = await supabase
@@ -49,13 +76,13 @@ export default defineEventHandler(async (event) => {
       // Continue without PDF status - this is expected if the table hasn't been created yet
     }
 
-    // Only throw error if it's not a "table doesn't exist" error
-    if (pdfError && pdfError.code !== 'PGRST116' && pdfError.code !== '42P01') {
+    // Only throw error if it's not a "table doesn't exist" error or "no rows returned" error
+    if (pdfError && 
+        pdfError.code !== 'PGRST116' && 
+        pdfError.code !== '42P01' && 
+        pdfError.code !== 'PGRST116') {
       console.log(`[STATUS] Error fetching PDF status: ${pdfError.message}`)
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to fetch PDF status'
-      })
+      // Don't throw error, just log it and continue with default values
     }
 
     const status = {
@@ -75,6 +102,18 @@ export default defineEventHandler(async (event) => {
     return status
   } catch (error) {
     console.error(`[STATUS] Error checking status for book ${id}:`, error)
-    throw error
+    
+    // Return a default status instead of throwing an error
+    return {
+      book_id: id,
+      user_id: user?.id || 'unknown',
+      book_status: 'error',
+      background_url: null,
+      pdf_url: null,
+      pdf_status: 'error',
+      pdf_error: error.message || 'Unknown error',
+      created_at: null,
+      updated_at: null
+    }
   }
 }) 

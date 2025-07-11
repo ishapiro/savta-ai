@@ -312,12 +312,12 @@ export default defineEventHandler(async (event) => {
     const pdfBytes = await pdfDoc.save()
     console.log('✅ PDF saved, size:', pdfBytes.length, 'bytes')
     
-    const fileName = `memory-books/${book.id}.pdf`
+    const fileName = `${user.id}/memory_book/pdfs/${book.id}.pdf`
     await updatePdfStatus(supabase, book.id, user.id, 'Uploading PDF to cloud storage...')
     console.log('📤 Uploading PDF to Supabase Storage:', fileName)
     
-    // Upload to Supabase Storage (memory-books bucket)
-    const { data: uploadData, error: uploadError } = await supabase.storage.from('memory-books').upload(fileName, pdfBytes, {
+    // Upload to Supabase Storage (using assets bucket with memory_book subdirectory)
+    const { data: uploadData, error: uploadError } = await supabase.storage.from('assets').upload(fileName, pdfBytes, {
       contentType: 'application/pdf',
       upsert: true
     })
@@ -331,7 +331,7 @@ export default defineEventHandler(async (event) => {
     // Get public URL
     await updatePdfStatus(supabase, book.id, user.id, 'Generating download link...')
     console.log('🔗 Getting public URL for uploaded PDF...')
-    const { data: publicUrlData } = supabase.storage.from('memory-books').getPublicUrl(fileName)
+    const { data: publicUrlData } = supabase.storage.from('assets').getPublicUrl(fileName)
     const publicUrl = publicUrlData?.publicUrl
     if (!publicUrl) {
       console.error('❌ Failed to get public URL for PDF')

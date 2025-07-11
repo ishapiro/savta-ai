@@ -19,7 +19,7 @@ CREATE POLICY "Users can upload assets" ON storage.objects
     auth.role() = 'authenticated'
   );
 
--- Allow users to view files in their own folder
+-- Allow users to view files in their own folder (including memory_book subdirectory)
 CREATE POLICY "Users can view own assets" ON storage.objects
   FOR SELECT USING (
     bucket_id = 'assets' AND 
@@ -27,7 +27,7 @@ CREATE POLICY "Users can view own assets" ON storage.objects
     (storage.foldername(name))[1] = auth.uid()::text
   );
 
--- Allow users to update files in their own folder
+-- Allow users to update files in their own folder (including memory_book subdirectory)
 CREATE POLICY "Users can update own assets" ON storage.objects
   FOR UPDATE USING (
     bucket_id = 'assets' AND 
@@ -35,7 +35,7 @@ CREATE POLICY "Users can update own assets" ON storage.objects
     (storage.foldername(name))[1] = auth.uid()::text
   );
 
--- Allow users to delete files in their own folder
+-- Allow users to delete files in their own folder (including memory_book subdirectory)
 CREATE POLICY "Users can delete own assets" ON storage.objects
   FOR DELETE USING (
     bucket_id = 'assets' AND 

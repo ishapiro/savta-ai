@@ -141,13 +141,13 @@ export default defineEventHandler(async (event) => {
     const bgBuffer = Buffer.from(await bgRes.arrayBuffer())
     console.log('✅ Background image downloaded, size:', bgBuffer.length, 'bytes')
     
-    // Upload background to Supabase Storage
+    // Upload background to Supabase Storage (using assets bucket with memory_book subdirectory)
     await updatePdfStatus(supabase, book.id, user.id, 'Saving background to storage...')
     console.log('📤 Uploading background to storage...')
-    const bgFileName = `backgrounds/${book.id}.png`
+    const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}.png`
     
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('memory-books')
+      .from('assets')
       .upload(bgFileName, bgBuffer, {
         contentType: 'image/png',
         upsert: true
@@ -160,7 +160,7 @@ export default defineEventHandler(async (event) => {
     
     // Get public URL for background
     const { data: bgUrlData } = supabase.storage
-      .from('memory-books')
+      .from('assets')
       .getPublicUrl(bgFileName)
     
     const backgroundStorageUrl = bgUrlData?.publicUrl

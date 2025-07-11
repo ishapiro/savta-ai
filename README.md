@@ -177,6 +177,37 @@ The app uses Supabase Storage for file uploads. You need to create the storage b
    - Target roles: authenticated
    - Using expression: `bucket_id = 'assets' AND auth.uid()::text = (storage.foldername(name))[1]`
 
+### Storage Bucket Structure
+The app uses a single `assets` bucket with a hierarchical folder structure to organize different types of files:
+
+```
+assets/
+├── {user_id}/                    # User-specific folders
+│   ├── memory_book/              # Memory book files
+│   │   ├── backgrounds/          # AI-generated background images
+│   │   │   └── {book_id}.png    # Background for specific memory book
+│   │   └── pdfs/                # Generated PDF files
+│   │       └── {book_id}.pdf    # PDF for specific memory book
+│   └── {timestamp}-{filename}   # User uploaded assets (photos, text)
+│       ├── 1234567890-photo.jpg
+│       ├── 1234567891-story.txt
+│       └── ...
+└── {user_id_2}/
+    ├── memory_book/
+    │   └── ...
+    └── ...
+```
+
+**File Types:**
+- **User Assets**: Photos and text stories uploaded by users
+- **Background Images**: AI-generated backgrounds for memory books (PNG format)
+- **PDF Files**: Generated memory book PDFs (PDF format)
+
+**Security:**
+- Each user can only access files in their own folder (`{user_id}/`)
+- Memory book files are organized in subdirectories for easy management
+- All files are stored in the public `assets` bucket for easy access
+
 ## Environment Variables
 Create a `.env` file in the project root with the following variables:
 ```
@@ -232,6 +263,110 @@ npm run dev:reset
 - **`useSupabaseSession` import error**: This occurs when the Nuxt Supabase module cache gets corrupted after abrupt termination. Use `npm run cleanup` to fix.
 - **Port already in use**: The cleanup script automatically kills processes on ports 3000 and 3001.
 - **Module cache issues**: The comprehensive cleanup clears all Nuxt, Vite, and Node.js caches.
+
+### Enhanced Cleanup System
+
+The project includes a robust cleanup system to handle development issues, especially import transformation errors and cache corruption.
+
+> **Note:**
+> The `fix-supabase` and `fix-supabase:safe` scripts now ONLY clean caches and types—they never reinstall or upgrade Supabase. If you get a module not found error after running them, just run `npm install` to restore the correct version from `package.json`.
+
+#### Available Scripts
+
+**Cleanup Scripts (Separate from dev server):**
+```bash
+npm run cleanup        # Comprehensive cache cleanup
+npm run fix:supabase   # Fix Supabase import issues (clean only)
+npm run fix:supabase:safe # Alternate Supabase clean (no reinstall)
+npm run reset:all      # Complete project reset (node_modules + reinstall)
+```
+
+**Development Scripts (Include dev server):**
+```bash
+npm run dev           # Start development server
+npm run dev:clean     # Cleanup + start dev server
+npm run dev:fix       # Fix Supabase issues + start dev server
+npm run dev:reset     # Complete reset + start dev server
+```
+
+#### When to Use Each Script
+
+**`npm run cleanup`** - Use when you encounter:
+- Import errors like `useSupabaseSession` not found
+- Nuxt transformation errors
+- Vite cache issues
+- Port conflicts (3000, 3001, 3002)
+
+**`npm run fix:supabase`** or **`npm run fix:supabase:safe`** - Use specifically for:
+- Supabase module import errors
+- `useSupabaseSession` or `useSupabaseClient` not found
+- Supabase type definition issues
+- (These scripts will NOT reinstall or upgrade Supabase)
+
+**`npm run reset:all`** - Use for:
+- Severe cache corruption
+- Module installation issues
+- After major dependency updates
+- When other cleanup scripts don't work
+
+**`npm run dev:clean`** - Use for:
+- Quick restart with cleanup
+- After stopping dev server abruptly
+- General development issues
+
+**`npm run dev:fix`** - Use for:
+- Supabase-related development issues
+- Import transformation errors
+- Type definition problems
+
+#### What the Cleanup Scripts Do
+
+**`cleanup.sh`:**
+- Removes Nuxt cache directories (`.nuxt`, `.output`)
+- Clears Vite and Node.js caches
+- Kills lingering development processes
+- Clears TypeScript and ESLint caches
+- Regenerates Nuxt types with `nuxi prepare`
+- Removes temporary files
+
+**`fix-supabase-imports.sh` and `fix-supabase-safe.sh`:**
+- Clears Supabase-specific caches
+- Removes corrupted import files
+- Regenerates Nuxt types
+- Clears npm cache
+- **Never reinstalls or upgrades Supabase**
+
+**`reset-all.sh`:**
+- Runs comprehensive cleanup
+- Removes `node_modules` and `package-lock.json`
+- Reinstalls all dependencies (using your `package.json`)
+- Fixes Supabase imports (clean only)
+- Regenerates all types
+
+#### Usage Examples
+
+```bash
+# Normal development
+npm run dev
+
+# If you get import errors after stopping dev server
+npm run cleanup
+npm run dev
+
+# If Supabase imports are broken
+npm run fix:supabase
+npm run dev
+
+# If everything is broken
+npm run reset:all
+npm run dev
+
+# Quick fix and restart
+npm run dev:fix
+
+# If you get a module not found error after a fix, just run:
+npm install
+```
 
 ### Useful Scripts
 ```bash

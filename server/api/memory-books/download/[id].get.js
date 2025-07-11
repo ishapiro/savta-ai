@@ -67,12 +67,18 @@ export default defineEventHandler(async (event) => {
     console.log('✅ Memory book found:', book.id, 'Status:', book.status)
     
     // Check if the book is ready for download
-    if (book.status !== 'ready') {
+    if (book.status !== 'ready' && book.status !== 'draft') {
       console.log('❌ Book not ready for download, status:', book.status)
       throw createError({
         statusCode: 400,
         statusMessage: 'Memory book is not ready for download'
       })
+    }
+
+    // If book is draft, we need to generate it first
+    if (book.status === 'draft') {
+      console.log('📝 Book is draft, generating PDF...')
+      // Continue to PDF generation below
     }
 
     // If pdf_url exists, return it directly (fast download)
@@ -84,51 +90,116 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    console.log('🔄 PDF URL not found, checking if background is ready...')
+    console.log('🔄 PDF URL not found, generating simple PDF...')
     
-    // Check if background is ready, if not, trigger background generation
-    if (!book.background_url || book.status === 'ready') {
-      console.log('🎨 Background not ready, triggering background generation...')
+    // For now, create a simple placeholder PDF instead of the complex generation
+    // This will help us test the download flow
+    try {
+      // Create a simple PDF using pdf-lib
+      console.log('📄 Importing pdf-lib...')
+      const pdfLib = await import('pdf-lib')
+      console.log('✅ pdf-lib imported successfully')
       
-      // Call background generation endpoint
-      const backgroundResponse = await $fetch(`/api/memory-books/generate-background/${bookId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const pdfDoc = await pdfLib.PDFDocument.create()
+      const page = pdfDoc.addPage([595, 842]) // A4 size
+      
+      // Add a simple title
+      page.drawText('Memory Book', {
+        x: 50,
+        y: 750,
+        size: 24,
+        color: pdfLib.rgb(0.2, 0.2, 0.2)
       })
       
-      if (!backgroundResponse.success) {
-        throw new Error('Failed to generate background')
+      page.drawText(`Book ID: ${book.id}`, {
+        x: 50,
+        y: 700,
+        size: 12,
+        color: pdfLib.rgb(0.5, 0.5, 0.5)
+      })
+      
+      page.drawText('This is a placeholder PDF. Full PDF generation is being implemented.', {
+        x: 50,
+        y: 650,
+        size: 14,
+        color: pdfLib.rgb(0.3, 0.3, 0.3)
+      })
+      
+      // Save PDF
+      console.log('💾 Saving PDF to buffer...')
+      const pdfBytes = await pdfDoc.save()
+      console.log('✅ Simple PDF created, size:', pdfBytes.length, 'bytes')
+      
+      // Upload to Supabase Storage
+      const fileName = `${user.id}/memory_book/pdfs/${book.id}.pdf`
+      console.log('📤 Uploading PDF to Supabase Storage:', fileName)
+      console.log('📊 PDF size:', pdfBytes.length, 'bytes')
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('assets')
+        .upload(fileName, pdfBytes, {
+          contentType: 'application/pdf',
+          upsert: true
+        })
+      
+      if (uploadError) {
+        console.error('❌ Failed to upload PDF to storage:', uploadError)
+        console.error('❌ Upload error details:', {
+          message: uploadError.message,
+          statusCode: uploadError.statusCode,
+          statusMessage: uploadError.statusMessage
+        })
+        throw new Error('Failed to upload PDF to storage: ' + uploadError.message)
       }
       
-      console.log('✅ Background generated successfully')
-    }
-    
-    // Now generate the PDF
-    console.log('📄 Generating PDF with background...')
-    const pdfResponse = await $fetch(`/api/memory-books/generate-pdf/${bookId}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
+      console.log('✅ PDF uploaded successfully:', uploadData)
+      
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('assets')
+        .getPublicUrl(fileName)
+      
+      const publicUrl = publicUrlData?.publicUrl
+      if (!publicUrl) {
+        console.error('❌ Failed to get public URL for PDF')
+        throw new Error('Failed to get public URL for PDF')
       }
-    })
-    
-    if (!pdfResponse.success) {
-      throw new Error('Failed to generate PDF')
-    }
-    
-    console.log('✅ PDF generation completed successfully')
-    return {
-      success: true,
-      downloadUrl: pdfResponse.downloadUrl
+      
+      // Update the book with the PDF URL
+      const { error: updateError } = await supabase
+        .from('memory_books')
+        .update({ 
+          pdf_url: publicUrl,
+          status: 'ready'
+        })
+        .eq('id', book.id)
+      
+      if (updateError) {
+        console.error('❌ Error updating book with PDF URL:', updateError)
+      }
+      
+      console.log('✅ PDF generated and uploaded successfully')
+      return {
+        success: true,
+        downloadUrl: publicUrl
+      }
+      
+    } catch (error) {
+      console.error('❌ PDF generation failed:', error)
+      throw new Error('Failed to generate PDF: ' + error.message)
     }
     
   } catch (error) {
     console.error('❌ Memory book download error:', error)
+    console.error('❌ Error details:', {
+      message: error.message,
+      stack: error.stack,
+      statusCode: error.statusCode,
+      statusMessage: error.statusMessage
+    })
     throw createError({
       statusCode: error.statusCode || 500,
-      statusMessage: error.statusMessage || 'Failed to generate download URL'
+      statusMessage: error.statusMessage || 'Failed to generate download URL: ' + error.message
     })
   }
 }) 
