@@ -30,15 +30,27 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Get the PDF status
-    const { data: pdfStatus, error: pdfError } = await supabase
-      .from('pdf_status')
-      .select('*')
-      .eq('book_id', id)
-      .eq('user_id', user.id)
-      .single()
+    // Get the PDF status (with error handling for missing table)
+    let pdfStatus = null
+    let pdfError = null
+    
+    try {
+      const { data: statusData, error: statusError } = await supabase
+        .from('pdf_status')
+        .select('*')
+        .eq('book_id', id)
+        .eq('user_id', user.id)
+        .single()
+      
+      pdfStatus = statusData
+      pdfError = statusError
+    } catch (tableError) {
+      console.log(`[STATUS] PDF status table might not exist yet: ${tableError.message}`)
+      // Continue without PDF status - this is expected if the table hasn't been created yet
+    }
 
-    if (pdfError && pdfError.code !== 'PGRST116') {
+    // Only throw error if it's not a "table doesn't exist" error
+    if (pdfError && pdfError.code !== 'PGRST116' && pdfError.code !== '42P01') {
       console.log(`[STATUS] Error fetching PDF status: ${pdfError.message}`)
       throw createError({
         statusCode: 500,

@@ -68,7 +68,7 @@ create table if not exists assets (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null,
   type text not null check (type in ('photo', 'text')),
-  storage_url text,
+  storage_url text check (storage_url is null or length(storage_url) <= 1000),
   user_caption text,
   ai_caption text,
   tags text[] default array[]::text[],
@@ -101,8 +101,8 @@ create table if not exists memory_books (
   medium text,
   theme text,
   status text default 'draft' check (status in ('draft', 'ready', 'background_ready', 'approved', 'distributed')),
-  pdf_url text,
-  background_url text,
+  pdf_url text check (pdf_url is null or length(pdf_url) <= 1000),
+  background_url text check (background_url is null or length(background_url) <= 1000),
   review_notes text,
   created_from_assets uuid[] default array[]::uuid[],
   generated_at timestamp with time zone,
@@ -204,31 +204,31 @@ DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 CREATE POLICY "Users can view own profile"
   ON profiles
   FOR SELECT
-  USING (auth.uid() = user_id);
+  USING ((SELECT auth.uid()) = user_id);
 
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can update own profile"
   ON profiles
   FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING ((SELECT auth.uid()) = user_id);
 
 DROP POLICY IF EXISTS "Users can create own profile" ON profiles;
 CREATE POLICY "Users can create own profile"
   ON profiles
   FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK ((SELECT auth.uid()) = user_id);
 
 -- Families policies
 DROP POLICY IF EXISTS "Users can manage own families" ON families;
-CREATE POLICY "Users can manage own families" ON families FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own families" ON families FOR ALL USING ((SELECT auth.uid()) = user_id);
 
 -- Memory preferences policies
 DROP POLICY IF EXISTS "Users can manage own preferences" ON memory_preferences;
-CREATE POLICY "Users can manage own preferences" ON memory_preferences FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own preferences" ON memory_preferences FOR ALL USING ((SELECT auth.uid()) = user_id);
 
 -- Assets policies
 DROP POLICY IF EXISTS "Users can manage own assets" ON assets;
-CREATE POLICY "Users can manage own assets" ON assets FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own assets" ON assets FOR ALL USING ((SELECT auth.uid()) = user_id);
 
 -- Admin policy for assets (allows admins to view all assets)
 DROP POLICY IF EXISTS "Admins can view all assets" ON assets;
@@ -237,25 +237,61 @@ CREATE POLICY "Admins can view all assets" ON assets
   USING (
     EXISTS (
       SELECT 1 FROM profiles 
-      WHERE user_id = auth.uid() 
+      WHERE user_id = (SELECT auth.uid())
       AND role = 'admin'
+    )
+  );
+
+-- Editor policy for assets (allows editors to view all assets)
+DROP POLICY IF EXISTS "Editors can view all assets" ON assets;
+CREATE POLICY "Editors can view all assets" ON assets 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE user_id = (SELECT auth.uid())
+      AND role = 'editor'
     )
   );
 
 -- Memory books policies
 DROP POLICY IF EXISTS "Users can manage own memory books" ON memory_books;
-CREATE POLICY "Users can manage own memory books" ON memory_books FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own memory books" ON memory_books FOR ALL USING ((SELECT auth.uid()) = user_id);
+
+-- Admin policy for memory books (allows admins to view all memory books)
+DROP POLICY IF EXISTS "Admins can view all memory books" ON memory_books;
+CREATE POLICY "Admins can view all memory books" ON memory_books 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE user_id = (SELECT auth.uid())
+      AND role = 'admin'
+    )
+  );
+
+-- Editor policy for memory books (allows editors to view all memory books)
+DROP POLICY IF EXISTS "Editors can view all memory books" ON memory_books;
+CREATE POLICY "Editors can view all memory books" ON memory_books 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE user_id = (SELECT auth.uid())
+      AND role = 'editor'
+    )
+  );
 
 -- PDF status policies
 DROP POLICY IF EXISTS "Users can manage own pdf status" ON pdf_status;
-CREATE POLICY "Users can manage own pdf status" ON pdf_status FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own pdf status" ON pdf_status FOR ALL USING ((SELECT auth.uid()) = user_id);
 
 -- Activity log policies
 DROP POLICY IF EXISTS "Users can view own activity" ON activity_log;
-CREATE POLICY "Users can view own activity" ON activity_log FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own activity" ON activity_log FOR SELECT USING ((SELECT auth.uid()) = user_id);
 
 DROP POLICY IF EXISTS "Users can insert own activity" ON activity_log;
-CREATE POLICY "Users can insert own activity" ON activity_log FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can insert own activity" ON activity_log FOR INSERT WITH CHECK ((SELECT auth.uid()) = user_id);
 
 -- Function to create profile on user signup (with improved error handling)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -408,4 +444,99 @@ END $$;
 
 -- Add new columns for AI data (safe to rerun)
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS ai_objects jsonb DEFAULT '[]'::jsonb;
-ALTER TABLE assets ADD COLUMN IF NOT EXISTS ai_raw jsonb; 
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS ai_raw jsonb;
+
+-- Add missing columns to memory_books table (safe to rerun)
+DO $$
+BEGIN
+  -- Add missing columns if they don't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'title'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN title text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'layout_type'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN layout_type text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'page_count'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN page_count integer;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'print_size'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN print_size text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'quality'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN quality text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'medium'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN medium text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'theme'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN theme text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'background_url'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN background_url text CHECK (background_url IS NULL OR length(background_url) <= 1000);
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'include_captions'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN include_captions boolean DEFAULT true;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'include_tags'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN include_tags boolean DEFAULT true;
+  END IF;
+END $$; 

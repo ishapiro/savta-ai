@@ -16,12 +16,7 @@
               size="small"
               @click="loadMemoryBooks"
             />
-            <Button
-              label="Test Dialog"
-              severity="info"
-              size="small"
-              @click="testProgressDialog"
-            />
+
           </div>
         </div>
       </div>
@@ -340,10 +335,7 @@
       :closable="false"
       :z-index="9999"
     >
-      <!-- Debug info -->
-      <div v-if="showProgressDialog" class="text-xs text-red-500 mb-2">
-        Debug: Dialog is visible, progress: {{ currentProgress }}%, message: {{ currentProgressMessage }}
-      </div>
+
       <div class="text-center py-4">
         <div class="mb-4">
           <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
@@ -402,6 +394,8 @@ definePageMeta({
 const { $toast } = useNuxtApp()
 const db = useDatabase()
 const route = useRoute()
+const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 
 // Reactive data
 const memoryBooks = ref([])
@@ -522,19 +516,9 @@ onUnmounted(() => {
   stopProgressPolling()
 })
 
-// Debug watcher for progress dialog
-watch(showProgressDialog, (newVal) => {
-  console.log('showProgressDialog changed to:', newVal)
-})
 
-// Test function to manually trigger the dialog
-const testProgressDialog = () => {
-  console.log('Testing progress dialog...')
-  showProgressDialog.value = true
-  currentProgress.value = 50
-  currentProgressMessage.value = 'Test message'
-  console.log('Dialog should be visible now:', showProgressDialog.value)
-}
+
+
 
 // Load memory books
 const loadMemoryBooks = async () => {

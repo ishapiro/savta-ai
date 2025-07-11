@@ -267,29 +267,21 @@ export const useDatabase = () => {
     uploadAsset: async (assetData, file = null) => {
       if (!user.value) throw new Error('User not authenticated')
       
-      console.log('🚀 Starting asset upload...')
-      console.log('📊 Asset data:', assetData)
-      console.log('👤 User ID:', user.value.id)
-      
       let storageUrl = null
       
       // Upload file to Supabase Storage if provided
       if (file) {
-        console.log('📁 Uploading file to storage...')
         // Use user-specific folder structure for organization
         const fileName = `${user.value.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-        console.log('📄 File name:', fileName)
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('assets')
           .upload(fileName, file)
         
         if (uploadError) {
-          console.error('❌ Storage upload error:', uploadError)
+          console.error('Storage upload error:', uploadError)
           throw uploadError
         }
-        
-        console.log('✅ File uploaded to storage:', uploadData)
         
         // Get public URL
         const { data: urlData } = supabase.storage
@@ -297,17 +289,14 @@ export const useDatabase = () => {
           .getPublicUrl(fileName)
         
         storageUrl = urlData.publicUrl
-        console.log('🔗 Storage URL:', storageUrl)
       }
       
       // Create asset record
-      console.log('💾 Creating asset record in database...')
       const assetRecord = {
         user_id: user.value.id,
         storage_url: storageUrl,
         ...assetData
       }
-      console.log('📝 Asset record to insert:', assetRecord)
       
       const { data, error } = await supabase
         .from('assets')
@@ -316,11 +305,9 @@ export const useDatabase = () => {
         .single()
       
       if (error) {
-        console.error('❌ Database insert error:', error)
+        console.error('Database insert error:', error)
         throw error
       }
-      
-      console.log('✅ Asset created successfully:', data)
       
       await logActivity('asset_uploaded', { 
         assetId: data.id, 
