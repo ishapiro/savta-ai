@@ -463,24 +463,21 @@
       :contentStyle="{ height: '90vh', padding: 0 }"
       :closable="false"
     >
-      <div class="pdf-preview-container" style="height: 90vh; width: 100%; padding: 0;">
-        <!-- TEMP: Show isChrome value for debugging -->
-        <div class="text-xs text-gray-400 mb-2">isChrome: {{ isChrome }}</div>
-        <div v-if="isChrome && pdfBlobUrl" class="mb-6 p-5 bg-yellow-100 border-2 border-yellow-400 rounded-lg text-yellow-900 text-center text-lg shadow-lg">
-          <i class="pi pi-exclamation-triangle text-3xl text-yellow-600 mb-2"></i><br>
-          <strong class="text-xl">Note for Chrome users:</strong><br />
-          <span class="block mt-2 mb-2">Due to Chrome security features, you must download the PDF to view it.</span>
-          <a :href="pdfBlobUrl" download="memory-book.pdf" class="text-blue-700 underline font-bold text-2xl block mt-2">Click here to download the PDF</a>
-        </div>
+      <div class="pdf-preview-container" style="height: 90vh; width: 100%; padding: 0; display: flex; flex-direction: column;">
         <embed
-          v-if="pdfBlobUrl && !isChrome"
+          v-if="pdfBlobUrl"
           :src="pdfBlobUrl"
           type="application/pdf"
-          style="width: 100%; height: 100%; border: none;"
+          style="width: 100%; height: 100%; border: none; flex: 1 1 auto;"
         />
-        <div v-else-if="!pdfBlobUrl" class="text-center py-8">
+        <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
           <i class="pi pi-file-pdf text-4xl text-gray-400"></i>
           <p class="text-color-secondary mt-2">No PDF available for preview.</p>
+        </div>
+        <div class="w-full text-center text-xs text-gray-600 mt-2 p-2 border-t border-gray-200 bg-gray-50">
+          If you do not see the PDF preview and you are using Chrome it may be because you have the browser set to always download PDFs. 
+          You can enter this URL in Chrome's address bar <span class="font-mono bg-gray-200 px-1 rounded">chrome://settings/content/pdfDocuments</span> 
+          to change this setting. You can also download the PDF by clicking the download button in the top right corner of the PDF preview.
         </div>
       </div>
       <template #footer>
@@ -630,7 +627,11 @@ const cancelDialog = () => {
 onMounted(async () => {
   await loadMemoryBooks()
   // Improved Chrome detection (exclude Edge, Brave, Opera)
-  isChrome.value = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor) && !/Edg|Brave|OPR/.test(navigator.userAgent)
+  const ua = navigator.userAgent
+  isChrome.value =
+    /Chrome/.test(ua) &&
+    /Google Inc/.test(navigator.vendor) &&
+    !/Edg|Brave|OPR/.test(ua)
 })
 
 // Cleanup on unmount
