@@ -96,6 +96,8 @@ create table if not exists memory_books (
   title text,
   layout_type text,
   page_count integer,
+  grid_layout text default '2x2' check (grid_layout in ('1x1', '2x1', '2x2', '3x2', '3x3', '3x4', '4x4')),
+  memory_shape text default 'original' check (memory_shape in ('round', 'oval', 'original')),
   print_size text,
   quality text,
   medium text,

@@ -154,11 +154,212 @@ export default defineEventHandler(async (event) => {
         return imageBuffer // Fallback to original if processing fails
       }
     }
+
+    // Helper function to process image shape with AI analysis
+    async function processImageShape(imageBuffer, shape, targetWidth, targetHeight, imageUrl) {
+      try {
+        console.log(`🔄 Processing image shape: ${shape}`)
+        let processedImage
+        
+        // Get AI analysis for intelligent cropping (for round and oval shapes)
+        let aiAnalysis = null
+        if ((shape === 'round' || shape === 'oval') && imageUrl) {
+          try {
+            console.log('🤖 Getting AI analysis for intelligent cropping...')
+            const analysisRes = await fetch(`${config.public.siteUrl}/api/ai/analyze-photo`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                imageUrl: imageUrl,
+                targetShape: shape,
+                targetWidth: targetWidth,
+                targetHeight: targetHeight
+              })
+            })
+            
+            if (analysisRes.ok) {
+              const analysisData = await analysisRes.json()
+              aiAnalysis = analysisData.analysis
+              console.log('✅ AI analysis received:', aiAnalysis)
+            } else {
+              console.warn('⚠️ AI analysis failed, using default cropping')
+            }
+          } catch (aiError) {
+            console.warn('⚠️ AI analysis error, using default cropping:', aiError.message)
+          }
+        }
+        
+        switch (shape) {
+          case 'round':
+            // Create circular mask with AI-guided cropping
+            const circleSvg = `<svg><circle cx="${targetWidth/2}" cy="${targetHeight/2}" r="${Math.min(targetWidth, targetHeight)/2}" fill="white"/></svg>`
+            
+            if (aiAnalysis) {
+              // Use AI analysis for intelligent cropping
+              const { centerX, centerY, zoom } = aiAnalysis
+              console.log('🎯 AI Analysis values:', { centerX, centerY, zoom })
+              
+              // Get actual image dimensions
+              const imageInfo = await sharp(imageBuffer).metadata()
+              const originalWidth = imageInfo.width || 1000
+              const originalHeight = imageInfo.height || 1000
+              console.log('📐 Original image dimensions:', { width: originalWidth, height: originalHeight })
+              
+              // Calculate crop area based on AI analysis
+              const cropWidth = originalWidth / zoom
+              const cropHeight = originalHeight / zoom
+              const cropX = Math.max(0, Math.min(originalWidth - cropWidth, (centerX * originalWidth) - (cropWidth / 2)))
+              const cropY = Math.max(0, Math.min(originalHeight - cropHeight, (centerY * originalHeight) - (cropHeight / 2)))
+              
+              console.log('✂️ Calculated crop area:', {
+                cropX: Math.round(cropX),
+                cropY: Math.round(cropY),
+                cropWidth: Math.round(cropWidth),
+                cropHeight: Math.round(cropHeight),
+                zoom: zoom
+              })
+              
+              console.log('🔄 Applying AI-guided crop with Sharp...')
+              processedImage = await sharp(imageBuffer)
+                .extract({
+                  left: Math.round(cropX),
+                  top: Math.round(cropY),
+                  width: Math.round(cropWidth),
+                  height: Math.round(cropHeight)
+                })
+                .resize(targetWidth, targetHeight, { fit: 'cover' })
+                .composite([{
+                  input: Buffer.from(circleSvg),
+                  blend: 'dest-in'
+                }])
+                .png()
+                .toBuffer()
+              console.log('✅ AI-guided crop applied successfully')
+            } else {
+              // Fallback to default cropping
+              console.log('⚠️ Using default center cropping (no AI analysis)')
+              processedImage = await sharp(imageBuffer)
+                .resize(targetWidth, targetHeight, { fit: 'cover' })
+                .composite([{
+                  input: Buffer.from(circleSvg),
+                  blend: 'dest-in'
+                }])
+                .png()
+                .toBuffer()
+            }
+            break
+            
+          case 'oval':
+            // Create elliptical mask with AI-guided cropping
+            const ellipseSvg = `<svg><ellipse cx="${targetWidth/2}" cy="${targetHeight/2}" rx="${targetWidth/2}" ry="${targetHeight/2}" fill="white"/></svg>`
+            
+            if (aiAnalysis) {
+              // Use AI analysis for intelligent cropping
+              const { centerX, centerY, zoom } = aiAnalysis
+              console.log('🎯 AI Analysis values:', { centerX, centerY, zoom })
+              
+              // Get actual image dimensions
+              const imageInfo = await sharp(imageBuffer).metadata()
+              const originalWidth = imageInfo.width || 1000
+              const originalHeight = imageInfo.height || 1000
+              console.log('📐 Original image dimensions:', { width: originalWidth, height: originalHeight })
+              
+              // Calculate crop area based on AI analysis
+              const cropWidth = originalWidth / zoom
+              const cropHeight = originalHeight / zoom
+              const cropX = Math.max(0, Math.min(originalWidth - cropWidth, (centerX * originalWidth) - (cropWidth / 2)))
+              const cropY = Math.max(0, Math.min(originalHeight - cropHeight, (centerY * originalHeight) - (cropHeight / 2)))
+              
+              console.log('✂️ Calculated crop area:', {
+                cropX: Math.round(cropX),
+                cropY: Math.round(cropY),
+                cropWidth: Math.round(cropWidth),
+                cropHeight: Math.round(cropHeight),
+                zoom: zoom
+              })
+              
+              console.log('🔄 Applying AI-guided crop with Sharp...')
+              processedImage = await sharp(imageBuffer)
+                .extract({
+                  left: Math.round(cropX),
+                  top: Math.round(cropY),
+                  width: Math.round(cropWidth),
+                  height: Math.round(cropHeight)
+                })
+                .resize(targetWidth, targetHeight, { fit: 'cover' })
+                .composite([{
+                  input: Buffer.from(ellipseSvg),
+                  blend: 'dest-in'
+                }])
+                .png()
+                .toBuffer()
+              console.log('✅ AI-guided crop applied successfully')
+            } else {
+              // Fallback to default cropping
+              console.log('⚠️ Using default center cropping (no AI analysis)')
+              processedImage = await sharp(imageBuffer)
+                .resize(targetWidth, targetHeight, { fit: 'cover' })
+                .composite([{
+                  input: Buffer.from(ellipseSvg),
+                  blend: 'dest-in'
+                }])
+                .png()
+                .toBuffer()
+            }
+            break
+            
+          case 'original':
+          default:
+            // Keep original aspect ratio
+            processedImage = await sharp(imageBuffer)
+              .resize(targetWidth, targetHeight, { fit: 'inside' })
+              .png()
+              .toBuffer()
+            break
+        }
+        
+        console.log(`✅ Image shape processed successfully: ${shape}`)
+        return processedImage
+      } catch (error) {
+        console.warn(`⚠️ Failed to process image shape, using original:`, error.message)
+        return imageBuffer // Fallback to original if processing fails
+      }
+    }
     
     await updatePdfStatus(supabase, book.id, user.id, 'Background ready, creating pages...')
     
-    // 4. Layout assets into pages (4 assets per page in a 2x2 grid)
-    const assetsPerPage = 4
+    // 4. Layout assets into pages (using grid_layout from book settings)
+    const gridLayout = book.grid_layout || '2x2'
+    
+    // Calculate assets per page from grid layout
+    let assetsPerPage
+    switch (gridLayout) {
+      case '1x1':
+        assetsPerPage = 1
+        break
+      case '2x1':
+        assetsPerPage = 2
+        break
+      case '2x2':
+        assetsPerPage = 4
+        break
+      case '3x2':
+        assetsPerPage = 6
+        break
+      case '3x3':
+        assetsPerPage = 9
+        break
+      case '3x4':
+        assetsPerPage = 12
+        break
+      case '4x4':
+        assetsPerPage = 16
+        break
+      default:
+        assetsPerPage = 4
+    }
     
     // Get print size from request body or use defaults from book
     const body = await readBody(event).catch(() => ({}))
@@ -242,9 +443,9 @@ export default defineEventHandler(async (event) => {
         })
       }
       
-      // Draw assets in 2x2 grid
-      const gridCols = 2
-      const gridRows = 2
+      // Calculate grid layout from grid layout string
+      const [gridCols, gridRows] = gridLayout.split('x').map(Number)
+      
       const cellWidth = width / gridCols
       const cellHeight = availableHeight / gridRows
       
@@ -273,15 +474,34 @@ export default defineEventHandler(async (event) => {
             const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
             console.log(`✅ Image downloaded, size:`, imageBuffer.length, 'bytes')
             
-            // Process image orientation
+            // Process image orientation and shape
             const isPng = asset.storage_url.endsWith('.png')
             const processedImageBuffer = await processImageOrientation(imageBuffer, isPng ? 'png' : 'jpeg')
+            console.log(`🔄 After orientation processing, size:`, processedImageBuffer.length, 'bytes')
+            
+            // Get memory shape from book settings
+            const memoryShape = book.memory_shape || 'original'
+            
+            // Process image shape if needed
+            let finalImageBuffer = processedImageBuffer
+            if (memoryShape !== 'original') {
+              // Calculate target dimensions for shape processing
+              const targetWidth = Math.round(drawWidth * 2) // Higher resolution for better quality
+              const targetHeight = Math.round(drawHeight * 2)
+              console.log(`🔄 Processing shape: ${memoryShape} with dimensions: ${targetWidth}x${targetHeight}`)
+              finalImageBuffer = await processImageShape(processedImageBuffer, memoryShape, targetWidth, targetHeight, asset.storage_url)
+              console.log(`✅ Shape processing complete. Final buffer size: ${finalImageBuffer.length} bytes`)
+            } else {
+              console.log(`ℹ️ Using original aspect ratio (no shape processing)`)
+            }
             
             let pdfImage
-            if (isPng) {
-              pdfImage = await pdfDoc.embedPng(processedImageBuffer)
+            if (memoryShape !== 'original' || isPng) {
+              console.log(`📄 Embedding PNG image (processed shape or PNG format)`)
+              pdfImage = await pdfDoc.embedPng(finalImageBuffer)
             } else {
-              pdfImage = await pdfDoc.embedJpg(processedImageBuffer)
+              console.log(`📄 Embedding JPG image (original format)`)
+              pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
             }
             console.log(`✅ Image embedded in PDF with correct orientation`)
             

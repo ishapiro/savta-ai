@@ -161,7 +161,7 @@
       :style="{ width: '500px' }"
       :closable="false"
     >
-      <div class="space-y-4">
+      <div class="space-y-3">
         <div class="field">
           <label class="block text-sm font-medium text-color mb-1">Book Title</label>
           <InputText
@@ -171,54 +171,56 @@
           />
         </div>
 
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Layout Type</label>
-          <Dropdown
-            v-model="newBook.layoutType"
-            :options="layoutOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select layout type"
-            class="w-full"
-          />
+        <div class="grid grid-cols-2 gap-3">
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Layout Type</label>
+            <Dropdown
+              v-model="newBook.layoutType"
+              :options="layoutOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select layout type"
+              class="w-full"
+            />
+          </div>
+
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Print Size</label>
+            <Dropdown
+              v-model="newBook.printSize"
+              :options="printSizeOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select print size"
+              class="w-full"
+            />
+          </div>
         </div>
 
+        <div class="grid grid-cols-2 gap-3">
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Quality</label>
+            <Dropdown
+              v-model="newBook.quality"
+              :options="qualityOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select quality"
+              class="w-full"
+            />
+          </div>
 
-
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Print Size</label>
-          <Dropdown
-            v-model="newBook.printSize"
-            :options="printSizeOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select print size"
-            class="w-full"
-          />
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Quality</label>
-          <Dropdown
-            v-model="newBook.quality"
-            :options="qualityOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select quality"
-            class="w-full"
-          />
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Medium</label>
-          <Dropdown
-            v-model="newBook.medium"
-            :options="mediumOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select medium"
-            class="w-full"
-          />
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Medium</label>
+            <Dropdown
+              v-model="newBook.medium"
+              :options="mediumOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select medium"
+              class="w-full"
+            />
+          </div>
         </div>
 
         <div class="field">
@@ -234,24 +236,65 @@
         </div>
 
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Include Captions</label>
-          <div class="flex items-center space-x-2">
-            <Checkbox
-              v-model="newBook.includeCaptions"
-              :binary="true"
-            />
-            <span class="text-sm text-color-secondary">Include AI-generated captions</span>
-          </div>
+          <label class="block text-sm font-medium text-color mb-1">Grid Layout</label>
+          <Dropdown
+            v-model="newBook.gridLayout"
+            :options="gridLayoutOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select grid layout"
+            class="w-full"
+          />
         </div>
 
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Include Tags</label>
-          <div class="flex items-center space-x-2">
-            <Checkbox
-              v-model="newBook.includeTags"
-              :binary="true"
+          <label class="block text-sm font-medium text-color mb-1">Memory Shape</label>
+          <Dropdown
+            v-model="newBook.memoryShape"
+            :options="memoryShapeOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select memory shape"
+            class="w-full"
+          />
+        </div>
+
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Select Memories</label>
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-color-secondary">
+              {{ selectedAssets.length }} memories selected
+            </div>
+            <Button
+              label="Select Memories"
+              icon="pi pi-images"
+              size="small"
+              @click="openSelectMemoriesDialog"
             />
-            <span class="text-sm text-color-secondary">Include asset tags</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Include Captions</label>
+            <div class="flex items-center space-x-2">
+              <Checkbox
+                v-model="newBook.includeCaptions"
+                :binary="true"
+              />
+              <span class="text-sm text-color-secondary">Include AI-generated captions</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Include Tags</label>
+            <div class="flex items-center space-x-2">
+              <Checkbox
+                v-model="newBook.includeTags"
+                :binary="true"
+              />
+              <span class="text-sm text-color-secondary">Include asset tags</span>
+            </div>
           </div>
         </div>
       </div>
@@ -272,6 +315,8 @@
         </div>
       </template>
     </Dialog>
+
+
 
     <!-- Book Details Modal -->
     <Dialog
@@ -431,12 +476,9 @@
       </div>
     </Dialog>
     <!-- Regenerate Confirmation Dialog -->
-    <Dialog v-model:visible="showRegenerateDialog" modal :header="null" :closable="false" class="w-full md:w-[40%] p-0">
-      <div class="py-4 px-4">
-        <p>Would you like to create a fresh, new version of this memory book with a brand new AI-generated background design? 
-          It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for 
-          you. If you're happy with the current version and just want to download it right away, you can use the download button below - 
-          that's much faster!</p>
+    <Dialog v-model:visible="showRegenerateDialog" modal :header="null" :closable="false" class="w-full md:w-[60%] lg:w-[50%] p-0">
+      <div class="py-4 px-6">
+        <p class="text-base leading-relaxed">Would you like to create a fresh, new version of this memory book with a brand new AI-generated background design? It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for you. If you're happy with the current version and just want to download it right away, you can use the download button below - that's much faster!</p>
         <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
           <button
             class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-7 py-2 text-sm shadow transition-all duration-200 min-w-[150px]"
@@ -518,7 +560,7 @@
       :style="{ width: '500px' }"
       :closable="false"
     >
-      <div v-if="editBook" class="space-y-4">
+      <div v-if="editBook" class="space-y-3">
         <div class="field">
           <label class="block text-sm font-medium text-color mb-1">Book Title</label>
           <InputText
@@ -527,51 +569,59 @@
             class="w-full"
           />
         </div>
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Layout Type</label>
-          <Dropdown
-            v-model="editBook.layoutType"
-            :options="layoutOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select layout type"
-            class="w-full"
-          />
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Layout Type</label>
+            <Dropdown
+              v-model="editBook.layoutType"
+              :options="layoutOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select layout type"
+              class="w-full"
+            />
+          </div>
+
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Print Size</label>
+            <Dropdown
+              v-model="editBook.printSize"
+              :options="printSizeOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select print size"
+              class="w-full"
+            />
+          </div>
         </div>
 
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Print Size</label>
-          <Dropdown
-            v-model="editBook.printSize"
-            :options="printSizeOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select print size"
-            class="w-full"
-          />
+        <div class="grid grid-cols-2 gap-3">
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Quality</label>
+            <Dropdown
+              v-model="editBook.quality"
+              :options="qualityOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select quality"
+              class="w-full"
+            />
+          </div>
+
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Medium</label>
+            <Dropdown
+              v-model="editBook.medium"
+              :options="mediumOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select medium"
+              class="w-full"
+            />
+          </div>
         </div>
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Quality</label>
-          <Dropdown
-            v-model="editBook.quality"
-            :options="qualityOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select quality"
-            class="w-full"
-          />
-        </div>
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Medium</label>
-          <Dropdown
-            v-model="editBook.medium"
-            :options="mediumOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select medium"
-            class="w-full"
-          />
-        </div>
+
         <div class="field">
           <label class="block text-sm font-medium text-color mb-1">Theme</label>
           <Dropdown
@@ -583,50 +633,67 @@
             class="w-full"
           />
         </div>
+
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Include Captions</label>
-          <div class="flex items-center space-x-2">
-            <Checkbox
-              v-model="editBook.includeCaptions"
-              :binary="true"
-            />
-            <span class="text-sm text-color-secondary">Include AI-generated captions</span>
-          </div>
+          <label class="block text-sm font-medium text-color mb-1">Grid Layout</label>
+          <Dropdown
+            v-model="editBook.gridLayout"
+            :options="gridLayoutOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select grid layout"
+            class="w-full"
+          />
         </div>
+
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Include Tags</label>
-          <div class="flex items-center space-x-2">
-            <Checkbox
-              v-model="editBook.includeTags"
-              :binary="true"
-            />
-            <span class="text-sm text-color-secondary">Include asset tags</span>
+          <label class="block text-sm font-medium text-color mb-1">Memory Shape</label>
+          <Dropdown
+            v-model="editBook.memoryShape"
+            :options="memoryShapeOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select memory shape"
+            class="w-full"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Include Captions</label>
+            <div class="flex items-center space-x-2">
+              <Checkbox
+                v-model="editBook.includeCaptions"
+                :binary="true"
+              />
+              <span class="text-sm text-color-secondary">Include AI-generated captions</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="block text-sm font-medium text-color mb-1">Include Tags</label>
+            <div class="flex items-center space-x-2">
+              <Checkbox
+                v-model="editBook.includeTags"
+                :binary="true"
+              />
+              <span class="text-sm text-color-secondary">Include asset tags</span>
+            </div>
           </div>
         </div>
         
         <!-- Select Memories Button -->
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-2">Memory Assets</label>
-          <div class="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-                <i class="pi pi-images text-blue-600"></i>
-              </div>
-              <div>
-                <p class="text-sm font-medium text-color">
-                  {{ editBook.created_from_assets.length }} memories selected
-                </p>
-                <p class="text-xs text-color-secondary">
-                  Click to choose which memories to include
-                </p>
-              </div>
+          <label class="block text-sm font-medium text-color mb-1">Select Memories</label>
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-color-secondary">
+              {{ editBook.created_from_assets.length }} memories selected
             </div>
             <Button
               label="Select Memories"
-              icon="pi pi-edit"
+              icon="pi pi-images"
               size="small"
               @click="openSelectMemoriesDialog"
-              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0"
             />
           </div>
         </div>
@@ -853,9 +920,17 @@ const route = useRoute()
 // const supabase = useSupabaseClient()
 // const user = useSupabaseUser()
 const supabase = useNuxtApp().$supabase
-let user = null
+const user = ref(null)
+
+// Get initial user
 const { data } = await supabase.auth.getUser()
-user = data.user
+user.value = data.user
+
+// Watch for auth changes
+supabase.auth.onAuthStateChange((event, session) => {
+  user.value = session?.user || null
+  console.log('🔐 Auth state changed:', event, user.value?.id)
+})
 
 // Reactive data
 const memoryBooks = ref([])
@@ -881,9 +956,14 @@ const newBook = ref({
   quality: 'standard',
   medium: 'digital',
   theme: 'classic',
+  gridLayout: '2x2',
+  memoryShape: 'natural',
   includeCaptions: true,
   includeTags: true
 })
+
+// Asset selection for new book
+const selectedAssets = ref([])
 
 // Options for dropdowns
 const layoutOptions = ref([
@@ -894,6 +974,8 @@ const layoutOptions = ref([
 ])
 
 const printSizeOptions = ref([
+  { label: '5x7 inches', value: '5x7' },
+  { label: '6x8 inches', value: '6x8' },
   { label: '8x10 inches', value: '8x10' },
   { label: '11x14 inches', value: '11x14' },
   { label: '12x12 inches', value: '12x12' },
@@ -917,6 +999,22 @@ const themeOptions = ref([
   { label: 'Modern', value: 'modern' },
   { label: 'Vintage', value: 'vintage' },
   { label: 'Minimalist', value: 'minimalist' }
+])
+
+const gridLayoutOptions = ref([
+  { label: '1 memory per page (1x1)', value: '1x1' },
+  { label: '2 memories per page (2x1)', value: '2x1' },
+  { label: '4 memories per page (2x2)', value: '2x2' },
+  { label: '6 memories per page (3x2)', value: '3x2' },
+  { label: '9 memories per page (3x3)', value: '3x3' },
+  { label: '12 memories per page (3x4)', value: '3x4' },
+  { label: '16 memories per page (4x4)', value: '4x4' }
+])
+
+const memoryShapeOptions = ref([
+  { label: 'Original (keep aspect ratio)', value: 'original' },
+  { label: 'Round', value: 'round' },
+  { label: 'Oval', value: 'oval' }
 ])
 
 // Dialog state
@@ -972,30 +1070,28 @@ const cancelDialog = () => {
 }
 
 // Load memory books
-onMounted(async () => {
-  await loadMemoryBooks()
-  // Improved Chrome detection (exclude Edge, Brave, Opera)
-  const ua = navigator.userAgent
-  isChrome.value =
-    /Chrome/.test(ua) &&
-    /Google Inc/.test(navigator.vendor) &&
-    !/Edg|Brave|OPR/.test(ua)
-})
-
-// Cleanup on unmount
-onUnmounted(() => {
-  stopProgressPolling()
-})
-
-
-// Load memory books
 const loadMemoryBooks = async () => {
+  // Wait for user to be loaded
+  if (!user.value?.id) {
+    console.log('⏳ Waiting for user to load...')
+    loadingMemoryBooks.value = false
+    return
+  }
+  
   loadingMemoryBooks.value = true
   try {
+    console.log('🔍 Starting loadMemoryBooks...')
+    console.log('🔍 User:', user.value?.id)
+    console.log('🔍 Database composable:', !!db)
+    
+    // Use the database composable (which works correctly)
+    console.log('🔍 Loading memory books...')
     const books = await db.memoryBooks.getMemoryBooks()
+    console.log('✅ Memory books loaded:', books?.length, 'books')
     memoryBooks.value = books
   } catch (error) {
-    console.error('Error loading memory books:', error)
+    console.error('❌ Error loading memory books:', error)
+    console.error('❌ Error stack:', error.stack)
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'error',
@@ -1009,6 +1105,29 @@ const loadMemoryBooks = async () => {
   }
 }
 
+// Watch for user changes and load memory books
+watch(() => user.value, (newUser) => {
+  if (newUser?.id) {
+    console.log('👤 User loaded, loading memory books...')
+    loadMemoryBooks()
+  }
+}, { immediate: true })
+
+// Load memory books on mount (fallback)
+onMounted(async () => {
+  // Improved Chrome detection (exclude Edge, Brave, Opera)
+  const ua = navigator.userAgent
+  isChrome.value =
+    /Chrome/.test(ua) &&
+    /Google Inc/.test(navigator.vendor) &&
+    !/Edg|Brave|OPR/.test(ua)
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  stopProgressPolling()
+})
+
 // Create memory book
 const createMemoryBook = async () => {
   if (!newBook.value.title) return
@@ -1016,10 +1135,19 @@ const createMemoryBook = async () => {
   creatingBook.value = true
 
   try {
-    // Get approved assets
-    const approvedAssets = await db.assets.getAssets({ approved: true })
+    // Use selected assets if any, otherwise get all approved assets
+    let assetsToUse = []
     
-    if (approvedAssets.length === 0) {
+    if (selectedAssets.value.length > 0) {
+      // Use selected assets
+      assetsToUse = selectedAssets.value
+    } else {
+      // Get all approved assets
+      const approvedAssets = await db.assets.getAssets({ approved: true })
+      assetsToUse = approvedAssets.map(asset => asset.id)
+    }
+    
+    if (assetsToUse.length === 0) {
       if ($toast && $toast.add) {
         $toast.add({
           severity: 'warn',
@@ -1035,14 +1163,15 @@ const createMemoryBook = async () => {
     const memoryBook = await db.memoryBooks.createMemoryBook({
       title: newBook.value.title,
       layout_type: newBook.value.layoutType,
-
       print_size: newBook.value.printSize,
       quality: newBook.value.quality,
       medium: newBook.value.medium,
       theme: newBook.value.theme,
+      grid_layout: newBook.value.gridLayout,
+      memory_shape: newBook.value.memoryShape,
       include_captions: newBook.value.includeCaptions,
       include_tags: newBook.value.includeTags,
-      created_from_assets: approvedAssets.map(asset => asset.id),
+      created_from_assets: assetsToUse,
       status: 'draft'
     })
 
@@ -1063,9 +1192,12 @@ const createMemoryBook = async () => {
       quality: 'standard',
       medium: 'digital',
       theme: 'classic',
+      gridLayout: '2x2',
+      memoryShape: 'original',
       includeCaptions: true,
       includeTags: true
     }
+    selectedAssets.value = [] // Reset selected assets
     showCreateModal.value = false
 
     // Reload memory books
@@ -1553,6 +1685,8 @@ const openEditSettings = async (book) => {
       quality: book.quality || 'standard',
       medium: book.medium || 'digital',
       theme: book.theme || 'classic',
+      gridLayout: book.grid_layout || '2x2',
+      memoryShape: book.memory_shape || 'original',
       includeCaptions: book.include_captions ?? book.includeCaptions ?? true,
       includeTags: book.include_tags ?? book.includeTags ?? true,
       created_from_assets: book.created_from_assets || []
@@ -1591,6 +1725,8 @@ const saveEditBook = async () => {
       quality: editBook.value.quality,
       medium: editBook.value.medium,
       theme: editBook.value.theme,
+      grid_layout: editBook.value.gridLayout,
+      memory_shape: editBook.value.memoryShape,
       include_captions: editBook.value.includeCaptions,
       include_tags: editBook.value.includeTags,
       created_from_assets: selectedAssetIds
@@ -1669,7 +1805,16 @@ const openSelectMemoriesDialog = async () => {
   try {
     const allApprovedAssets = await db.assets.getAssets({ approved: true })
     availableAssets.value = allApprovedAssets || []
-    selectedMemories.value = editBook.value.created_from_assets || []
+    
+    // Check if we're in edit mode or create mode
+    if (editBook.value) {
+      // Edit mode - use existing selected assets
+      selectedMemories.value = editBook.value.created_from_assets || []
+    } else {
+      // Create mode - start with no selection
+      selectedMemories.value = []
+    }
+    
     selectedTagFilter.value = [] // Reset filter
     showSelectMemoriesModal.value = true
   } catch (error) {
@@ -1707,7 +1852,14 @@ const selectAllMemories = () => {
 }
 
 const saveSelectedMemories = () => {
-  editBook.value.created_from_assets = selectedMemories.value
+  if (editBook.value) {
+    // Edit mode - update the edit book
+    editBook.value.created_from_assets = selectedMemories.value
+  } else {
+    // Create mode - update the selected assets for new book
+    selectedAssets.value = selectedMemories.value
+  }
+  
   showSelectMemoriesModal.value = false
   if ($toast && $toast.add) {
     $toast.add({
@@ -1723,4 +1875,6 @@ const clearTagFilter = () => {
   selectedTagFilter.value = []
   filterMemories()
 }
+
+
 </script> 
