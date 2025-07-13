@@ -117,6 +117,14 @@
               >
                 <i class="pi pi-eye text-lg"></i>
               </button>
+              <!-- Edit Settings Button -->
+              <button
+                class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-blue-600 hover:text-blue-700 transition-colors"
+                v-tooltip.top="'Edit Settings'"
+                @click="openEditSettings(book)"
+              >
+                <i class="pi pi-cog text-lg"></i>
+              </button>
             </div>
           </template>
         </Card>
@@ -486,6 +494,125 @@
             label="Close"
             severity="secondary"
             @click="showPdfModal = false"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Edit Memory Book Settings Modal -->
+    <Dialog
+      v-model:visible="showEditSettingsModal"
+      modal
+      header="Edit Memory Book Settings"
+      :style="{ width: '500px' }"
+      :closable="false"
+    >
+      <div v-if="editBook" class="space-y-4">
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Book Title</label>
+          <InputText
+            v-model="editBook.title"
+            placeholder="Enter a title for your memory book"
+            class="w-full"
+          />
+        </div>
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Layout Type</label>
+          <Dropdown
+            v-model="editBook.layoutType"
+            :options="layoutOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select layout type"
+            class="w-full"
+          />
+        </div>
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Page Count</label>
+          <InputNumber
+            v-model="editBook.pageCount"
+            :min="10"
+            :max="100"
+            class="w-full"
+          />
+        </div>
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Print Size</label>
+          <Dropdown
+            v-model="editBook.printSize"
+            :options="printSizeOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select print size"
+            class="w-full"
+          />
+        </div>
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Quality</label>
+          <Dropdown
+            v-model="editBook.quality"
+            :options="qualityOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select quality"
+            class="w-full"
+          />
+        </div>
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Medium</label>
+          <Dropdown
+            v-model="editBook.medium"
+            :options="mediumOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select medium"
+            class="w-full"
+          />
+        </div>
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Theme</label>
+          <Dropdown
+            v-model="editBook.theme"
+            :options="themeOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select theme"
+            class="w-full"
+          />
+        </div>
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Include Captions</label>
+          <div class="flex items-center space-x-2">
+            <Checkbox
+              v-model="editBook.includeCaptions"
+              :binary="true"
+            />
+            <span class="text-sm text-color-secondary">Include AI-generated captions</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Include Tags</label>
+          <div class="flex items-center space-x-2">
+            <Checkbox
+              v-model="editBook.includeTags"
+              :binary="true"
+            />
+            <span class="text-sm text-color-secondary">Include asset tags</span>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end space-x-2">
+          <Button
+            label="Cancel"
+            severity="secondary"
+            @click="showEditSettingsModal = false"
+          />
+          <Button
+            label="Save Changes"
+            :loading="savingEditBook"
+            :disabled="!editBook.title"
+            @click="saveEditBook"
           />
         </div>
       </template>
@@ -1199,6 +1326,67 @@ const formatDate = (dateString) => {
     })
   } catch (error) {
     return 'Unknown date'
+  }
+}
+
+const showEditSettingsModal = ref(false)
+const editBook = ref(null)
+const savingEditBook = ref(false)
+
+const openEditSettings = (book) => {
+  // Map book fields to editable fields
+  editBook.value = {
+    id: book.id,
+    title: book.title,
+    layoutType: book.layout_type || book.layoutType || 'grid',
+    pageCount: book.page_count || book.pageCount || 20,
+    printSize: book.print_size || book.printSize || '8x10',
+    quality: book.quality || 'standard',
+    medium: book.medium || 'digital',
+    theme: book.theme || 'classic',
+    includeCaptions: book.include_captions ?? book.includeCaptions ?? true,
+    includeTags: book.include_tags ?? book.includeTags ?? true
+  }
+  showEditSettingsModal.value = true
+}
+
+const saveEditBook = async () => {
+  if (!editBook.value) return
+  savingEditBook.value = true
+  try {
+    await db.memoryBooks.updateMemoryBook(editBook.value.id, {
+      title: editBook.value.title,
+      layout_type: editBook.value.layoutType,
+      page_count: editBook.value.pageCount,
+      print_size: editBook.value.printSize,
+      quality: editBook.value.quality,
+      medium: editBook.value.medium,
+      theme: editBook.value.theme,
+      include_captions: editBook.value.includeCaptions,
+      include_tags: editBook.value.includeTags
+    })
+    showEditSettingsModal.value = false
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Updated',
+        detail: 'Memory book settings updated',
+        life: 3000
+      })
+    }
+    await loadMemoryBooks()
+  } catch (error) {
+    console.error('Error updating memory book:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to update memory book',
+        life: 3000
+      })
+    }
+  } finally {
+    savingEditBook.value = false
   }
 }
 </script> 
