@@ -159,9 +159,43 @@ export default defineEventHandler(async (event) => {
     
     // 4. Layout assets into pages (4 assets per page in a 2x2 grid)
     const assetsPerPage = 4
-    const totalPages = Math.ceil(assets.length / assetsPerPage)
     
-    console.log(`📄 Generating PDF with ${totalPages} pages for ${assets.length} assets`)
+    // Get page count and print size from request body or use defaults from book
+    const body = await readBody(event).catch(() => ({}))
+    const pageCount = body.pageCount || book.page_count || 20
+    const printSize = body.printSize || book.print_size || '8x10'
+    
+    console.log('📄 PDF generation parameters:', { pageCount, printSize })
+    
+    // Calculate page dimensions based on print size
+    let pageWidth, pageHeight
+    switch (printSize) {
+      case '8x10':
+        pageWidth = 595 // A4 width in points
+        pageHeight = 842 // A4 height in points
+        break
+      case '11x14':
+        pageWidth = 792 // 11x14 inches in points (11 * 72)
+        pageHeight = 1008 // 14 inches in points (14 * 72)
+        break
+      case '12x12':
+        pageWidth = 864 // 12x12 inches in points (12 * 72)
+        pageHeight = 864 // 12 inches in points (12 * 72)
+        break
+      case 'a4':
+        pageWidth = 595 // A4 width in points
+        pageHeight = 842 // A4 height in points
+        break
+      default:
+        pageWidth = 595 // Default to A4
+        pageHeight = 842
+    }
+    
+    // Use the specified page count, but ensure we have enough pages for all assets
+    const minPagesNeeded = Math.ceil(assets.length / assetsPerPage)
+    const totalPages = Math.max(pageCount, minPagesNeeded)
+    
+    console.log(`📄 Generating PDF with ${totalPages} pages for ${assets.length} assets (${pageCount} requested, ${minPagesNeeded} minimum needed)`)
     
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
       const pageNumStr = (pageIndex + 1) + (pageIndex === 0 ? 'st' : pageIndex === 1 ? 'nd' : pageIndex === 2 ? 'rd' : 'th')
@@ -170,8 +204,8 @@ export default defineEventHandler(async (event) => {
       const startIndex = pageIndex * assetsPerPage
       const pageAssets = assets.slice(startIndex, startIndex + assetsPerPage)
       
-      // Add page to PDF
-      const page = pdfDoc.addPage([595, 842]) // A4 size
+      // Add page to PDF with calculated dimensions
+      const page = pdfDoc.addPage([pageWidth, pageHeight])
       const { width, height } = page.getSize()
       
       // Margins

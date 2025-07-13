@@ -109,6 +109,15 @@
               >
                 <i class="pi pi-check text-lg"></i>
               </button>
+              <!-- Unapprove Button -->
+              <button
+                v-if="book.status === 'approved'"
+                class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-orange-600 hover:text-orange-700 transition-colors"
+                v-tooltip.top="'Return to review - this will move the book back to ready status'"
+                @click="unapproveBook(book.id)"
+              >
+                <i class="pi pi-undo text-lg"></i>
+              </button>
               <!-- View Details Button -->
               <button
                 class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-gray-600 hover:text-gray-800 transition-colors"
@@ -120,7 +129,7 @@
               <!-- Edit Settings Button -->
               <button
                 class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-blue-600 hover:text-blue-700 transition-colors"
-                v-tooltip.top="'Edit Settings'"
+                v-tooltip.top="'Edit Settings & Assets'"
                 @click="openEditSettings(book)"
               >
                 <i class="pi pi-cog text-lg"></i>
@@ -319,7 +328,7 @@
 
         <!-- Compact Review Notes -->
         <div v-if="selectedBook.review_notes" class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded p-2 border border-yellow-200 text-xs text-gray-600 italic">
-          "{{ selectedBook.review_notes }}"
+          {{ selectedBook.review_notes }}
         </div>
 
         <!-- Ultra Compact Asset Thumbnails -->
@@ -600,6 +609,33 @@
             <span class="text-sm text-color-secondary">Include asset tags</span>
           </div>
         </div>
+        
+        <!-- Select Memories Button -->
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-2">Memory Assets</label>
+          <div class="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+                <i class="pi pi-images text-blue-600"></i>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-color">
+                  {{ editBook.created_from_assets.length }} memories selected
+                </p>
+                <p class="text-xs text-color-secondary">
+                  Click to choose which memories to include
+                </p>
+              </div>
+            </div>
+            <Button
+              label="Select Memories"
+              icon="pi pi-edit"
+              size="small"
+              @click="openSelectMemoriesDialog"
+              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0"
+            />
+          </div>
+        </div>
       </div>
       <template #footer>
         <div class="flex justify-end space-x-2">
@@ -614,6 +650,193 @@
             :disabled="!editBook.title"
             @click="saveEditBook"
           />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Select Memories Dialog -->
+    <Dialog
+      v-model:visible="showSelectMemoriesModal"
+      modal
+      header="Select Your Memories"
+      :style="{ width: '95vw', maxWidth: '1200px', height: '90vh' }"
+      :closable="false"
+      class="select-memories-dialog"
+    >
+      <div v-if="!loadingAssets" class="space-y-4">
+        <!-- Instructions -->
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
+          <div class="flex items-center space-x-3 mb-2">
+            <div class="w-8 h-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+              <i class="pi pi-heart text-blue-600 text-sm"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-color">Choose Your Memories</h3>
+          </div>
+          <p class="text-sm text-color-secondary">
+            Select the memories you'd like to include in your memory book. You can filter by tags and select multiple memories at once.
+          </p>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div class="flex-1 min-w-0">
+              <label class="block text-sm font-medium text-color mb-2">Filter by Tags</label>
+              <div class="flex gap-2">
+                <MultiSelect
+                  v-model="selectedTagFilter"
+                  :options="computedAvailableTags"
+                  option-label="label"
+                  option-value="value"
+                  placeholder="All memories"
+                  class="flex-1"
+                  @change="filterMemories"
+                  :show-toggle-all="false"
+                />
+                <Button
+                  v-if="selectedTagFilter && selectedTagFilter.length > 0"
+                  icon="pi pi-times"
+                  size="small"
+                  severity="secondary"
+                  @click="clearTagFilter"
+                  class="px-3"
+                  v-tooltip.top="'Clear filter'"
+                />
+              </div>
+            </div>
+            <div class="flex items-center justify-center sm:justify-end gap-2">
+              <Button
+                label="Select All"
+                icon="pi pi-check-square"
+                size="small"
+                @click="selectAllMemories"
+                class="bg-green-500 hover:bg-green-600 border-0 text-xs sm:text-sm"
+              />
+              <Button
+                label="Clear All"
+                icon="pi pi-times"
+                size="small"
+                severity="secondary"
+                @click="selectedMemories = []"
+                class="text-xs sm:text-sm"
+              />
+            </div>
+          </div>
+          <div class="mt-2 text-sm text-color-secondary text-center sm:text-left">
+            Showing {{ filteredAssets.length }} of {{ availableAssets.length }} memories
+            <span v-if="selectedTagFilter && selectedTagFilter.length > 0" class="block sm:inline"> • Filtered by: {{ selectedTagFilter.join(', ') }}</span>
+          </div>
+        </div>
+
+        <!-- Memories Grid -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div v-if="filteredAssets.length === 0" class="text-center py-8 text-color-secondary">
+            <i class="pi pi-images text-4xl mb-2 block"></i>
+            <p class="text-lg font-medium">No memories found</p>
+            <p class="text-sm">Try changing your filter or add some memories first</p>
+          </div>
+          <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 max-h-64 sm:max-h-96 overflow-y-auto">
+            <div
+              v-for="asset in filteredAssets"
+              :key="asset.id"
+              class="relative group cursor-pointer touch-manipulation"
+              @click="toggleMemorySelection(asset.id)"
+            >
+              <!-- Selection Overlay -->
+              <div 
+                class="absolute inset-0 rounded-lg border-2 transition-all duration-200 z-10"
+                :class="selectedMemories.includes(asset.id) ? 'border-green-500 bg-green-500 bg-opacity-10' : 'border-transparent'"
+              >
+                <div 
+                  class="absolute top-1 right-1 sm:top-2 sm:right-2 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-sm"
+                  :class="selectedMemories.includes(asset.id) ? 'bg-green-500 text-white' : 'bg-white text-gray-400'"
+                >
+                  <i 
+                    class="text-xs"
+                    :class="selectedMemories.includes(asset.id) ? 'pi pi-check' : 'pi pi-plus'"
+                  ></i>
+                </div>
+              </div>
+              
+              <!-- Memory Card -->
+              <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-300 transition-colors">
+                <img 
+                  v-if="asset.storage_url"
+                  :src="asset.storage_url"
+                  :alt="asset.user_caption || asset.ai_caption || 'Memory'"
+                  class="w-full h-full object-contain bg-white"
+                />
+                <div v-else class="w-full h-full flex items-center justify-center">
+                  <i class="pi pi-image text-gray-400 text-lg sm:text-2xl"></i>
+                </div>
+              </div>
+              
+              <!-- Memory Info -->
+              <div class="mt-1 sm:mt-2 text-center">
+                <p class="text-xs font-medium text-color truncate px-1">
+                  {{ asset.user_caption || asset.ai_caption || `Memory ${asset.id.slice(-4)}` }}
+                </p>
+                <p class="text-xs text-color-secondary">
+                  {{ formatDate(asset.created_at) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selection Summary -->
+        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 border border-green-200">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center">
+                <i class="pi pi-check text-green-600 text-sm"></i>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-color">
+                  {{ selectedMemories.length }} memories selected
+                </p>
+                <p class="text-xs text-color-secondary">
+                  Ready to create your memory book
+                </p>
+              </div>
+            </div>
+            <div class="text-center sm:text-right">
+              <p class="text-xs text-color-secondary">
+                Estimated pages: {{ Math.ceil(selectedMemories.length / 4) }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-else class="flex items-center justify-center py-12">
+        <div class="text-center">
+          <i class="pi pi-spin pi-spinner text-4xl mb-4 text-primary"></i>
+          <p class="text-color-secondary">Loading your memories...</p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+          <Button
+            label="Cancel"
+            severity="secondary"
+            @click="closeSelectMemoriesDialog"
+            class="w-full sm:w-auto"
+          />
+          <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+            <span class="text-sm text-color-secondary text-center sm:text-left">
+              {{ selectedMemories.length }} selected
+            </span>
+            <Button
+              label="Save Selection"
+              icon="pi pi-check"
+              :disabled="selectedMemories.length === 0"
+              @click="saveSelectedMemories"
+              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 w-full sm:w-auto"
+            />
+          </div>
         </div>
       </template>
     </Dialog>
@@ -1032,13 +1255,29 @@ const generatePDF = async (book) => {
       }
     }
     
-    // Call the API endpoint to generate PDF
+    // Call the API endpoint to generate PDF with page count and page size
     console.log('Calling PDF generation API...')
     const supabase = useNuxtApp().$supabase
 
     const { data: sessionData } = await supabase.auth.getSession()
 
-    const response = await $fetch(`/api/memory-books/download/${book.id}`, {
+    // Get the latest book data to ensure we have the most recent settings
+    const { data: latestBook, error: bookError } = await supabase
+      .from('memory_books')
+      .select('*')
+      .eq('id', book.id)
+      .single()
+
+    if (bookError || !latestBook) {
+      throw new Error('Failed to fetch latest book data')
+    }
+
+    const pageCount = latestBook.page_count || 20
+    const printSize = latestBook.print_size || '8x10'
+    
+    console.log('📄 PDF generation parameters:', { pageCount, printSize })
+
+    const response = await $fetch(`/api/memory-books/download/${book.id}?pageCount=${pageCount}&printSize=${printSize}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${sessionData.session?.access_token}`
@@ -1332,28 +1571,57 @@ const formatDate = (dateString) => {
 const showEditSettingsModal = ref(false)
 const editBook = ref(null)
 const savingEditBook = ref(false)
+const availableAssets = ref([])
+const loadingAssets = ref(false)
 
-const openEditSettings = (book) => {
-  // Map book fields to editable fields
-  editBook.value = {
-    id: book.id,
-    title: book.title,
-    layoutType: book.layout_type || book.layoutType || 'grid',
-    pageCount: book.page_count || book.pageCount || 20,
-    printSize: book.print_size || book.printSize || '8x10',
-    quality: book.quality || 'standard',
-    medium: book.medium || 'digital',
-    theme: book.theme || 'classic',
-    includeCaptions: book.include_captions ?? book.includeCaptions ?? true,
-    includeTags: book.include_tags ?? book.includeTags ?? true
+const openEditSettings = async (book) => {
+  loadingAssets.value = true
+  try {
+    // Load all approved assets for the user
+    const allApprovedAssets = await db.assets.getAssets({ approved: true })
+    availableAssets.value = allApprovedAssets || []
+    
+    // Map book fields to editable fields
+    editBook.value = {
+      id: book.id,
+      title: book.title,
+      layoutType: book.layout_type || book.layoutType || 'grid',
+      pageCount: book.page_count || book.pageCount || 20,
+      printSize: book.print_size || book.printSize || '8x10',
+      quality: book.quality || 'standard',
+      medium: book.medium || 'digital',
+      theme: book.theme || 'classic',
+      includeCaptions: book.include_captions ?? book.includeCaptions ?? true,
+      includeTags: book.include_tags ?? book.includeTags ?? true,
+      created_from_assets: book.created_from_assets || []
+    }
+    showEditSettingsModal.value = true
+  } catch (error) {
+    console.error('Error loading assets for edit:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to load assets for editing',
+        life: 3000
+      })
+    }
+  } finally {
+    loadingAssets.value = false
   }
-  showEditSettingsModal.value = true
 }
 
 const saveEditBook = async () => {
   if (!editBook.value) return
   savingEditBook.value = true
   try {
+    // Filter selected assets to ensure they exist and are approved
+    const selectedAssetIds = editBook.value.created_from_assets.filter(assetId => {
+      const asset = availableAssets.value.find(a => a.id === assetId)
+      return asset && asset.approved
+    })
+
+    // Update the book with new settings and selected assets
     await db.memoryBooks.updateMemoryBook(editBook.value.id, {
       title: editBook.value.title,
       layout_type: editBook.value.layoutType,
@@ -1363,14 +1631,16 @@ const saveEditBook = async () => {
       medium: editBook.value.medium,
       theme: editBook.value.theme,
       include_captions: editBook.value.includeCaptions,
-      include_tags: editBook.value.includeTags
+      include_tags: editBook.value.includeTags,
+      created_from_assets: selectedAssetIds
     })
+    
     showEditSettingsModal.value = false
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'success',
         summary: 'Updated',
-        detail: 'Memory book settings updated',
+        detail: 'Memory book settings and assets updated',
         life: 3000
       })
     }
@@ -1388,5 +1658,108 @@ const saveEditBook = async () => {
   } finally {
     savingEditBook.value = false
   }
+}
+
+const showSelectMemoriesDialog = () => {
+  showSelectMemoriesModal.value = true
+}
+
+const showSelectMemoriesModal = ref(false)
+const selectedMemories = ref([])
+const selectedTagFilter = ref([])
+const availableTags = ref([])
+const filteredAssets = ref([])
+
+// Computed property for available tags
+const computedAvailableTags = computed(() => {
+  const allTags = new Set()
+  availableAssets.value.forEach(asset => {
+    if (asset.tags && Array.isArray(asset.tags)) {
+      asset.tags.forEach(tag => allTags.add(tag))
+    }
+  })
+  return Array.from(allTags).map(tag => ({ label: tag, value: tag }))
+})
+
+// Filter memories based on selected tags
+const filterMemories = () => {
+  if (!selectedTagFilter.value || selectedTagFilter.value.length === 0) {
+    filteredAssets.value = availableAssets.value
+  } else {
+    filteredAssets.value = availableAssets.value.filter(asset => 
+      asset.tags && Array.isArray(asset.tags) && 
+      selectedTagFilter.value.some(tag => asset.tags.includes(tag))
+    )
+  }
+}
+
+// Watch for changes in available assets to update filtered assets
+watch(availableAssets, () => {
+  filterMemories()
+}, { immediate: true })
+
+// Watch for changes in tag filter
+watch(selectedTagFilter, () => {
+  filterMemories()
+})
+
+const openSelectMemoriesDialog = async () => {
+  loadingAssets.value = true
+  try {
+    const allApprovedAssets = await db.assets.getAssets({ approved: true })
+    availableAssets.value = allApprovedAssets || []
+    selectedMemories.value = editBook.value.created_from_assets || []
+    selectedTagFilter.value = [] // Reset filter
+    showSelectMemoriesModal.value = true
+  } catch (error) {
+    console.error('Error loading assets for memory selection:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to load assets for memory selection',
+        life: 3000
+      })
+    }
+  } finally {
+    loadingAssets.value = false
+  }
+}
+
+const closeSelectMemoriesDialog = () => {
+  showSelectMemoriesModal.value = false
+  selectedMemories.value = []
+  selectedTagFilter.value = []
+}
+
+const toggleMemorySelection = (assetId) => {
+  const index = selectedMemories.value.indexOf(assetId)
+  if (index > -1) {
+    selectedMemories.value.splice(index, 1)
+  } else {
+    selectedMemories.value.push(assetId)
+  }
+}
+
+const selectAllMemories = () => {
+  selectedMemories.value = filteredAssets.value.map(asset => asset.id)
+}
+
+const saveSelectedMemories = () => {
+  editBook.value.created_from_assets = selectedMemories.value
+  showSelectMemoriesModal.value = false
+  if ($toast && $toast.add) {
+    $toast.add({
+      severity: 'success',
+      summary: 'Selected',
+      detail: `${selectedMemories.value.length} memories selected`,
+      life: 3000
+    })
+  }
+}
+
+const clearTagFilter = () => {
+  selectedTagFilter.value = []
+  filterMemories()
 }
 </script> 

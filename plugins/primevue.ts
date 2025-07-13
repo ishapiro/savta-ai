@@ -30,6 +30,7 @@ import Chip from 'primevue/chip'
 import Tag from 'primevue/tag'
 import Password from 'primevue/password'
 import Dropdown from 'primevue/dropdown'
+import MultiSelect from 'primevue/multiselect'
 import Tooltip from 'primevue/tooltip'
 import InputNumber from 'primevue/inputnumber'
 import Checkbox from 'primevue/checkbox'
@@ -63,6 +64,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     Tag,
     Password,
     Dropdown,
+    MultiSelect,
     InputNumber,
     Checkbox
   }

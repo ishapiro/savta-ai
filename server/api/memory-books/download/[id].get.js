@@ -255,11 +255,22 @@ export default defineEventHandler(async (event) => {
     // Step 2: Generate the PDF
     console.log('📄 Generating PDF with background...')
     try {
-      // Call the PDF generation endpoint
+      // Get page count and print size from query parameters or use defaults from book
+      const query = getQuery(event)
+      const pageCount = parseInt(query.pageCount) || book.page_count || 20
+      const printSize = query.printSize || book.print_size || '8x10'
+      
+      console.log('📄 PDF generation parameters:', { pageCount, printSize })
+      
+      // Call the PDF generation endpoint with parameters
       const pdfResponse = await $fetch(`/api/memory-books/generate-pdf/${bookId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
+        },
+        body: {
+          pageCount,
+          printSize
         }
       })
       
