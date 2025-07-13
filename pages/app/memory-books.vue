@@ -351,7 +351,7 @@
             </div>
             <button
               class="flex items-center justify-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full px-2 py-1 text-xs shadow"
-              @click="viewPDF(selectedBook.pdf_url)"
+              @click="viewPDF(selectedBook.pdf_url, selectedBook.id)"
             >
               <i class="pi pi-external-link text-xs"></i>
               View
@@ -453,10 +453,54 @@
         </div>
       </div>
     </Dialog>
+
+    <!-- PDF Preview Modal -->
+    <Dialog
+      v-model:visible="showPdfModal"
+      modal
+      header="PDF Preview"
+      :style="{ width: '98vw', maxWidth: '1200px', height: '90vh', maxHeight: '90vh', padding: 0 }"
+      :contentStyle="{ height: '90vh', padding: 0 }"
+      :closable="false"
+    >
+      <div class="pdf-preview-container" style="height: 90vh; width: 100%; padding: 0;">
+        <!-- TEMP: Show isChrome value for debugging -->
+        <div class="text-xs text-gray-400 mb-2">isChrome: {{ isChrome }}</div>
+        <div v-if="isChrome && pdfBlobUrl" class="mb-6 p-5 bg-yellow-100 border-2 border-yellow-400 rounded-lg text-yellow-900 text-center text-lg shadow-lg">
+          <i class="pi pi-exclamation-triangle text-3xl text-yellow-600 mb-2"></i><br>
+          <strong class="text-xl">Note for Chrome users:</strong><br />
+          <span class="block mt-2 mb-2">Due to Chrome security features, you must download the PDF to view it.</span>
+          <a :href="pdfBlobUrl" download="memory-book.pdf" class="text-blue-700 underline font-bold text-2xl block mt-2">Click here to download the PDF</a>
+        </div>
+        <embed
+          v-if="pdfBlobUrl && !isChrome"
+          :src="pdfBlobUrl"
+          type="application/pdf"
+          style="width: 100%; height: 100%; border: none;"
+        />
+        <div v-else-if="!pdfBlobUrl" class="text-center py-8">
+          <i class="pi pi-file-pdf text-4xl text-gray-400"></i>
+          <p class="text-color-secondary mt-2">No PDF available for preview.</p>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end">
+          <Button
+            label="Close"
+            severity="secondary"
+            @click="showPdfModal = false"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
+import { ref, watch, computed, onMounted } from 'vue'
+const showPdfModal = ref(false)
+const pdfBlobUrl = ref(null)
+const isChrome = ref(false)
 // Set the layout for this page
 definePageMeta({
   layout: 'default'
@@ -585,15 +629,14 @@ const cancelDialog = () => {
 // Load memory books
 onMounted(async () => {
   await loadMemoryBooks()
+  // Improved Chrome detection (exclude Edge, Brave, Opera)
+  isChrome.value = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor) && !/Edg|Brave|OPR/.test(navigator.userAgent)
 })
 
 // Cleanup on unmount
 onUnmounted(() => {
   stopProgressPolling()
 })
-
-
-
 
 
 // Load memory books
@@ -1038,12 +1081,48 @@ const viewBookDetails = async (book) => {
   }
 }
 
-// View PDF in new window
-const viewPDF = (pdfUrl) => {
-  if (pdfUrl) {
-    window.open(pdfUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes')
+// View PDF in modal
+const viewPDF = async (pdfUrl, bookId) => {
+  if (pdfUrl && bookId) {
+    try {
+      // Use our preview endpoint that serves PDF with proper headers
+      const supabase = useNuxtApp().$supabase
+      const { data: sessionData } = await supabase.auth.getSession()
+      
+      if (!sessionData.session?.access_token) {
+        console.error('No access token available')
+        // Fallback to direct URL
+        window.open(pdfUrl, '_blank')
+        return
+      }
+      
+      // Fetch the PDF with authentication
+      const response = await $fetch(`/api/memory-books/preview/${bookId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${sessionData.session.access_token}`
+        }
+      })
+      
+      // Convert the response to a blob URL
+      const blob = new Blob([response], { type: 'application/pdf' })
+      pdfBlobUrl.value = URL.createObjectURL(blob)
+      showPdfModal.value = true
+      
+    } catch (error) {
+      console.error('Error opening PDF preview:', error)
+      // Fallback to direct URL if preview fails
+      window.open(pdfUrl, '_blank')
+    }
   }
 }
+
+watch(showPdfModal, (val) => {
+  if (!val && pdfBlobUrl.value) {
+    URL.revokeObjectURL(pdfBlobUrl.value)
+    pdfBlobUrl.value = null
+  }
+})
 
 // Get status text
 const getStatusText = (status) => {

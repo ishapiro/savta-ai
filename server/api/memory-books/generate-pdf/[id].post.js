@@ -2,6 +2,7 @@
 // Generates PDF using pre-generated background
 
 import { PDFDocument, rgb } from 'pdf-lib'
+import sharp from 'sharp'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -88,8 +89,8 @@ export default defineEventHandler(async (event) => {
 
     console.log('🔄 PDF URL not found, generating new PDF...')
     
-    // Update status to indicate PDF generation
-    await updatePdfStatus(supabase, book.id, user.id, 'Setting up PDF document...')
+    // Update status 
+    await updatePdfStatus(supabase, book.id, user.id, 'Retrieving you memories ...')
     
     // 1. Fetch approved assets for this book
     console.log('📸 Fetching assets for book:', book.created_from_assets)
@@ -113,6 +114,9 @@ export default defineEventHandler(async (event) => {
 
     // 2. Get the background image from storage
     console.log('🎨 Loading background image from storage...')
+
+    // Update status 
+    await updatePdfStatus(supabase, book.id, user.id, 'Retrieving background image ...')
     let backgroundBuffer
     
     if (book.background_url) {
@@ -134,6 +138,22 @@ export default defineEventHandler(async (event) => {
     const pdfDoc = await PDFDocument.create()
     const pdfBgImage = await pdfDoc.embedPng(backgroundBuffer)
     console.log('✅ PDF document created with background image')
+    
+    // Helper function to process image orientation
+    async function processImageOrientation(imageBuffer, format) {
+      try {
+        console.log(`🔄 Processing image orientation for ${format} image...`)
+        const processedImage = await sharp(imageBuffer)
+          .rotate() // Auto-rotate based on EXIF orientation
+          .toFormat(format === 'png' ? 'png' : 'jpeg')
+          .toBuffer()
+        console.log(`✅ Image orientation processed successfully`)
+        return processedImage
+      } catch (error) {
+        console.warn(`⚠️ Failed to process image orientation, using original:`, error.message)
+        return imageBuffer // Fallback to original if processing fails
+      }
+    }
     
     await updatePdfStatus(supabase, book.id, user.id, 'Background ready, creating pages...')
     
@@ -216,13 +236,17 @@ export default defineEventHandler(async (event) => {
             const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
             console.log(`✅ Image downloaded, size:`, imageBuffer.length, 'bytes')
             
+            // Process image orientation
+            const isPng = asset.storage_url.endsWith('.png')
+            const processedImageBuffer = await processImageOrientation(imageBuffer, isPng ? 'png' : 'jpeg')
+            
             let pdfImage
-            if (asset.storage_url.endsWith('.png')) {
-              pdfImage = await pdfDoc.embedPng(imageBuffer)
+            if (isPng) {
+              pdfImage = await pdfDoc.embedPng(processedImageBuffer)
             } else {
-              pdfImage = await pdfDoc.embedJpg(imageBuffer)
+              pdfImage = await pdfDoc.embedJpg(processedImageBuffer)
             }
-            console.log(`✅ Image embedded in PDF`)
+            console.log(`✅ Image embedded in PDF with correct orientation`)
             
             // Get image dimensions
             const imgDims = pdfImage.scale(1)
@@ -250,11 +274,25 @@ export default defineEventHandler(async (event) => {
             })
             // Draw caption if available
             if (asset.ai_caption) {
-              page.drawText(asset.ai_caption.substring(0, 50) + '...', {
+              const captionText = asset.ai_caption.substring(0, 50) + '...'
+              const textWidth = captionText.length * 4.5 // Approximate width
+              const textHeight = 12
+              
+              // Draw white background rectangle for caption
+              page.drawRectangle({
+                x: x + 5,
+                y: y + 15,
+                width: textWidth + 10,
+                height: textHeight + 6,
+                color: rgb(1, 1, 1)
+              })
+              
+              // Draw black text
+              page.drawText(captionText, {
                 x: x + 10,
                 y: y + 20,
                 size: 8,
-                color: rgb(0.5, 0.5, 0.5)
+                color: rgb(0, 0, 0)
               })
             }
           } catch (err) {
@@ -276,11 +314,25 @@ export default defineEventHandler(async (event) => {
               color: rgb(0.3, 0.3, 0.3)
             })
             if (asset.ai_caption) {
-              page.drawText(asset.ai_caption.substring(0, 50) + '...', {
+              const captionText = asset.ai_caption.substring(0, 50) + '...'
+              const textWidth = captionText.length * 4.5 // Approximate width
+              const textHeight = 12
+              
+              // Draw white background rectangle for caption
+              page.drawRectangle({
+                x: x + 5,
+                y: y + 15,
+                width: textWidth + 10,
+                height: textHeight + 6,
+                color: rgb(1, 1, 1)
+              })
+              
+              // Draw black text
+              page.drawText(captionText, {
                 x: x + 10,
                 y: y + 20,
                 size: 8,
-                color: rgb(0.5, 0.5, 0.5)
+                color: rgb(0, 0, 0)
               })
             }
           }
