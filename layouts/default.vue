@@ -393,6 +393,12 @@ import { useSupabaseUser } from '~/composables/useSupabase'
 const supabase = useNuxtApp().$supabase
 const user = useSupabaseUser()
 
+// Debug: Watch user ref and log changes
+import { watch } from 'vue'
+watch(user, (val) => {
+  console.log('Layout user changed:', val)
+})
+
 const route = useRoute()
 const { hasInsidersAccess, checkInsidersAccess } = useInsidersAccess()
 
@@ -443,40 +449,31 @@ const breadcrumbItems = computed(() => {
 
 const handleSignOut = async () => {
   try {
-    console.log('Starting sign out process...')
-    console.log('Current user state:', user.value ? 'Authenticated' : 'Not authenticated')
-    
-    // Always try to sign out from Supabase if user exists
-    if (user.value) {
-      console.log('Signing out from Supabase...')
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('Sign out error:', error)
-      } else {
-        console.log('Successfully signed out from Supabase')
-      }
-    } else {
-      console.log('No authenticated user to sign out')
+    const supabase = useNuxtApp().$supabase
+    const { data } = await supabase.auth.getSession()
+    if (data.session) {
+      await supabase.auth.signOut()
     }
-    
-    // Clear insiders access
-    console.log('Clearing insiders access...')
-    const { clearInsidersAccess } = useInsidersAccess()
-    clearInsidersAccess()
-    
-    // Force a small delay to ensure state updates
-    await new Promise(resolve => setTimeout(resolve, 100))
-    
-    console.log('Navigating to dashboard...')
-    // Navigate back to landing page
-    navigateTo('/app/dashboard')
-  } catch (err) {
-    console.error('Sign out error:', err)
-    // Even if there's an error, still clear insiders access and navigate
-    const { clearInsidersAccess } = useInsidersAccess()
-    clearInsidersAccess()
-    navigateTo('/app/dashboard')
+  } catch (error) {
+    // Suppress known 403 global logout error
+    if (
+      !(
+        error?.message?.includes('Auth session missing') ||
+        (error?.status === 403 && error?.message?.includes('logout'))
+      )
+    ) {
+      console.warn('Sign out error:', error)
+    }
   }
+  // Always clear insiders access and navigate to dashboard (signed-out state)
+  const { clearInsidersAccess } = useInsidersAccess()
+  clearInsidersAccess()
+  // Force clear the user ref
+  import('~/composables/useSupabase').then(mod => {
+    mod.globalUser.value = null
+  })
+  await new Promise(resolve => setTimeout(resolve, 100))
+  navigateTo('/app/dashboard')
 }
 
 const handleSignIn = () => {

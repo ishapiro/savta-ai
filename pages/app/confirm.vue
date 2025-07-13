@@ -18,17 +18,6 @@
       class="z-10"
       @hide="onDialogHide"
     >
-      <!-- Custom Close Button (top right) -->
-      <div class="flex justify-end w-full mb-2">
-        <Button
-          icon="pi pi-times"
-          rounded
-          class="bg-pink-500 hover:bg-pink-600 text-white"
-          @click="onDialogHide"
-          style="box-shadow: none;"
-        />
-      </div>
-
       <!-- Main Content -->
       <div class="text-center mb-3 w-full">
         <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -103,11 +92,6 @@
           label="Go to Dashboard" 
           class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold text-sm"
           @click="goToDashboard"
-        />
-        <Button 
-          label="Learn More" 
-          class="bg-grey-500 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold text-sm"
-          @click="goToAbout"
         />
       </div>
     </Dialog>
