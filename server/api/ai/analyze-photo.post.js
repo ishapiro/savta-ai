@@ -41,55 +41,48 @@ export default defineEventHandler(async (event) => {
     const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
     const base64Image = imageBuffer.toString('base64')
     
-    // Create prompt based on target shape
-    let analysisPrompt
-    switch (targetShape) {
-      case 'round':
-        analysisPrompt = `Analyze this photo and provide intelligent cropping suggestions for a circular crop. Focus on:
-1. Main subject(s) - identify the primary subject(s) in the image
-2. Composition - suggest the best center point for the circular crop
-3. Zoom level - recommend how much to zoom/crop to frame the subject well
-4. Background - consider what background elements to include/exclude
+    // Create a comprehensive shape analysis prompt
+    const analysisPrompt = `Analyze this photo and determine which shape will work best for optimal framing. Consider all available shapes: original, square, round, oval.
+
+1. SHAPE COMPARISON ANALYSIS:
+   - Original: Keep natural aspect ratio, minimal cropping
+   - Square: Force 1:1 aspect ratio, may crop significantly
+   - Round: Circular crop, works best for centered subjects
+   - Oval: Elliptical crop, good for wider subjects
+
+2. SUBJECT ASSESSMENT:
+   - What is the main subject(s) in the image?
+   - What is the subject's natural shape and orientation?
+   - Are there important elements that shouldn't be cut off?
+   - How is the subject positioned (centered, off-center, near edges)?
+
+3. COMPOSITION ANALYSIS:
+   - Which shape would frame the subject most naturally?
+   - What would be the optimal center point for round/oval shapes?
+   - What zoom level would work best for the recommended shape?
+
+4. RECOMMENDATION:
+   - Rank the shapes from best to worst for this image
+   - Provide specific cropping parameters for the best shape
+   - Explain why this shape works best
 
 Respond with JSON format:
 {
-  "centerX": 0.5, // center point X (0-1, where 0.5 is middle)
-  "centerY": 0.5, // center point Y (0-1, where 0.5 is middle)  
+  "bestShape": "original|square|round|oval", // the shape that works best
+  "shapeRanking": ["best", "second", "third", "worst"], // ranking of all shapes
+  "willFit": true, // boolean - whether the best shape will work well
+  "fitQuality": "excellent|good|fair|poor", // how well the best shape fits
+  "centerX": 0.5, // center point X for round/oval (0-1, where 0.5 is middle)
+  "centerY": 0.5, // center point Y for round/oval (0-1, where 0.5 is middle)
   "zoom": 1.2, // zoom factor (1.0 = no zoom, 1.2 = 20% zoom in)
-  "reasoning": "explanation of the cropping decision"
+  "reasoning": "detailed explanation of shape analysis and recommendations",
+  "shapeAnalysis": {
+    "original": "explanation of how original shape would work",
+    "square": "explanation of how square shape would work", 
+    "round": "explanation of how round shape would work",
+    "oval": "explanation of how oval shape would work"
+  }
 }`
-        break
-        
-      case 'oval':
-        analysisPrompt = `Analyze this photo and provide intelligent cropping suggestions for an oval crop. Focus on:
-1. Main subject(s) - identify the primary subject(s) in the image
-2. Composition - suggest the best center point for the oval crop
-3. Zoom level - recommend how much to zoom/crop to frame the subject well
-4. Aspect ratio - consider the oval's aspect ratio for optimal framing
-
-Respond with JSON format:
-{
-  "centerX": 0.5, // center point X (0-1, where 0.5 is middle)
-  "centerY": 0.5, // center point Y (0-1, where 0.5 is middle)
-  "zoom": 1.2, // zoom factor (1.0 = no zoom, 1.2 = 20% zoom in)
-  "reasoning": "explanation of the cropping decision"
-}`
-        break
-        
-      default:
-        analysisPrompt = `Analyze this photo and provide intelligent cropping suggestions. Focus on:
-1. Main subject(s) - identify the primary subject(s) in the image
-2. Composition - suggest the best center point for the crop
-3. Zoom level - recommend how much to zoom/crop to frame the subject well
-
-Respond with JSON format:
-{
-  "centerX": 0.5, // center point X (0-1, where 0.5 is middle)
-  "centerY": 0.5, // center point Y (0-1, where 0.5 is middle)
-  "zoom": 1.2, // zoom factor (1.0 = no zoom, 1.2 = 20% zoom in)
-  "reasoning": "explanation of the cropping decision"
-}`
-    }
     
     // Call OpenAI Vision API
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -149,11 +142,26 @@ Respond with JSON format:
       console.error('❌ Failed to parse AI response:', parseError)
       // Return default values if parsing fails
       analysis = {
+        willFit: true,
+        fitQuality: 'fair',
         centerX: 0.5,
         centerY: 0.5,
         zoom: 1.0,
-        reasoning: 'Default values used due to parsing error'
+        reasoning: 'Default values used due to parsing error',
+        alternativeShape: 'original'
       }
+    }
+    
+    // Set default values for new fields if not present
+    analysis.bestShape = analysis.bestShape || 'original'
+    analysis.shapeRanking = analysis.shapeRanking || ['original', 'square', 'round', 'oval']
+    analysis.willFit = analysis.willFit !== undefined ? analysis.willFit : true
+    analysis.fitQuality = analysis.fitQuality || 'fair'
+    analysis.shapeAnalysis = analysis.shapeAnalysis || {
+      original: 'Default analysis',
+      square: 'Default analysis',
+      round: 'Default analysis',
+      oval: 'Default analysis'
     }
     
     // Validate and clamp values
@@ -161,43 +169,64 @@ Respond with JSON format:
     analysis.centerY = Math.max(0, Math.min(1, analysis.centerY || 0.5))
     analysis.zoom = Math.max(0.5, Math.min(3, analysis.zoom || 1.0))
     
-    // Apply 20% zoom out to give better fit in shapes
-    analysis.zoom = Math.max(0.5, analysis.zoom * 0.8)
+    // Apply more aggressive zoom out to ensure subject is always in shape
+    analysis.zoom = Math.max(0.5, analysis.zoom * 0.6) // 40% zoom out instead of 20%
     
-    // Check if subject is in a corner and adjust cropping
+    // Check if subject is more than 20% off center and apply aggressive containment
+    const centerThreshold = 0.3 // Consider "off center" if more than 30% from center
+    const distanceFromCenter = Math.sqrt(
+      Math.pow(analysis.centerX - 0.5, 2) + 
+      Math.pow(analysis.centerY - 0.5, 2)
+    )
+    
+    const isOffCenter = distanceFromCenter > centerThreshold
     const cornerThreshold = 0.2 // Consider "corner" if within 20% of edge
     const isNearLeft = analysis.centerX < cornerThreshold
     const isNearRight = analysis.centerX > (1 - cornerThreshold)
     const isNearTop = analysis.centerY < cornerThreshold
     const isNearBottom = analysis.centerY > (1 - cornerThreshold)
     
-    if (isNearLeft || isNearRight || isNearTop || isNearBottom) {
-      console.log('📍 Subject detected near corner/edge, applying corner-safe cropping')
+    if (isOffCenter || isNearLeft || isNearRight || isNearTop || isNearBottom) {
+      console.log('📍 Subject detected off center or near corner/edge, applying aggressive containment')
       
-      // If subject is in corner, use more conservative zoom to preserve the corner
-      if (analysis.zoom > 1.0) {
-        analysis.zoom = Math.max(0.8, analysis.zoom * 0.7) // Additional 30% zoom out for corners
-        console.log('🔍 Applied corner-safe zoom out. Final zoom:', analysis.zoom)
+      // Apply even more aggressive zoom out for off-center subjects
+      if (isOffCenter) {
+        analysis.zoom = Math.max(0.4, analysis.zoom * 0.5) // Additional 50% zoom out for off-center
+        console.log('🔍 Applied off-center aggressive zoom out. Zoom:', analysis.zoom)
       }
       
-      // Adjust center point to ensure corner is preserved
+      // If subject is in corner, use even more conservative zoom to preserve the corner
+      if (isNearLeft || isNearRight || isNearTop || isNearBottom) {
+        analysis.zoom = Math.max(0.3, analysis.zoom * 0.6) // Additional 40% zoom out for corners
+        console.log('🔍 Applied corner-safe aggressive zoom out. Final zoom:', analysis.zoom)
+      }
+      
+      // Adjust center point to ensure corner is preserved and subject stays in shape
       if (isNearLeft) {
-        analysis.centerX = Math.max(0.1, analysis.centerX) // Keep some margin from left edge
+        analysis.centerX = Math.max(0.15, analysis.centerX) // Keep more margin from left edge
       }
       if (isNearRight) {
-        analysis.centerX = Math.min(0.9, analysis.centerX) // Keep some margin from right edge
+        analysis.centerX = Math.min(0.85, analysis.centerX) // Keep more margin from right edge
       }
       if (isNearTop) {
-        analysis.centerY = Math.max(0.1, analysis.centerY) // Keep some margin from top edge
+        analysis.centerY = Math.max(0.15, analysis.centerY) // Keep more margin from top edge
       }
       if (isNearBottom) {
-        analysis.centerY = Math.min(0.9, analysis.centerY) // Keep some margin from bottom edge
+        analysis.centerY = Math.min(0.85, analysis.centerY) // Keep more margin from bottom edge
       }
       
-      console.log('📍 Adjusted center point for corner safety:', { centerX: analysis.centerX, centerY: analysis.centerY })
+      console.log('📍 Adjusted center point for aggressive containment:', { centerX: analysis.centerX, centerY: analysis.centerY })
     }
     
-    console.log('🔍 Applied 20% zoom out. Final zoom:', analysis.zoom)
+    console.log('🔍 Applied aggressive zoom out. Final zoom:', analysis.zoom)
+    
+    // Log shape analysis results
+    console.log('📊 Shape Analysis:', {
+      bestShape: analysis.bestShape,
+      shapeRanking: analysis.shapeRanking,
+      willFit: analysis.willFit,
+      fitQuality: analysis.fitQuality
+    })
     
     console.log('✅ AI analysis completed:', analysis)
     

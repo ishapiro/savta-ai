@@ -161,11 +161,57 @@ export default defineEventHandler(async (event) => {
         console.log(`🔄 Processing image shape: ${shape}`)
         let processedImage
         
-        // Get AI analysis for intelligent cropping (for round and oval shapes)
+        // Get AI analysis for shape recommendation and intelligent cropping
         let aiAnalysis = null
-        if ((shape === 'round' || shape === 'oval') && imageUrl) {
+        let recommendedShape = shape // Default to using the requested shape
+        
+        // If shape is 'magic', we'll use AI to determine the best shape
+        if (shape === 'magic' && imageUrl) {
           try {
-            console.log('🤖 Getting AI analysis for intelligent cropping...')
+            console.log('🤖 Getting AI analysis for magic shape detection...')
+            const analysisRes = await fetch(`${config.public.siteUrl}/api/ai/analyze-photo`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                imageUrl: imageUrl,
+                targetShape: 'magic', // This will trigger the comprehensive shape analysis
+                targetWidth: targetWidth,
+                targetHeight: targetHeight
+              })
+            })
+            
+            if (analysisRes.ok) {
+              const analysisData = await analysisRes.json()
+              aiAnalysis = analysisData.analysis
+              console.log('✅ AI analysis received:', aiAnalysis)
+              
+              // Use AI's recommended shape
+              if (aiAnalysis && aiAnalysis.bestShape) {
+                recommendedShape = aiAnalysis.bestShape
+                console.log('🎯 AI recommends shape:', recommendedShape, 'for magic mode')
+                
+                // Update the shape to use AI's recommendation
+                shape = recommendedShape
+              }
+              
+              // Check fit quality for logging
+              if (aiAnalysis && aiAnalysis.fitQuality) {
+                console.log('📊 Fit quality for magic shape:', aiAnalysis.fitQuality)
+              }
+            } else {
+              console.warn('⚠️ AI analysis failed, using original shape for magic mode')
+              shape = 'original'
+            }
+          } catch (aiError) {
+            console.warn('⚠️ AI analysis error, using original shape for magic mode:', aiError.message)
+            shape = 'original'
+          }
+        } else if (imageUrl && (shape === 'round' || shape === 'oval')) {
+          // For explicit round/oval shapes, use AI for center point detection
+          try {
+            console.log('🤖 Getting AI analysis for shape recommendation...')
             const analysisRes = await fetch(`${config.public.siteUrl}/api/ai/analyze-photo`, {
               method: 'POST',
               headers: {
@@ -183,15 +229,116 @@ export default defineEventHandler(async (event) => {
               const analysisData = await analysisRes.json()
               aiAnalysis = analysisData.analysis
               console.log('✅ AI analysis received:', aiAnalysis)
+              
+              // Use AI's recommended shape if available
+              if (aiAnalysis && aiAnalysis.bestShape) {
+                recommendedShape = aiAnalysis.bestShape
+                console.log('🎯 AI recommends shape:', recommendedShape, 'instead of requested:', shape)
+                
+                // Update the shape to use AI's recommendation
+                shape = recommendedShape
+              }
+              
+              // Check fit quality for logging
+              if (aiAnalysis && aiAnalysis.fitQuality) {
+                console.log('📊 Fit quality for recommended shape:', aiAnalysis.fitQuality)
+              }
             } else {
-              console.warn('⚠️ AI analysis failed, using default cropping')
+              console.warn('⚠️ AI analysis failed, using requested shape')
             }
           } catch (aiError) {
-            console.warn('⚠️ AI analysis error, using default cropping:', aiError.message)
+            console.warn('⚠️ AI analysis error, using requested shape:', aiError.message)
           }
         }
         
         switch (shape) {
+          case 'square':
+            // Create square crop with AI-guided cropping
+            if (aiAnalysis) {
+              // Use AI analysis for intelligent cropping
+              const { centerX, centerY, zoom } = aiAnalysis
+              console.log('🎯 AI Analysis values for square:', { centerX, centerY, zoom })
+              
+              // Get actual image dimensions
+              const imageInfo = await sharp(imageBuffer).metadata()
+              const originalWidth = imageInfo.width || 1000
+              const originalHeight = imageInfo.height || 1000
+              console.log('📐 Original image dimensions:', { width: originalWidth, height: originalHeight })
+              
+              // Calculate crop area based on AI analysis with aggressive containment
+              const cropWidth = originalWidth / zoom
+              const cropHeight = originalHeight / zoom
+              
+              // Calculate center point with more aggressive bounds checking
+              let cropX = (centerX * originalWidth) - (cropWidth / 2)
+              let cropY = (centerY * originalHeight) - (cropHeight / 2)
+              
+              // Ensure crop area stays within image bounds
+              cropX = Math.max(0, Math.min(originalWidth - cropWidth, cropX))
+              cropY = Math.max(0, Math.min(originalHeight - cropHeight, cropY))
+              
+              // Additional safety check: if crop would go outside bounds, adjust zoom
+              if (cropWidth > originalWidth || cropHeight > originalHeight) {
+                console.log('⚠️ Crop area too large, adjusting zoom for safety')
+                const safeZoom = Math.max(zoom, Math.max(originalWidth / targetWidth, originalHeight / targetHeight))
+                const adjustedCropWidth = originalWidth / safeZoom
+                const adjustedCropHeight = originalHeight / safeZoom
+                cropX = Math.max(0, Math.min(originalWidth - adjustedCropWidth, (centerX * originalWidth) - (adjustedCropWidth / 2)))
+                cropY = Math.max(0, Math.min(originalHeight - adjustedCropHeight, (centerY * originalHeight) - (adjustedCropHeight / 2)))
+              }
+              
+              // Final safety check: ensure crop coordinates are valid
+              if (cropX < 0 || cropY < 0 || cropX + cropWidth > originalWidth || cropY + cropHeight > originalHeight) {
+                console.log('⚠️ Crop coordinates invalid, using fallback cropping')
+                // Use fallback to default cropping
+                processedImage = await sharp(imageBuffer)
+                  .resize(targetWidth, targetHeight, { fit: 'cover' })
+                  .png()
+                  .toBuffer()
+                console.log('✅ Fallback crop applied successfully')
+                return processedImage
+              }
+              
+              console.log('✂️ Calculated crop area for square:', {
+                cropX: Math.round(cropX),
+                cropY: Math.round(cropY),
+                cropWidth: Math.round(cropWidth),
+                cropHeight: Math.round(cropHeight),
+                zoom: zoom
+              })
+              
+              console.log('🔄 Applying AI-guided square crop with Sharp...')
+              try {
+                processedImage = await sharp(imageBuffer)
+                  .extract({
+                    left: Math.round(cropX),
+                    top: Math.round(cropY),
+                    width: Math.round(cropWidth),
+                    height: Math.round(cropHeight)
+                  })
+                  .resize(targetWidth, targetHeight, { fit: 'cover' })
+                  .png()
+                  .toBuffer()
+                console.log('✅ AI-guided square crop applied successfully')
+              } catch (cropError) {
+                console.warn('⚠️ AI-guided square crop failed, using fallback:', cropError.message)
+                // Use fallback to default cropping
+                processedImage = await sharp(imageBuffer)
+                  .resize(targetWidth, targetHeight, { fit: 'cover' })
+                  .png()
+                  .toBuffer()
+                console.log('✅ Fallback square crop applied successfully')
+              }
+            } else {
+              // Fallback to default square cropping
+              console.log('⚠️ Using default center cropping for square (no AI analysis)')
+              processedImage = await sharp(imageBuffer)
+                .resize(targetWidth, targetHeight, { fit: 'cover' })
+                .png()
+                .toBuffer()
+            }
+            break
+            
           case 'round':
             // Create circular mask with AI-guided cropping
             const circleSvg = `<svg><circle cx="${targetWidth/2}" cy="${targetHeight/2}" r="${Math.min(targetWidth, targetHeight)/2}" fill="white"/></svg>`
@@ -207,11 +354,43 @@ export default defineEventHandler(async (event) => {
               const originalHeight = imageInfo.height || 1000
               console.log('📐 Original image dimensions:', { width: originalWidth, height: originalHeight })
               
-              // Calculate crop area based on AI analysis
+              // Calculate crop area based on AI analysis with aggressive containment
               const cropWidth = originalWidth / zoom
               const cropHeight = originalHeight / zoom
-              const cropX = Math.max(0, Math.min(originalWidth - cropWidth, (centerX * originalWidth) - (cropWidth / 2)))
-              const cropY = Math.max(0, Math.min(originalHeight - cropHeight, (centerY * originalHeight) - (cropHeight / 2)))
+              
+              // Calculate center point with more aggressive bounds checking
+              let cropX = (centerX * originalWidth) - (cropWidth / 2)
+              let cropY = (centerY * originalHeight) - (cropHeight / 2)
+              
+              // Ensure crop area stays within image bounds
+              cropX = Math.max(0, Math.min(originalWidth - cropWidth, cropX))
+              cropY = Math.max(0, Math.min(originalHeight - cropHeight, cropY))
+              
+              // Additional safety check: if crop would go outside bounds, adjust zoom
+              if (cropWidth > originalWidth || cropHeight > originalHeight) {
+                console.log('⚠️ Crop area too large, adjusting zoom for safety')
+                const safeZoom = Math.max(zoom, Math.max(originalWidth / targetWidth, originalHeight / targetHeight))
+                const adjustedCropWidth = originalWidth / safeZoom
+                const adjustedCropHeight = originalHeight / safeZoom
+                cropX = Math.max(0, Math.min(originalWidth - adjustedCropWidth, (centerX * originalWidth) - (adjustedCropWidth / 2)))
+                cropY = Math.max(0, Math.min(originalHeight - adjustedCropHeight, (centerY * originalHeight) - (adjustedCropHeight / 2)))
+              }
+              
+              // Final safety check: ensure crop coordinates are valid
+              if (cropX < 0 || cropY < 0 || cropX + cropWidth > originalWidth || cropY + cropHeight > originalHeight) {
+                console.log('⚠️ Crop coordinates invalid, using fallback cropping')
+                // Use fallback to default cropping
+                processedImage = await sharp(imageBuffer)
+                  .resize(targetWidth, targetHeight, { fit: 'cover' })
+                  .composite([{
+                    input: Buffer.from(circleSvg),
+                    blend: 'dest-in'
+                  }])
+                  .png()
+                  .toBuffer()
+                console.log('✅ Fallback crop applied successfully')
+                return processedImage
+              }
               
               console.log('✂️ Calculated crop area:', {
                 cropX: Math.round(cropX),
@@ -222,21 +401,35 @@ export default defineEventHandler(async (event) => {
               })
               
               console.log('🔄 Applying AI-guided crop with Sharp...')
-              processedImage = await sharp(imageBuffer)
-                .extract({
-                  left: Math.round(cropX),
-                  top: Math.round(cropY),
-                  width: Math.round(cropWidth),
-                  height: Math.round(cropHeight)
-                })
-                .resize(targetWidth, targetHeight, { fit: 'cover' })
-                .composite([{
-                  input: Buffer.from(circleSvg),
-                  blend: 'dest-in'
-                }])
-                .png()
-                .toBuffer()
-              console.log('✅ AI-guided crop applied successfully')
+              try {
+                processedImage = await sharp(imageBuffer)
+                  .extract({
+                    left: Math.round(cropX),
+                    top: Math.round(cropY),
+                    width: Math.round(cropWidth),
+                    height: Math.round(cropHeight)
+                  })
+                  .resize(targetWidth, targetHeight, { fit: 'cover' })
+                  .composite([{
+                    input: Buffer.from(circleSvg),
+                    blend: 'dest-in'
+                  }])
+                  .png()
+                  .toBuffer()
+                console.log('✅ AI-guided crop applied successfully')
+              } catch (cropError) {
+                console.warn('⚠️ AI-guided crop failed, using fallback:', cropError.message)
+                // Use fallback to default cropping
+                processedImage = await sharp(imageBuffer)
+                  .resize(targetWidth, targetHeight, { fit: 'cover' })
+                  .composite([{
+                    input: Buffer.from(circleSvg),
+                    blend: 'dest-in'
+                  }])
+                  .png()
+                  .toBuffer()
+                console.log('✅ Fallback crop applied successfully')
+              }
             } else {
               // Fallback to default cropping
               console.log('⚠️ Using default center cropping (no AI analysis)')
@@ -266,11 +459,43 @@ export default defineEventHandler(async (event) => {
               const originalHeight = imageInfo.height || 1000
               console.log('📐 Original image dimensions:', { width: originalWidth, height: originalHeight })
               
-              // Calculate crop area based on AI analysis
+              // Calculate crop area based on AI analysis with aggressive containment
               const cropWidth = originalWidth / zoom
               const cropHeight = originalHeight / zoom
-              const cropX = Math.max(0, Math.min(originalWidth - cropWidth, (centerX * originalWidth) - (cropWidth / 2)))
-              const cropY = Math.max(0, Math.min(originalHeight - cropHeight, (centerY * originalHeight) - (cropHeight / 2)))
+              
+              // Calculate center point with more aggressive bounds checking
+              let cropX = (centerX * originalWidth) - (cropWidth / 2)
+              let cropY = (centerY * originalHeight) - (cropHeight / 2)
+              
+              // Ensure crop area stays within image bounds
+              cropX = Math.max(0, Math.min(originalWidth - cropWidth, cropX))
+              cropY = Math.max(0, Math.min(originalHeight - cropHeight, cropY))
+              
+              // Additional safety check: if crop would go outside bounds, adjust zoom
+              if (cropWidth > originalWidth || cropHeight > originalHeight) {
+                console.log('⚠️ Crop area too large, adjusting zoom for safety')
+                const safeZoom = Math.max(zoom, Math.max(originalWidth / targetWidth, originalHeight / targetHeight))
+                const adjustedCropWidth = originalWidth / safeZoom
+                const adjustedCropHeight = originalHeight / safeZoom
+                cropX = Math.max(0, Math.min(originalWidth - adjustedCropWidth, (centerX * originalWidth) - (adjustedCropWidth / 2)))
+                cropY = Math.max(0, Math.min(originalHeight - adjustedCropHeight, (centerY * originalHeight) - (adjustedCropHeight / 2)))
+              }
+              
+              // Final safety check: ensure crop coordinates are valid
+              if (cropX < 0 || cropY < 0 || cropX + cropWidth > originalWidth || cropY + cropHeight > originalHeight) {
+                console.log('⚠️ Crop coordinates invalid, using fallback cropping')
+                // Use fallback to default cropping
+                processedImage = await sharp(imageBuffer)
+                  .resize(targetWidth, targetHeight, { fit: 'cover' })
+                  .composite([{
+                    input: Buffer.from(ellipseSvg),
+                    blend: 'dest-in'
+                  }])
+                  .png()
+                  .toBuffer()
+                console.log('✅ Fallback crop applied successfully')
+                return processedImage
+              }
               
               console.log('✂️ Calculated crop area:', {
                 cropX: Math.round(cropX),
@@ -281,21 +506,35 @@ export default defineEventHandler(async (event) => {
               })
               
               console.log('🔄 Applying AI-guided crop with Sharp...')
-              processedImage = await sharp(imageBuffer)
-                .extract({
-                  left: Math.round(cropX),
-                  top: Math.round(cropY),
-                  width: Math.round(cropWidth),
-                  height: Math.round(cropHeight)
-                })
-                .resize(targetWidth, targetHeight, { fit: 'cover' })
-                .composite([{
-                  input: Buffer.from(ellipseSvg),
-                  blend: 'dest-in'
-                }])
-                .png()
-                .toBuffer()
-              console.log('✅ AI-guided crop applied successfully')
+              try {
+                processedImage = await sharp(imageBuffer)
+                  .extract({
+                    left: Math.round(cropX),
+                    top: Math.round(cropY),
+                    width: Math.round(cropWidth),
+                    height: Math.round(cropHeight)
+                  })
+                  .resize(targetWidth, targetHeight, { fit: 'cover' })
+                  .composite([{
+                    input: Buffer.from(ellipseSvg),
+                    blend: 'dest-in'
+                  }])
+                  .png()
+                  .toBuffer()
+                console.log('✅ AI-guided crop applied successfully')
+              } catch (cropError) {
+                console.warn('⚠️ AI-guided crop failed, using fallback:', cropError.message)
+                // Use fallback to default cropping
+                processedImage = await sharp(imageBuffer)
+                  .resize(targetWidth, targetHeight, { fit: 'cover' })
+                  .composite([{
+                    input: Buffer.from(ellipseSvg),
+                    blend: 'dest-in'
+                  }])
+                  .png()
+                  .toBuffer()
+                console.log('✅ Fallback crop applied successfully')
+              }
             } else {
               // Fallback to default cropping
               console.log('⚠️ Using default center cropping (no AI analysis)')
@@ -394,12 +633,15 @@ export default defineEventHandler(async (event) => {
     // Calculate exactly how many pages we need for the assets, with a hard limit of 10 pages
     const calculatedPages = Math.ceil(assets.length / assetsPerPage)
     const totalPages = Math.min(calculatedPages, 10)
+    const totalPhotos = assets.length
     
     console.log(`📄 Generating PDF with ${totalPages} pages for ${assets.length} assets (${assetsPerPage} assets per page, max 10 pages)`)
     
     if (calculatedPages > 10) {
       console.log(`⚠️ Warning: ${assets.length} assets would require ${calculatedPages} pages, but limiting to 10 pages`)
     }
+    
+    let processedPhotos = 0
     
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
       const pageNumStr = (pageIndex + 1) + (pageIndex === 0 ? 'st' : pageIndex === 1 ? 'nd' : pageIndex === 2 ? 'rd' : 'th')
@@ -451,7 +693,9 @@ export default defineEventHandler(async (event) => {
       
       for (let i = 0; i < pageAssets.length; i++) {
         const asset = pageAssets[i]
-        await updatePdfStatus(supabase, book.id, user.id, `Processing ${asset.type} ${i + 1}/${pageAssets.length} on page ${pageIndex + 1}`)
+        processedPhotos++
+        const progressPercent = Math.round((processedPhotos / totalPhotos) * 100)
+        await updatePdfStatus(supabase, book.id, user.id, `Processing photo ${processedPhotos}/${totalPhotos} (${progressPercent}%)`)
         console.log(`🖼️ Processing asset ${i + 1}/${pageAssets.length}:`, asset.id, 'Type:', asset.type)
         const col = i % gridCols
         const row = Math.floor(i / gridCols)
@@ -687,8 +931,7 @@ export default defineEventHandler(async (event) => {
     const { data: updateData, error: updateError } = await supabase
       .from('memory_books')
       .update({ 
-        pdf_url: publicUrl,
-        status: 'ready'
+        pdf_url: publicUrl
       })
       .eq('id', book.id)
       .select()
@@ -703,9 +946,19 @@ export default defineEventHandler(async (event) => {
     await updatePdfStatus(supabase, book.id, user.id, 'Working our magic ...')
     console.log('🎉 PDF generated and uploaded successfully')
     
-    setTimeout(() => {
+    // Set a final status that the frontend can wait for
+    await updatePdfStatus(supabase, book.id, user.id, 'PDF generation completed successfully')
+    
+    setTimeout(async () => {
       console.log('🧹 Cleaning up PDF status...')
-      supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
+      await supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
+      // Now update the book status to ready
+      console.log('📝 Final update: setting memory book status to ready')
+      await supabase
+        .from('memory_books')
+        .update({ status: 'ready' })
+        .eq('id', book.id)
+        .select()
     }, 10000)
     
     return {

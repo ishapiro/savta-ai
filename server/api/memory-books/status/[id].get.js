@@ -1,5 +1,11 @@
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
+  if (!id || id === 'null' || id.length < 10) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid or missing book ID'
+    })
+  }
   
   // Get the authorization header
   const authHeader = getHeader(event, 'authorization')

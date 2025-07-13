@@ -62,7 +62,7 @@
             <div class="flex-1 flex flex-col p-3">
               <div class="mb-1 flex items-center justify-between">
                 <h3 class="text-base font-bold text-color">{{ book.title || ('Memory Book #' + book.id.slice(-6)) }}</h3>
-                <Tag :value="getStatusText(book.status)" :severity="getStatusSeverity(book.status)" />
+                <!-- Status removed to avoid confusion -->
               </div>
               <div class="space-y-1 text-xs text-color-secondary mb-2">
                 <div class="flex justify-between"><span>Created:</span><span>{{ formatDate(book.created_at) }}</span></div>
@@ -91,9 +91,9 @@
               >
                 <i class="pi pi-bolt text-lg text-purple-600"></i>
               </button>
-              <!-- Regenerate Button (only for ready) -->
+              <!-- Regenerate Button (for ready or background_ready) -->
               <button
-                v-if="book.status === 'ready'"
+                v-if="book.status === 'ready' || book.status === 'background_ready'"
                 class="w-10 h-10 flex items-center justify-center rounded-full shadow bg-white text-yellow-600 hover:text-yellow-700 transition-colors"
                 v-tooltip.top="'Create a new magic AI background'"
                 @click="onRegenerateClick(book)"
@@ -300,17 +300,23 @@
       </div>
 
       <template #footer>
-        <div class="flex justify-end space-x-2">
-          <Button
-            label="Cancel"
-            severity="secondary"
-            @click="showCreateModal = false"
-          />
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+          <div class="flex gap-2 w-full sm:w-auto">
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
+              severity="secondary"
+              @click="showCreateModal = false"
+              class="rounded-full px-5 py-2 text-sm font-bold shadow w-full sm:w-auto"
+            />
+          </div>
           <Button
             label="Create Book"
+            icon="pi pi-check"
             :loading="creatingBook"
             :disabled="!newBook.title"
             @click="createMemoryBook"
+            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 text-white font-bold rounded-full px-5 py-2 text-sm shadow w-full sm:w-auto"
           />
         </div>
       </template>
@@ -443,7 +449,7 @@
     <Dialog
       v-model:visible="showProgressDialog"
       modal
-      header="Generating PDF"
+      header="Casting a Spell to Create Your Memory Book"
       :style="{ width: '400px' }"
       :closable="false"
       :z-index="9999"
@@ -699,17 +705,93 @@
         </div>
       </div>
       <template #footer>
-        <div class="flex justify-end space-x-2">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+          <div class="flex gap-2 w-full sm:w-auto">
+            <Button
+              v-if="editBook && editBook.status !== 'draft'"
+              label="Cleanup/Unstick"
+              icon="pi pi-broom"
+              severity="danger"
+              @click="showCleanupConfirmation(editBook.id)"
+              class="bg-red-500 hover:bg-red-600 border-0 text-white font-bold rounded-full px-5 py-2 text-sm shadow w-full sm:w-auto"
+            />
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
+              severity="secondary"
+              @click="showEditSettingsModal = false"
+              class="rounded-full px-5 py-2 text-sm font-bold shadow w-full sm:w-auto"
+            />
+          </div>
           <Button
-            label="Cancel"
-            severity="secondary"
-            @click="showEditSettingsModal = false"
-          />
-          <Button
-            label="Save Changes"
+            label="Save"
+            icon="pi pi-check"
             :loading="savingEditBook"
             :disabled="!editBook.title"
             @click="saveEditBook"
+            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 text-white font-bold rounded-full px-5 py-2 text-sm shadow w-full sm:w-auto"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Cleanup Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showCleanupConfirmationModal"
+      modal
+      header="Confirm Cleanup"
+      :style="{ width: '90vw', maxWidth: '500px' }"
+      class="cleanup-confirmation-dialog"
+    >
+      <div class="space-y-4">
+        <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 border border-orange-200">
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center">
+              <i class="pi pi-broom text-orange-600 text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-color">Ready for New Magic?</h3>
+              <p class="text-sm text-color-secondary">We're about to clean up your memory book</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg p-3 border border-orange-200">
+            <p class="text-sm text-color">
+              This will reset your memory book back to draft status and clear any generated backgrounds and PDFs. 
+              You'll be able to apply fresh magic to create a brand new version of your memory book.
+            </p>
+          </div>
+        </div>
+        
+        <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
+          <div class="flex items-start space-x-2">
+            <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
+            <div>
+              <p class="text-sm font-medium text-color">What happens next:</p>
+              <ul class="text-xs text-color-secondary mt-1 space-y-1">
+                <li>• Your book status will be reset to "draft"</li>
+                <li>• Any existing backgrounds and PDFs will be cleared</li>
+                <li>• You can then regenerate with fresh settings</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex flex-col sm:flex-row justify-end items-center gap-3">
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            severity="secondary"
+            @click="showCleanupConfirmationModal = false"
+            class="rounded-full px-5 py-2 text-sm font-bold shadow w-full sm:w-auto"
+          />
+          <Button
+            label="Yes, Clean Up"
+            icon="pi pi-broom"
+            severity="danger"
+            @click="confirmCleanup"
+            class="bg-red-500 hover:bg-red-600 border-0 text-white font-bold rounded-full px-5 py-2 text-sm shadow w-full sm:w-auto"
           />
         </div>
       </template>
@@ -879,13 +961,16 @@
       </div>
 
       <template #footer>
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-          <Button
-            label="Cancel"
-            severity="secondary"
-            @click="closeSelectMemoriesDialog"
-            class="w-full sm:w-auto"
-          />
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+          <div class="flex gap-2 w-full sm:w-auto">
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
+              severity="secondary"
+              @click="closeSelectMemoriesDialog"
+              class="rounded-full px-5 py-2 text-sm font-bold shadow w-full sm:w-auto"
+            />
+          </div>
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
             <span class="text-sm text-color-secondary text-center sm:text-left">
               {{ selectedMemories.length }} selected
@@ -1012,9 +1097,8 @@ const gridLayoutOptions = ref([
 ])
 
 const memoryShapeOptions = ref([
-  { label: 'Original (keep aspect ratio)', value: 'original' },
-  { label: 'Round', value: 'round' },
-  { label: 'Oval', value: 'oval' }
+  { label: 'Original (keep natural aspect ratio)', value: 'original' },
+  { label: 'Magic (AI chooses best shape)', value: 'magic' }
 ])
 
 // Dialog state
@@ -1220,7 +1304,16 @@ const createMemoryBook = async () => {
 
 // Poll PDF status
 const pollPdfStatus = async () => {
-  if (!currentBookId.value) return
+  console.log('pollPdfStatus called with', currentBookId.value)
+  if (!currentBookId.value) {
+    // Defensive: clear interval if still running
+    if (progressInterval.value) {
+      clearInterval(progressInterval.value)
+      progressInterval.value = null
+      console.warn('Cleared polling interval because currentBookId.value is null')
+    }
+    return
+  }
 
   try {
     const supabase = useNuxtApp().$supabase
@@ -1238,18 +1331,35 @@ const pollPdfStatus = async () => {
     if (response) {
       const status = response
       
-      // Check if pdf_url is available (PDF is ready for download)
-      if (status.pdf_url && status.pdf_url.startsWith('https://')) {
-        console.log('✅ PDF URL found, closing dialog:', status.pdf_url)
+      // Parse percentage from status message if available
+      if (status.pdf_status && status.pdf_status.includes('%')) {
+        const percentMatch = status.pdf_status.match(/(\d+)%/)
+        if (percentMatch) {
+          const percent = parseInt(percentMatch[1])
+          currentProgress.value = Math.min(percent, 95) // Cap at 95% until completion
+          currentProgressMessage.value = status.pdf_status
+          return
+        }
+      }
+      
+      // Only close the dialog when the PDF generation is truly completed
+      if (status.pdf_status === 'PDF generation completed successfully') {
+        console.log('✅ PDF generation completed successfully, closing dialog')
         currentProgress.value = 100
-        currentProgressMessage.value = 'Warming up the magic ...'
-        
-        // Stop polling and close dialog after a short delay
+        currentProgressMessage.value = 'Your magical memory book is ready!'
         setTimeout(() => {
           stopProgressPolling()
           showProgressDialog.value = false
           loadMemoryBooks() // Reload to show updated status
         }, 1000)
+        return
+      }
+      
+      // Check if pdf_url is available but still wait for completion status
+      if (status.pdf_url && status.pdf_url.startsWith('https://')) {
+        console.log('✅ PDF URL found, but waiting for completion status:', status.pdf_url)
+        currentProgress.value = 95
+        currentProgressMessage.value = 'Finalizing your memory book...'
         return
       }
       
@@ -1259,23 +1369,18 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = 'Generating custom background image...'
       } else if (status.pdf_status === 'background_ready') {
         currentProgress.value = 20
-        currentProgressMessage.value = 'Background ready, generating PDF...'
+        currentProgressMessage.value = 'Background ready, casting the final spell...'
       } else if (status.pdf_status === 'generating_pdf') {
         currentProgress.value = 50
-        currentProgressMessage.value = 'Creating PDF pages...'
+        currentProgressMessage.value = 'Weaving your memories into pages...'
       } else if (status.pdf_status === 'finalizing') {
         currentProgress.value = 90
-        currentProgressMessage.value = 'Finalizing PDF...'
+        currentProgressMessage.value = 'Adding the final magical touches...'
       } else if (status.pdf_status === 'completed') {
         currentProgress.value = 100
-        currentProgressMessage.value = 'PDF generation complete!'
-        
-        // Stop polling and close dialog after a short delay
-        setTimeout(() => {
-          stopProgressPolling()
-          showProgressDialog.value = false
-          loadMemoryBooks() // Reload to show updated status
-        }, 1000)
+        currentProgressMessage.value = 'Your magical memory book is ready!'
+        // Do NOT close the dialog here. Wait for the pdf_url and book_status === 'ready'.
+        // Previously, the dialog was closed here, which could be too early for multi-page books.
       } else if (status.pdf_status === 'error') {
         currentProgressMessage.value = status.pdf_error || 'PDF generation failed'
         setTimeout(() => {
@@ -1284,25 +1389,25 @@ const pollPdfStatus = async () => {
         }, 2000)
       } else if (status.pdf_status === 'not_started') {
         currentProgress.value = 5
-        currentProgressMessage.value = 'Starting up the magic ...'
+        currentProgressMessage.value = 'Gathering magical ingredients...'
       } else if (status.pdf_status === 'Creating beautiful background design...') {
         currentProgress.value = 15
-        currentProgressMessage.value = 'Creating beautiful background design...'
+        currentProgressMessage.value = 'Crafting a beautiful magical background...'
       } else if (status.pdf_status === 'Downloading background design...') {
         currentProgress.value = 25
-        currentProgressMessage.value = 'Downloading background design...'
+        currentProgressMessage.value = 'Summoning the background design...'
       } else if (status.pdf_status === 'Saving background to storage...') {
         currentProgress.value = 30
-        currentProgressMessage.value = 'Saving background to storage...'
+        currentProgressMessage.value = 'Storing the magical background...'
       } else if (status.pdf_status === 'Background ready for PDF generation') {
         currentProgress.value = 35
-        currentProgressMessage.value = 'Background ready for PDF generation'
+        currentProgressMessage.value = 'Background ready for the memory spell'
       } else if (status.pdf_status === 'Setting up PDF document...') {
         currentProgress.value = 40
-        currentProgressMessage.value = 'Setting up PDF document...'
+        currentProgressMessage.value = 'Preparing the magical document...'
       } else if (status.pdf_status === 'Background ready, creating pages...') {
         currentProgress.value = 45
-        currentProgressMessage.value = 'Background ready, creating pages...'
+        currentProgressMessage.value = 'Background ready, crafting memory pages...'
       } else {
         currentProgressMessage.value = status.pdf_status || 'Processing...'
       }
@@ -1311,7 +1416,7 @@ const pollPdfStatus = async () => {
       console.log('No status available, showing generic progress')
       if (currentProgress.value < 90) {
         currentProgress.value += 5
-        currentProgressMessage.value = 'Processing PDF...'
+        currentProgressMessage.value = 'Casting the memory spell...'
       }
     }
   } catch (error) {
@@ -1319,7 +1424,7 @@ const pollPdfStatus = async () => {
     // Fallback: show generic progress on error
     if (currentProgress.value < 90) {
       currentProgress.value += 5
-      currentProgressMessage.value = 'Processing PDF...'
+      currentProgressMessage.value = 'Casting the memory spell...'
     }
   }
 }
@@ -1329,7 +1434,7 @@ const startProgressPolling = (bookId) => {
   console.log('startProgressPolling called with bookId:', bookId)
   currentBookId.value = bookId
   currentProgress.value = 0
-  currentProgressMessage.value = 'Starting PDF generation...'
+  currentProgressMessage.value = 'Starting the magical memory book creation...'
   showProgressDialog.value = true
   console.log('showProgressDialog set to:', showProgressDialog.value)
   
@@ -1356,6 +1461,7 @@ const stopProgressPolling = () => {
     clearInterval(progressInterval.value)
     progressInterval.value = null
   }
+  // Only now set currentBookId.value to null
   currentBookId.value = null
 }
 
@@ -1762,6 +1868,8 @@ const showSelectMemoriesDialog = () => {
 }
 
 const showSelectMemoriesModal = ref(false)
+const showCleanupConfirmationModal = ref(false)
+const cleanupBookId = ref(null)
 const selectedMemories = ref([])
 const selectedTagFilter = ref([])
 const availableTags = ref([])
@@ -1874,6 +1982,75 @@ const saveSelectedMemories = () => {
 const clearTagFilter = () => {
   selectedTagFilter.value = []
   filterMemories()
+}
+
+const showCleanupConfirmation = (bookId) => {
+  cleanupBookId.value = bookId
+  showCleanupConfirmationModal.value = true
+}
+
+const confirmCleanup = async () => {
+  if (!cleanupBookId.value) return
+  
+  try {
+    await db.memoryBooks.updateMemoryBook(cleanupBookId.value, {
+      status: 'draft',
+      approved_at: null,
+      background_url: null,
+      pdf_url: null
+    })
+    
+    showCleanupConfirmationModal.value = false
+    cleanupBookId.value = null
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Cleaned Up!',
+        detail: 'We have cleaned up your memory book so you can apply new magic!',
+        life: 4000
+      })
+    }
+    
+    showEditSettingsModal.value = false
+    await loadMemoryBooks()
+  } catch (err) {
+    console.error('Error cleaning up book:', err)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to clean up book.',
+        life: 3000
+      })
+    }
+  }
+}
+
+const cleanupBook = async (bookId) => {
+  try {
+    await db.memoryBooks.updateMemoryBook(bookId, {
+      status: 'draft',
+      approved_at: null,
+      background_url: null,
+      pdf_url: null
+    })
+    $toast.add({
+      severity: 'success',
+      summary: 'Book Reset',
+      detail: 'Book status reset to draft and cleared background/PDF.',
+      life: 2000
+    })
+    showEditSettingsModal.value = false
+    await loadMemoryBooks()
+  } catch (err) {
+    $toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to reset book.',
+      life: 3000
+    })
+  }
 }
 
 
