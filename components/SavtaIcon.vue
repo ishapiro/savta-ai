@@ -13,7 +13,7 @@ defineProps({
     default: ''
   }
 })
-</script>
+</script> 
 
 <style scoped>
 /* No extra styles needed for image */

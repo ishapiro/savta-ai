@@ -78,22 +78,39 @@ export default defineEventHandler(async (event) => {
     // Update status to indicate background generation
     await updatePdfStatus(supabase, book.id, user.id, 'Creating beautiful background design...')
     
-    // 0. Delete old background file if it exists (always try to delete based on book ID)
-    console.log('🗑️ Deleting old background file...')
+    // 0. Delete old background files if they exist (try both old and new patterns)
+    console.log('🗑️ Deleting old background files...')
     try {
-      const filePath = `${user.id}/memory_book/backgrounds/${book.id}.png`
+      // Try to delete files with both old pattern and new timestamp pattern
+      const oldFilePattern = `${user.id}/memory_book/backgrounds/${book.id}.png`
+      const timestampPattern = `${user.id}/memory_book/backgrounds/${book.id}_*.png`
       
-      const { error: deleteError } = await supabase.storage
+      // List files in the background directory to find old files
+      const { data: files, error: listError } = await supabase.storage
         .from('assets')
-        .remove([filePath])
+        .list(`${user.id}/memory_book/backgrounds/`)
       
-      if (deleteError) {
-        console.warn('⚠️ Failed to delete old background file:', deleteError.message)
-      } else {
-        console.log('✅ Old background file deleted successfully')
+      if (!listError && files) {
+        const filesToDelete = files
+          .filter(file => file.name.startsWith(`${book.id}`))
+          .map(file => `${user.id}/memory_book/backgrounds/${file.name}`)
+        
+        if (filesToDelete.length > 0) {
+          const { error: deleteError } = await supabase.storage
+            .from('assets')
+            .remove(filesToDelete)
+          
+          if (deleteError) {
+            console.warn('⚠️ Failed to delete old background files:', deleteError.message)
+          } else {
+            console.log('✅ Old background files deleted successfully:', filesToDelete.length, 'files')
+          }
+        } else {
+          console.log('ℹ️ No old background files found to delete')
+        }
       }
     } catch (error) {
-      console.warn('⚠️ Error deleting old background file:', error.message)
+      console.warn('⚠️ Error deleting old background files:', error.message)
     }
     
     // 1. Fetch approved assets for this book to get tags
@@ -162,7 +179,8 @@ export default defineEventHandler(async (event) => {
     // Upload background to Supabase Storage (using assets bucket with memory_book subdirectory)
     await updatePdfStatus(supabase, book.id, user.id, 'Saving background to storage...')
     console.log('📤 Uploading background to storage...')
-    const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}.png`
+    const timestamp = Date.now()
+    const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}_${timestamp}.png`
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('assets')

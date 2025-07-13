@@ -466,14 +466,14 @@ const handleSignOut = async () => {
     }
   }
   // Always clear insiders access and navigate to dashboard (signed-out state)
-  const { clearInsidersAccess } = useInsidersAccess()
-  clearInsidersAccess()
+    const { clearInsidersAccess } = useInsidersAccess()
+    clearInsidersAccess()
   // Force clear the user ref
   import('~/composables/useSupabase').then(mod => {
     mod.globalUser.value = null
   })
-  await new Promise(resolve => setTimeout(resolve, 100))
-  navigateTo('/app/dashboard')
+    await new Promise(resolve => setTimeout(resolve, 100))
+    navigateTo('/app/dashboard')
 }
 
 const handleSignIn = () => {

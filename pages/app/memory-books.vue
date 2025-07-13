@@ -431,10 +431,20 @@
       </div>
     </Dialog>
     <!-- Regenerate Confirmation Dialog -->
-    <Dialog v-model:visible="showRegenerateDialog" modal header="" :style="{ width: '440px' }">
-      <div class="py-4">
-        <p>Regenerate this memory book with a new AI-generated background? If you just want to download the current version, use the download button (faster).</p>
-        <div class="flex justify-center gap-4 mt-6">
+    <Dialog v-model:visible="showRegenerateDialog" modal :header="null" :closable="false" class="w-full md:w-[40%] p-0">
+      <div class="py-4 px-4">
+        <p>Would you like to create a fresh, new version of this memory book with a brand new AI-generated background design? 
+          It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for 
+          you. If you're happy with the current version and just want to download it right away, you can use the download button below - 
+          that's much faster!</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+          <button
+            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-7 py-2 text-sm shadow transition-all duration-200 min-w-[150px]"
+            @click="downloadCurrentBook"
+          >
+            <i class="pi pi-download text-base"></i>
+            Download Current
+          </button>
           <button
             class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-7 py-2 text-sm shadow transition-all duration-200 min-w-[150px]"
             @click="cancelDialog"
@@ -828,7 +838,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted, nextTick } from 'vue'
 const showPdfModal = ref(false)
 const pdfBlobUrl = ref(null)
 const isChrome = ref(false)
@@ -942,6 +952,11 @@ const confirmGenerate = () => {
 const confirmRegenerate = () => {
   showRegenerateDialog.value = false
   if (pendingBook.value) generatePDF(pendingBook.value)
+  pendingBook.value = null
+}
+const downloadCurrentBook = () => {
+  showRegenerateDialog.value = false
+  if (pendingBook.value) downloadPDF(pendingBook.value)
   pendingBook.value = null
 }
 const confirmDownloadDraft = () => {
@@ -1293,46 +1308,38 @@ const generatePDF = async (book) => {
 // Download PDF
 const downloadPDF = async (book) => {
   try {
+    // Always fetch the latest book from the backend
+    const latestBook = await db.memoryBooks.getMemoryBook(book.id)
+    if (!latestBook) throw new Error('Could not fetch latest memory book')
+
     // Call the API endpoint to get the download URL
     const supabase = useNuxtApp().$supabase
-
     const { data: sessionData } = await supabase.auth.getSession()
-
-    const response = await $fetch(`/api/memory-books/download/${book.id}`, {
+    const response = await $fetch(`/api/memory-books/download/${latestBook.id}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${sessionData.session?.access_token}`
       }
     })
-    
     if (!response.success || !response.downloadUrl) {
       throw new Error('Failed to get download URL')
     }
-    
-    // Create download link
-    const link = document.createElement('a')
-    link.href = response.downloadUrl
-    link.download = `memory-book-${book.id.slice(-6)}.pdf`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'success',
-        summary: 'Downloaded',
-        detail: 'PDF download started',
-        life: 3000
-      })
-    }
-
+    // Log the download URL for debugging
+    console.log('📥 Download URL from backend:', response.downloadUrl)
+    // Add cache-busting query string
+    const cacheBuster = `cb=${Date.now()}`;
+    const pdfUrlWithBuster = response.downloadUrl.includes('?')
+      ? `${response.downloadUrl}&${cacheBuster}`
+      : `${response.downloadUrl}?${cacheBuster}`;
+    // Open PDF in modal instead of direct download
+    await viewPDF(pdfUrlWithBuster, latestBook.id)
   } catch (error) {
     console.error('Error downloading PDF:', error)
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to download PDF',
+        detail: 'Failed to open PDF',
         life: 3000
       })
     }
@@ -1431,39 +1438,14 @@ const viewBookDetails = async (book) => {
 
 // View PDF in modal
 const viewPDF = async (pdfUrl, bookId) => {
-  if (pdfUrl && bookId) {
-    try {
-      // Use our preview endpoint that serves PDF with proper headers
-      const supabase = useNuxtApp().$supabase
-      const { data: sessionData } = await supabase.auth.getSession()
-      
-      if (!sessionData.session?.access_token) {
-        console.error('No access token available')
-        // Fallback to direct URL
-        window.open(pdfUrl, '_blank')
-        return
-      }
-      
-      // Fetch the PDF with authentication
-      const response = await $fetch(`/api/memory-books/preview/${bookId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${sessionData.session.access_token}`
-        }
-      })
-      
-      // Convert the response to a blob URL
-      const blob = new Blob([response], { type: 'application/pdf' })
-      pdfBlobUrl.value = URL.createObjectURL(blob)
-      showPdfModal.value = true
-      
-    } catch (error) {
-      console.error('Error opening PDF preview:', error)
-      // Fallback to direct URL if preview fails
-      window.open(pdfUrl, '_blank')
-    }
-  }
-}
+  // Force reset before setting new URL
+  showPdfModal.value = false;
+  pdfBlobUrl.value = null;
+  await nextTick();
+  pdfBlobUrl.value = pdfUrl;
+  showPdfModal.value = true;
+  console.log('PDF modal opened with URL:', pdfUrl);
+};
 
 watch(showPdfModal, (val) => {
   if (!val && pdfBlobUrl.value) {

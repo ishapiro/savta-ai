@@ -69,8 +69,10 @@
 
                   <!-- Upload Progress -->
                   <div v-if="uploadingFiles.length > 0" class="mt-6 space-y-3">
-                    <h3 class="text-sm font-medium text-color">Uploading...</h3>
-                    <div v-for="file in uploadingFiles" :key="file.id" class="surface-100 rounded-lg p-3">
+                    <h3 class="text-sm font-medium text-color">
+                      Uploading and applying magic to {{ currentFileIndex }} of {{ totalFilesToUpload }}
+                    </h3>
+                    <div v-for="(file, idx) in uploadingFiles" :key="file.id" class="surface-100 rounded-lg p-3">
                       <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
                           <div class="w-8 h-8 bg-primary-100 rounded flex items-center justify-center">
@@ -186,12 +188,12 @@
               <!-- Photo -->
               <div class="rounded-t-2xl overflow-hidden bg-gray-100">
                 <div class="w-full h-40 flex items-center justify-center">
-                  <img
-                    v-if="asset.storage_url"
-                    :src="asset.storage_url"
-                    :alt="asset.user_caption || 'Family photo'"
+                <img
+                  v-if="asset.storage_url"
+                  :src="asset.storage_url"
+                  :alt="asset.user_caption || 'Family photo'"
                     class="max-w-full max-h-full object-contain"
-                  />
+                />
                   <i v-else class="pi pi-image text-2xl text-gray-400"></i>
                 </div>
               </div>
@@ -283,6 +285,90 @@
           </div>
         </div>
       </Dialog>
+
+      <!-- Upload Completion Dialog -->
+      <Dialog
+        v-model:visible="showCompletionDialog"
+        modal
+        :closable="false"
+        :dismissableMask="true"
+        class="w-full max-w-md"
+        :header="false"
+      >
+        <div class="text-center p-6">
+          <!-- Success Icon -->
+          <div v-if="successfulUploads > 0 && failedUploads === 0" class="mb-6">
+            <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <i class="pi pi-check text-white text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-green-700 mb-2">🎉 Magic Complete!</h2>
+            <p class="text-lg text-green-600 mb-4">
+              We uploaded and worked our magic on <span class="font-bold">{{ successfulUploads }}</span> 
+              <span v-if="successfulUploads === 1">memory</span>
+              <span v-else>memories</span>!
+            </p>
+          </div>
+
+          <!-- Mixed Results -->
+          <div v-else-if="successfulUploads > 0 && failedUploads > 0" class="mb-6">
+            <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <i class="pi pi-exclamation-triangle text-white text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-orange-700 mb-2">✨ Partially Complete!</h2>
+            <p class="text-lg text-orange-600 mb-2">
+              We uploaded and worked our magic on <span class="font-bold">{{ successfulUploads }}</span> 
+              <span v-if="successfulUploads === 1">memory</span>
+              <span v-else>memories</span>!
+            </p>
+            <p class="text-sm text-orange-500">
+              Unfortunately, we could not process <span class="font-bold">{{ failedUploads }}</span> 
+              <span v-if="failedUploads === 1">memory</span>
+              <span v-else>memories</span>.
+            </p>
+          </div>
+
+          <!-- All Failed -->
+          <div v-else-if="successfulUploads === 0 && failedUploads > 0" class="mb-6">
+            <div class="w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <i class="pi pi-times text-white text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-red-700 mb-2">😔 Upload Issues</h2>
+            <p class="text-lg text-red-600 mb-4">
+              Unfortunately, we could not process <span class="font-bold">{{ failedUploads }}</span> 
+              <span v-if="failedUploads === 1">memory</span>
+              <span v-else>memories</span>.
+            </p>
+          </div>
+
+          <!-- Fun Message -->
+          <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6">
+            <p class="text-sm text-gray-600">
+              <span v-if="successfulUploads > 0">✨ Your memories are now ready for review and approval!</span>
+              <span v-else>💡 Try uploading smaller files or check your internet connection.</span>
+            </p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3 justify-center">
+            <Button
+              @click="showCompletionDialog = false"
+              class="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 px-6 py-3 rounded-full font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg"
+            >
+              <i class="pi pi-check mr-2"></i>
+              Got it!
+            </Button>
+            <Button
+              v-if="successfulUploads > 0"
+              @click="navigateTo('/app/review')"
+              severity="secondary"
+              class="px-6 py-3 rounded-full font-semibold"
+            >
+              <i class="pi pi-eye mr-2"></i>
+              Review Memories
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   </div>
 </template>
@@ -290,13 +376,10 @@
 <script setup>
 // Set the layout for this page
 import { ref } from 'vue'
-import { useToast } from 'primevue/usetoast'
 
 definePageMeta({
   layout: 'default'
 })
-
-const toast = useToast()
 
 const db = useDatabase()
 
@@ -304,6 +387,11 @@ const db = useDatabase()
 const activeTabIndex = ref(0)
 const isDragOver = ref(false)
 const uploadingFiles = ref([])
+const totalFilesToUpload = ref(0)
+const currentFileIndex = ref(0)
+const successfulUploads = ref(0)
+const failedUploads = ref(0)
+const showCompletionDialog = ref(false)
 const recentAssets = ref([])
 const submittingStory = ref(false)
 const showHelpModal = ref(false)
@@ -326,12 +414,7 @@ const loadRecentAssets = async () => {
     const assets = await db.assets.getAssets({ limit: 25 })
     recentAssets.value = assets
   } catch (error) {
-    toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to load recent assets',
-        life: 3000
-      })
+    console.error('Failed to load recent assets:', error)
   }
 }
 
@@ -350,14 +433,16 @@ const handleFileDrop = (event) => {
 
 // Upload files
 const uploadFiles = async (files) => {
+  // Set total files to upload
+  totalFilesToUpload.value = files.length
+  currentFileIndex.value = 0
+  successfulUploads.value = 0
+  failedUploads.value = 0
+  
   for (const file of files) {
+    currentFileIndex.value++
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      toast.add({
-          severity: 'error',
-          summary: 'File Too Large',
-          detail: `${file.name} is too large. Maximum size is 10MB.`,
-          life: 3000
-        })
+      console.error(`${file.name} is too large. Maximum size is 10MB.`)
       continue
     }
 
@@ -395,13 +480,8 @@ const uploadFiles = async (files) => {
       })
 
       uploadFile.processing = false
+      successfulUploads.value++
       
-      toast.add({
-          severity: 'success',
-          summary: 'Upload Complete',
-          detail: `${file.name} uploaded and processed successfully`,
-          life: 3000
-        })
       // Remove file from uploadingFiles immediately
       uploadingFiles.value = uploadingFiles.value.filter(f => f.id !== uploadFile.id)
       await loadRecentAssets()
@@ -410,16 +490,19 @@ const uploadFiles = async (files) => {
       uploadFile.error = error.message
       uploadFile.uploading = false
       uploadFile.processing = false
+      failedUploads.value++
       
-      toast.add({
-          severity: 'error',
-          summary: 'Upload Failed',
-          detail: `Failed to upload ${file.name}: ${error.message}`,
-          life: 3000
-        })
+      console.error(`Failed to upload ${file.name}:`, error.message)
       // Remove file from uploadingFiles immediately on error
       uploadingFiles.value = uploadingFiles.value.filter(f => f.id !== uploadFile.id)
     }
+  }
+  
+  // Reset total files when all uploads are complete
+  if (uploadingFiles.value.length === 0) {
+    totalFilesToUpload.value = 0
+    currentFileIndex.value = 0
+    showCompletionDialog.value = true
   }
 }
 
@@ -447,24 +530,12 @@ const submitTextStory = async () => {
       }
     })
 
-    toast.add({
-        severity: 'success',
-        summary: 'Story Shared',
-        detail: 'Your story has been uploaded and processed successfully',
-        life: 3000
-      })
-
     // Clear form and reload assets
     clearTextStory()
     await loadRecentAssets()
 
   } catch (error) {
-    toast.add({
-        severity: 'error',
-        summary: 'Upload Failed',
-        detail: 'Failed to upload your story',
-        life: 3000
-      })
+    console.error('Failed to upload your story:', error)
   } finally {
     submittingStory.value = false
   }

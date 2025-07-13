@@ -518,6 +518,22 @@ export const useDatabase = () => {
       
       await logActivity('memory_book_downloaded', { bookId })
       return placeholderUrl
+    },
+
+    // Get a single memory book by id
+    getMemoryBook: async (bookId) => {
+      if (!user.value) return null
+      const { data, error } = await supabase
+        .from('memory_books')
+        .select('*')
+        .eq('id', bookId)
+        .eq('user_id', user.value.id)
+        .single()
+      if (error) {
+        console.error('Error fetching memory book:', error)
+        return null
+      }
+      return data
     }
   }
 

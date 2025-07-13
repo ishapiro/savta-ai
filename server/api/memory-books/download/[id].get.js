@@ -90,25 +90,49 @@ export default defineEventHandler(async (event) => {
     if (book.status === 'ready' && (book.background_url || book.pdf_url)) {
       console.log('🔄 Regenerating memory book, clearing existing files...')
       
-      // Clear background file if it exists
+      // Clear background files if they exist
       if (book.background_url) {
         try {
-          const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}.png`
-          await supabase.storage.from('assets').remove([bgFileName])
-          console.log('✅ Cleared existing background file')
+          // List and delete all background files for this book
+          const { data: bgFiles, error: listError } = await supabase.storage
+            .from('assets')
+            .list(`${user.id}/memory_book/backgrounds/`)
+          
+          if (!listError && bgFiles) {
+            const bgFilesToDelete = bgFiles
+              .filter(file => file.name.startsWith(`${book.id}`))
+              .map(file => `${user.id}/memory_book/backgrounds/${file.name}`)
+            
+            if (bgFilesToDelete.length > 0) {
+              await supabase.storage.from('assets').remove(bgFilesToDelete)
+              console.log('✅ Cleared existing background files:', bgFilesToDelete.length, 'files')
+            }
+          }
         } catch (clearError) {
-          console.warn('⚠️ Failed to clear background file:', clearError)
+          console.warn('⚠️ Failed to clear background files:', clearError)
         }
       }
       
-      // Clear PDF file if it exists
+      // Clear PDF files if they exist
       if (book.pdf_url) {
         try {
-          const pdfFileName = `${user.id}/memory_book/pdfs/${book.id}.pdf`
-          await supabase.storage.from('assets').remove([pdfFileName])
-          console.log('✅ Cleared existing PDF file')
+          // List and delete all PDF files for this book
+          const { data: pdfFiles, error: listError } = await supabase.storage
+            .from('assets')
+            .list(`${user.id}/memory_book/pdfs/`)
+          
+          if (!listError && pdfFiles) {
+            const pdfFilesToDelete = pdfFiles
+              .filter(file => file.name.startsWith(`${book.id}`))
+              .map(file => `${user.id}/memory_book/pdfs/${file.name}`)
+            
+            if (pdfFilesToDelete.length > 0) {
+              await supabase.storage.from('assets').remove(pdfFilesToDelete)
+              console.log('✅ Cleared existing PDF files:', pdfFilesToDelete.length, 'files')
+            }
+          }
         } catch (clearError) {
-          console.warn('⚠️ Failed to clear PDF file:', clearError)
+          console.warn('⚠️ Failed to clear PDF files:', clearError)
         }
       }
       
@@ -202,7 +226,8 @@ export default defineEventHandler(async (event) => {
         // Upload background to Supabase Storage
         await updatePdfStatus(supabase, book.id, user.id, 'Saving background to storage...')
         console.log('📤 Uploading background to storage...')
-        const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}.png`
+        const timestamp = Date.now()
+        const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}_${timestamp}.png`
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('assets')

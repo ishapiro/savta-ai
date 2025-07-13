@@ -401,22 +401,38 @@ export default defineEventHandler(async (event) => {
     const pdfBytes = await pdfDoc.save()
     console.log('✅ PDF saved, size:', pdfBytes.length, 'bytes')
     
-    const fileName = `${user.id}/memory_book/pdfs/${book.id}.pdf`
+    const timestamp = Date.now()
+    const fileName = `${user.id}/memory_book/pdfs/${book.id}_${timestamp}.pdf`
     
-    // Delete old PDF file if it exists (always try to delete based on book ID)
-    console.log('🗑️ Deleting old PDF file...')
+    // Delete old PDF files if they exist (try both old and new patterns)
+    console.log('🗑️ Deleting old PDF files...')
     try {
-      const { error: deleteError } = await supabase.storage
+      // List files in the PDF directory to find old files
+      const { data: files, error: listError } = await supabase.storage
         .from('assets')
-        .remove([fileName])
+        .list(`${user.id}/memory_book/pdfs/`)
       
-      if (deleteError) {
-        console.warn('⚠️ Failed to delete old PDF file:', deleteError.message)
-      } else {
-        console.log('✅ Old PDF file deleted successfully')
+      if (!listError && files) {
+        const filesToDelete = files
+          .filter(file => file.name.startsWith(`${book.id}`))
+          .map(file => `${user.id}/memory_book/pdfs/${file.name}`)
+        
+        if (filesToDelete.length > 0) {
+          const { error: deleteError } = await supabase.storage
+            .from('assets')
+            .remove(filesToDelete)
+          
+          if (deleteError) {
+            console.warn('⚠️ Failed to delete old PDF files:', deleteError.message)
+          } else {
+            console.log('✅ Old PDF files deleted successfully:', filesToDelete.length, 'files')
+          }
+        } else {
+          console.log('ℹ️ No old PDF files found to delete')
+        }
       }
     } catch (error) {
-      console.warn('⚠️ Error deleting old PDF file:', error.message)
+      console.warn('⚠️ Error deleting old PDF files:', error.message)
     }
     
     await updatePdfStatus(supabase, book.id, user.id, 'Uploading PDF to cloud storage...')

@@ -107,12 +107,12 @@
             <!-- Photo -->
             <div class="rounded-t-2xl overflow-hidden bg-gray-100">
               <div class="w-full h-40 flex items-center justify-center">
-                <img
-                  v-if="asset.storage_url"
-                  :src="asset.storage_url"
-                  :alt="asset.user_caption || 'Family photo'"
+              <img
+                v-if="asset.storage_url"
+                :src="asset.storage_url"
+                :alt="asset.user_caption || 'Family photo'"
                   class="max-w-full max-h-full object-contain"
-                />
+              />
                 <i v-else class="pi pi-image text-2xl text-gray-400"></i>
               </div>
             </div>

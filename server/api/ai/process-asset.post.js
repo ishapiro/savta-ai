@@ -205,6 +205,9 @@ export default defineEventHandler(async (event) => {
 // Analyze image using OpenAI Vision API
 async function analyzeImage(imageUrl, apiKey) {
   
+  // Add 1 second delay to prevent rate limiting
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  
   try {
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -300,6 +303,9 @@ Respond in JSON format:
 
 // Analyze text content using OpenAI
 async function analyzeText(text, apiKey) {
+  
+  // Add 1 second delay to prevent rate limiting
+  await new Promise(resolve => setTimeout(resolve, 1000))
   
   try {
     
