@@ -78,6 +78,24 @@ export default defineEventHandler(async (event) => {
     // Update status to indicate background generation
     await updatePdfStatus(supabase, book.id, user.id, 'Creating beautiful background design...')
     
+    // 0. Delete old background file if it exists (always try to delete based on book ID)
+    console.log('🗑️ Deleting old background file...')
+    try {
+      const filePath = `${user.id}/memory_book/backgrounds/${book.id}.png`
+      
+      const { error: deleteError } = await supabase.storage
+        .from('assets')
+        .remove([filePath])
+      
+      if (deleteError) {
+        console.warn('⚠️ Failed to delete old background file:', deleteError.message)
+      } else {
+        console.log('✅ Old background file deleted successfully')
+      }
+    } catch (error) {
+      console.warn('⚠️ Error deleting old background file:', error.message)
+    }
+    
     // 1. Fetch approved assets for this book to get tags
     console.log('📸 Fetching assets for book:', book.created_from_assets)
     const { data: assets, error: assetsError } = await supabase
@@ -177,7 +195,8 @@ export default defineEventHandler(async (event) => {
       .from('memory_books')
       .update({ 
         background_url: backgroundStorageUrl,
-        status: 'background_ready'
+        status: 'background_ready',
+        pdf_url: null // Clear old PDF URL since we're regenerating
       })
       .eq('id', book.id)
       .select()

@@ -163,7 +163,10 @@ export default defineEventHandler(async (event) => {
         console.log('🎨 Generating DALL-E background image...')
         const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
         if (!openaiApiKey) throw new Error('Missing OpenAI API key')
-        const dallePrompt = `scrapbook page background, soft colors, subtle texture, no text, no people, no objects, DO NOT INCLUDE ANY IMAGES OF PEOPLE OR ANIMALS${tagsPrompt}`
+        const dallePrompt = `Empty scrapbook page background with soft pastel colors and subtle texture. 
+                Minimalistic design. Do not include any people, animals, objects, illustrations, or figures. 
+                Background only. No characters, no faces, no silhouettes, no living creatures. 
+                No text or decorations.${tagsPrompt}`
         
         const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
           method: 'POST',
@@ -255,12 +258,11 @@ export default defineEventHandler(async (event) => {
     // Step 2: Generate the PDF
     console.log('📄 Generating PDF with background...')
     try {
-      // Get page count and print size from query parameters or use defaults from book
+      // Get print size from query parameters or use defaults from book
       const query = getQuery(event)
-      const pageCount = parseInt(query.pageCount) || book.page_count || 20
       const printSize = query.printSize || book.print_size || '8x10'
       
-      console.log('📄 PDF generation parameters:', { pageCount, printSize })
+      console.log('📄 PDF generation parameters:', { printSize })
       
       // Call the PDF generation endpoint with parameters
       const pdfResponse = await $fetch(`/api/memory-books/generate-pdf/${bookId}`, {
@@ -269,7 +271,6 @@ export default defineEventHandler(async (event) => {
           'Authorization': `Bearer ${token}`
         },
         body: {
-          pageCount,
           printSize
         }
       })

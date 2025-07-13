@@ -160,12 +160,11 @@ export default defineEventHandler(async (event) => {
     // 4. Layout assets into pages (4 assets per page in a 2x2 grid)
     const assetsPerPage = 4
     
-    // Get page count and print size from request body or use defaults from book
+    // Get print size from request body or use defaults from book
     const body = await readBody(event).catch(() => ({}))
-    const pageCount = body.pageCount || book.page_count || 20
     const printSize = body.printSize || book.print_size || '8x10'
     
-    console.log('📄 PDF generation parameters:', { pageCount, printSize })
+    console.log('📄 PDF generation parameters:', { printSize })
     
     // Calculate page dimensions based on print size
     let pageWidth, pageHeight
@@ -191,11 +190,15 @@ export default defineEventHandler(async (event) => {
         pageHeight = 842
     }
     
-    // Use the specified page count, but ensure we have enough pages for all assets
-    const minPagesNeeded = Math.ceil(assets.length / assetsPerPage)
-    const totalPages = Math.max(pageCount, minPagesNeeded)
+    // Calculate exactly how many pages we need for the assets, with a hard limit of 10 pages
+    const calculatedPages = Math.ceil(assets.length / assetsPerPage)
+    const totalPages = Math.min(calculatedPages, 10)
     
-    console.log(`📄 Generating PDF with ${totalPages} pages for ${assets.length} assets (${pageCount} requested, ${minPagesNeeded} minimum needed)`)
+    console.log(`📄 Generating PDF with ${totalPages} pages for ${assets.length} assets (${assetsPerPage} assets per page, max 10 pages)`)
+    
+    if (calculatedPages > 10) {
+      console.log(`⚠️ Warning: ${assets.length} assets would require ${calculatedPages} pages, but limiting to 10 pages`)
+    }
     
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
       const pageNumStr = (pageIndex + 1) + (pageIndex === 0 ? 'st' : pageIndex === 1 ? 'nd' : pageIndex === 2 ? 'rd' : 'th')
@@ -399,6 +402,23 @@ export default defineEventHandler(async (event) => {
     console.log('✅ PDF saved, size:', pdfBytes.length, 'bytes')
     
     const fileName = `${user.id}/memory_book/pdfs/${book.id}.pdf`
+    
+    // Delete old PDF file if it exists (always try to delete based on book ID)
+    console.log('🗑️ Deleting old PDF file...')
+    try {
+      const { error: deleteError } = await supabase.storage
+        .from('assets')
+        .remove([fileName])
+      
+      if (deleteError) {
+        console.warn('⚠️ Failed to delete old PDF file:', deleteError.message)
+      } else {
+        console.log('✅ Old PDF file deleted successfully')
+      }
+    } catch (error) {
+      console.warn('⚠️ Error deleting old PDF file:', error.message)
+    }
+    
     await updatePdfStatus(supabase, book.id, user.id, 'Uploading PDF to cloud storage...')
     console.log('📤 Uploading PDF to Supabase Storage:', fileName)
     
@@ -444,7 +464,7 @@ export default defineEventHandler(async (event) => {
       console.log('✅ Memory book updated with PDF URL successfully')
     }
     
-    await updatePdfStatus(supabase, book.id, user.id, 'PDF ready for download!')
+    await updatePdfStatus(supabase, book.id, user.id, 'Working our magic ...')
     console.log('🎉 PDF generated and uploaded successfully')
     
     setTimeout(() => {

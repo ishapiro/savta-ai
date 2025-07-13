@@ -183,15 +183,7 @@
           />
         </div>
 
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Page Count</label>
-          <InputNumber
-            v-model="newBook.pageCount"
-            :min="10"
-            :max="100"
-            class="w-full"
-          />
-        </div>
+
 
         <div class="field">
           <label class="block text-sm font-medium text-color mb-1">Print Size</label>
@@ -536,15 +528,7 @@
             class="w-full"
           />
         </div>
-        <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Page Count</label>
-          <InputNumber
-            v-model="editBook.pageCount"
-            :min="10"
-            :max="100"
-            class="w-full"
-          />
-        </div>
+
         <div class="field">
           <label class="block text-sm font-medium text-color mb-1">Print Size</label>
           <Dropdown
@@ -844,7 +828,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 const showPdfModal = ref(false)
 const pdfBlobUrl = ref(null)
 const isChrome = ref(false)
@@ -883,7 +867,6 @@ const progressInterval = ref(null)
 const newBook = ref({
   title: '',
   layoutType: 'grid',
-  pageCount: 20,
   printSize: '8x10',
   quality: 'standard',
   medium: 'digital',
@@ -1037,7 +1020,7 @@ const createMemoryBook = async () => {
     const memoryBook = await db.memoryBooks.createMemoryBook({
       title: newBook.value.title,
       layout_type: newBook.value.layoutType,
-      page_count: newBook.value.pageCount,
+
       print_size: newBook.value.printSize,
       quality: newBook.value.quality,
       medium: newBook.value.medium,
@@ -1061,7 +1044,6 @@ const createMemoryBook = async () => {
     newBook.value = {
       title: '',
       layoutType: 'grid',
-      pageCount: 20,
       printSize: '8x10',
       quality: 'standard',
       medium: 'digital',
@@ -1113,7 +1095,7 @@ const pollPdfStatus = async () => {
       if (status.pdf_url && status.pdf_url.startsWith('https://')) {
         console.log('✅ PDF URL found, closing dialog:', status.pdf_url)
         currentProgress.value = 100
-        currentProgressMessage.value = 'PDF ready for download!'
+        currentProgressMessage.value = 'Warming up the magic ...'
         
         // Stop polling and close dialog after a short delay
         setTimeout(() => {
@@ -1155,7 +1137,7 @@ const pollPdfStatus = async () => {
         }, 2000)
       } else if (status.pdf_status === 'not_started') {
         currentProgress.value = 5
-        currentProgressMessage.value = 'Starting PDF generation...'
+        currentProgressMessage.value = 'Starting up the magic ...'
       } else if (status.pdf_status === 'Creating beautiful background design...') {
         currentProgress.value = 15
         currentProgressMessage.value = 'Creating beautiful background design...'
@@ -1272,12 +1254,11 @@ const generatePDF = async (book) => {
       throw new Error('Failed to fetch latest book data')
     }
 
-    const pageCount = latestBook.page_count || 20
     const printSize = latestBook.print_size || '8x10'
     
-    console.log('📄 PDF generation parameters:', { pageCount, printSize })
+    console.log('📄 PDF generation parameters:', { printSize })
 
-    const response = await $fetch(`/api/memory-books/download/${book.id}?pageCount=${pageCount}&printSize=${printSize}`, {
+    const response = await $fetch(`/api/memory-books/download/${book.id}?printSize=${printSize}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${sessionData.session?.access_token}`
@@ -1586,7 +1567,6 @@ const openEditSettings = async (book) => {
       id: book.id,
       title: book.title,
       layoutType: book.layout_type || book.layoutType || 'grid',
-      pageCount: book.page_count || book.pageCount || 20,
       printSize: book.print_size || book.printSize || '8x10',
       quality: book.quality || 'standard',
       medium: book.medium || 'digital',
@@ -1625,7 +1605,6 @@ const saveEditBook = async () => {
     await db.memoryBooks.updateMemoryBook(editBook.value.id, {
       title: editBook.value.title,
       layout_type: editBook.value.layoutType,
-      page_count: editBook.value.pageCount,
       print_size: editBook.value.printSize,
       quality: editBook.value.quality,
       medium: editBook.value.medium,
