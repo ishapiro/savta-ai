@@ -247,12 +247,15 @@ const handleEmailSignup = async () => {
 const handleGoogleSignup = async () => {
   googleLoading.value = true
   error.value = ''
+  const config = useRuntimeConfig()
+  const siteUrl = config.public.siteUrl
+  console.log("SITE URL:", siteUrl)
 
   try {
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/app`
+        redirectTo: `${config.public.siteUrl}/app/confirm`
       }
     })
 
