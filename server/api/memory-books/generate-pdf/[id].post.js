@@ -949,17 +949,39 @@ export default defineEventHandler(async (event) => {
     // Set a final status that the frontend can wait for
     await updatePdfStatus(supabase, book.id, user.id, 'PDF generation completed successfully')
     
-    setTimeout(async () => {
-      console.log('🧹 Cleaning up PDF status...')
-      await supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
-      // Now update the book status to ready
-      console.log('📝 Final update: setting memory book status to ready')
-      await supabase
-        .from('memory_books')
-        .update({ status: 'ready' })
-        .eq('id', book.id)
-        .select()
-    }, 10000)
+    // Immediately clean up and update book status (no delays)
+    console.log('🧹 Cleaning up PDF status...')
+    await supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
+    
+    // Now update the book status to ready immediately
+    console.log('📝 Final update: setting memory book status to ready')
+    const { data: finalUpdateData, error: finalUpdateError } = await supabase
+      .from('memory_books')
+      .update({ status: 'ready' })
+      .eq('id', book.id)
+      .select()
+    
+    if (finalUpdateError) {
+      console.error('❌ Error updating book status to ready:', finalUpdateError)
+    } else {
+      console.log('✅ Book status updated to ready successfully:', finalUpdateData)
+    }
+    
+    // Verify the update worked
+    const { data: verifyData, error: verifyError } = await supabase
+      .from('memory_books')
+      .select('status')
+      .eq('id', book.id)
+      .single()
+    
+    if (verifyError) {
+      console.error('❌ Error verifying book status update:', verifyError)
+    } else {
+      console.log('✅ Verified book status is now:', verifyData.status)
+    }
+    
+    // Small delay to ensure database transaction is committed
+    await new Promise(resolve => setTimeout(resolve, 1000))
     
     return {
       success: true,
