@@ -2011,8 +2011,12 @@ const openSelectMemoriesDialog = async () => {
       // Edit mode - use existing selected assets
       selectedMemories.value = editBook.value.created_from_assets || []
     } else {
-      // Create mode - start with no selection
-      selectedMemories.value = []
+      // Create mode - use current selection if any, otherwise clear
+      if (selectedAssets.value.length > 0) {
+        selectedMemories.value = [...selectedAssets.value]
+      } else {
+        selectedMemories.value = []
+      }
     }
     
     selectedTagFilter.value = [] // Reset filter
