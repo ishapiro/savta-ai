@@ -357,7 +357,19 @@
     <!-- Breadcrumb aligned with header content -->
     <div class="hidden md:block bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Breadcrumb :model="breadcrumbItems" class="text-sm outline-none focus:outline-none ring-0 border-0 bg-gray-50" />
+        <nav class="flex items-center space-x-2 py-2 text-sm">
+          <template v-for="(item, index) in breadcrumbItems" :key="index">
+            <NuxtLink 
+              v-if="item.to" 
+              :to="item.to" 
+              class="text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              {{ item.label }}
+            </NuxtLink>
+            <span v-else class="text-gray-600">{{ item.label }}</span>
+            <i v-if="index < breadcrumbItems.length - 1" class="pi pi-chevron-right text-gray-400 text-xs"></i>
+          </template>
+        </nav>
       </div>
     </div>
 
@@ -437,13 +449,27 @@ watch(hasInsidersAccess, (newValue) => {
 
 // Example: dynamic breadcrumb based on route
 const breadcrumbItems = computed(() => {
-  // Simple example: Home > Current Page
-  const crumbs = [
-    { label: 'Home', to: '/' }
-  ]
-  if (route.name && route.name !== 'index') {
-    crumbs.push({ label: route.name.charAt(0).toUpperCase() + route.name.slice(1) })
+  const crumbs = []
+  
+  // Always start with Dashboard as Home
+  if (route.path.startsWith('/app/')) {
+    crumbs.push({ label: 'Home', to: '/app/dashboard' })
+  } else {
+    crumbs.push({ label: 'Home', to: '/' })
   }
+  
+  // Add current page if not dashboard
+  if (route.path !== '/app/dashboard' && route.name && route.name !== 'index') {
+    // Convert route name to readable label
+    let label = route.name.toString()
+    if (label.includes('-')) {
+      label = label.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+    } else {
+      label = label.charAt(0).toUpperCase() + label.slice(1)
+    }
+    crumbs.push({ label })
+  }
+  
   return crumbs
 })
 

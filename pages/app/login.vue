@@ -179,6 +179,10 @@ const handleEmailLogin = async () => {
     if (authError) {
       error.value = authError.message
     } else {
+      // Clear guest mode flag on successful login
+      if (process.client) {
+        sessionStorage.removeItem('guestMode')
+      }
       // Success - user will be redirected by the watchEffect
       navigateTo('/app/dashboard')
     }
@@ -206,6 +210,11 @@ const handleGoogleLogin = async () => {
 
     if (authError) {
       error.value = authError.message
+    } else {
+      // Clear guest mode flag on successful OAuth login
+      if (process.client) {
+        sessionStorage.removeItem('guestMode')
+      }
     }
   } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
@@ -219,6 +228,13 @@ const onDialogHide = () => {
   // When dialog is closed, navigate away (e.g., to /app/dashboard or /)
   navigateTo('/app/dashboard')
 }
+
+// Clear guest mode flag when page loads
+onMounted(() => {
+  if (process.client) {
+    sessionStorage.removeItem('guestMode')
+  }
+})
 </script>
 
 <style scoped>

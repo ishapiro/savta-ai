@@ -1,13 +1,35 @@
 <template>
-  <div class="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8">
+  <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
+    <!-- Guest Mode Warning Banner -->
+    <div v-if="isGuestMode" class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0">
+          <i class="pi pi-exclamation-triangle text-yellow-600 text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-sm font-medium text-yellow-800 mb-1">Guest Mode</h3>
+          <p class="text-sm text-yellow-700 mb-3">
+            We detected an issue with your login session. You're viewing the dashboard in guest mode. 
+            Please <button @click="navigateToLogin" class="text-yellow-800 underline font-medium">sign in again</button> to access all features.
+          </p>
+          <button 
+            @click="clearGuestMode"
+            class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-3 py-1 rounded border border-yellow-300 transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="text-center mb-8 sm:mb-12">
       <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Getting Started</h2>
-      <p class="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
+      <p class="text-base sm:text-xl text-gray-600 max-w-4xl mx-auto">
         Using a bit of AI Magic dust, create beautiful Savta Cards ready for sharing with family and friends.
       </p>
     </div>
     
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
       <!-- Photo Upload Card -->
       <div 
         class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6 sm:p-8 border border-purple-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
@@ -18,53 +40,57 @@
         </div>
         <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Upload Memories</h3>
         <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-          Upload your photos, thoughts, and memories. Our AI automatically adds compelling captions and classifies each memory with smart tags.
+          Upload your photos and memories. Our AI adds captions and smart tags automatically.
         </p>
         <div class="space-y-2">
           <div class="flex items-center gap-2 text-sm text-purple-700">
             <i class="pi pi-tag text-purple-500"></i>
-            <span>Smart classification & tagging</span>
+            <span>Smart tagging</span>
           </div>
           <div class="flex items-center gap-2 text-sm text-purple-700">
             <i class="pi pi-comments text-purple-500"></i>
-            <span>AI-generated compelling captions</span>
+            <span>AI captions</span>
           </div>
           <div class="space-y-1">
             <div class="flex items-center gap-2 text-sm min-h-[32px]">
-              <div
-                v-if="user && user.id"
-                @click.stop="navigateTo('/app/upload')"
-                class="flex items-center gap-2 text-purple-500 hover:text-purple-700 cursor-pointer transition-colors"
-                style="margin-left: 0;"
-              >
+              <div class="flex items-center gap-2 text-purple-500 transition-colors" style="margin-left: 0;">
                 <i class="pi pi-upload text-purple-500"></i>
                 <span>Upload your memories</span>
               </div>
-              <div
-                v-else
-                class="flex items-center gap-2 text-purple-300 opacity-60 cursor-not-allowed select-none"
-              >
-                <i class="pi pi-upload"></i>
-                <span>Upload your memories</span>
-              </div>
             </div>
-            <div class="flex items-center gap-2 text-sm min-h-[32px]">
-              <div
-                v-if="user && user.id"
-                @click.stop="navigateTo('/app/review')"
-                class="flex items-center gap-2 text-pink-500 hover:text-purple-700 cursor-pointer transition-colors"
-                style="margin-left: 0;"
-              >
-                <i class="pi pi-check-circle text-pink-500"></i>
-                <span>Review and approve your memories</span>
-              </div>
-              <div
-                v-else
-                class="flex items-center gap-2 text-pink-300 opacity-60 cursor-not-allowed select-none"
-              >
-                <i class="pi pi-check-circle"></i>
-                <span>Review and approve your memories</span>
-              </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Review Memories Card -->
+      <div 
+        class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl shadow-lg p-6 sm:p-8 border border-pink-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+        @click="handleCardClick('review')"
+      >
+        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+          <span class="text-2xl sm:text-3xl">✏️</span>
+        </div>
+        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Review Memories</h3>
+        <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
+          Review and refine your memories. Approve or reject AI suggestions, edit captions, and add keywords.
+        </p>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2 text-sm text-pink-700">
+            <i class="pi pi-check-circle text-pink-500"></i>
+            <span>Approve/reject</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-pink-700">
+            <i class="pi pi-pencil text-pink-500"></i>
+            <span>Edit captions</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-pink-700">
+            <i class="pi pi-tag text-pink-500"></i>
+            <span>Add keywords</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm min-h-[32px]">
+            <div class="flex items-center gap-2 text-pink-500 transition-colors" style="margin-left: 0;">
+              <i class="pi pi-eye text-pink-500"></i>
+              <span>Review your memories</span>
             </div>
           </div>
         </div>
@@ -80,32 +106,20 @@
         </div>
         <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">AI Magic</h3>
         <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-          Our AI uses your tags and captions to organize memories into beautiful cards with custom backgrounds perfect for sharing.
+          Our AI organizes memories into beautiful cards with custom backgrounds perfect for sharing.
         </p>
         <div class="space-y-2">
           <div class="flex items-center gap-2 text-sm text-green-700">
             <i class="pi pi-image text-green-500"></i>
-            <span>AI-generated beautiful backgrounds</span>
+            <span>Beautiful backgrounds</span>
           </div>
           <div class="flex items-center gap-2 text-sm text-green-700">
             <i class="pi pi-th-large text-green-500"></i>
-            <span>Stunning organized memory cards</span>
+            <span>Organized memory cards</span>
           </div>
           <div class="flex items-center gap-2 text-sm min-h-[32px]">
-            <div
-              v-if="user && user.id"
-              @click.stop="navigateTo('/app/memory-books')"
-              class="flex items-center gap-2 text-green-500 hover:text-green-700 cursor-pointer transition-colors"
-              style="margin-left: 0;"
-            >
+            <div class="flex items-center gap-2 text-green-500 transition-colors" style="margin-left: 0;">
               <i class="pi pi-book text-green-500"></i>
-              <span>View your books</span>
-            </div>
-            <div
-              v-else
-              class="flex items-center gap-2 text-green-300 opacity-60 cursor-not-allowed select-none"
-            >
-              <i class="pi pi-book"></i>
               <span>View your books</span>
             </div>
           </div>
@@ -122,32 +136,20 @@
         </div>
         <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Share & Deliver</h3>
         <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-          Choose your frequency and share digitally or send traditional printed cards to the people you love.
+          Share digitally or send printed cards to the people you love.
         </p>
         <div class="space-y-2">
           <div class="flex items-center gap-2 text-sm text-blue-700">
             <i class="pi pi-share-alt text-blue-500"></i>
-            <span>Digital sharing options</span>
+            <span>Digital sharing</span>
           </div>
           <div class="flex items-center gap-2 text-sm text-blue-700">
             <i class="pi pi-print text-blue-500"></i>
-            <span>Traditional printed cards</span>
+            <span>Printed cards</span>
           </div>
           <div class="flex items-center gap-2 text-sm min-h-[32px]">
-            <div
-              v-if="user && user.id"
-              @click.stop="navigateTo('/app/monthly-delivery')"
-              class="flex items-center gap-2 text-blue-500 hover:text-blue-700 cursor-pointer transition-colors"
-              style="margin-left: 0;"
-            >
+            <div class="flex items-center gap-2 text-blue-500 transition-colors" style="margin-left: 0;">
               <i class="pi pi-send text-blue-500"></i>
-              <span>Share and deliver</span>
-            </div>
-            <div
-              v-else
-              class="flex items-center gap-2 text-blue-300 opacity-60 cursor-not-allowed select-none"
-            >
-              <i class="pi pi-send"></i>
               <span>Share and deliver</span>
             </div>
           </div>
@@ -227,6 +229,7 @@ import { watchEffect, ref } from 'vue'
 
 const user = useSupabaseUser()
 const showAuthDialog = ref(false)
+const isGuestMode = ref(false)
 
 definePageMeta({
   layout: 'default'
@@ -237,12 +240,24 @@ const { hasInsidersAccess, checkInsidersAccess } = useInsidersAccess()
 onMounted(() => {
   checkInsidersAccess()
   console.log('Dashboard mounted, insiders access:', hasInsidersAccess.value)
+  
+  // Check for guest mode
+  if (process.client) {
+    isGuestMode.value = sessionStorage.getItem('guestMode') === 'true'
+  }
 })
 
 watchEffect(() => {
   console.log('[Dashboard] watchEffect user:', user)
   console.log('[Dashboard] watchEffect user.value:', user?.value)
 })
+
+const clearGuestMode = () => {
+  if (process.client) {
+    sessionStorage.removeItem('guestMode')
+    isGuestMode.value = false
+  }
+}
 
 const handleSignOut = async () => {
   try {
@@ -290,8 +305,8 @@ async function handleGetStarted() {
 function handleCardClick(cardType) {
   console.log('[Dashboard] Card clicked:', cardType, 'User:', user.value)
   
-  if (!user.value) {
-    // Show authentication dialog for non-authenticated users
+  if (!user.value || isGuestMode.value) {
+    // Show authentication dialog for non-authenticated users or guest mode
     showAuthDialog.value = true
     return
   }
@@ -300,6 +315,9 @@ function handleCardClick(cardType) {
   switch (cardType) {
     case 'upload':
       navigateTo('/app/upload')
+      break
+    case 'review':
+      navigateTo('/app/review')
       break
     case 'ai':
       navigateTo('/app/memory-books')
@@ -319,6 +337,8 @@ function navigateToSignup() {
 
 function navigateToLogin() {
   showAuthDialog.value = false
+  // Clear guest mode when going to login
+  clearGuestMode()
   navigateTo('/app/login')
 }
 </script> 
