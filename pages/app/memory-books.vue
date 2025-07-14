@@ -1,196 +1,205 @@
 <template>
-  <div class="min-h-screen surface-ground p-4">
-    <div class="max-w-6xl mx-auto">
-      <!-- Header -->
-      <div class="mb-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-color mb-2">Memory Books</h1>
-            <p class="text-color-secondary">View and manage your generated memory books.</p>
-          </div>
-          <div class="flex gap-2">
-            <Button
-              icon="pi pi-refresh"
-              label="Refresh"
-              severity="secondary"
-              size="small"
-              @click="loadMemoryBooks"
-            />
-
-          </div>
-        </div>
+  <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 p-2 sm:p-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3 relative">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-1">Memory Books</h1>
+        <p class="text-base text-gray-500">View and manage your generated memory books.</p>
       </div>
-
-      <!-- Create New Book -->
-      <Card class="mb-6">
-        <template #content>
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-xl font-semibold text-color mb-2">Create New Memory Book</h2>
-              <p class="text-color-secondary">Generate a new memory book from your approved assets.</p>
-            </div>
-            <Button
-              label="Create New Book"
-              @click="showCreateModal = true"
-            />
-          </div>
-        </template>
-      </Card>
-
-      <!-- Memory Books Grid -->
-      <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-12">
-        <div class="text-center">
-          <i class="pi pi-spin pi-spinner text-4xl mb-4 text-primary"></i>
-          <p class="text-color-secondary">Loading memory books...</p>
-        </div>
-      </div>
-      
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        <Card
-          v-for="book in memoryBooks"
-          :key="book.id"
-          class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-0 overflow-hidden group"
-        >
-          <template #content>
-            <!-- Book Cover with Gradient -->
-            <div class="relative h-40 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 overflow-hidden">
-              <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10"></div>
-              <div class="relative h-full flex items-center justify-center">
-                <div class="text-center">
-                  <div class="w-16 h-16 mx-auto mb-3 bg-white/80 rounded-full flex items-center justify-center shadow-lg">
-                    <i class="pi pi-book text-2xl text-primary"></i>
-                  </div>
-                  <p class="text-sm font-semibold text-gray-700">Memory Book</p>
-                </div>
-              </div>
-              <!-- Status Badge Overlay -->
-              <div class="absolute top-3 right-3">
-                <div 
-                  :class="getStatusBadgeClass(book.status)"
-                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-md backdrop-blur-sm"
-                >
-                  <i :class="getStatusIcon(book.status)" class="text-xs"></i>
-                  <span>{{ getStatusText(book.status) }}</span>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Card Content -->
-            <div class="p-6">
-              <div class="mb-4">
-                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-                  {{ book.title || ('Memory Book #' + book.id.slice(-6)) }}
-                </h3>
-                <div class="space-y-2 text-sm text-gray-600">
-                  <div class="flex justify-between items-center">
-                    <span class="font-medium">Created:</span>
-                    <span>{{ formatDate(book.created_at) }}</span>
-                  </div>
-                  <div v-if="book.generated_at" class="flex justify-between items-center">
-                    <span class="font-medium">Generated:</span>
-                    <span>{{ formatDate(book.generated_at) }}</span>
-                  </div>
-                  <div v-if="book.approved_at" class="flex justify-between items-center">
-                    <span class="font-medium">Approved:</span>
-                    <span>{{ formatDate(book.approved_at) }}</span>
-                  </div>
-                  <div v-if="book.created_from_assets" class="flex justify-between items-center">
-                    <span class="font-medium">Assets:</span>
-                    <span class="bg-gray-100 px-2 py-1 rounded-full text-xs font-medium">
-                      {{ book.created_from_assets.length }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Review Notes -->
-              <div v-if="book.review_notes" class="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                <p class="text-xs text-amber-800">{{ book.review_notes }}</p>
-              </div>
-            </div>
-            
-            <!-- Action Bar -->
-            <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 p-4">
-              <div class="flex items-center justify-center gap-2">
-                <!-- Download Button -->
-                <button
-                  class="w-10 h-10 flex items-center justify-center rounded-full shadow-md bg-white text-green-600 hover:text-green-700 hover:shadow-lg transition-all duration-200 group-hover:scale-105"
-                  v-tooltip.top="'Download PDF'"
-                  @click="onDownloadClick(book)"
-                >
-                  <i class="pi pi-download text-lg"></i>
-                </button>
-                <!-- Generate Button (only for draft) -->
-                <button
-                  v-if="book.status === 'draft'"
-                  class="w-10 h-10 flex items-center justify-center rounded-full shadow-md bg-white text-purple-600 hover:text-purple-700 hover:shadow-lg transition-all duration-200 group-hover:scale-105"
-                  v-tooltip.top="'Generate memory book'"
-                  @click="onGenerateClick(book)"
-                >
-                  <i class="pi pi-bolt text-lg"></i>
-                </button>
-                <!-- Regenerate Button (for ready or background_ready) -->
-                <button
-                  v-if="book.status === 'ready' || book.status === 'background_ready'"
-                  class="w-10 h-10 flex items-center justify-center rounded-full shadow-md bg-white text-yellow-600 hover:text-yellow-700 hover:shadow-lg transition-all duration-200 group-hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
-                  v-tooltip.top="book.status === 'background_ready' ? 'Book is still being processed...' : 'Create a new magic AI background'"
-                  @click="onRegenerateClick(book)"
-                  :disabled="book.status === 'background_ready'"
-                >
-                  <i class="pi pi-refresh text-lg"></i>
-                </button>
-                <!-- Approve Button -->
-                <button
-                  v-if="book.status === 'ready'"
-                  class="w-10 h-10 flex items-center justify-center rounded-full shadow-md bg-white text-purple-600 hover:text-purple-700 hover:shadow-lg transition-all duration-200 group-hover:scale-105"
-                  v-tooltip.top="'Approve this memory book for printing and sharing'"
-                  @click="approveBook(book.id)"
-                >
-                  <i class="pi pi-check text-lg"></i>
-                </button>
-                <!-- Unapprove Button -->
-                <button
-                  v-if="book.status === 'approved'"
-                  class="w-10 h-10 flex items-center justify-center rounded-full shadow-md bg-white text-orange-600 hover:text-orange-700 hover:shadow-lg transition-all duration-200 group-hover:scale-105"
-                  v-tooltip.top="'Return to review - this will move the book back to ready status'"
-                  @click="unapproveBook(book.id)"
-                >
-                  <i class="pi pi-undo text-lg"></i>
-                </button>
-                <!-- View Details Button -->
-                <button
-                  class="w-10 h-10 flex items-center justify-center rounded-full shadow-md bg-white text-gray-600 hover:text-gray-800 hover:shadow-lg transition-all duration-200 group-hover:scale-105"
-                  v-tooltip.top="'View Details'"
-                  @click="viewBookDetails(book)"
-                >
-                  <i class="pi pi-eye text-lg"></i>
-                </button>
-                <!-- Edit Settings Button -->
-                <button
-                  class="w-10 h-10 flex items-center justify-center rounded-full shadow-md bg-white text-blue-600 hover:text-blue-700 hover:shadow-lg transition-all duration-200 group-hover:scale-105"
-                  v-tooltip.top="'Edit Settings & Assets'"
-                  @click="openEditSettings(book)"
-                >
-                  <i class="pi pi-cog text-lg"></i>
-                </button>
-              </div>
-            </div>
-          </template>
-        </Card>
-      </div>
-
-      <!-- Empty State -->
-      <div v-if="!loadingMemoryBooks && memoryBooks.length === 0" class="text-center py-12">
-        <div class="text-color-secondary mb-4">
-          <i class="pi pi-book text-6xl"></i>
-        </div>
-        <h3 class="text-lg font-medium text-color mb-2">No memory books yet</h3>
-        <p class="text-color-secondary mb-4">Create your first memory book from your approved assets.</p>
-        <Button
-          label="Create Memory Book"
+      <div class="flex items-center gap-2">
+        <button
+          class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 w-full sm:w-auto"
           @click="showCreateModal = true"
-        />
+        >
+          <i class="pi pi-plus mr-2"></i> Create New Book
+        </button>
+        <!-- Info Icon Button -->
+        <button
+          class="ml-2 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none"
+          @click="showInfoDialog = true"
+          aria-label="Information about memory books"
+        >
+          <i class="pi pi-info text-xl text-blue-500"></i>
+        </button>
       </div>
+    </div>
+
+    <!-- Info Dialog -->
+    <Dialog v-model:visible="showInfoDialog" modal header="About Memory Books" class="w-full max-w-3xl sm:rounded-2xl">
+      <div class="space-y-4">
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
+          <h2 class="text-lg font-bold text-blue-700 mb-2">What is a Memory Book?</h2>
+          <p class="text-base text-gray-700">
+            A memory book is a special collection of your favorite photos and memories, all gathered together in a beautiful book you can look at, print, or share with your family. It's like a photo album, but even more magical!
+          </p>
+        </div>
+        <div class="bg-purple-50 rounded-lg p-4 border border-purple-100">
+          <h2 class="text-lg font-bold text-purple-700 mb-2">Why Create a Memory Book?</h2>
+          <ul class="list-disc pl-5 text-base text-gray-700 space-y-1">
+            <li>To keep your precious memories safe and easy to find.</li>
+            <li>To share your stories with children, grandchildren, and friends.</li>
+            <li>To have a lovely book to look through whenever you want to remember happy times.</li>
+          </ul>
+        </div>
+        <div class="bg-green-50 rounded-lg p-4 border border-green-100">
+          <h2 class="text-lg font-bold text-green-700 mb-2">How Do I Use It?</h2>
+          <p class="text-base text-gray-700">
+            Just pick your favorite memories, create your book, and let the magic happen! You can download your book as a PDF, print it, or share it with your loved ones. It's easy and fun—no computer skills needed!
+          </p>
+        </div>
+        <div class="bg-white rounded-lg p-4 border border-gray-100">
+          <h2 class="text-base font-bold text-gray-800 mb-2">What do the buttons mean?</h2>
+          <ul class="space-y-3">
+            <li class="flex items-center gap-3">
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-download text-lg text-green-600"></i></span>
+              <span class="text-gray-700"><b>Download</b>: Save your memory book to your computer or tablet.</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-bolt text-lg text-purple-600"></i></span>
+              <span class="text-gray-700"><b>Generate</b>: Create your memory book for the first time.</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-refresh text-lg text-yellow-600"></i></span>
+              <span class="text-gray-700"><b>Regenerate</b>: Make a new version of your book with a fresh design.</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-check text-lg text-purple-600"></i></span>
+              <span class="text-gray-700"><b>Approve</b>: Mark your book as finished and ready to share or print.</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-undo text-lg text-orange-600"></i></span>
+              <span class="text-gray-700"><b>Unapprove</b>: Move your book back to editing if you want to make changes.</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-eye text-lg text-gray-600"></i></span>
+              <span class="text-gray-700"><b>Details</b>: See more information about your memory book.</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-cog text-lg text-blue-600"></i></span>
+              <span class="text-gray-700"><b>Settings</b>: Change the title, layout, or which memories are included.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end">
+          <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-full px-6 py-2 text-base shadow" @click="showInfoDialog = false">
+            Close
+          </button>
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Memory Books Grid -->
+    <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-16">
+      <div class="text-center">
+        <i class="pi pi-spin pi-spinner text-4xl mb-4 text-primary"></i>
+        <p class="text-base text-gray-500">Loading memory books...</p>
+      </div>
+    </div>
+
+    <div v-else-if="memoryBooks.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div
+        v-for="book in memoryBooks"
+        :key="book.id"
+        class="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-2xl shadow-lg border border-gray-100 flex flex-col transition-all duration-300 hover:shadow-2xl p-0"
+      >
+        <!-- Book Cover with Gradient -->
+        <div class="relative h-32 bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 rounded-t-2xl flex items-center justify-center">
+          <div class="absolute top-3 right-3">
+            <div :class="getStatusBadgeClass(book.status)" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-md backdrop-blur-sm">
+              <i :class="getStatusIcon(book.status)" class="text-xs"></i>
+              <span class="hidden sm:inline">{{ getStatusText(book.status) }}</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-14 h-14 bg-white/80 rounded-full flex items-center justify-center shadow-lg mb-2">
+              <i class="pi pi-book text-2xl text-primary"></i>
+            </div>
+            <span class="text-xs font-semibold text-gray-700">Memory Book</span>
+          </div>
+        </div>
+        <!-- Card Content -->
+        <div class="flex-1 flex flex-col p-5 pb-2">
+          <h3 class="text-lg font-bold text-gray-900 mb-1 truncate">{{ book.title || ('Memory Book #' + book.id.slice(-6)) }}</h3>
+          <div class="space-y-1 text-xs text-gray-600 mb-2">
+            <div class="flex justify-between items-center">
+              <span class="font-medium">Created:</span>
+              <span>{{ formatDate(book.created_at) }}</span>
+            </div>
+            <div v-if="book.generated_at" class="flex justify-between items-center">
+              <span class="font-medium">Generated:</span>
+              <span>{{ formatDate(book.generated_at) }}</span>
+            </div>
+            <div v-if="book.approved_at" class="flex justify-between items-center">
+              <span class="font-medium">Approved:</span>
+              <span>{{ formatDate(book.approved_at) }}</span>
+            </div>
+            <div v-if="book.created_from_assets" class="flex justify-between items-center">
+              <span class="font-medium">Assets:</span>
+              <span class="bg-gray-100 px-2 py-1 rounded-full text-xs font-medium">{{ book.created_from_assets.length }}</span>
+            </div>
+          </div>
+          <div v-if="book.review_notes" class="mb-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
+            <p class="text-xs text-amber-800">{{ book.review_notes }}</p>
+          </div>
+        </div>
+        <!-- Action Bar -->
+        <div class="bg-white/80 border-t border-gray-200 px-2 py-2 rounded-b-2xl">
+          <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <!-- Download Button -->
+            <div class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="onDownloadClick(book)">
+              <i class="pi pi-download text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[11px] text-green-700 mt-0.5">Download</span>
+            </div>
+            <!-- Generate Button (only for draft) -->
+            <div v-if="book.status === 'draft'" class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="onGenerateClick(book)">
+              <i class="pi pi-bolt text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[11px] text-purple-700 mt-0.5">Generate</span>
+            </div>
+            <!-- Regenerate Button (for ready or background_ready) -->
+            <div v-if="book.status === 'ready' || book.status === 'background_ready'" class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
+              <i class="pi pi-refresh text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[11px] text-yellow-700 mt-0.5">{{ book.status === 'background_ready' ? 'Processing' : 'Regenerate' }}</span>
+            </div>
+            <!-- Approve Button -->
+            <div v-if="book.status === 'ready'" class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="approveBook(book.id)">
+              <i class="pi pi-check text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[11px] text-purple-700 mt-0.5">Approve</span>
+            </div>
+            <!-- Unapprove Button -->
+            <div v-if="book.status === 'approved'" class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="unapproveBook(book.id)">
+              <i class="pi pi-undo text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[11px] text-orange-700 mt-0.5">Unapprove</span>
+            </div>
+            <!-- View Details Button -->
+            <div class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="viewBookDetails(book)">
+              <i class="pi pi-eye text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[11px] text-gray-700 mt-0.5">Details</span>
+            </div>
+            <!-- Edit Settings Button -->
+            <div class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="openEditSettings(book)">
+              <i class="pi pi-cog text-xl text-blue-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[11px] text-blue-700 mt-0.5">Settings</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="flex flex-col items-center justify-center py-20">
+      <div class="text-color-secondary mb-4">
+        <i class="pi pi-book text-6xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No memory books yet</h3>
+      <p class="text-base text-gray-500 mb-4">Create your first memory book from your approved assets.</p>
+      <button
+        class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200"
+        @click="showCreateModal = true"
+      >
+        <i class="pi pi-plus mr-2"></i> Create Memory Book
+      </button>
     </div>
 
     <!-- Create Memory Book Modal -->
@@ -198,7 +207,7 @@
       v-model:visible="showCreateModal"
       modal
       header="Create New Memory Book"
-      :style="{ width: '500px' }"
+      :style="{ width: '95vw', maxWidth: '500px' }"
       :closable="false"
     >
       <div class="space-y-3">
@@ -211,7 +220,7 @@
           />
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="field">
             <label class="block text-sm font-medium text-color mb-1">Layout Type</label>
             <Dropdown
@@ -237,7 +246,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="field">
             <label class="block text-sm font-medium text-color mb-1">Quality</label>
             <Dropdown
@@ -309,12 +318,13 @@
               label="Select Memories"
               icon="pi pi-images"
               size="small"
+              class="text-xs px-3 py-2"
               @click="openSelectMemoriesDialog"
             />
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="field">
             <label class="block text-sm font-medium text-color mb-1">Include Captions</label>
             <div class="flex items-center space-x-2">
@@ -347,7 +357,7 @@
               icon="pi pi-times"
               severity="secondary"
               @click="showCreateModal = false"
-              class="rounded-full px-5 py-2 text-sm font-bold shadow w-full sm:w-auto"
+              class="rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
             />
           </div>
           <Button
@@ -356,19 +366,17 @@
             :loading="creatingBook"
             :disabled="!newBook.title"
             @click="createMemoryBook"
-            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 text-white font-bold rounded-full px-5 py-2 text-sm shadow w-full sm:w-auto"
+            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm shadow w-full sm:w-auto"
           />
         </div>
       </template>
     </Dialog>
 
-
-
     <!-- Book Details Modal -->
     <Dialog
       v-model:visible="showDetailsModal"
       modal
-      :style="{ width: '100%', maxWidth: '500px', maxHeight: '95vh', padding: '0' }"
+      :style="{ width: '95vw', maxWidth: '500px', maxHeight: '95vh', padding: '0' }"
       class="!rounded-[16px] !shadow-xl !border-0 !overflow-hidden w-full sm:max-w-[500px]"
       :auto-z-index="false"
       :z-index="1000"
@@ -376,11 +384,11 @@
       <div v-if="selectedBook" class="p-2 sm:p-3 bg-white space-y-2">
         <!-- Super Compact Top: Icon, Book #, Status -->
         <div class="flex flex-col items-center mb-1">
-          <div class="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full mb-1 hidden sm:flex">
-            <i class="pi pi-book text-lg text-purple-600"></i>
+          <div class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full mb-1 hidden sm:flex">
+            <i class="pi pi-book text-sm sm:text-lg text-purple-600"></i>
           </div>
           <div class="flex items-center gap-2">
-            <span class="font-bold text-base text-gray-800">{{ selectedBook.title || ('#' + selectedBook.id.slice(-6)) }}</span>
+            <span class="font-bold text-sm sm:text-base text-gray-800">{{ selectedBook.title || ('#' + selectedBook.id.slice(-6)) }}</span>
             <Tag
               :value="getStatusText(selectedBook.status)"
               :severity="getStatusSeverity(selectedBook.status)"
@@ -420,11 +428,11 @@
             <i class="pi pi-images text-indigo-600 mr-1 text-xs"></i>
             Memory Assets
           </div>
-          <div class="grid grid-cols-8 sm:grid-cols-6 gap-0.5">
+          <div class="grid grid-cols-6 sm:grid-cols-8 gap-0.5">
             <div
               v-for="assetId in selectedBook.created_from_assets.slice(0, 16)"
               :key="assetId"
-              class="aspect-square bg-white rounded border border-indigo-100 overflow-hidden w-7 h-7 sm:w-9 sm:h-9"
+              class="aspect-square bg-white rounded border border-indigo-100 overflow-hidden w-6 h-6 sm:w-7 sm:h-7 lg:w-9 lg:h-9"
             >
               <img 
                 v-if="getAssetThumbnail(assetId)"
@@ -436,7 +444,7 @@
                 <i class="pi pi-image text-indigo-400 text-xs"></i>
               </div>
             </div>
-            <div v-if="selectedBook.created_from_assets.length > 16" class="aspect-square bg-white rounded border border-indigo-100 flex items-center justify-center text-xs text-gray-500 w-7 h-7 sm:w-9 sm:h-9">
+            <div v-if="selectedBook.created_from_assets.length > 16" class="aspect-square bg-white rounded border border-indigo-100 flex items-center justify-center text-xs text-gray-500 w-6 h-6 sm:w-7 sm:h-7 lg:w-9 lg:h-9">
               +{{ selectedBook.created_from_assets.length - 16 }}
             </div>
           </div>
@@ -490,73 +498,73 @@
       v-model:visible="showProgressDialog"
       modal
       header="Casting a Spell to Create Your Memory Book"
-      :style="{ width: '400px' }"
+      :style="{ width: '95vw', maxWidth: '400px' }"
       :closable="false"
       :z-index="9999"
     >
 
       <div class="text-center py-4">
         <div class="mb-4">
-          <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+          <i class="pi pi-spin pi-spinner text-3xl sm:text-4xl text-primary"></i>
         </div>
-        <h3 class="text-lg font-medium text-color mb-2">Processing...</h3>
-        <p class="text-color-secondary mb-4">{{ currentProgressMessage }}</p>
+        <h3 class="text-base sm:text-lg font-medium text-color mb-2">Processing...</h3>
+        <p class="text-sm text-color-secondary mb-4">{{ currentProgressMessage }}</p>
         <div class="w-full bg-gray-200 rounded-full h-2">
           <div 
             class="bg-primary h-2 rounded-full transition-all duration-300"
             :style="{ width: currentProgress + '%' }"
           ></div>
         </div>
-        <p class="text-sm text-color-secondary mt-2">{{ currentProgress }}% complete</p>
+        <p class="text-xs sm:text-sm text-color-secondary mt-2">{{ currentProgress }}% complete</p>
       </div>
     </Dialog>
 
     <!-- Generate Confirmation Dialog -->
-    <Dialog v-model:visible="showGenerateDialog" modal header="Give It Another Magical Spin" :style="{ width: '400px' }">
+    <Dialog v-model:visible="showGenerateDialog" modal header="Give It Another Magical Spin" :style="{ width: '95vw', maxWidth: '400px' }">
       <div class="py-4">
-        <p>Generate this memory book? This may take a little time.</p>
+        <p class="text-sm sm:text-base">Generate this memory book? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
-          <Button label="Cancel" severity="secondary" @click="cancelDialog" />
-          <Button label="Generate" severity="primary" @click="confirmGenerate" />
+          <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
+          <Button label="Generate" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmGenerate" />
         </div>
       </div>
     </Dialog>
     <!-- Regenerate Confirmation Dialog -->
     <Dialog v-model:visible="showRegenerateDialog" modal :header="null" :closable="false" class="w-full md:w-[60%] lg:w-[50%] p-0">
-      <div class="py-4 px-6">
-        <p class="text-base leading-relaxed">Would you like to create a fresh, new version of this memory book with a brand new AI-generated background design? It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for you. If you're happy with the current version and just want to download it right away, you can use the download button below - that's much faster!</p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+      <div class="py-4 px-4 sm:px-6">
+        <p class="text-sm sm:text-base leading-relaxed">Would you like to create a fresh, new version of this memory book with a brand new AI-generated background design? It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for you. If you're happy with the current version and just want to download it right away, you can use the download button below - that's much faster!</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6">
           <button
-            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-7 py-2 text-sm shadow transition-all duration-200 min-w-[150px]"
+            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-7 py-2 text-xs sm:text-sm shadow transition-all duration-200 min-w-[120px] sm:min-w-[150px]"
             @click="downloadCurrentBook"
           >
-            <i class="pi pi-download text-base"></i>
+            <i class="pi pi-download text-sm sm:text-base"></i>
             Download Current
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-7 py-2 text-sm shadow transition-all duration-200 min-w-[150px]"
+            class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-4 sm:px-7 py-2 text-xs sm:text-sm shadow transition-all duration-200 min-w-[120px] sm:min-w-[150px]"
             @click="cancelDialog"
           >
-            <i class="pi pi-times text-base"></i>
+            <i class="pi pi-times text-sm sm:text-base"></i>
             Cancel
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-7 py-2 text-sm shadow transition-all duration-200 min-w-[180px]"
+            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-4 sm:px-7 py-2 text-xs sm:text-sm shadow transition-all duration-200 min-w-[140px] sm:min-w-[180px]"
             @click="confirmRegenerate"
           >
-            <i class="pi pi-refresh text-base"></i>
+            <i class="pi pi-refresh text-sm sm:text-base"></i>
             Reapply AI Magic
           </button>
         </div>
       </div>
     </Dialog>
     <!-- Download Draft Dialog -->
-    <Dialog v-model:visible="showDownloadDraftDialog" modal header="Memory Book Not Generated" :style="{ width: '400px' }">
+    <Dialog v-model:visible="showDownloadDraftDialog" modal header="Memory Book Not Generated" :style="{ width: '95vw', maxWidth: '400px' }">
       <div class="py-4">
-        <p>You need to generate the memory book before downloading. Would you like to generate it now? This may take a little time.</p>
+        <p class="text-sm sm:text-base">You need to generate the memory book before downloading. Would you like to generate it now? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
-          <Button label="Cancel" severity="secondary" @click="cancelDialog" />
-          <Button label="Generate Now" severity="primary" @click="confirmDownloadDraft" />
+          <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
+          <Button label="Generate Now" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmDownloadDraft" />
         </div>
       </div>
     </Dialog>
@@ -578,8 +586,8 @@
           style="width: 100%; height: 100%; border: none; flex: 1 1 auto;"
         />
         <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
-          <i class="pi pi-file-pdf text-4xl text-gray-400"></i>
-          <p class="text-color-secondary mt-2">No PDF available for preview.</p>
+          <i class="pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
+          <p class="text-sm sm:text-base text-color-secondary mt-2">No PDF available for preview.</p>
         </div>
         <div class="w-full text-center text-xs text-gray-600 mt-2 p-2 border-t border-gray-200 bg-gray-50">
           If you do not see the PDF preview and you are using Chrome it may be because you have the browser set to always download PDFs. 
@@ -592,6 +600,8 @@
           <Button
             label="Close"
             severity="secondary"
+            size="small"
+            class="text-xs px-3 py-2"
             @click="showPdfModal = false"
           />
         </div>
@@ -603,7 +613,7 @@
       v-model:visible="showEditSettingsModal"
       modal
       header="Edit Memory Book Settings"
-      :style="{ width: '500px' }"
+      :style="{ width: '95vw', maxWidth: '500px' }"
       :closable="false"
     >
       <div v-if="editBook" class="space-y-3">
@@ -616,7 +626,7 @@
           />
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="field">
             <label class="block text-sm font-medium text-color mb-1">Layout Type</label>
             <Dropdown
@@ -642,7 +652,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="field">
             <label class="block text-sm font-medium text-color mb-1">Quality</label>
             <Dropdown
@@ -704,7 +714,7 @@
           />
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="field">
             <label class="block text-sm font-medium text-color mb-1">Include Captions</label>
             <div class="flex items-center space-x-2">
@@ -739,6 +749,7 @@
               label="Select Memories"
               icon="pi pi-images"
               size="small"
+              class="text-xs px-3 py-2"
               @click="openSelectMemoriesDialog"
             />
           </div>
@@ -753,14 +764,14 @@
               icon="pi pi-broom"
               severity="danger"
               @click="showCleanupConfirmation(editBook.id)"
-              class="bg-red-500 hover:bg-red-600 border-0 text-white font-bold rounded-full px-5 py-2 text-sm shadow w-full sm:w-auto"
+              class="bg-red-500 hover:bg-red-600 border-0 text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm shadow w-full sm:w-auto"
             />
             <Button
               label="Cancel"
               icon="pi pi-times"
               severity="secondary"
               @click="showEditSettingsModal = false"
-              class="rounded-full px-5 py-2 text-sm font-bold shadow w-full sm:w-auto"
+              class="rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
             />
           </div>
           <Button
@@ -769,7 +780,7 @@
             :loading="savingEditBook"
             :disabled="!editBook.title"
             @click="saveEditBook"
-            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 text-white font-bold rounded-full px-5 py-2 text-sm shadow w-full sm:w-auto"
+            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm shadow w-full sm:w-auto"
           />
         </div>
       </template>
@@ -780,22 +791,22 @@
       v-model:visible="showCleanupConfirmationModal"
       modal
       header="Confirm Cleanup"
-      :style="{ width: '90vw', maxWidth: '500px' }"
+      :style="{ width: '95vw', maxWidth: '500px' }"
       class="cleanup-confirmation-dialog"
     >
       <div class="space-y-4">
         <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 border border-orange-200">
           <div class="flex items-center space-x-3 mb-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center">
-              <i class="pi pi-broom text-orange-600 text-lg"></i>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center">
+              <i class="pi pi-broom text-orange-600 text-base sm:text-lg"></i>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-color">Ready for New Magic?</h3>
-              <p class="text-sm text-color-secondary">We're about to clean up your memory book</p>
+              <h3 class="text-base sm:text-lg font-semibold text-color">Ready for New Magic?</h3>
+              <p class="text-xs sm:text-sm text-color-secondary">We're about to clean up your memory book</p>
             </div>
           </div>
           <div class="bg-white rounded-lg p-3 border border-orange-200">
-            <p class="text-sm text-color">
+            <p class="text-xs sm:text-sm text-color">
               This will reset your memory book back to draft status and clear any generated backgrounds and PDFs. 
               You'll be able to apply fresh magic to create a brand new version of your memory book.
             </p>
@@ -806,7 +817,7 @@
           <div class="flex items-start space-x-2">
             <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
             <div>
-              <p class="text-sm font-medium text-color">What happens next:</p>
+              <p class="text-xs sm:text-sm font-medium text-color">What happens next:</p>
               <ul class="text-xs text-color-secondary mt-1 space-y-1">
                 <li>• Your book status will be reset to "draft"</li>
                 <li>• Any existing backgrounds and PDFs will be cleared</li>
@@ -824,14 +835,14 @@
             icon="pi pi-times"
             severity="secondary"
             @click="showCleanupConfirmationModal = false"
-            class="rounded-full px-5 py-2 text-sm font-bold shadow w-full sm:w-auto"
+            class="rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
           />
           <Button
             label="Yes, Clean Up"
             icon="pi pi-broom"
             severity="danger"
             @click="confirmCleanup"
-            class="bg-red-500 hover:bg-red-600 border-0 text-white font-bold rounded-full px-5 py-2 text-sm shadow w-full sm:w-auto"
+            class="bg-red-500 hover:bg-red-600 border-0 text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm shadow w-full sm:w-auto"
           />
         </div>
       </template>
@@ -848,21 +859,21 @@
     >
       <div v-if="!loadingAssets" class="space-y-4">
         <!-- Instructions -->
-        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 sm:p-4 border border-blue-200">
           <div class="flex items-center space-x-3 mb-2">
-            <div class="w-8 h-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-              <i class="pi pi-heart text-blue-600 text-sm"></i>
+            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+              <i class="pi pi-heart text-blue-600 text-xs sm:text-sm"></i>
             </div>
-            <h3 class="text-lg font-semibold text-color">Choose Your Memories</h3>
+            <h3 class="text-base sm:text-lg font-semibold text-color">Choose Your Memories</h3>
           </div>
-          <p class="text-sm text-color-secondary">
+          <p class="text-xs sm:text-sm text-color-secondary">
             Select the memories you'd like to include in your memory book. You can filter by tags and select multiple memories at once.
           </p>
         </div>
 
         <!-- Filter Section -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <div class="flex-1 min-w-0">
               <label class="block text-sm font-medium text-color mb-2">Filter by Tags</label>
               <div class="flex gap-2">
@@ -882,7 +893,7 @@
                   size="small"
                   severity="secondary"
                   @click="clearTagFilter"
-                  class="px-3"
+                  class="px-2 sm:px-3"
                   v-tooltip.top="'Clear filter'"
                 />
               </div>
@@ -893,7 +904,7 @@
                 icon="pi pi-check-square"
                 size="small"
                 @click="selectAllMemories"
-                class="bg-green-500 hover:bg-green-600 border-0 text-xs sm:text-sm"
+                class="bg-green-500 hover:bg-green-600 border-0 text-xs px-2 sm:px-3 py-2"
               />
               <Button
                 label="Clear All"
@@ -901,24 +912,24 @@
                 size="small"
                 severity="secondary"
                 @click="selectedMemories = []"
-                class="text-xs sm:text-sm"
+                class="text-xs px-2 sm:px-3 py-2"
               />
             </div>
           </div>
-          <div class="mt-2 text-sm text-color-secondary text-center sm:text-left">
+          <div class="mt-2 text-xs sm:text-sm text-color-secondary text-center sm:text-left">
             Showing {{ filteredAssets.length }} of {{ availableAssets.length }} memories
             <span v-if="selectedTagFilter && selectedTagFilter.length > 0" class="block sm:inline"> • Filtered by: {{ selectedTagFilter.join(', ') }}</span>
           </div>
         </div>
 
         <!-- Memories Grid -->
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
           <div v-if="filteredAssets.length === 0" class="text-center py-8 text-color-secondary">
-            <i class="pi pi-images text-4xl mb-2 block"></i>
-            <p class="text-lg font-medium">No memories found</p>
-            <p class="text-sm">Try changing your filter or add some memories first</p>
+            <i class="pi pi-images text-3xl sm:text-4xl mb-2 block"></i>
+            <p class="text-base sm:text-lg font-medium">No memories found</p>
+            <p class="text-xs sm:text-sm">Try changing your filter or add some memories first</p>
           </div>
-          <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 max-h-64 sm:max-h-96 overflow-y-auto">
+          <div v-else class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 md:gap-4 max-h-48 sm:max-h-64 md:max-h-96 overflow-y-auto">
             <div
               v-for="asset in filteredAssets"
               :key="asset.id"
@@ -931,7 +942,7 @@
                 :class="selectedMemories.includes(asset.id) ? 'border-green-500 bg-green-500 bg-opacity-10' : 'border-transparent'"
               >
                 <div 
-                  class="absolute top-1 right-1 sm:top-2 sm:right-2 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-sm"
+                  class="absolute top-1 right-1 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center shadow-sm"
                   :class="selectedMemories.includes(asset.id) ? 'bg-green-500 text-white' : 'bg-white text-gray-400'"
                 >
                   <i 
@@ -950,7 +961,7 @@
                   class="w-full h-full object-contain bg-white"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center">
-                  <i class="pi pi-image text-gray-400 text-lg sm:text-2xl"></i>
+                  <i class="pi pi-image text-gray-400 text-base sm:text-lg md:text-2xl"></i>
                 </div>
               </div>
               
@@ -968,14 +979,14 @@
         </div>
 
         <!-- Selection Summary -->
-        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 border border-green-200">
+        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 sm:p-4 border border-green-200">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center">
-                <i class="pi pi-check text-green-600 text-sm"></i>
+              <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center">
+                <i class="pi pi-check text-green-600 text-xs sm:text-sm"></i>
               </div>
               <div>
-                <p class="text-sm font-medium text-color">
+                <p class="text-xs sm:text-sm font-medium text-color">
                   {{ selectedMemories.length }} memories selected
                 </p>
                 <p class="text-xs text-color-secondary">
@@ -993,10 +1004,10 @@
       </div>
 
       <!-- Loading State -->
-      <div v-else class="flex items-center justify-center py-12">
+      <div v-else class="flex items-center justify-center py-8 sm:py-12">
         <div class="text-center">
-          <i class="pi pi-spin pi-spinner text-4xl mb-4 text-primary"></i>
-          <p class="text-color-secondary">Loading your memories...</p>
+          <i class="pi pi-spin pi-spinner text-3xl sm:text-4xl mb-3 sm:mb-4 text-primary"></i>
+          <p class="text-sm sm:text-base text-color-secondary">Loading your memories...</p>
         </div>
       </div>
 
@@ -1008,11 +1019,11 @@
               icon="pi pi-times"
               severity="secondary"
               @click="closeSelectMemoriesDialog"
-              class="rounded-full px-5 py-2 text-sm font-bold shadow w-full sm:w-auto"
+              class="rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
             />
           </div>
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-            <span class="text-sm text-color-secondary text-center sm:text-left">
+            <span class="text-xs sm:text-sm text-color-secondary text-center sm:text-left">
               {{ selectedMemories.length }} selected
             </span>
             <Button
@@ -1020,7 +1031,7 @@
               icon="pi pi-check"
               :disabled="selectedMemories.length === 0"
               @click="saveSelectedMemories"
-              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 w-full sm:w-auto"
+              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 w-full sm:w-auto text-xs sm:text-sm px-4 sm:px-5 py-2"
             />
           </div>
         </div>
@@ -2134,5 +2145,6 @@ const cleanupBook = async (bookId) => {
   }
 }
 
+const showInfoDialog = ref(false)
 
 </script> 

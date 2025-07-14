@@ -10,10 +10,10 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
       <!-- Photo Upload Card -->
       <div 
-        class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl shadow-lg p-6 sm:p-8 border border-blue-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+        class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6 sm:p-8 border border-purple-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
         @click="handleCardClick('upload')"
       >
-        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-400 to-purple-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
           <span class="text-2xl sm:text-3xl">📸</span>
         </div>
         <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Upload Memories</h3>
@@ -21,23 +21,61 @@
           Upload your photos, thoughts, and memories. Our AI automatically adds compelling captions and classifies each memory with smart tags.
         </p>
         <div class="space-y-2">
-          <div class="flex items-center gap-2 text-sm text-blue-700">
-            <i class="pi pi-tag text-blue-500"></i>
+          <div class="flex items-center gap-2 text-sm text-purple-700">
+            <i class="pi pi-tag text-purple-500"></i>
             <span>Smart classification & tagging</span>
           </div>
-          <div class="flex items-center gap-2 text-sm text-blue-700">
-            <i class="pi pi-comments text-blue-500"></i>
+          <div class="flex items-center gap-2 text-sm text-purple-700">
+            <i class="pi pi-comments text-purple-500"></i>
             <span>AI-generated compelling captions</span>
+          </div>
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 text-sm min-h-[32px]">
+              <div
+                v-if="user && user.id"
+                @click.stop="navigateTo('/app/upload')"
+                class="flex items-center gap-2 text-purple-500 hover:text-purple-700 cursor-pointer transition-colors"
+                style="margin-left: 0;"
+              >
+                <i class="pi pi-upload text-purple-500"></i>
+                <span>Upload your memories</span>
+              </div>
+              <div
+                v-else
+                class="flex items-center gap-2 text-purple-300 opacity-60 cursor-not-allowed select-none"
+              >
+                <i class="pi pi-upload"></i>
+                <span>Upload your memories</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-sm min-h-[32px]">
+              <div
+                v-if="user && user.id"
+                @click.stop="navigateTo('/app/review')"
+                class="flex items-center gap-2 text-pink-500 hover:text-purple-700 cursor-pointer transition-colors"
+                style="margin-left: 0;"
+              >
+                <i class="pi pi-check-circle text-pink-500"></i>
+                <span>Review and approve your memories</span>
+              </div>
+              <div
+                v-else
+                class="flex items-center gap-2 text-pink-300 opacity-60 cursor-not-allowed select-none"
+              >
+                <i class="pi pi-check-circle"></i>
+                <span>Review and approve your memories</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
       <!-- AI Generation Card -->
       <div 
-        class="bg-gradient-to-br from-purple-50 to-pink-100 rounded-xl shadow-lg p-6 sm:p-8 border border-purple-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+        class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl shadow-lg p-6 sm:p-8 border border-green-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
         @click="handleCardClick('ai')"
       >
-        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-emerald-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
           <span class="text-2xl sm:text-3xl">✨</span>
         </div>
         <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">AI Magic</h3>
@@ -45,23 +83,41 @@
           Our AI uses your tags and captions to organize memories into beautiful cards with custom backgrounds perfect for sharing.
         </p>
         <div class="space-y-2">
-          <div class="flex items-center gap-2 text-sm text-purple-700">
-            <i class="pi pi-image text-purple-500"></i>
+          <div class="flex items-center gap-2 text-sm text-green-700">
+            <i class="pi pi-image text-green-500"></i>
             <span>AI-generated beautiful backgrounds</span>
           </div>
-          <div class="flex items-center gap-2 text-sm text-purple-700">
-            <i class="pi pi-th-large text-purple-500"></i>
+          <div class="flex items-center gap-2 text-sm text-green-700">
+            <i class="pi pi-th-large text-green-500"></i>
             <span>Stunning organized memory cards</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm min-h-[32px]">
+            <div
+              v-if="user && user.id"
+              @click.stop="navigateTo('/app/memory-books')"
+              class="flex items-center gap-2 text-green-500 hover:text-green-700 cursor-pointer transition-colors"
+              style="margin-left: 0;"
+            >
+              <i class="pi pi-book text-green-500"></i>
+              <span>View your books</span>
+            </div>
+            <div
+              v-else
+              class="flex items-center gap-2 text-green-300 opacity-60 cursor-not-allowed select-none"
+            >
+              <i class="pi pi-book"></i>
+              <span>View your books</span>
+            </div>
           </div>
         </div>
       </div>
       
       <!-- Monthly Delivery Card -->
       <div 
-        class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl shadow-lg p-6 sm:p-8 border border-green-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+        class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-6 sm:p-8 border border-blue-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
         @click="handleCardClick('monthly')"
       >
-        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-blue-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
           <span class="text-2xl sm:text-3xl">💌</span>
         </div>
         <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Share & Deliver</h3>
@@ -69,13 +125,31 @@
           Choose your frequency and share digitally or send traditional printed cards to the people you love.
         </p>
         <div class="space-y-2">
-          <div class="flex items-center gap-2 text-sm text-green-700">
-            <i class="pi pi-share-alt text-green-500"></i>
+          <div class="flex items-center gap-2 text-sm text-blue-700">
+            <i class="pi pi-share-alt text-blue-500"></i>
             <span>Digital sharing options</span>
           </div>
-          <div class="flex items-center gap-2 text-sm text-green-700">
-            <i class="pi pi-print text-green-500"></i>
+          <div class="flex items-center gap-2 text-sm text-blue-700">
+            <i class="pi pi-print text-blue-500"></i>
             <span>Traditional printed cards</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm min-h-[32px]">
+            <div
+              v-if="user && user.id"
+              @click.stop="navigateTo('/app/monthly-delivery')"
+              class="flex items-center gap-2 text-blue-500 hover:text-blue-700 cursor-pointer transition-colors"
+              style="margin-left: 0;"
+            >
+              <i class="pi pi-send text-blue-500"></i>
+              <span>Share and deliver</span>
+            </div>
+            <div
+              v-else
+              class="flex items-center gap-2 text-blue-300 opacity-60 cursor-not-allowed select-none"
+            >
+              <i class="pi pi-send"></i>
+              <span>Share and deliver</span>
+            </div>
           </div>
         </div>
       </div>

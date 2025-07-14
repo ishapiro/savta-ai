@@ -21,6 +21,9 @@
           This feature will allow you to automatically receive beautiful, 
           AI-generated scrapbooks of your family's precious moments every month.
         </p>
+        <p class="mt-2 mx-3 text-gray-600 leading-relaxed">
+          While you are waiting for book deliveries you can download your memories as a PDF.
+        </p>
       </div>
       
       <div class="space-y-4">
