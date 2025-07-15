@@ -581,7 +581,7 @@ export default defineEventHandler(async (event) => {
       // Magic Memory: 7x5 inch (504x360 points)
       const pageWidth = 504
       const pageHeight = 360
-      const margin = 36 // 0.5 inch margin everywhere
+      const margin = 18 // 1/4 inch margin everywhere
       const page = pdfDoc.addPage([pageWidth, pageHeight])
       
       // Use the same background handling as standard books
