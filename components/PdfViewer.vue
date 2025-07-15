@@ -1,8 +1,8 @@
 <template>
   <client-only>
     <div class="pdf-viewer-container w-full h-full">
-      <VPdfViewer 
-        :src="src" 
+      <VPdfViewer
+        :src="src"
         class="w-full h-full"
         :options="viewerOptions"
       />
@@ -11,14 +11,14 @@
 </template>
 
 <script setup>
-import { VPdfViewer } from '@vue-pdf-viewer/viewer'
+import { VPdfViewer } from '@vue-pdf-viewer/viewer';
 
 const props = defineProps({
   src: {
     type: String,
     required: true
   }
-})
+});
 
 // Viewer options for better mobile experience
 const viewerOptions = {
@@ -104,7 +104,7 @@ const viewerOptions = {
   enableAutoContextMenu: false,
   enableAutoDragAndDrop: false,
   enableAutoFileDrop: false
-}
+};
 </script>
 
 <style scoped>

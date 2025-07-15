@@ -582,270 +582,120 @@ export default defineEventHandler(async (event) => {
       const pageWidth = 432
       const pageHeight = 288
       const page = pdfDoc.addPage([pageWidth, pageHeight])
-      // Optional: magical gradient background
-      page.drawRectangle({
-        x: 0, y: 0, width: pageWidth, height: pageHeight,
-        color: rgb(1, 0.98, 0.9), // soft yellow
-        opacity: 1
-      })
+      
+      // Use the same background handling as standard books
+      if (pdfBgImage) {
+        // Draw background image to fill the page
+        page.drawImage(pdfBgImage, {
+          x: 0,
+          y: 0,
+          width: pageWidth,
+          height: pageHeight
+        })
+        console.log('✅ Magic memory background image applied')
+      } else {
+        // Fallback to white background if no background image
+        page.drawRectangle({
+          x: 0, y: 0, width: pageWidth, height: pageHeight,
+          color: rgb(1, 1, 1), // white
+          opacity: 1
+        })
+        console.log('✅ Magic memory using white background (no background image)')
+      }
       // Draw up to 4 photos in corners (or around center)
       const assetIds = book.created_from_assets || []
       const photoAssets = assets.filter(a => assetIds.includes(a.id)).slice(0, 4)
       
       // Calculate optimal photo size to ensure story fits
-      const photoMargin = 16
-      const storyMargin = 12
-      const minStoryHeight = 50 // Reduced from 80 since we'll use smaller font (8pt)
+      const photoMargin = 12
+      const storyMargin = 16
+      const minStoryHeight = 80 // Increased for better text readability
       
       // For 4 photos: 2 at top, 2 at bottom
       // Available height = pageHeight - (2 * photoSize + 2 * photoMargin) - (2 * storyMargin)
       // We need: 2 * photoSize + 2 * photoMargin + 2 * storyMargin + minStoryHeight <= pageHeight
       // Solving: photoSize <= (pageHeight - 2 * photoMargin - 2 * storyMargin - minStoryHeight) / 2
       const maxPhotoSize = Math.floor((pageHeight - 2 * photoMargin - 2 * storyMargin - minStoryHeight) / 2)
-      const photoSize = Math.min(85, maxPhotoSize) // Increased cap since story takes less space
-      // Layout positions for 1-4 photos
+      const photoSize = Math.min(120, maxPhotoSize) // Increased from 85 to 120 for larger photos
+      // --- NEW LAYOUT: 50% width for photos (left), 50% for story (right) ---
+      // Photos: 2x2 grid in the left half
+      const gridCols = 2
+      const gridRows = 2
+      const photoGridWidth = pageWidth / 2
+      const photoGridHeight = pageHeight
+      const photoCellWidth = (photoGridWidth - photoMargin * 3) / gridCols
+      const photoCellHeight = (photoGridHeight - photoMargin * 3) / gridRows
+      const photoDisplaySize = Math.min(photoCellWidth, photoCellHeight)
+      // Center grid vertically
+      const gridOffsetY = (pageHeight - (photoDisplaySize * gridRows + photoMargin * (gridRows - 1))) / 2
+      // Center grid horizontally in left half
+      const gridOffsetX = (photoGridWidth - (photoDisplaySize * gridCols + photoMargin * (gridCols - 1))) / 2
       let positions = []
-      if (photoAssets.length === 1) {
-        positions = [{ x: (pageWidth - photoSize) / 2, y: (pageHeight - photoSize) / 2 }]
-      } else if (photoAssets.length === 2) {
-        positions = [
-          { x: 24, y: pageHeight - photoSize - 24 }, // top-left
-          { x: pageWidth - photoSize - 24, y: 24 } // bottom-right
-        ]
-      } else if (photoAssets.length === 3) {
-        positions = [
-          { x: 24, y: pageHeight - photoSize - 24 }, // top-left
-          { x: pageWidth - photoSize - 24, y: pageHeight - photoSize - 24 }, // top-right
-          { x: 24, y: 24 } // bottom-left
-        ]
-      } else {
-        // 4 or more
-        positions = [
-          { x: 24, y: pageHeight - photoSize - 24 }, // top-left
-          { x: pageWidth - photoSize - 24, y: pageHeight - photoSize - 24 }, // top-right
-          { x: 24, y: 24 }, // bottom-left
-          { x: pageWidth - photoSize - 24, y: 24 } // bottom-right
-        ]
-      }
-      // Get AI shape recommendations for each photo individually
-      let photoAnalyses = []
-      let recommendedShape = 'original'
-      
-      if (photoAssets.length > 0) {
-        console.log('🤖 Getting AI analysis for each magic memory photo...')
-        
-        // Analyze each photo individually
-        for (let i = 0; i < photoAssets.length; i++) {
-          const asset = photoAssets[i]
-          try {
-            console.log(`📸 Analyzing photo ${i + 1}/${photoAssets.length}...`)
-            const analysisRes = await fetch(`${config.public.siteUrl}/api/ai/analyze-photo`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                imageUrl: asset.storage_url,
-                targetShape: 'magic',
-                targetWidth: photoSize,
-                targetHeight: photoSize
-              })
-            })
-            
-            if (analysisRes.ok) {
-              const analysisData = await analysisRes.json()
-              const analysis = analysisData.analysis
-              photoAnalyses.push({
-                index: i,
-                asset: asset,
-                analysis: analysis,
-                bestShape: analysis.bestShape || 'original',
-                fitQuality: analysis.fitQuality || 'fair'
-              })
-              console.log(`✅ Photo ${i + 1} analysis:`, analysis.bestShape, analysis.fitQuality)
-            } else {
-              console.warn(`⚠️ AI analysis failed for photo ${i + 1}, using original shape`)
-              photoAnalyses.push({
-                index: i,
-                asset: asset,
-                analysis: null,
-                bestShape: 'original',
-                fitQuality: 'fair'
-              })
-            }
-          } catch (aiError) {
-            console.warn(`⚠️ AI analysis error for photo ${i + 1}, using original shape:`, aiError.message)
-            photoAnalyses.push({
-              index: i,
-              asset: asset,
-              analysis: null,
-              bestShape: 'original',
-              fitQuality: 'fair'
+      for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < gridCols; col++) {
+          if (positions.length < photoAssets.length) {
+            positions.push({
+              x: gridOffsetX + col * (photoDisplaySize + photoMargin),
+              y: pageHeight - gridOffsetY - (row + 1) * photoDisplaySize - row * photoMargin
             })
           }
         }
-        
-        // Determine the best common shape
-        const shapeCounts = {}
-        const shapeQualities = {}
-        
-        photoAnalyses.forEach(photo => {
-          const shape = photo.bestShape
-          shapeCounts[shape] = (shapeCounts[shape] || 0) + 1
-          
-          // Track quality scores for each shape
-          if (!shapeQualities[shape]) {
-            shapeQualities[shape] = []
-          }
-          const qualityScore = photo.fitQuality === 'excellent' ? 4 : 
-                             photo.fitQuality === 'good' ? 3 : 
-                             photo.fitQuality === 'fair' ? 2 : 1
-          shapeQualities[shape].push(qualityScore)
-        })
-        
-        console.log('📊 Shape analysis results:', shapeCounts)
-        console.log('📊 Shape quality scores:', shapeQualities)
-        
-        // Find the most common shape
-        const mostCommonShape = Object.keys(shapeCounts).reduce((a, b) => 
-          shapeCounts[a] > shapeCounts[b] ? a : b
-        )
-        
-        // Calculate average quality for each shape
-        const shapeAvgQuality = {}
-        Object.keys(shapeQualities).forEach(shape => {
-          const avg = shapeQualities[shape].reduce((a, b) => a + b, 0) / shapeQualities[shape].length
-          shapeAvgQuality[shape] = avg
-        })
-        
-        console.log('📊 Average quality per shape:', shapeAvgQuality)
-        
-        // Decision logic:
-        // 1. If all photos can use the same shape, use it
-        // 2. If not all same, try to force square unless AI says it's terrible
-        // 3. Only use original if square is terrible for most photos
-        
-        if (Object.keys(shapeCounts).length === 1) {
-          // All photos can use the same shape
-          recommendedShape = mostCommonShape
-          console.log('🎯 All photos can use the same shape:', recommendedShape)
-        } else {
-          // Photos have different optimal shapes, try to force square
-          const squareQuality = shapeAvgQuality['square'] || 0
-          const originalQuality = shapeAvgQuality['original'] || 0
-          
-          // Check if square is terrible (quality < 1.5) for most photos
-          const squarePhotos = photoAnalyses.filter(p => p.bestShape === 'square')
-          const terribleSquareCount = squarePhotos.filter(p => 
-            p.fitQuality === 'poor' || p.fitQuality === 'fair'
-          ).length
-          
-          if (squareQuality >= 1.5 && terribleSquareCount <= photoAnalyses.length / 2) {
-            // Square is acceptable, force it
-            recommendedShape = 'square'
-            console.log('🎯 Forcing square shape (acceptable quality):', squareQuality)
-          } else {
-            // Square is terrible, use original
-            recommendedShape = 'original'
-            console.log('🎯 Using original shape (square quality too poor):', squareQuality)
-          }
-        }
-        
-        console.log('🎯 Final recommended shape for magic memory:', recommendedShape)
       }
       
+      // Process and draw photos - simplified: always use original aspect ratio
       for (let i = 0; i < photoAssets.length; i++) {
         const asset = photoAssets[i]
-        const photoAnalysis = photoAnalyses[i]
         
         try {
           const imageRes = await fetch(asset.storage_url)
           if (!imageRes.ok) throw new Error('Failed to fetch image')
           const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
           
-          // Process image with AI-recommended shape and feathered edges
-          let processedImage
+          // Get image dimensions and calculate aspect ratio
+          const imageInfo = await sharp(imageBuffer).metadata()
+          const aspectRatio = imageInfo.width / imageInfo.height
           
-          // Use individual photo analysis if available, otherwise use common recommended shape
-          let shapeToUse = recommendedShape
+          // Calculate final dimensions to fit in the grid cell while preserving aspect ratio
+          let finalWidth = photoDisplaySize
+          let finalHeight = photoDisplaySize
           
-          if (photoAnalysis && photoAnalysis.analysis) {
-            // Use the individual photo's best shape if it matches the common shape or if we're forcing square
-            if (photoAnalysis.bestShape === recommendedShape || recommendedShape === 'square') {
-              shapeToUse = photoAnalysis.bestShape
-              console.log(`🎯 Using individual analysis for photo ${i + 1}:`, photoAnalysis.bestShape)
-            } else {
-              console.log(`🎯 Using common shape for photo ${i + 1}:`, recommendedShape, `(individual preferred: ${photoAnalysis.bestShape})`)
-            }
+          if (aspectRatio > 1) {
+            // Landscape image - fit to width, adjust height
+            finalWidth = photoDisplaySize
+            finalHeight = photoDisplaySize / aspectRatio
+          } else {
+            // Portrait image - fit to height, adjust width
+            finalWidth = photoDisplaySize * aspectRatio
+            finalHeight = photoDisplaySize
           }
           
-          // Apply shape processing
-          processedImage = await processImageShape(imageBuffer, shapeToUse, photoSize, photoSize, asset.storage_url)
+          // Process image at higher resolution for quality
+          const targetWidth = Math.round(finalWidth * 2)
+          const targetHeight = Math.round(finalHeight * 2)
+          const processedImage = await processImageShape(imageBuffer, 'original', targetWidth, targetHeight, asset.storage_url)
           
           const pdfImage = await pdfDoc.embedPng(processedImage)
           page.drawImage(pdfImage, {
             x: positions[i].x,
             y: positions[i].y,
-            width: photoSize,
-            height: photoSize
+            width: finalWidth,
+            height: finalHeight
           })
+          
+          console.log(`✅ Photo ${i + 1} processed: ${finalWidth}x${finalHeight} (aspect ratio preserved)`)
         } catch (err) {
           console.warn(`⚠️ Failed to process photo ${i + 1}:`, err.message)
           // Draw placeholder if image fails
           page.drawRectangle({
-            x: positions[i].x, y: positions[i].y, width: photoSize, height: photoSize, color: rgb(0.9, 0.9, 1) })
-        }
-      }
-      // Draw magical sparkles (simple circles)
-      for (let s = 0; s < 12; s++) {
-        page.drawCircle({
-          x: Math.random() * pageWidth,
-          y: Math.random() * pageHeight,
-          size: 3 + Math.random() * 4,
-          color: rgb(1, 0.95, 0.6),
-          opacity: 0.5 + Math.random() * 0.3
-        })
-      }
-      // Calculate available space for story based on photo positions
-      
-      // Calculate the center area available for the story
-      let storyAreaLeft, storyAreaRight, storyAreaTop, storyAreaBottom
-      
-      if (photoAssets.length === 1) {
-        // Single photo in center, story around it
-        storyAreaLeft = storyMargin
-        storyAreaRight = pageWidth - storyMargin
-        storyAreaTop = storyMargin
-        storyAreaBottom = pageHeight - storyMargin
-      } else if (photoAssets.length === 2) {
-        // Two photos in corners, story in center
-        storyAreaLeft = photoSize + photoMargin + storyMargin
-        storyAreaRight = pageWidth - photoSize - photoMargin - storyMargin
-        storyAreaTop = storyMargin
-        storyAreaBottom = pageHeight - storyMargin
-      } else if (photoAssets.length === 3) {
-        // Three photos, story in remaining space
-        storyAreaLeft = photoSize + photoMargin + storyMargin
-        storyAreaRight = pageWidth - photoSize - photoMargin - storyMargin
-        storyAreaTop = photoSize + photoMargin + storyMargin
-        storyAreaBottom = pageHeight - photoSize - photoMargin - storyMargin
-      } else {
-        // Four photos in corners, story in center
-        storyAreaLeft = photoSize + photoMargin + storyMargin
-        storyAreaRight = pageWidth - photoSize - photoMargin - storyMargin
-        storyAreaTop = photoSize + photoMargin + storyMargin
-        storyAreaBottom = pageHeight - photoSize - photoMargin - storyMargin
-        
-        // Ensure minimum story area height
-        const minStoryHeight = 60
-        if (storyAreaBottom <= storyAreaTop) {
-          // If no space, create a smaller story area in the center
-          const centerY = pageHeight / 2
-          storyAreaTop = centerY - minStoryHeight / 2
-          storyAreaBottom = centerY + minStoryHeight / 2
+            x: positions[i].x, y: positions[i].y, width: photoDisplaySize, height: photoDisplaySize, color: rgb(0.9, 0.9, 1) })
         }
       }
       
+      // --- Story area: right half ---
+      const storyAreaLeft = pageWidth / 2 + storyMargin
+      const storyAreaRight = pageWidth - storyMargin
+      const storyAreaTop = storyMargin
+      const storyAreaBottom = pageHeight - storyMargin
       const storyAreaWidth = storyAreaRight - storyAreaLeft
       const storyAreaHeight = storyAreaBottom - storyAreaTop
       
@@ -861,15 +711,21 @@ export default defineEventHandler(async (event) => {
         height: storyAreaHeight
       })
       
-      // Split story into lines that fit the available width
+      let fontSize = 16 // Default starting font size for story text
+      // Smart text wrapping to fit all content in the available space
       const words = story.split(' ')
       const lines = []
       let line = ''
-      const maxCharsPerLine = Math.floor(storyAreaWidth / 8) // Approximate chars per line based on width
+      
+      // Calculate optimal characters per line based on available width
+      // Use a more generous character width calculation for better text flow
+      const avgCharWidth = 0.6 // Average character width in font units
+      const maxCharsPerLine = Math.floor(storyAreaWidth / (fontSize * avgCharWidth))
       console.log('📝 Max chars per line:', maxCharsPerLine)
       
+      // First pass: create lines based on character count
       for (const word of words) {
-        if ((line + ' ' + word).length < maxCharsPerLine) {
+        if ((line + ' ' + word).length <= maxCharsPerLine) {
           line += (line ? ' ' : '') + word
         } else {
           if (line) lines.push(line)
@@ -878,39 +734,54 @@ export default defineEventHandler(async (event) => {
       }
       if (line) lines.push(line)
       
-      // Calculate font size to fit the story in the available height
-      const maxLines = Math.floor(storyAreaHeight / 16) // Reduced line height for smaller font
-      let fontSize = Math.min(14, Math.max(8, storyAreaHeight / (lines.length + 1))) // Reduced max from 16 to 14, min stays 8
+      // Calculate initial font size to fit all text
+      const lineHeight = fontSize * 1.2 // Tighter line spacing
+      const totalTextHeight = lines.length * lineHeight
       
-      // Don't truncate - use the full story
-      // If we have more lines than maxLines, reduce font size to fit all lines
-      if (lines.length > maxLines) {
-        fontSize = Math.min(fontSize, storyAreaHeight / (lines.length + 1))
+      // If text doesn't fit, reduce font size until it does
+      let adjustedFontSize = fontSize
+      while (totalTextHeight > storyAreaHeight && adjustedFontSize > 8) {
+        adjustedFontSize -= 0.5
+        const newLineHeight = adjustedFontSize * 1.2
+        const newTotalHeight = lines.length * newLineHeight
+        if (newTotalHeight <= storyAreaHeight) {
+          break
+        }
       }
       
-      const lineHeight = fontSize * 1.4
-      const totalTextHeight = lines.length * lineHeight
-      const storyY = storyAreaTop + (storyAreaHeight - totalTextHeight) / 2
+      // If still doesn't fit, recalculate lines with smaller font
+      if (adjustedFontSize <= 8) {
+        adjustedFontSize = 8
+        const newMaxCharsPerLine = Math.floor(storyAreaWidth / (adjustedFontSize * avgCharWidth))
+        lines.length = 0 // Clear existing lines
+        line = ''
+        
+        for (const word of words) {
+          if ((line + ' ' + word).length <= newMaxCharsPerLine) {
+            line += (line ? ' ' : '') + word
+          } else {
+            if (line) lines.push(line)
+            line = word
+          }
+        }
+        if (line) lines.push(line)
+      }
       
-      console.log('📝 Text layout:', {
-        lines: lines.length,
-        fontSize: fontSize,
-        lineHeight: lineHeight,
-        totalTextHeight: totalTextHeight,
-        storyY: storyY
-      })
+      const finalLineHeight = adjustedFontSize * 1.2
+      const finalTotalHeight = lines.length * finalLineHeight
+      const storyY = storyAreaTop + (storyAreaHeight - finalTotalHeight) / 2
       
       // Draw each line of the story, centered horizontally
       for (let i = 0; i < lines.length; i++) {
-        const lineWidth = lines[i].length * fontSize * 0.6 // Approximate text width
+        const lineWidth = lines[i].length * adjustedFontSize * 0.6 // Approximate text width
         const lineX = storyAreaLeft + (storyAreaWidth - lineWidth) / 2
         
-        console.log(`📝 Drawing line ${i + 1}: "${lines[i]}" at (${lineX}, ${storyY + (lines.length - 1 - i) * lineHeight})`)
+        console.log(`📝 Drawing line ${i + 1}: "${lines[i]}" at (${lineX}, ${storyY + (lines.length - 1 - i) * finalLineHeight})`)
         
         page.drawText(lines[i], {
           x: lineX,
-          y: storyY + (lines.length - 1 - i) * lineHeight,
-          size: fontSize,
+          y: storyY + (lines.length - 1 - i) * finalLineHeight,
+          size: adjustedFontSize,
           color: rgb(0.3, 0.2, 0.5),
           font: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic)
         })

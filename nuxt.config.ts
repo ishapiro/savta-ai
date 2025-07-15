@@ -19,7 +19,7 @@ export default defineNuxtConfig({
     '@/assets/css/main.css'
   ],
   build: {
-    transpile: ['primevue']
+    transpile: ['primevue', '@vue-pdf-viewer/viewer']
   },
   // @ts-ignore
   supabase: {
@@ -77,6 +77,7 @@ export default defineNuxtConfig({
     // Server-side environment variables
     openaiApiKey: process.env.OPENAI_API_KEY,
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    vpvLicenseKey: process.env.NUXT_VPV_LICENSE_KEY,
     
     public: {
       // @ts-ignore
