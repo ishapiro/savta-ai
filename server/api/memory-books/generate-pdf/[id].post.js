@@ -161,6 +161,13 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // Helper function to check if caption should be used (not blank, not filename)
+    function isValidCaption(caption) {
+      if (!caption || caption.trim() === '') return false
+      const lowerCaption = caption.toLowerCase()
+      return !lowerCaption.includes('.jpg') && !lowerCaption.includes('.png') && !lowerCaption.includes('.jpeg')
+    }
+
     // Helper function to process image shape with AI analysis
     async function processImageShape(imageBuffer, shape, targetWidth, targetHeight, imageUrl) {
       try {
@@ -671,7 +678,7 @@ export default defineEventHandler(async (event) => {
             width: finalWidth,
             height: finalHeight
           })
-          console.log(`✅ Photo ${i + 1} processed: ${finalWidth}x${finalHeight} (aspect ratio preserved)`) 
+          console.log(`✅ Photo ${i + 1} processed: ${finalWidth}x${finalHeight} (aspect ratio preserved)`)
         } catch (err) {
           console.warn(`⚠️ Failed to process photo ${i + 1}:`, err.message)
           // Draw placeholder if image fails
@@ -694,19 +701,19 @@ export default defineEventHandler(async (event) => {
       // Function to wrap text to fit the story area width
       function wrapText(text, font, fontSize, maxWidth) {
         const words = text.split(' ')
-        const lines = []
-        let line = ''
-        for (const word of words) {
+      const lines = []
+      let line = ''
+      for (const word of words) {
           const testLine = line ? line + ' ' + word : word
           const testLineWidth = font.widthOfTextAtSize(testLine, fontSize)
           if (testLineWidth <= maxWidth) {
             line = testLine
-          } else {
-            if (line) lines.push(line)
-            line = word
-          }
+        } else {
+          if (line) lines.push(line)
+          line = word
         }
-        if (line) lines.push(line)
+      }
+      if (line) lines.push(line)
         return lines
       }
       // Try to fit the text with the largest font size possible
@@ -974,9 +981,9 @@ export default defineEventHandler(async (event) => {
               height: imgDisplayHeight
             })
             // Draw caption if available
-            // Use user_caption if it's not the same as the asset name and not blank
+            // Use user_caption if it's valid (not blank, not filename), otherwise use ai_caption
             let captionText = ''
-            if (asset.user_caption && asset.user_caption.trim() !== '' && asset.user_caption !== asset.title) {
+            if (isValidCaption(asset.user_caption) && asset.user_caption !== asset.title) {
               captionText = asset.user_caption
             } else if (asset.ai_caption) {
               captionText = asset.ai_caption
@@ -1055,7 +1062,7 @@ export default defineEventHandler(async (event) => {
             })
             // Draw caption if available (same logic as above)
             let captionText = ''
-            if (asset.user_caption && asset.user_caption.trim() !== '' && asset.user_caption !== asset.title) {
+            if (isValidCaption(asset.user_caption) && asset.user_caption !== asset.title) {
               captionText = asset.user_caption
             } else if (asset.ai_caption) {
               captionText = asset.ai_caption
@@ -1118,7 +1125,7 @@ export default defineEventHandler(async (event) => {
         } else if (asset.type === 'text') {
           console.log(`📝 Processing text asset:`, asset.id)
           // For text assets, draw the text content
-          page.drawText(asset.user_caption || asset.ai_caption || 'Text content', {
+          page.drawText((isValidCaption(asset.user_caption) ? asset.user_caption : null) || asset.ai_caption || 'Text content', {
             x: x + 10,
             y: y + drawHeight / 2,
             size: 12,
@@ -1275,7 +1282,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 })
- 
+
 async function updatePdfStatus(supabase, bookId, userId, status) {
   try {
     console.log('📊 Updating PDF status:', status, 'for book:', bookId)
@@ -1294,4 +1301,4 @@ async function updatePdfStatus(supabase, bookId, userId, status) {
   } catch (error) {
     console.log('⚠️ PDF status table might not exist yet, continuing without status updates:', error.message)
   }
-}
+} 

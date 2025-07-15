@@ -19,7 +19,7 @@
             @click="openMagicMemoryDialog"
           >
             <i class="pi pi-sparkles text-lg sm:text-xl text-yellow-300 drop-shadow"></i>
-            <span class="hidden sm:inline">Create Magic Memory</span>
+            <span class="hidden sm:inline">Savta's Magic Spells</span>
             <span class="sm:hidden">Magic</span>
           </button>
           <button
@@ -27,8 +27,8 @@
             @click="showCreateModal = true"
           >
             <i class="pi pi-plus mr-1 sm:mr-2"></i>
-            <span class="hidden sm:inline">Create New Book</span>
-            <span class="sm:hidden">New Book</span>
+            <span class="hidden sm:inline">Define a Magic Spell</span>
+            <span class="sm:hidden">Magic Spell</span>
           </button>
         </div>
       </div>
@@ -129,12 +129,12 @@
               <i v-if="book.layout_type === 'magic'" class="pi pi-sparkles text-3xl text-yellow-400 animate-pulse magic-sparkle"></i>
               <i v-else class="pi pi-book text-2xl text-blue-600"></i>
             </div>
-            <span class="text-xs font-semibold text-gray-700">{{ book.layout_type === 'magic' ? 'Magic Memory' : 'Memory Book' }}</span>
+            <span class="text-xs font-semibold text-gray-700">{{ book.layout_type === 'magic' ? 'Magic Memory' : 'Memory Spell' }}</span>
           </div>
         </div>
         <!-- Card Content -->
         <div class="flex-1 flex flex-col p-5 pb-2">
-          <h3 class="text-lg font-bold text-gray-900 mb-1 truncate">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Book #' + book.id.slice(-6))) }}</h3>
+          <h3 class="text-lg font-bold text-gray-900 mb-1 truncate">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Spell #' + book.id.slice(-6))) }}</h3>
           <div v-if="book.layout_type === 'magic' && book.magic_story" class="text-purple-900 text-sm magic-story animate-fade-in">
             <i class="pi pi-sparkles text-yellow-400 mr-2"></i>{{ book.magic_story.length > 100 ? book.magic_story.slice(0, 100) + '...' : book.magic_story }}
           </div>
@@ -213,13 +213,13 @@
       <div class="text-gray-600 mb-4">
         <i class="pi pi-book text-4xl sm:text-6xl"></i>
       </div>
-      <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2 text-center">No memory books yet</h3>
-      <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Create your first memory book from your approved assets.</p>
+      <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2 text-center">No magic memories yet</h3>
+      <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Create your first magic memory from your approved assets.</p>
       <button
         class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-xs"
         @click="showCreateModal = true"
       >
-        <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Memory Book
+        <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Magic Memory
       </button>
     </div>
 
@@ -233,10 +233,10 @@
     >
       <div class="space-y-3">
         <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Book Title</label>
+          <label class="block text-sm font-medium text-gray-900 mb-1">Memory Title</label>
           <InputText
             v-model="newBook.title"
-            placeholder="Enter a title for your memory book"
+            placeholder="Enter a title for your custom magic memory"
             class="w-full"
           />
         </div>
@@ -267,7 +267,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="field">
             <label class="block text-sm font-medium text-gray-900 mb-1">Quality</label>
             <Dropdown
@@ -278,8 +278,8 @@
               placeholder="Select quality"
               class="w-full"
             />
-          </div>
-
+          </div> -->
+<!-- 
           <div class="field">
             <label class="block text-sm font-medium text-gray-900 mb-1">Medium</label>
             <Dropdown
@@ -291,7 +291,7 @@
               class="w-full"
             />
           </div>
-        </div>
+        </div> -->
 
         <div class="field">
           <label class="block text-sm font-medium text-gray-900 mb-1">Theme</label>
@@ -353,7 +353,7 @@
                 v-model="newBook.includeCaptions"
                 :binary="true"
               />
-              <span class="text-sm text-gray-600">Include AI-generated captions</span>
+              <!-- <span class="text-sm text-gray-600">Include AI-generated captions</span> -->
             </div>
           </div>
 
@@ -364,7 +364,7 @@
                 v-model="newBook.includeTags"
                 :binary="true"
               />
-              <span class="text-sm text-gray-600">Include asset tags</span>
+              <!-- <span class="text-sm text-gray-600">Include asset tags</span> -->
             </div>
           </div>
         </div>
@@ -382,7 +382,7 @@
             />
           </div>
           <Button
-            label="Create Book"
+            label="Save Magic Spell"
             icon="pi pi-check"
             :loading="creatingBook"
             :disabled="!newBook.title"
@@ -391,6 +391,56 @@
           />
         </div>
       </template>
+    </Dialog>
+
+    <!-- Success Dialog -->
+    <Dialog
+      v-model:visible="showSuccessDialog"
+      modal
+      :closable="false"
+      class="success-dialog"
+      style="max-width: 500px; text-align: center;"
+    >
+      <div class="flex flex-col items-center justify-center py-8 px-6">
+        <!-- Sparkle animation -->
+        <div class="relative mb-6">
+          <div class="w-20 h-20 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+            <i class="pi pi-sparkles text-4xl text-yellow-500 animate-bounce"></i>
+          </div>
+          <!-- Floating sparkles -->
+          <div class="absolute -top-2 -right-2 w-6 h-6 bg-yellow-300 rounded-full animate-ping"></div>
+          <div class="absolute -bottom-2 -left-2 w-4 h-4 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+          <div class="absolute top-1/2 -right-4 w-3 h-3 bg-blue-300 rounded-full animate-ping" style="animation-delay: 1s;"></div>
+        </div>
+        
+        <!-- Success message -->
+        <h2 class="text-2xl font-bold text-purple-700 mb-4 animate-fade-in">
+          ✨ Well Done! ✨
+        </h2>
+        
+        <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200 mb-6">
+          <p class="text-lg text-gray-800 leading-relaxed mb-4">
+            You have just defined the <span class="font-bold text-purple-600">magical spell</span> we will use to generate your custom magic memory!
+          </p>
+          
+          <div class="flex items-center justify-center gap-3 bg-white rounded-lg p-3 border border-purple-200">
+            <i class="pi pi-bolt text-2xl text-yellow-500 animate-pulse"></i>
+            <p class="text-base text-gray-700 font-medium">
+              Click on the <span class="text-yellow-600 font-bold">lightning bolt</span> on the Magic Memory card below
+              to make it happen!
+            </p>
+          </div>
+        </div>
+        
+        <!-- Action button -->
+        <button
+          class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow-lg transition-all duration-200 transform hover:scale-105 animate-bounce"
+          @click="showSuccessDialog = false"
+        >
+          <i class="pi pi-check mr-2"></i>
+          Let's Make Some Magic! ✨
+        </button>
+      </div>
     </Dialog>
 
     <!-- Book Details Modal -->
@@ -613,7 +663,7 @@
     <Dialog
       v-model:visible="showProgressDialog"
       modal
-      header="Casting a Spell to Create Your Memory Book"
+      header="Casting a Spell to Create Your Magic Memory"
       :style="{ width: '95vw', maxWidth: '400px' }"
       :closable="false"
       :z-index="9999"
@@ -638,7 +688,7 @@
     <!-- Generate Confirmation Dialog -->
     <Dialog v-model:visible="showGenerateDialog" modal header="Give It Another Magical Spin" class="w-[95vw] max-w-md">
       <div class="py-4">
-        <p class="text-sm sm:text-base">Generate this memory book? This may take a little time.</p>
+        <p class="text-sm sm:text-base">Generate this magic memory? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
           <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
           <Button label="Generate" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmGenerate" />
@@ -648,7 +698,7 @@
     <!-- Regenerate Confirmation Dialog -->
     <Dialog v-model:visible="showRegenerateDialog" modal :header="null" :closable="false" class="w-full md:w-[60%] lg:w-[50%] p-0">
       <div class="py-4 px-4 sm:px-6">
-        <p class="text-sm sm:text-base leading-relaxed">Would you like to create a fresh, new version of this memory book with a brand new AI-generated background design? It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for you. If you're happy with the current version and just want to view it right away, you can use the view button below - that's much faster!</p>
+        <p class="text-sm sm:text-base leading-relaxed">Would you like to create a fresh, new version of this magic memory with a brand new AI-generated background design? It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for you. If you're happy with the current version and just want to view it right away, you can use the view button below - that's much faster!</p>
         <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6">
           <button
             class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-7 py-2 text-xs sm:text-sm shadow transition-all duration-200 min-w-[120px] sm:min-w-[150px]"
@@ -675,9 +725,9 @@
       </div>
     </Dialog>
     <!-- View Draft Dialog -->
-    <Dialog v-model:visible="showDownloadDraftDialog" modal header="Memory Book Not Generated" class="w-[95vw] max-w-md">
+    <Dialog v-model:visible="showDownloadDraftDialog" modal header="Magic Memory Not Generated" class="w-[95vw] max-w-md">
       <div class="py-4">
-        <p class="text-sm sm:text-base">You need to generate the memory book before viewing. Would you like to generate it now? This may take a little time.</p>
+        <p class="text-sm sm:text-base">You need to generate the magic memory before viewing. Would you like to generate it now? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
           <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
           <Button label="Generate Now" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmDownloadDraft" />
@@ -843,7 +893,7 @@
                 v-model="editBook.includeCaptions"
                 :binary="true"
               />
-              <span class="text-sm text-gray-600">Include AI-generated captions</span>
+              <!-- <span class="text-sm text-gray-600">Include AI-generated captions</span> -->
             </div>
           </div>
 
@@ -854,7 +904,7 @@
                 v-model="editBook.includeTags"
                 :binary="true"
               />
-              <span class="text-sm text-gray-600">Include asset tags</span>
+              <!-- <span class="text-sm text-gray-600">Include asset tags</span> -->
             </div>
           </div>
         </div>
@@ -1342,6 +1392,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 const memoryBooks = ref([])
 const loadingMemoryBooks = ref(true)
 const showCreateModal = ref(false)
+const showSuccessDialog = ref(false)
 const showDetailsModal = ref(false)
 const selectedBook = ref(null)
 const creatingBook = ref(false)
@@ -1363,7 +1414,7 @@ const newBook = ref({
   medium: 'digital',
   theme: 'classic',
   gridLayout: '2x2',
-  memoryShape: 'natural',
+  memoryShape: 'original',
   includeCaptions: true,
   includeTags: true
 })
@@ -1569,7 +1620,7 @@ const createMemoryBook = async () => {
         $toast.add({
           severity: 'warn',
           summary: 'No Assets',
-          detail: 'No approved assets available for memory book',
+          detail: 'No approved assets available for this magic memory',
           life: 3000
         })
       }
@@ -1601,6 +1652,9 @@ const createMemoryBook = async () => {
       })
     }
 
+    // Show the fun success dialog
+    showSuccessDialog.value = true
+
     // Reset form and close modal
     newBook.value = {
       title: '',
@@ -1610,7 +1664,7 @@ const createMemoryBook = async () => {
       medium: 'digital',
       theme: 'classic',
       gridLayout: '2x2',
-      memoryShape: 'original',
+      memoryShape: 'magic',
       includeCaptions: true,
       includeTags: true
     }
@@ -1626,7 +1680,7 @@ const createMemoryBook = async () => {
       $toast.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to create memory book',
+        detail: 'Failed to create magic memory',
         life: 3000
       })
     }
@@ -1718,7 +1772,7 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = 'Adding the final magical touches...'
       } else if (status.pdf_status === 'completed') {
         currentProgress.value = 100
-        currentProgressMessage.value = 'Your magical memory book is ready!'
+        currentProgressMessage.value = 'Your magical memory is ready!'
         // Do NOT close the dialog here. Wait for the pdf_url and book_status === 'ready'.
         // Previously, the dialog was closed here, which could be too early for multi-page books.
       } else if (status.pdf_status === 'error') {
@@ -1774,7 +1828,7 @@ const startProgressPolling = (bookId) => {
   console.log('startProgressPolling called with bookId:', bookId)
   currentBookId.value = bookId
   currentProgress.value = 0
-  currentProgressMessage.value = 'Starting the magical memory book creation...'
+  currentProgressMessage.value = 'Starting the magical memory creation...'
   showProgressDialog.value = true
   console.log('showProgressDialog set to:', showProgressDialog.value)
   
@@ -1814,7 +1868,7 @@ const generatePDF = async (book) => {
     
     // For regeneration, clear existing background and PDF URLs first
     if (book.status === 'ready' && (book.background_url || book.pdf_url)) {
-      console.log('🔄 Regenerating memory book, clearing existing URLs...')
+      console.log('🔄 Regenerating memory, clearing existing URLs...')
       try {
         await db.memoryBooks.updateMemoryBook(book.id, {
           background_url: null,
@@ -2025,7 +2079,7 @@ const unapproveBook = async (bookId) => {
       $toast.add({
         severity: 'success',
         summary: 'Unapproved',
-        detail: 'Memory book unapproved',
+        detail: 'Magical memory unapproved',
         life: 3000
       })
     }
@@ -2806,6 +2860,23 @@ async function deleteBookConfirmed() {
 @keyframes magic-card-glow {
   0% { box-shadow: 0 0 24px 8px #fbbf24, 0 0 32px 12px #a78bfa; }
   100% { box-shadow: 0 0 36px 16px #fbbf24, 0 0 48px 24px #a78bfa; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+.success-dialog {
+  box-shadow: 0 0 32px 12px #fbbf24, 0 0 48px 24px #a78bfa;
+  border: 2px solid #a78bfa;
+  background: linear-gradient(135deg, #fef9c3 0%, #f3e8ff 100%);
+  border-radius: 1.5rem;
+  animation: magic-card-glow 2.5s infinite alternate;
 }
 @keyframes fade-in {
   from { opacity: 0; }

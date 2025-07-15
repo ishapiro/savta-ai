@@ -104,7 +104,7 @@
         <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-emerald-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
           <span class="text-2xl sm:text-3xl">✨</span>
         </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">AI Magic</h3>
+        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Cast a Magic Spell</h3>
         <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
           Our AI organizes memory moments into beautiful magic memory cards with custom backgrounds perfect for sharing.
         </p>
@@ -193,7 +193,7 @@
       
       <div class="text-center py-4">
         <div class="mb-6">
-          <h4 class="text-lg font-medium text-gray-900 mb-3">Create Your First Memory Book</h4>
+          <h4 class="text-lg font-medium text-gray-900 mb-3">Create Your First Magic Memory</h4>
           <p class="text-gray-600 leading-relaxed">
             Start preserving your precious family moments with AI-powered scrapbooks. 
             Create an account to begin your journey of capturing and sharing beautiful memories.
