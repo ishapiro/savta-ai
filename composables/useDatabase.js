@@ -511,7 +511,9 @@ export const useDatabase = () => {
           userCaption: currentAsset.user_caption,
           preserveUserData: true,
           userTags: currentAsset.user_tags || [],
-          userPeople: currentAsset.user_people || []
+          userPeople: currentAsset.user_people || [],
+          peopleDetected: currentAsset.people_detected || [],
+          tags: currentAsset.tags || []
         })
       })
       

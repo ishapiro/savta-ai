@@ -107,14 +107,24 @@ export default defineEventHandler(async (event) => {
 
     if (assetType === 'photo' && storageUrl) {
       // Process image with OpenAI Vision API
-      const imageAnalysis = await analyzeImage(storageUrl, openaiApiKey)
+      const imageAnalysis = await analyzeImage(storageUrl, openaiApiKey, {
+        userTags,
+        userPeople,
+        peopleDetected: body.peopleDetected || [],
+        tags: body.tags || []
+      })
       aiResults = {
         ...aiResults,
         ...imageAnalysis
       }
     } else if (assetType === 'text' && userCaption) {
       // Process text content
-      const textAnalysis = await analyzeText(userCaption, openaiApiKey)
+      const textAnalysis = await analyzeText(userCaption, openaiApiKey, {
+        userTags,
+        userPeople,
+        peopleDetected: body.peopleDetected || [],
+        tags: body.tags || []
+      })
       aiResults = {
         ...aiResults,
         ...textAnalysis
@@ -215,7 +225,7 @@ export default defineEventHandler(async (event) => {
 })
 
 // Analyze image using OpenAI Vision API
-async function analyzeImage(imageUrl, apiKey) {
+async function analyzeImage(imageUrl, apiKey, context = {}) {
   
   // Add 1 second delay to prevent rate limiting
   await new Promise(resolve => setTimeout(resolve, 1000))
@@ -241,7 +251,7 @@ async function analyzeImage(imageUrl, apiKey) {
             content: [
               {
                 type: 'text',
-                text: prompts.userInstruction
+                text: prompts.userInstruction(context)
               },
               {
                 type: 'image_url',
@@ -301,7 +311,7 @@ async function analyzeImage(imageUrl, apiKey) {
 }
 
 // Analyze text content using OpenAI
-async function analyzeText(text, apiKey) {
+async function analyzeText(text, apiKey, context = {}) {
   
   // Add 1 second delay to prevent rate limiting
   await new Promise(resolve => setTimeout(resolve, 1000))
@@ -324,7 +334,7 @@ async function analyzeText(text, apiKey) {
           },
           {
             role: 'user',
-            content: prompts.userInstruction(text)
+            content: prompts.userInstruction(text, context)
           }
         ],
         max_tokens: 1000

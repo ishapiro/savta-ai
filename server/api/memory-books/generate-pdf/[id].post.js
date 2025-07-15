@@ -774,26 +774,65 @@ export default defineEventHandler(async (event) => {
               height: imgDisplayHeight
             })
             // Draw caption if available
-            if (asset.ai_caption) {
-              const captionText = asset.ai_caption.substring(0, 50) + '...'
-              const textWidth = captionText.length * 4.5 // Approximate width
-              const textHeight = 12
+            // Use user_caption if it's not the same as the asset name and not blank
+            let captionText = ''
+            if (asset.user_caption && asset.user_caption.trim() !== '' && asset.user_caption !== asset.title) {
+              captionText = asset.user_caption
+            } else if (asset.ai_caption) {
+              captionText = asset.ai_caption
+            }
+            
+            if (captionText) {
+              // Split caption into lines (up to 3 lines)
+              const maxCharsPerLine = Math.floor(drawWidth / 4.5) // Approximate characters per line based on image width
+              const lines = []
+              let currentLine = ''
+              
+              const words = captionText.split(' ')
+              for (const word of words) {
+                if ((currentLine + ' ' + word).length <= maxCharsPerLine) {
+                  currentLine += (currentLine ? ' ' : '') + word
+                } else {
+                  if (currentLine) {
+                    lines.push(currentLine)
+                    currentLine = word
+                  } else {
+                    // Word is too long, split it
+                    lines.push(word.substring(0, maxCharsPerLine))
+                    currentLine = word.substring(maxCharsPerLine)
+                  }
+                }
+              }
+              if (currentLine) {
+                lines.push(currentLine)
+              }
+              
+              // Limit to 3 lines
+              const displayLines = lines.slice(0, 3)
+              const lineHeight = 10
+              const totalHeight = displayLines.length * lineHeight
+              
+              // Calculate text width (use the longest line)
+              const longestLine = displayLines.reduce((longest, line) => line.length > longest.length ? line : longest, '')
+              const textWidth = longestLine.length * 4.5 // Approximate width
               
               // Draw white background rectangle for caption
               page.drawRectangle({
                 x: x + 5,
                 y: y + 15,
-                width: textWidth + 10,
-                height: textHeight + 6,
+                width: Math.min(textWidth + 10, drawWidth - 10), // Don't exceed image width
+                height: totalHeight + 6,
                 color: rgb(1, 1, 1)
               })
               
-              // Draw black text
-              page.drawText(captionText, {
-                x: x + 10,
-                y: y + 20,
-                size: 8,
-                color: rgb(0, 0, 0)
+              // Draw black text line by line
+              displayLines.forEach((line, index) => {
+                page.drawText(line, {
+                  x: x + 10,
+                  y: y + 20 + (displayLines.length - 1 - index) * lineHeight, // Draw from bottom up
+                  size: 8,
+                  color: rgb(0, 0, 0)
+                })
               })
             }
           } catch (err) {
@@ -814,26 +853,65 @@ export default defineEventHandler(async (event) => {
               size: 12,
               color: rgb(0.3, 0.3, 0.3)
             })
-            if (asset.ai_caption) {
-              const captionText = asset.ai_caption.substring(0, 50) + '...'
-              const textWidth = captionText.length * 4.5 // Approximate width
-              const textHeight = 12
+            // Draw caption if available (same logic as above)
+            let captionText = ''
+            if (asset.user_caption && asset.user_caption.trim() !== '' && asset.user_caption !== asset.title) {
+              captionText = asset.user_caption
+            } else if (asset.ai_caption) {
+              captionText = asset.ai_caption
+            }
+            
+            if (captionText) {
+              // Split caption into lines (up to 3 lines)
+              const maxCharsPerLine = Math.floor(drawWidth / 4.5) // Approximate characters per line based on image width
+              const lines = []
+              let currentLine = ''
+              
+              const words = captionText.split(' ')
+              for (const word of words) {
+                if ((currentLine + ' ' + word).length <= maxCharsPerLine) {
+                  currentLine += (currentLine ? ' ' : '') + word
+                } else {
+                  if (currentLine) {
+                    lines.push(currentLine)
+                    currentLine = word
+                  } else {
+                    // Word is too long, split it
+                    lines.push(word.substring(0, maxCharsPerLine))
+                    currentLine = word.substring(maxCharsPerLine)
+                  }
+                }
+              }
+              if (currentLine) {
+                lines.push(currentLine)
+              }
+              
+              // Limit to 3 lines
+              const displayLines = lines.slice(0, 3)
+              const lineHeight = 10
+              const totalHeight = displayLines.length * lineHeight
+              
+              // Calculate text width (use the longest line)
+              const longestLine = displayLines.reduce((longest, line) => line.length > longest.length ? line : longest, '')
+              const textWidth = longestLine.length * 4.5 // Approximate width
               
               // Draw white background rectangle for caption
               page.drawRectangle({
                 x: x + 5,
                 y: y + 15,
-                width: textWidth + 10,
-                height: textHeight + 6,
+                width: Math.min(textWidth + 10, drawWidth - 10), // Don't exceed image width
+                height: totalHeight + 6,
                 color: rgb(1, 1, 1)
               })
               
-              // Draw black text
-              page.drawText(captionText, {
-                x: x + 10,
-                y: y + 20,
-                size: 8,
-                color: rgb(0, 0, 0)
+              // Draw black text line by line
+              displayLines.forEach((line, index) => {
+                page.drawText(line, {
+                  x: x + 10,
+                  y: y + 20 + (displayLines.length - 1 - index) * lineHeight, // Draw from bottom up
+                  size: 8,
+                  color: rgb(0, 0, 0)
+                })
               })
             }
           }

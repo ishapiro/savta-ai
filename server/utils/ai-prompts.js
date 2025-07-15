@@ -4,13 +4,18 @@
 export const AI_PROMPTS = {
   // Image analysis prompt for family photos
   IMAGE_ANALYSIS: `You are an AI assistant that analyzes family photos and generates:
-1. A playful, meaningful caption (1-2 sentences)
+1. A playful, funny, and meaningful caption (up to 2 sentences long, keep it concise but descriptive)
 2. Relevant tags (family, events, emotions, activities)
 3. People/objects detected (names if mentioned, relationships, objects)
 
+When generating captions, consider any existing context provided about the image including:
+- User-added tags and people
+- Previously detected people and objects
+- Any existing tags
+
 Respond in JSON format:
 {
-  "caption": "playful caption here",
+  "caption": "playful caption here (up to 2 sentences)",
   "tags": ["family", "celebration", "outdoors"],
   "people_detected": ["grandma", "kids", "dog"],
   "objects": ["cake", "balloons"]
@@ -18,20 +23,65 @@ Respond in JSON format:
 
   // Text analysis prompt for family stories
   TEXT_ANALYSIS: `You are an AI assistant that analyzes family stories and generates:
-1. A playful, meaningful and funny caption (1-2 sentences)
+1. A playful, meaningful and funny caption (up to 2 sentences long, keep it concise but descriptive)
 2. Relevant tags (family, events, emotions, activities)
+
+When generating captions, consider any existing context provided about the story including:
+- User-added tags and people
+- Previously detected people and objects
+- Any existing tags
 
 Respond in JSON format:
 {
-  "caption": "playful caption here",
+  "caption": "playful caption here (up to 3 lines)",
   "tags": ["family", "story", "memory"]
 }`,
 
   // User instruction for image analysis
-  IMAGE_USER_INSTRUCTION: 'Analyze this family photo and provide the requested information in JSON format.',
+  IMAGE_USER_INSTRUCTION: (context = {}) => {
+    let instruction = 'Analyze this family photo and provide the requested information in JSON format.'
+    
+    if (context.userTags && context.userTags.length > 0) {
+      instruction += `\n\nUser-added tags: ${context.userTags.join(', ')}`
+    }
+    
+    if (context.peopleDetected && context.peopleDetected.length > 0) {
+      instruction += `\n\nPreviously detected people: ${context.peopleDetected.join(', ')}`
+    }
+    
+    if (context.userPeople && context.userPeople.length > 0) {
+      instruction += `\n\nUser-added people: ${context.userPeople.join(', ')}`
+    }
+    
+    if (context.tags && context.tags.length > 0) {
+      instruction += `\n\nExisting tags: ${context.tags.join(', ')}`
+    }
+    
+    return instruction
+  },
 
   // User instruction for text analysis
-  TEXT_USER_INSTRUCTION: (text) => `Analyze this family story: "${text}"`,
+  TEXT_USER_INSTRUCTION: (text, context = {}) => {
+    let instruction = `Analyze this family story: "${text}"`
+    
+    if (context.userTags && context.userTags.length > 0) {
+      instruction += `\n\nUser-added tags: ${context.userTags.join(', ')}`
+    }
+    
+    if (context.peopleDetected && context.peopleDetected.length > 0) {
+      instruction += `\n\nPreviously detected people: ${context.peopleDetected.join(', ')}`
+    }
+    
+    if (context.userPeople && context.userPeople.length > 0) {
+      instruction += `\n\nUser-added people: ${context.userPeople.join(', ')}`
+    }
+    
+    if (context.tags && context.tags.length > 0) {
+      instruction += `\n\nExisting tags: ${context.tags.join(', ')}`
+    }
+    
+    return instruction
+  },
 
   // Fallback responses when AI fails
   FALLBACKS: {

@@ -3,7 +3,17 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3 relative">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-1">Memory Books</h1>
+        <div class="flex items-center gap-3 mb-1">
+          <h1 class="text-3xl font-bold text-gray-900">Memory Books</h1>
+          <!-- Info Icon Button -->
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none"
+            @click="showInfoDialog = true"
+            aria-label="Information about memory books"
+          >
+            <i class="pi pi-info text-lg text-blue-500"></i>
+          </button>
+        </div>
         <p class="text-base text-gray-500">View and manage your generated memory books.</p>
       </div>
       <div class="flex items-center gap-2">
@@ -12,14 +22,6 @@
           @click="showCreateModal = true"
         >
           <i class="pi pi-plus mr-2"></i> Create New Book
-        </button>
-        <!-- Info Icon Button -->
-        <button
-          class="ml-2 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none"
-          @click="showInfoDialog = true"
-          aria-label="Information about memory books"
-        >
-          <i class="pi pi-info text-xl text-blue-500"></i>
         </button>
       </div>
     </div>
@@ -44,15 +46,15 @@
         <div class="bg-green-50 rounded-lg p-4 border border-green-100">
           <h2 class="text-lg font-bold text-green-700 mb-2">How Do I Use It?</h2>
           <p class="text-base text-gray-700">
-            Just pick your favorite memories, create your book, and let the magic happen! You can download your book as a PDF, print it, or share it with your loved ones. It's easy and fun—no computer skills needed!
+            Just pick your favorite memories, create your book, and let the magic happen! You can view your book as a PDF, print it, or share it with your loved ones. It's easy and fun—no computer skills needed!
           </p>
         </div>
         <div class="bg-white rounded-lg p-4 border border-gray-100">
           <h2 class="text-base font-bold text-gray-800 mb-2">What do the buttons mean?</h2>
           <ul class="space-y-3">
             <li class="flex items-center gap-3">
-              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-download text-lg text-green-600"></i></span>
-              <span class="text-gray-700"><b>Download</b>: Save your memory book to your computer or tablet.</span>
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-external-link text-lg text-green-600"></i></span>
+              <span class="text-gray-700"><b>View</b>: Open your memory book to view or download it.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-bolt text-lg text-purple-600"></i></span>
@@ -71,7 +73,7 @@
               <span class="text-gray-700"><b>Unapprove</b>: Move your book back to editing if you want to make changes.</span>
             </li>
             <li class="flex items-center gap-3">
-              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-eye text-lg text-gray-600"></i></span>
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-list text-lg text-gray-600"></i></span>
               <span class="text-gray-700"><b>Details</b>: See more information about your memory book.</span>
             </li>
             <li class="flex items-center gap-3">
@@ -147,10 +149,10 @@
         <!-- Action Bar -->
         <div class="bg-white/80 border-t border-gray-200 px-2 py-2 rounded-b-2xl">
           <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <!-- Download Button -->
+            <!-- View Button -->
             <div class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="onDownloadClick(book)">
-              <i class="pi pi-download text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[11px] text-green-700 mt-0.5">Download</span>
+              <i class="pi pi-external-link text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[11px] text-green-700 mt-0.5">View</span>
             </div>
             <!-- Generate Button (only for draft) -->
             <div v-if="book.status === 'draft'" class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="onGenerateClick(book)">
@@ -174,7 +176,7 @@
             </div>
             <!-- View Details Button -->
             <div class="flex flex-col items-center cursor-pointer group min-w-[48px]" @click="viewBookDetails(book)">
-              <i class="pi pi-eye text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
+              <i class="pi pi-list text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
               <span class="text-[11px] text-gray-700 mt-0.5">Details</span>
             </div>
             <!-- Edit Settings Button -->
@@ -376,121 +378,201 @@
     <Dialog
       v-model:visible="showDetailsModal"
       modal
-      :style="{ width: '95vw', maxWidth: '500px', maxHeight: '95vh', padding: '0' }"
-      class="!rounded-[16px] !shadow-xl !border-0 !overflow-hidden w-full sm:max-w-[500px]"
+      class="w-full max-w-4xl mx-auto"
+      :style="{ width: '95vw', maxHeight: '95vh' }"
       :auto-z-index="false"
       :z-index="1000"
     >
-      <div v-if="selectedBook" class="p-2 sm:p-3 bg-white space-y-2">
-        <!-- Super Compact Top: Icon, Book #, Status -->
-        <div class="flex flex-col items-center mb-1">
-          <div class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full mb-1 hidden sm:flex">
-            <i class="pi pi-book text-sm sm:text-lg text-purple-600"></i>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-sm sm:text-base text-gray-800">{{ selectedBook.title || ('#' + selectedBook.id.slice(-6)) }}</span>
-            <Tag
-              :value="getStatusText(selectedBook.status)"
-              :severity="getStatusSeverity(selectedBook.status)"
-              class="text-xs px-2 py-0.5"
-            />
-          </div>
-        </div>
-
-        <!-- Ultra Compact Info Tags -->
-        <div class="flex flex-wrap gap-1 justify-center">
-          <div class="flex items-center gap-1 bg-blue-50 rounded-full px-2 py-0.5 border border-blue-200 text-xs">
-            <i class="pi pi-calendar text-blue-600 text-xs"></i>
-            <span>{{ formatDate(selectedBook.created_at) }}</span>
-          </div>
-          <div v-if="selectedBook.generated_at" class="flex items-center gap-1 bg-green-50 rounded-full px-2 py-0.5 border border-green-200 text-xs">
-            <i class="pi pi-bolt text-purple-600 text-xs"></i>
-            <span>{{ formatDate(selectedBook.generated_at) }}</span>
-          </div>
-          <div v-if="selectedBook.approved_at" class="flex items-center gap-1 bg-purple-50 rounded-full px-2 py-0.5 border border-purple-200 text-xs">
-            <i class="pi pi-check-circle text-purple-600 text-xs"></i>
-            <span>{{ formatDate(selectedBook.approved_at) }}</span>
-          </div>
-          <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="flex items-center gap-1 bg-pink-50 rounded-full px-2 py-0.5 border border-pink-200 text-xs">
-            <i class="pi pi-images text-pink-600 text-xs"></i>
-            <span>{{ selectedBook.created_from_assets.length }} assets</span>
-          </div>
-        </div>
-
-        <!-- Compact Review Notes -->
-        <div v-if="selectedBook.review_notes" class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded p-2 border border-yellow-200 text-xs text-gray-600 italic">
-          {{ selectedBook.review_notes }}
-        </div>
-
-        <!-- Ultra Compact Asset Thumbnails -->
-        <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded p-2 border border-indigo-200">
-          <div class="flex items-center mb-1 text-xs text-gray-700 font-semibold">
-            <i class="pi pi-images text-indigo-600 mr-1 text-xs"></i>
-            Memory Assets
-          </div>
-          <div class="grid grid-cols-6 sm:grid-cols-8 gap-0.5">
-            <div
-              v-for="assetId in selectedBook.created_from_assets.slice(0, 16)"
-              :key="assetId"
-              class="aspect-square bg-white rounded border border-indigo-100 overflow-hidden w-6 h-6 sm:w-7 sm:h-7 lg:w-9 lg:h-9"
-            >
-              <img 
-                v-if="getAssetThumbnail(assetId)"
-                :src="getAssetThumbnail(assetId)"
-                :alt="`Asset ${assetId.slice(-4)}`"
-                class="w-full h-full object-cover"
-              />
-              <div v-else class="w-full h-full flex items-center justify-center bg-gray-100">
-                <i class="pi pi-image text-indigo-400 text-xs"></i>
+      <div v-if="selectedBook" class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 min-h-screen">
+        <!-- Header Section -->
+        <div class="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-t-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+                <i class="pi pi-book text-lg sm:text-2xl text-purple-600"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1 truncate">{{ selectedBook.title || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
+                <div class="flex items-center gap-2">
+                  <div :class="getStatusBadgeClass(selectedBook.status)" class="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold shadow-md backdrop-blur-sm">
+                    <i :class="getStatusIcon(selectedBook.status)" class="text-xs sm:text-sm"></i>
+                    <span class="hidden sm:inline">{{ getStatusText(selectedBook.status) }}</span>
+                    <span class="sm:hidden">{{ getStatusText(selectedBook.status).substring(0, 8) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div v-if="selectedBook.created_from_assets.length > 16" class="aspect-square bg-white rounded border border-indigo-100 flex items-center justify-center text-xs text-gray-500 w-6 h-6 sm:w-7 sm:h-7 lg:w-9 lg:h-9">
-              +{{ selectedBook.created_from_assets.length - 16 }}
+            <div class="flex items-center gap-2 flex-wrap">
+              <button
+                v-if="selectedBook.status === 'approved'"
+                class="flex items-center justify-center gap-1 sm:gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                @click="unapproveBook(selectedBook.id)"
+              >
+                <i class="pi pi-undo text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">Unapprove</span>
+                <span class="sm:hidden">Unapprove</span>
+              </button>
+              <button
+                class="flex items-center justify-center gap-1 sm:gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                @click="showDetailsModal = false"
+              >
+                <i class="pi pi-times text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">Close</span>
+                <span class="sm:hidden">Close</span>
+              </button>
             </div>
+          </div>
+
+          <!-- Info Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-4">
+            <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-calendar text-blue-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Created</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.created_at) }}</p>
+            </div>
+            <div v-if="selectedBook.generated_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-bolt text-purple-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Generated</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.generated_at) }}</p>
+            </div>
+            <div v-if="selectedBook.approved_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-check-circle text-green-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Approved</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.approved_at) }}</p>
+            </div>
+            <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-images text-pink-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Assets</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.created_from_assets.length }}</p>
+            </div>
+          </div>
+
+          <!-- Review Notes -->
+          <div v-if="selectedBook.review_notes" class="mt-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-3 sm:p-4 border border-yellow-200">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="pi pi-comment text-yellow-600 text-sm"></i>
+              <span class="text-sm font-semibold text-yellow-800">Review Notes</span>
+            </div>
+            <p class="text-xs sm:text-sm text-yellow-900 italic">{{ selectedBook.review_notes }}</p>
           </div>
         </div>
 
-        <!-- Compact PDF Section -->
-        <div v-if="selectedBook.pdf_url" class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded p-2 border border-emerald-200">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center text-xs font-semibold text-gray-800">
-              <i class="pi pi-file-pdf text-emerald-600 mr-1 text-xs"></i>
-              PDF
+        <!-- Content Section -->
+        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <!-- Memory Assets Section -->
+          <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-images text-indigo-600 text-sm sm:text-base"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Assets</h3>
+                <p class="text-xs sm:text-sm text-gray-600">{{ selectedBook.created_from_assets.length }} memories included</p>
+              </div>
             </div>
-            <button
-              class="flex items-center justify-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full px-2 py-1 text-xs shadow"
-              @click="viewPDF(selectedBook.pdf_url, selectedBook.id)"
-            >
-              <i class="pi pi-external-link text-xs"></i>
-              View
-            </button>
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1 sm:gap-2">
+              <div
+                v-for="assetId in selectedBook.created_from_assets.slice(0, 24)"
+                :key="assetId"
+                class="aspect-square bg-gray-100 rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <img 
+                  v-if="getAssetThumbnail(assetId)"
+                  :src="getAssetThumbnail(assetId)"
+                  :alt="`Asset ${assetId.slice(-4)}`"
+                  class="w-full h-full object-cover"
+                />
+                <div v-else class="w-full h-full flex items-center justify-center bg-gray-100">
+                  <i class="pi pi-image text-gray-400 text-xs sm:text-sm"></i>
+                </div>
+              </div>
+              <div v-if="selectedBook.created_from_assets.length > 24" class="aspect-square bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-xs sm:text-sm text-gray-500 font-medium">
+                +{{ selectedBook.created_from_assets.length - 24 }}
+              </div>
+            </div>
+          </div>
+
+          <!-- PDF Section -->
+          <div v-if="selectedBook.pdf_url" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-file-pdf text-emerald-600 text-sm sm:text-base"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Book PDF</h3>
+                  <p class="text-xs sm:text-sm text-gray-600">Ready to download and share</p>
+                </div>
+              </div>
+              <button
+                class="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+                @click="forceDownloadPDF(selectedBook)"
+              >
+                <i class="pi pi-download text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">Download PDF</span>
+                <span class="sm:hidden">Download</span>
+              </button>
+            </div>
+            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3 sm:p-4 border border-emerald-200 mt-4">
+              <div class="flex items-start gap-2 text-xs sm:text-sm text-emerald-800">
+                <i class="pi pi-info-circle text-emerald-600 text-xs sm:text-sm mt-0.5 flex-shrink-0"></i>
+                <span>Click download to save your memory book as a PDF file to your device</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Section -->
+          <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                v-if="selectedBook.status === 'draft'"
+                class="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                @click="onGenerateClick(selectedBook)"
+              >
+                <i class="pi pi-bolt text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">Generate Book</span>
+                <span class="sm:hidden">Generate</span>
+              </button>
+              <button
+                v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
+                class="flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                @click="onRegenerateClick(selectedBook)"
+                :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
+              >
+                <i class="pi pi-refresh text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing...' : 'Regenerate' }}</span>
+                <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Regenerate' }}</span>
+              </button>
+              <button
+                v-if="selectedBook.status === 'ready'"
+                class="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                @click="approveBook(selectedBook.id)"
+              >
+                <i class="pi pi-check text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">Approve Book</span>
+                <span class="sm:hidden">Approve</span>
+              </button>
+              <button
+                class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                @click="openEditSettings(selectedBook)"
+              >
+                <i class="pi pi-cog text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">Edit Settings</span>
+                <span class="sm:hidden">Settings</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-
-      <template #footer>
-        <div class="flex justify-between items-center p-2 bg-white border-t border-gray-200">
-          <div>
-            <button
-              v-if="selectedBook && selectedBook.status === 'approved'"
-              class="flex items-center justify-center gap-1 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full px-3 py-1 text-xs shadow"
-              @click="unapproveBook(selectedBook.id)"
-            >
-              <i class="pi pi-times text-xs"></i>
-              Unapprove
-            </button>
-          </div>
-          <div>
-            <button
-              class="flex items-center justify-center gap-1 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-1 text-xs shadow"
-              @click="showDetailsModal = false"
-            >
-              <i class="pi pi-times text-xs"></i>
-              Close
-            </button>
-          </div>
-        </div>
-      </template>
     </Dialog>
 
     <!-- PDF Progress Dialog -->
@@ -532,14 +614,14 @@
     <!-- Regenerate Confirmation Dialog -->
     <Dialog v-model:visible="showRegenerateDialog" modal :header="null" :closable="false" class="w-full md:w-[60%] lg:w-[50%] p-0">
       <div class="py-4 px-4 sm:px-6">
-        <p class="text-sm sm:text-base leading-relaxed">Would you like to create a fresh, new version of this memory book with a brand new AI-generated background design? It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for you. If you're happy with the current version and just want to download it right away, you can use the download button below - that's much faster!</p>
+        <p class="text-sm sm:text-base leading-relaxed">Would you like to create a fresh, new version of this memory book with a brand new AI-generated background design? It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for you. If you're happy with the current version and just want to view it right away, you can use the view button below - that's much faster!</p>
         <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6">
           <button
             class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-7 py-2 text-xs sm:text-sm shadow transition-all duration-200 min-w-[120px] sm:min-w-[150px]"
             @click="downloadCurrentBook"
           >
-            <i class="pi pi-download text-sm sm:text-base"></i>
-            Download Current
+            <i class="pi pi-external-link text-sm sm:text-base"></i>
+            View Current
           </button>
           <button
             class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-4 sm:px-7 py-2 text-xs sm:text-sm shadow transition-all duration-200 min-w-[120px] sm:min-w-[150px]"
@@ -558,10 +640,10 @@
         </div>
       </div>
     </Dialog>
-    <!-- Download Draft Dialog -->
+    <!-- View Draft Dialog -->
     <Dialog v-model:visible="showDownloadDraftDialog" modal header="Memory Book Not Generated" :style="{ width: '95vw', maxWidth: '400px' }">
       <div class="py-4">
-        <p class="text-sm sm:text-base">You need to generate the memory book before downloading. Would you like to generate it now? This may take a little time.</p>
+        <p class="text-sm sm:text-base">You need to generate the memory book before viewing. Would you like to generate it now? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
           <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
           <Button label="Generate Now" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmDownloadDraft" />
@@ -1646,6 +1728,64 @@ const downloadPDF = async (book) => {
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to open PDF',
+        life: 3000
+      })
+    }
+  }
+}
+
+// Force download PDF (new function for details page)
+const forceDownloadPDF = async (book) => {
+  try {
+    // Always fetch the latest book from the backend
+    const latestBook = await db.memoryBooks.getMemoryBook(book.id)
+    if (!latestBook) throw new Error('Could not fetch latest memory book')
+
+    // Call the API endpoint to get the download URL
+    const supabase = useNuxtApp().$supabase
+    const { data: sessionData } = await supabase.auth.getSession()
+    const response = await $fetch(`/api/memory-books/download/${latestBook.id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${sessionData.session?.access_token}`
+      }
+    })
+    if (!response.success || !response.downloadUrl) {
+      throw new Error('Failed to get download URL')
+    }
+    
+    // Create a temporary anchor element to force download
+    const link = document.createElement('a')
+    link.href = response.downloadUrl
+    link.download = `${latestBook.title || 'Memory Book'}.pdf`
+    link.target = '_blank'
+    
+    // Add cache-busting query string
+    const cacheBuster = `cb=${Date.now()}`
+    link.href = response.downloadUrl.includes('?')
+      ? `${response.downloadUrl}&${cacheBuster}`
+      : `${response.downloadUrl}?${cacheBuster}`
+    
+    // Trigger the download
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Download Started',
+        detail: 'Your memory book PDF is being downloaded',
+        life: 3000
+      })
+    }
+  } catch (error) {
+    console.error('Error downloading PDF:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to download PDF',
         life: 3000
       })
     }
