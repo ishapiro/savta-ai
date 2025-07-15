@@ -498,11 +498,13 @@ export const useDatabase = () => {
       
       if (fetchError) throw fetchError
       
-      // Call the AI processing endpoint
-      const { $fetch } = useNuxtApp()
-      const result = await $fetch('/api/ai/process-asset', {
+      // Call the AI processing endpoint using fetch
+      const response = await fetch('/api/ai/process-asset', {
         method: 'POST',
-        body: {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           assetId: assetId,
           assetType: currentAsset.type,
           storageUrl: currentAsset.storage_url,
@@ -510,8 +512,14 @@ export const useDatabase = () => {
           preserveUserData: true,
           userTags: currentAsset.user_tags || [],
           userPeople: currentAsset.user_people || []
-        }
+        })
       })
+      
+      if (!response.ok) {
+        throw new Error(`AI processing failed: ${response.status} ${response.statusText}`)
+      }
+      
+      const result = await response.json()
       
       await logActivity('asset_ai_rerun', { assetId })
       return result

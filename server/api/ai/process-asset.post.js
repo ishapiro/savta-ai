@@ -1,6 +1,8 @@
 // AI processing endpoint for assets
 // Handles image analysis, caption generation, and tagging using OpenAI
 
+import { getPromptForAssetType } from '../../utils/ai-prompts.js'
+
 export default defineEventHandler(async (event) => {
   
   try {
@@ -29,12 +31,11 @@ export default defineEventHandler(async (event) => {
     if (!openaiApiKey) {
       
       // Use fallback processing without AI
+      const prompts = getPromptForAssetType(assetType)
       const fallbackResults = {
-        ai_caption: assetType === 'photo' 
-          ? 'A beautiful family moment captured forever.' 
-          : 'A precious family story to cherish.',
-        tags: assetType === 'photo' ? ['family', 'memory'] : ['family', 'story'],
-        people_detected: [],
+        ai_caption: prompts.fallback.ai_caption,
+        tags: prompts.fallback.tags,
+        people_detected: prompts.fallback.people_detected,
         ai_processed: true
       }
 
@@ -120,12 +121,11 @@ export default defineEventHandler(async (event) => {
       }
     } else {
       // Fallback for missing data
+      const prompts = getPromptForAssetType(assetType)
       aiResults = {
-        ai_caption: assetType === 'photo' 
-          ? 'A beautiful family moment captured forever.' 
-          : 'A precious family story to cherish.',
-        tags: assetType === 'photo' ? ['family', 'memory'] : ['family', 'story'],
-        people_detected: [],
+        ai_caption: prompts.fallback.ai_caption,
+        tags: prompts.fallback.tags,
+        people_detected: prompts.fallback.people_detected,
         ai_processed: true
       }
     }
@@ -221,6 +221,7 @@ async function analyzeImage(imageUrl, apiKey) {
   await new Promise(resolve => setTimeout(resolve, 1000))
   
   try {
+    const prompts = getPromptForAssetType('photo')
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -233,25 +234,14 @@ async function analyzeImage(imageUrl, apiKey) {
         messages: [
           {
             role: 'system',
-            content: `You are an AI assistant that analyzes family photos and generates:
-1. A playful, meaningful caption (2-3 sentences)
-2. Relevant tags (family, events, emotions, activities)
-3. People/objects detected (names if mentioned, relationships, objects)
-
-Respond in JSON format:
-{
-  "caption": "playful caption here",
-  "tags": ["family", "celebration", "outdoors"],
-  "people_detected": ["grandma", "kids", "dog"],
-  "objects": ["cake", "balloons"]
-}`
+            content: prompts.systemPrompt
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: 'Analyze this family photo and provide the requested information in JSON format.'
+                text: prompts.userInstruction
               },
               {
                 type: 'image_url',
@@ -305,11 +295,8 @@ Respond in JSON format:
     return finalResults
 
   } catch (error) {
-    throw {
-      ai_caption: 'A beautiful family moment captured forever.',
-      tags: ['family', 'memory'],
-      people_detected: []
-    }
+    const prompts = getPromptForAssetType('photo')
+    throw prompts.fallback
   }
 }
 
@@ -320,6 +307,7 @@ async function analyzeText(text, apiKey) {
   await new Promise(resolve => setTimeout(resolve, 1000))
   
   try {
+    const prompts = getPromptForAssetType('text')
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -332,19 +320,11 @@ async function analyzeText(text, apiKey) {
         messages: [
           {
             role: 'system',
-            content: `You are an AI assistant that analyzes family stories and generates:
-1. A playful, meaningful caption (2-3 sentences)
-2. Relevant tags (family, events, emotions, activities)
-
-Respond in JSON format:
-{
-  "caption": "playful caption here",
-  "tags": ["family", "story", "memory"]
-}`
+            content: prompts.systemPrompt
           },
           {
             role: 'user',
-            content: `Analyze this family story: "${text}"`
+            content: prompts.userInstruction(text)
           }
         ],
         max_tokens: 1000
@@ -388,10 +368,7 @@ Respond in JSON format:
     return finalResults
 
   } catch (error) {
-    throw {
-      ai_caption: 'A precious family story to cherish.',
-      tags: ['family', 'story'],
-      people_detected: []
-    }
+    const prompts = getPromptForAssetType('text')
+    throw prompts.fallback
   }
 } 

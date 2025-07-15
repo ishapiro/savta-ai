@@ -961,21 +961,28 @@ const rerunAI = async () => {
   try {
     aiProcessing.value = true
     
-    await db.assets.rerunAI(editingAsset.value.id)
+    const result = await db.assets.rerunAI(editingAsset.value.id)
     
-    // Reload the asset to get updated AI results
-    const updatedAsset = await db.assets.getAssets({ limit: 1 })
-    const asset = updatedAsset.find(a => a.id === editingAsset.value.id)
+    // Get the updated asset directly from the database
+    const { data: updatedAsset, error } = await useNuxtApp().$supabase
+      .from('assets')
+      .select('*')
+      .eq('id', editingAsset.value.id)
+      .single()
     
-    if (asset) {
+    if (error) {
+      throw new Error(`Failed to fetch updated asset: ${error.message}`)
+    }
+    
+    if (updatedAsset) {
       // Update local state
       const localAsset = assets.value.find(a => a.id === editingAsset.value.id)
       if (localAsset) {
-        Object.assign(localAsset, asset)
+        Object.assign(localAsset, updatedAsset)
       }
       
       // Update editing asset
-      Object.assign(editingAsset.value, asset)
+      Object.assign(editingAsset.value, updatedAsset)
     }
     
     calculateStats()
@@ -984,7 +991,7 @@ const rerunAI = async () => {
       $toast.add({
         severity: 'success',
         summary: 'AI Updated',
-        detail: 'AI analysis completed',
+        detail: 'AI analysis completed successfully',
         life: 2000
       })
     }

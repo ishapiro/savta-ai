@@ -10,18 +10,18 @@
 
     <!-- Main content -->
     <div class="relative z-10 w-full max-w-lg sm:max-w-2xl mx-auto flex-1 flex items-center justify-center px-2 sm:px-0">
-      <div class="text-center w-full px-2 py-4 sm:p-6 rounded-2xl">
-        <div class="mb-4 animate-fade-in-down">
-          <div class="relative w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+      <div class="text-center w-full px-2 py-2 sm:p-4 rounded-2xl">
+        <div class="mb-3 animate-fade-in-down">
+          <div class="relative w-14 h-14 mx-auto mb-2 flex items-center justify-center">
             <div class="absolute inset-0 rounded-full bg-gray-300 blur-md"></div>
-            <SavtaIcon :iconClass="'relative max-w-[85%] max-h-[85%] object-contain z-10 block w-14 h-14 mx-auto'" />
+            <SavtaIcon :iconClass="'relative max-w-[85%] max-h-[85%] object-contain z-10 block w-12 h-12 mx-auto'" />
           </div>
           <div class="flex flex-col items-center gap-1">
-            <h1 class="text-2xl md:text-3xl font-extrabold text-pink-500 font-sans tracking-tight mb-0">Savta</h1>
-            <span class="inline-block bg-pink-100 text-pink-600 text-xs font-semibold px-3 py-1 rounded-full border border-pink-200 align-middle shadow-sm mt-1">beta: no warranty, no support</span>
+            <h1 class="text-xl md:text-2xl font-extrabold text-pink-500 font-sans tracking-tight mb-0">Savta</h1>
+            <span class="inline-block bg-pink-100 text-pink-600 text-xs font-semibold px-2 py-0.5 rounded-full border border-pink-200 align-middle shadow-sm">beta: no warranty, no support</span>
           </div>
-          <div class="max-w-xl mx-auto px-4 py-4 bg-white/10 backdrop-blur-md rounded-xl shadow-lg text-center text-white">
-            <h2 class="text-sm md:text-base font-semibold mb-2 text-white/90">
+          <div class="max-w-xl mx-auto px-3 py-3 bg-white/10 backdrop-blur-md rounded-xl shadow-lg text-center text-white">
+            <h2 class="text-sm md:text-base font-semibold mb-1.5 text-white/90">
               Keep the memories that matter most, beautifully.
             </h2>
 
@@ -34,10 +34,10 @@
             </p>
           </div>
         </div>
-        <div class="mb-4 animate-fade-in-up" style="animation-delay: 0.3s;">
-          <h2 class="mb-2 text-2xl sm:text-3xl md:text-4xl text-white">Coming Soon</h2>
+        <div class="mb-3 animate-fade-in-up" style="animation-delay: 0.3s;">
+          <h2 class="mb-1.5 text-xl sm:text-2xl md:text-3xl text-white">Coming Soon</h2>
         </div>
-        <div class="flex flex-col items-center mt-4 animate-fade-in-up" style="animation-delay: 0.6s;">
+        <div class="flex flex-col items-center mt-3 animate-fade-in-up" style="animation-delay: 0.6s;">
           <div class="w-full flex flex-col items-center">
             <div class="text-gray-300 text-xs sm:text-sm mb-1 text-center">
               Be the first to bring Savta&apos;s magic to your family
@@ -46,14 +46,14 @@
               v-model="email"
               type="email"
               placeholder="Enter your email"
-              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-sm py-2 px-3 sm:px-4 bg-gray-300 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-sm py-1.5 px-3 sm:px-4 bg-gray-300 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
               :class="{ 'border-red-500': messageType === 'error' }"
             />
           </div>
           <Button
             type="button"
             label="Notify Me When It's Ready"
-            class="mt-3 w-full max-w-xs sm:max-w-md bg-purple-600 hover:bg-purple-700 text-white rounded-full py-2 text-sm sm:text-base font-semibold"
+            class="mt-2 w-full max-w-xs sm:max-w-md bg-purple-600 hover:bg-purple-700 text-white rounded-full py-1.5 text-sm sm:text-base font-semibold"
             :loading="loading"
             @click="handleSubscribe"
           />
@@ -62,11 +62,11 @@
           </div>
         </div>
         <!-- Insiders Button -->
-        <div class="mt-4 pt-4 border-t border-white/20">
+        <div class="mt-3 pt-3 border-t border-white/20">
           <Button
             type="button"
             label="Insiders"
-            class="w-full max-w-xs sm:max-w-fit bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-full py-2 px-6 font-medium text-sm"
+            class="w-full max-w-xs sm:max-w-fit bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-full py-1.5 px-6 font-medium text-sm"
             @click="showPasswordDialog = true"
           />
         </div>
