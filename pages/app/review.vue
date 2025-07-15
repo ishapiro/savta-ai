@@ -62,7 +62,7 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Filter"
-                class="w-32"
+                class="w-48 sm:w-32"
               />
             </div>
             <div class="flex items-center space-x-2">
@@ -73,7 +73,7 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Type"
-                class="w-32"
+                class="w-48 sm:w-32"
               />
             </div>
             <div class="flex items-center space-x-2">
@@ -84,7 +84,7 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Sort"
-                class="w-32"
+                class="w-48 sm:w-32"
               />
             </div>
           </div>
