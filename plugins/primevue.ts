@@ -34,6 +34,7 @@ import MultiSelect from 'primevue/multiselect'
 import Tooltip from 'primevue/tooltip'
 import InputNumber from 'primevue/inputnumber'
 import Checkbox from 'primevue/checkbox'
+import AutoComplete from 'primevue/autocomplete'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // Install PrimeVue with configuration
@@ -66,7 +67,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     Dropdown,
     MultiSelect,
     InputNumber,
-    Checkbox
+    Checkbox,
+    AutoComplete
   }
   
   // Register all components

@@ -424,6 +424,97 @@ export const useDatabase = () => {
       }
       
       return data || []
+    },
+
+    // Get all unique tags from user's assets (for autocomplete)
+    getAllTags: async () => {
+      if (!user.value) return []
+      
+      const { data, error } = await supabase
+        .from('assets')
+        .select('tags, user_tags')
+        .eq('user_id', user.value.id)
+        .eq('deleted', false)
+      
+      if (error) {
+        console.error('Error fetching tags:', error)
+        return []
+      }
+      
+      // Combine AI tags and user tags, remove duplicates
+      const allTags = new Set()
+      data.forEach(asset => {
+        if (asset.tags) {
+          asset.tags.forEach(tag => allTags.add(tag))
+        }
+        if (asset.user_tags) {
+          asset.user_tags.forEach(tag => allTags.add(tag))
+        }
+      })
+      
+      return Array.from(allTags).sort()
+    },
+
+    // Get all unique people/objects from user's assets (for autocomplete)
+    getAllPeople: async () => {
+      if (!user.value) return []
+      
+      const { data, error } = await supabase
+        .from('assets')
+        .select('people_detected, user_people')
+        .eq('user_id', user.value.id)
+        .eq('deleted', false)
+      
+      if (error) {
+        console.error('Error fetching people:', error)
+        return []
+      }
+      
+      // Combine AI people and user people, remove duplicates
+      const allPeople = new Set()
+      data.forEach(asset => {
+        if (asset.people_detected) {
+          asset.people_detected.forEach(person => allPeople.add(person))
+        }
+        if (asset.user_people) {
+          asset.user_people.forEach(person => allPeople.add(person))
+        }
+      })
+      
+      return Array.from(allPeople).sort()
+    },
+
+    // Rerun AI analysis on an asset (preserves user-added tags and people)
+    rerunAI: async (assetId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      
+      // Get the current asset to preserve user data
+      const { data: currentAsset, error: fetchError } = await supabase
+        .from('assets')
+        .select('*')
+        .eq('id', assetId)
+        .eq('user_id', user.value.id)
+        .single()
+      
+      if (fetchError) throw fetchError
+      
+      // Call the AI processing endpoint
+      const { $fetch } = useNuxtApp()
+      const result = await $fetch('/api/ai/process-asset', {
+        method: 'POST',
+        body: {
+          assetId: assetId,
+          assetType: currentAsset.type,
+          storageUrl: currentAsset.storage_url,
+          userCaption: currentAsset.user_caption,
+          preserveUserData: true,
+          userTags: currentAsset.user_tags || [],
+          userPeople: currentAsset.user_people || []
+        }
+      })
+      
+      await logActivity('asset_ai_rerun', { assetId })
+      return result
     }
   }
 

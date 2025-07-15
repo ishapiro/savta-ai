@@ -117,15 +117,22 @@
               </div>
             </div>
             <div class="flex-1 flex flex-col p-2">
+              <!-- Title -->
+              <div class="mb-1">
+                <label class="block text-xs font-semibold text-color mb-1">Title</label>
+                <div class="text-xs font-medium text-color bg-yellow-50 rounded p-1 border border-yellow-200">
+                  {{ asset.title || getImageName(asset.storage_url) || 'Untitled' }}
+                </div>
+              </div>
               <!-- User Caption -->
               <div class="mb-1">
                 <label class="block text-xs font-semibold text-color mb-1">Your Caption</label>
-                <InputText
-                  v-model="asset.user_caption"
-                  placeholder="Add your caption"
-                  class="w-full text-xs rounded"
-                  @blur="updateAssetCaption(asset.id, asset.user_caption)"
-                />
+                <div v-if="asset.user_caption && asset.user_caption !== getImageName(asset.storage_url)" class="text-xs text-color bg-blue-50 rounded p-1 border border-blue-200">
+                  {{ asset.user_caption }}
+                </div>
+                <div v-else class="text-xs text-gray-400 italic bg-gray-50 rounded p-1 border border-gray-200">
+                  No caption added
+                </div>
               </div>
               <!-- AI Caption -->
               <div v-if="asset.ai_caption" class="mb-1">
@@ -133,24 +140,36 @@
                 <div class="italic text-xs text-color-secondary bg-slate-50 rounded p-1">"{{ asset.ai_caption }}"</div>
               </div>
               <!-- Tags -->
-              <div v-if="asset.tags && asset.tags.length > 0" class="mb-1">
+              <div v-if="(asset.tags && asset.tags.length > 0) || (asset.user_tags && asset.user_tags.length > 0)" class="mb-1">
                 <label class="block text-xs font-semibold text-color mb-1">Tags</label>
                 <div class="flex flex-wrap gap-1">
                   <Chip
-                    v-for="tag in asset.tags"
-                    :key="tag"
+                    v-for="tag in asset.tags || []"
+                    :key="`ai-${tag}`"
+                    :label="tag"
+                    class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5"
+                  />
+                  <Chip
+                    v-for="tag in asset.user_tags || []"
+                    :key="`user-${tag}`"
                     :label="tag"
                     class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5"
                   />
                 </div>
               </div>
               <!-- People Detected -->
-              <div v-if="asset.people_detected && asset.people_detected.length > 0" class="mb-1">
+              <div v-if="(asset.people_detected && asset.people_detected.length > 0) || (asset.user_people && asset.user_people.length > 0)" class="mb-1">
                 <label class="block text-xs font-semibold text-color mb-1">People/Objects</label>
                 <div class="flex flex-wrap gap-1">
                   <Chip
-                    v-for="person in asset.people_detected"
-                    :key="person"
+                    v-for="person in asset.people_detected || []"
+                    :key="`ai-${person}`"
+                    :label="person"
+                    class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5"
+                  />
+                  <Chip
+                    v-for="person in asset.user_people || []"
+                    :key="`user-${person}`"
                     :label="person"
                     class="text-xs bg-pink-100 text-pink-700 px-2 py-0.5"
                   />
@@ -159,10 +178,14 @@
             </div>
             <!-- Action Bar -->
             <div class="rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-4 py-3 flex items-center justify-between gap-4 border-t border-gray-200">
-              <div class="flex items-center gap-6 flex-1 justify-center">
-                <div class="flex flex-col items-center cursor-pointer group" @click="approveAsset(asset.id)" v-tooltip.top="'Approve'">
+              <div class="flex items-center gap-4 flex-1 justify-center">
+                <div v-if="!asset.approved" class="flex flex-col items-center cursor-pointer group" @click="approveAsset(asset.id)" v-tooltip.top="'Approve'">
                   <i class="pi pi-check text-3xl text-green-500 group-hover:scale-125 transition-transform"></i>
                   <span class="text-xs text-green-700 mt-1">Approve</span>
+                </div>
+                <div class="flex flex-col items-center cursor-pointer group" @click="openEditDialog(asset)" v-tooltip.top="'Edit'">
+                  <i class="pi pi-pencil text-3xl text-blue-500 group-hover:scale-125 transition-transform"></i>
+                  <span class="text-xs text-blue-700 mt-1">Edit</span>
                 </div>
                 <div class="flex flex-col items-center cursor-pointer group" @click="deleteAsset(asset.id)" v-tooltip.top="'Delete'">
                   <i class="pi pi-trash text-3xl text-red-500 group-hover:scale-125 transition-transform"></i>
@@ -178,6 +201,174 @@
           </template>
         </Card>
       </div>
+
+      <!-- Edit Asset Dialog -->
+      <Dialog
+        v-model:visible="showEditDialog"
+        modal
+        :closable="true"
+        :dismissableMask="true"
+        header="Edit Asset"
+        class="w-full max-w-4xl mx-4"
+      >
+        <div v-if="editingAsset" class="space-y-6">
+          <!-- Asset Preview -->
+          <div class="flex flex-col lg:flex-row gap-6">
+            <div class="w-full lg:w-1/3">
+              <div class="bg-gray-100 rounded-lg p-4">
+                <img
+                  v-if="editingAsset.storage_url"
+                  :src="editingAsset.storage_url"
+                  :alt="editingAsset.user_caption || 'Family photo'"
+                  class="w-full h-48 lg:h-64 object-contain rounded"
+                />
+                <i v-else class="pi pi-image text-4xl text-gray-400 flex items-center justify-center h-48 lg:h-64"></i>
+              </div>
+            </div>
+            
+            <div class="w-full lg:w-2/3 space-y-4">
+              <!-- Title -->
+              <div>
+                <label class="block text-sm font-semibold text-color mb-2">Title</label>
+                <InputText
+                  v-model="editingAsset.title"
+                  placeholder="Add a title for this memory"
+                  class="w-full"
+                />
+              </div>
+
+              <!-- User Caption -->
+              <div>
+                <label class="block text-sm font-semibold text-color mb-2">Your Caption</label>
+                <Textarea
+                  v-model="editingAsset.user_caption"
+                  placeholder="Add your caption"
+                  class="w-full"
+                  rows="3"
+                />
+              </div>
+
+              <!-- Custom Tags -->
+              <div>
+                <label class="block text-sm font-semibold text-color mb-2">Custom Tags</label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                  <Chip
+                    v-for="tag in editingAsset.user_tags || []"
+                    :key="tag"
+                    :label="tag"
+                    class="bg-blue-100 text-blue-700"
+                    removable
+                    @remove="removeUserTag(tag)"
+                  />
+                </div>
+                <AutoComplete
+                  v-model="newTag"
+                  :suggestions="tagSuggestions"
+                  @complete="searchTags"
+                  placeholder="Add a tag"
+                  class="w-full"
+                  @keydown.enter="addUserTag"
+                />
+              </div>
+
+              <!-- Custom People/Objects -->
+              <div>
+                <label class="block text-sm font-semibold text-color mb-2">People/Objects</label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                  <Chip
+                    v-for="person in editingAsset.user_people || []"
+                    :key="person"
+                    :label="person"
+                    class="bg-pink-100 text-pink-700"
+                    removable
+                    @remove="removeUserPerson(person)"
+                  />
+                </div>
+                <AutoComplete
+                  v-model="newPerson"
+                  :suggestions="peopleSuggestions"
+                  @complete="searchPeople"
+                  placeholder="Add a person or object"
+                  class="w-full"
+                  @keydown.enter="addUserPerson"
+                />
+              </div>
+
+              <!-- AI Caption (read-only) -->
+              <div v-if="editingAsset.ai_caption">
+                <label class="block text-sm font-semibold text-color mb-2">AI Caption</label>
+                <div class="italic text-sm text-color-secondary bg-slate-50 rounded p-3">
+                  "{{ editingAsset.ai_caption }}"
+                </div>
+              </div>
+
+              <!-- AI Tags (read-only) -->
+              <div v-if="editingAsset.tags && editingAsset.tags.length > 0">
+                <label class="block text-sm font-semibold text-color mb-2">AI Tags</label>
+                <div class="flex flex-wrap gap-2">
+                  <Chip
+                    v-for="tag in editingAsset.tags"
+                    :key="tag"
+                    :label="tag"
+                    class="bg-gray-100 text-gray-700"
+                  />
+                </div>
+              </div>
+
+              <!-- AI People (read-only) -->
+              <div v-if="editingAsset.people_detected && editingAsset.people_detected.length > 0">
+                <label class="block text-sm font-semibold text-color mb-2">AI People/Objects</label>
+                <div class="flex flex-wrap gap-2">
+                  <Chip
+                    v-for="person in editingAsset.people_detected"
+                    :key="person"
+                    :label="person"
+                    class="bg-gray-100 text-gray-700"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row justify-between gap-4 pt-4 border-t">
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                @click="unapproveAsset"
+                :disabled="!editingAsset.approved"
+                class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+              >
+                <i class="pi pi-times text-xl"></i>
+                Unapprove
+              </button>
+              <button
+                @click="rerunAI"
+                :disabled="aiProcessing"
+                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+              >
+                <i class="pi pi-refresh text-xl" :class="{ 'animate-spin': aiProcessing }"></i>
+                Rerun AI
+              </button>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                @click="showEditDialog = false"
+                class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+              >
+                <i class="pi pi-times text-xl"></i>
+                Cancel
+              </button>
+              <button
+                @click="saveAssetChanges"
+                class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+              >
+                <i class="pi pi-check text-xl"></i>
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </Dialog>
 
       <!-- Help Modal (unchanged) -->
       <Dialog
@@ -346,6 +537,15 @@ const stats = ref({
   readyForBook: 0
 })
 const showHelpModal = ref(false)
+
+// Edit dialog data
+const showEditDialog = ref(false)
+const editingAsset = ref(null)
+const newTag = ref('')
+const newPerson = ref('')
+const tagSuggestions = ref([])
+const peopleSuggestions = ref([])
+const aiProcessing = ref(false)
 
 // Filters
 const activeFilter = ref('all')
@@ -597,6 +797,228 @@ const generateMemoryBook = async () => {
         life: 3000
       })
     }
+  }
+}
+
+// Edit dialog functions
+const openEditDialog = async (asset) => {
+  editingAsset.value = { ...asset }
+  showEditDialog.value = true
+  newTag.value = ''
+  newPerson.value = ''
+  
+  // Preload suggestions for better UX
+  try {
+    const allTags = await db.assets.getAllTags()
+    const allPeople = await db.assets.getAllPeople()
+    tagSuggestions.value = allTags
+    peopleSuggestions.value = allPeople
+  } catch (error) {
+    console.error('Error preloading suggestions:', error)
+  }
+}
+
+const addUserTag = () => {
+  if (newTag.value.trim() && !editingAsset.value.user_tags?.includes(newTag.value.trim())) {
+    if (!editingAsset.value.user_tags) {
+      editingAsset.value.user_tags = []
+    }
+    editingAsset.value.user_tags.push(newTag.value.trim())
+    newTag.value = ''
+  }
+}
+
+const removeUserTag = (tag) => {
+  editingAsset.value.user_tags = editingAsset.value.user_tags.filter(t => t !== tag)
+}
+
+const addUserPerson = () => {
+  if (newPerson.value.trim() && !editingAsset.value.user_people?.includes(newPerson.value.trim())) {
+    if (!editingAsset.value.user_people) {
+      editingAsset.value.user_people = []
+    }
+    editingAsset.value.user_people.push(newPerson.value.trim())
+    newPerson.value = ''
+  }
+}
+
+const removeUserPerson = (person) => {
+  editingAsset.value.user_people = editingAsset.value.user_people.filter(p => p !== person)
+}
+
+const searchTags = async (event) => {
+  try {
+    const allTags = await db.assets.getAllTags()
+    if (event.query.trim() === '') {
+      // Show all tags when input is empty
+      tagSuggestions.value = allTags
+    } else {
+      // Filter tags based on query
+      tagSuggestions.value = allTags.filter(tag => 
+        tag.toLowerCase().includes(event.query.toLowerCase())
+      )
+    }
+  } catch (error) {
+    console.error('Error searching tags:', error)
+    tagSuggestions.value = []
+  }
+}
+
+const searchPeople = async (event) => {
+  try {
+    const allPeople = await db.assets.getAllPeople()
+    if (event.query.trim() === '') {
+      // Show all people when input is empty
+      peopleSuggestions.value = allPeople
+    } else {
+      // Filter people based on query
+      peopleSuggestions.value = allPeople.filter(person => 
+        person.toLowerCase().includes(event.query.toLowerCase())
+      )
+    }
+  } catch (error) {
+    console.error('Error searching people:', error)
+    peopleSuggestions.value = []
+  }
+}
+
+const saveAssetChanges = async () => {
+  try {
+    const updates = {
+      title: editingAsset.value.title,
+      user_caption: editingAsset.value.user_caption,
+      user_tags: editingAsset.value.user_tags || [],
+      user_people: editingAsset.value.user_people || []
+    }
+    
+    await db.assets.updateAsset(editingAsset.value.id, updates)
+    
+    // Update local state
+    const asset = assets.value.find(a => a.id === editingAsset.value.id)
+    if (asset) {
+      Object.assign(asset, updates)
+    }
+    
+    showEditDialog.value = false
+    editingAsset.value = null
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Saved',
+        detail: 'Asset updated successfully',
+        life: 2000
+      })
+    }
+  } catch (error) {
+    console.error('Error saving asset changes:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to save changes',
+        life: 3000
+      })
+    }
+  }
+}
+
+const unapproveAsset = async () => {
+  try {
+    await db.assets.approveAsset(editingAsset.value.id, false)
+    
+    // Update local state
+    const asset = assets.value.find(a => a.id === editingAsset.value.id)
+    if (asset) {
+      asset.approved = false
+    }
+    editingAsset.value.approved = false
+    
+    calculateStats()
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Unapproved',
+        detail: 'Asset unapproved',
+        life: 2000
+      })
+    }
+  } catch (error) {
+    console.error('Error unapproving asset:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to unapprove asset',
+        life: 3000
+      })
+    }
+  }
+}
+
+const rerunAI = async () => {
+  try {
+    aiProcessing.value = true
+    
+    await db.assets.rerunAI(editingAsset.value.id)
+    
+    // Reload the asset to get updated AI results
+    const updatedAsset = await db.assets.getAssets({ limit: 1 })
+    const asset = updatedAsset.find(a => a.id === editingAsset.value.id)
+    
+    if (asset) {
+      // Update local state
+      const localAsset = assets.value.find(a => a.id === editingAsset.value.id)
+      if (localAsset) {
+        Object.assign(localAsset, asset)
+      }
+      
+      // Update editing asset
+      Object.assign(editingAsset.value, asset)
+    }
+    
+    calculateStats()
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'AI Updated',
+        detail: 'AI analysis completed',
+        life: 2000
+      })
+    }
+  } catch (error) {
+    console.error('Error rerunning AI:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to rerun AI analysis',
+        life: 3000
+      })
+    }
+  } finally {
+    aiProcessing.value = false
+  }
+}
+
+// Helper function to extract image name from storage URL
+const getImageName = (storageUrl) => {
+  if (!storageUrl) return null
+  
+  try {
+    // Extract filename from URL
+    const url = new URL(storageUrl)
+    const pathParts = url.pathname.split('/')
+    const filename = pathParts[pathParts.length - 1]
+    
+    // Remove timestamp prefix if present (format: timestamp-filename)
+    const timestampRegex = /^\d+-/
+    return filename.replace(timestampRegex, '')
+  } catch (error) {
+    console.error('Error parsing storage URL:', error)
+    return null
   }
 }
 

@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   
   try {
     const body = await readBody(event)
-    const { assetId, assetType, storageUrl, userCaption } = body
+    const { assetId, assetType, storageUrl, userCaption, preserveUserData, userTags, userPeople } = body
 
     if (!assetId || !assetType) {
       throw createError({
@@ -36,6 +36,12 @@ export default defineEventHandler(async (event) => {
         tags: assetType === 'photo' ? ['family', 'memory'] : ['family', 'story'],
         people_detected: [],
         ai_processed: true
+      }
+
+      // If preserving user data, keep user-added tags and people
+      if (preserveUserData) {
+        fallbackResults.user_tags = userTags || []
+        fallbackResults.user_people = userPeople || []
       }
 
       // Update asset with fallback results
@@ -166,6 +172,12 @@ export default defineEventHandler(async (event) => {
           ai_raw: aiResults.ai_raw,
           ai_processed: true
         };
+
+        // If preserving user data, keep user-added tags and people
+        if (preserveUserData) {
+          aiUpdate.user_tags = userTags || []
+          aiUpdate.user_people = userPeople || []
+        }
         const { data, error } = await supabase
           .from('assets')
           .update(aiUpdate)
