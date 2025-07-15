@@ -1,7 +1,7 @@
 // PDF generation endpoint
 // Generates PDF using pre-generated background
 
-import { PDFDocument, rgb } from 'pdf-lib'
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import sharp from 'sharp'
 
 export default defineEventHandler(async (event) => {
@@ -130,14 +130,20 @@ export default defineEventHandler(async (event) => {
       backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
       console.log('✅ Background downloaded, size:', backgroundBuffer.length, 'bytes')
     } else {
-      throw new Error('No background URL found for this book')
+      console.warn('No background URL found for this book, proceeding with blank background.')
+      // Continue without throwing; background will be blank
     }
     
     // 3. Create PDF document
     console.log('📄 Creating PDF document...')
     const pdfDoc = await PDFDocument.create()
-    const pdfBgImage = await pdfDoc.embedPng(backgroundBuffer)
-    console.log('✅ PDF document created with background image')
+    let pdfBgImage = null
+    if (backgroundBuffer) {
+      pdfBgImage = await pdfDoc.embedPng(backgroundBuffer)
+      console.log('✅ PDF document created with background image')
+    } else {
+      console.log('✅ PDF document created with blank background')
+    }
     
     // Helper function to process image orientation
     async function processImageOrientation(imageBuffer, format) {
@@ -569,6 +575,378 @@ export default defineEventHandler(async (event) => {
     
     await updatePdfStatus(supabase, book.id, user.id, 'Background ready, creating pages...')
     
+    // Check for Magic Memory layout
+    const isMagicMemory = book.layout_type === 'magic'
+    if (isMagicMemory) {
+      // Magic Memory: 6x4 inch (432x288 points)
+      const pageWidth = 432
+      const pageHeight = 288
+      const page = pdfDoc.addPage([pageWidth, pageHeight])
+      // Optional: magical gradient background
+      page.drawRectangle({
+        x: 0, y: 0, width: pageWidth, height: pageHeight,
+        color: rgb(1, 0.98, 0.9), // soft yellow
+        opacity: 1
+      })
+      // Draw up to 4 photos in corners (or around center)
+      const assetIds = book.created_from_assets || []
+      const photoAssets = assets.filter(a => assetIds.includes(a.id)).slice(0, 4)
+      
+      // Calculate optimal photo size to ensure story fits
+      const photoMargin = 16
+      const storyMargin = 12
+      const minStoryHeight = 50 // Reduced from 80 since we'll use smaller font (8pt)
+      
+      // For 4 photos: 2 at top, 2 at bottom
+      // Available height = pageHeight - (2 * photoSize + 2 * photoMargin) - (2 * storyMargin)
+      // We need: 2 * photoSize + 2 * photoMargin + 2 * storyMargin + minStoryHeight <= pageHeight
+      // Solving: photoSize <= (pageHeight - 2 * photoMargin - 2 * storyMargin - minStoryHeight) / 2
+      const maxPhotoSize = Math.floor((pageHeight - 2 * photoMargin - 2 * storyMargin - minStoryHeight) / 2)
+      const photoSize = Math.min(85, maxPhotoSize) // Increased cap since story takes less space
+      // Layout positions for 1-4 photos
+      let positions = []
+      if (photoAssets.length === 1) {
+        positions = [{ x: (pageWidth - photoSize) / 2, y: (pageHeight - photoSize) / 2 }]
+      } else if (photoAssets.length === 2) {
+        positions = [
+          { x: 24, y: pageHeight - photoSize - 24 }, // top-left
+          { x: pageWidth - photoSize - 24, y: 24 } // bottom-right
+        ]
+      } else if (photoAssets.length === 3) {
+        positions = [
+          { x: 24, y: pageHeight - photoSize - 24 }, // top-left
+          { x: pageWidth - photoSize - 24, y: pageHeight - photoSize - 24 }, // top-right
+          { x: 24, y: 24 } // bottom-left
+        ]
+      } else {
+        // 4 or more
+        positions = [
+          { x: 24, y: pageHeight - photoSize - 24 }, // top-left
+          { x: pageWidth - photoSize - 24, y: pageHeight - photoSize - 24 }, // top-right
+          { x: 24, y: 24 }, // bottom-left
+          { x: pageWidth - photoSize - 24, y: 24 } // bottom-right
+        ]
+      }
+      // Get AI shape recommendations for each photo individually
+      let photoAnalyses = []
+      let recommendedShape = 'original'
+      
+      if (photoAssets.length > 0) {
+        console.log('🤖 Getting AI analysis for each magic memory photo...')
+        
+        // Analyze each photo individually
+        for (let i = 0; i < photoAssets.length; i++) {
+          const asset = photoAssets[i]
+          try {
+            console.log(`📸 Analyzing photo ${i + 1}/${photoAssets.length}...`)
+            const analysisRes = await fetch(`${config.public.siteUrl}/api/ai/analyze-photo`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                imageUrl: asset.storage_url,
+                targetShape: 'magic',
+                targetWidth: photoSize,
+                targetHeight: photoSize
+              })
+            })
+            
+            if (analysisRes.ok) {
+              const analysisData = await analysisRes.json()
+              const analysis = analysisData.analysis
+              photoAnalyses.push({
+                index: i,
+                asset: asset,
+                analysis: analysis,
+                bestShape: analysis.bestShape || 'original',
+                fitQuality: analysis.fitQuality || 'fair'
+              })
+              console.log(`✅ Photo ${i + 1} analysis:`, analysis.bestShape, analysis.fitQuality)
+            } else {
+              console.warn(`⚠️ AI analysis failed for photo ${i + 1}, using original shape`)
+              photoAnalyses.push({
+                index: i,
+                asset: asset,
+                analysis: null,
+                bestShape: 'original',
+                fitQuality: 'fair'
+              })
+            }
+          } catch (aiError) {
+            console.warn(`⚠️ AI analysis error for photo ${i + 1}, using original shape:`, aiError.message)
+            photoAnalyses.push({
+              index: i,
+              asset: asset,
+              analysis: null,
+              bestShape: 'original',
+              fitQuality: 'fair'
+            })
+          }
+        }
+        
+        // Determine the best common shape
+        const shapeCounts = {}
+        const shapeQualities = {}
+        
+        photoAnalyses.forEach(photo => {
+          const shape = photo.bestShape
+          shapeCounts[shape] = (shapeCounts[shape] || 0) + 1
+          
+          // Track quality scores for each shape
+          if (!shapeQualities[shape]) {
+            shapeQualities[shape] = []
+          }
+          const qualityScore = photo.fitQuality === 'excellent' ? 4 : 
+                             photo.fitQuality === 'good' ? 3 : 
+                             photo.fitQuality === 'fair' ? 2 : 1
+          shapeQualities[shape].push(qualityScore)
+        })
+        
+        console.log('📊 Shape analysis results:', shapeCounts)
+        console.log('📊 Shape quality scores:', shapeQualities)
+        
+        // Find the most common shape
+        const mostCommonShape = Object.keys(shapeCounts).reduce((a, b) => 
+          shapeCounts[a] > shapeCounts[b] ? a : b
+        )
+        
+        // Calculate average quality for each shape
+        const shapeAvgQuality = {}
+        Object.keys(shapeQualities).forEach(shape => {
+          const avg = shapeQualities[shape].reduce((a, b) => a + b, 0) / shapeQualities[shape].length
+          shapeAvgQuality[shape] = avg
+        })
+        
+        console.log('📊 Average quality per shape:', shapeAvgQuality)
+        
+        // Decision logic:
+        // 1. If all photos can use the same shape, use it
+        // 2. If not all same, try to force square unless AI says it's terrible
+        // 3. Only use original if square is terrible for most photos
+        
+        if (Object.keys(shapeCounts).length === 1) {
+          // All photos can use the same shape
+          recommendedShape = mostCommonShape
+          console.log('🎯 All photos can use the same shape:', recommendedShape)
+        } else {
+          // Photos have different optimal shapes, try to force square
+          const squareQuality = shapeAvgQuality['square'] || 0
+          const originalQuality = shapeAvgQuality['original'] || 0
+          
+          // Check if square is terrible (quality < 1.5) for most photos
+          const squarePhotos = photoAnalyses.filter(p => p.bestShape === 'square')
+          const terribleSquareCount = squarePhotos.filter(p => 
+            p.fitQuality === 'poor' || p.fitQuality === 'fair'
+          ).length
+          
+          if (squareQuality >= 1.5 && terribleSquareCount <= photoAnalyses.length / 2) {
+            // Square is acceptable, force it
+            recommendedShape = 'square'
+            console.log('🎯 Forcing square shape (acceptable quality):', squareQuality)
+          } else {
+            // Square is terrible, use original
+            recommendedShape = 'original'
+            console.log('🎯 Using original shape (square quality too poor):', squareQuality)
+          }
+        }
+        
+        console.log('🎯 Final recommended shape for magic memory:', recommendedShape)
+      }
+      
+      for (let i = 0; i < photoAssets.length; i++) {
+        const asset = photoAssets[i]
+        const photoAnalysis = photoAnalyses[i]
+        
+        try {
+          const imageRes = await fetch(asset.storage_url)
+          if (!imageRes.ok) throw new Error('Failed to fetch image')
+          const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+          
+          // Process image with AI-recommended shape and feathered edges
+          let processedImage
+          
+          // Use individual photo analysis if available, otherwise use common recommended shape
+          let shapeToUse = recommendedShape
+          
+          if (photoAnalysis && photoAnalysis.analysis) {
+            // Use the individual photo's best shape if it matches the common shape or if we're forcing square
+            if (photoAnalysis.bestShape === recommendedShape || recommendedShape === 'square') {
+              shapeToUse = photoAnalysis.bestShape
+              console.log(`🎯 Using individual analysis for photo ${i + 1}:`, photoAnalysis.bestShape)
+            } else {
+              console.log(`🎯 Using common shape for photo ${i + 1}:`, recommendedShape, `(individual preferred: ${photoAnalysis.bestShape})`)
+            }
+          }
+          
+          // Apply shape processing
+          processedImage = await processImageShape(imageBuffer, shapeToUse, photoSize, photoSize, asset.storage_url)
+          
+          const pdfImage = await pdfDoc.embedPng(processedImage)
+          page.drawImage(pdfImage, {
+            x: positions[i].x,
+            y: positions[i].y,
+            width: photoSize,
+            height: photoSize
+          })
+        } catch (err) {
+          console.warn(`⚠️ Failed to process photo ${i + 1}:`, err.message)
+          // Draw placeholder if image fails
+          page.drawRectangle({
+            x: positions[i].x, y: positions[i].y, width: photoSize, height: photoSize, color: rgb(0.9, 0.9, 1) })
+        }
+      }
+      // Draw magical sparkles (simple circles)
+      for (let s = 0; s < 12; s++) {
+        page.drawCircle({
+          x: Math.random() * pageWidth,
+          y: Math.random() * pageHeight,
+          size: 3 + Math.random() * 4,
+          color: rgb(1, 0.95, 0.6),
+          opacity: 0.5 + Math.random() * 0.3
+        })
+      }
+      // Calculate available space for story based on photo positions
+      
+      // Calculate the center area available for the story
+      let storyAreaLeft, storyAreaRight, storyAreaTop, storyAreaBottom
+      
+      if (photoAssets.length === 1) {
+        // Single photo in center, story around it
+        storyAreaLeft = storyMargin
+        storyAreaRight = pageWidth - storyMargin
+        storyAreaTop = storyMargin
+        storyAreaBottom = pageHeight - storyMargin
+      } else if (photoAssets.length === 2) {
+        // Two photos in corners, story in center
+        storyAreaLeft = photoSize + photoMargin + storyMargin
+        storyAreaRight = pageWidth - photoSize - photoMargin - storyMargin
+        storyAreaTop = storyMargin
+        storyAreaBottom = pageHeight - storyMargin
+      } else if (photoAssets.length === 3) {
+        // Three photos, story in remaining space
+        storyAreaLeft = photoSize + photoMargin + storyMargin
+        storyAreaRight = pageWidth - photoSize - photoMargin - storyMargin
+        storyAreaTop = photoSize + photoMargin + storyMargin
+        storyAreaBottom = pageHeight - photoSize - photoMargin - storyMargin
+      } else {
+        // Four photos in corners, story in center
+        storyAreaLeft = photoSize + photoMargin + storyMargin
+        storyAreaRight = pageWidth - photoSize - photoMargin - storyMargin
+        storyAreaTop = photoSize + photoMargin + storyMargin
+        storyAreaBottom = pageHeight - photoSize - photoMargin - storyMargin
+        
+        // Ensure minimum story area height
+        const minStoryHeight = 60
+        if (storyAreaBottom <= storyAreaTop) {
+          // If no space, create a smaller story area in the center
+          const centerY = pageHeight / 2
+          storyAreaTop = centerY - minStoryHeight / 2
+          storyAreaBottom = centerY + minStoryHeight / 2
+        }
+      }
+      
+      const storyAreaWidth = storyAreaRight - storyAreaLeft
+      const storyAreaHeight = storyAreaBottom - storyAreaTop
+      
+      // Draw the story in the calculated center area
+      const story = book.magic_story || 'A magical family story.'
+      console.log('📖 Magic story content:', story)
+      console.log('📐 Story area dimensions:', { 
+        left: storyAreaLeft, 
+        right: storyAreaRight, 
+        top: storyAreaTop, 
+        bottom: storyAreaBottom,
+        width: storyAreaWidth,
+        height: storyAreaHeight
+      })
+      
+      // Split story into lines that fit the available width
+      const words = story.split(' ')
+      const lines = []
+      let line = ''
+      const maxCharsPerLine = Math.floor(storyAreaWidth / 8) // Approximate chars per line based on width
+      console.log('📝 Max chars per line:', maxCharsPerLine)
+      
+      for (const word of words) {
+        if ((line + ' ' + word).length < maxCharsPerLine) {
+          line += (line ? ' ' : '') + word
+        } else {
+          if (line) lines.push(line)
+          line = word
+        }
+      }
+      if (line) lines.push(line)
+      
+      // Calculate font size to fit the story in the available height
+      const maxLines = Math.floor(storyAreaHeight / 16) // Reduced line height for smaller font
+      let fontSize = Math.min(14, Math.max(8, storyAreaHeight / (lines.length + 1))) // Reduced max from 16 to 14, min stays 8
+      
+      // Don't truncate - use the full story
+      // If we have more lines than maxLines, reduce font size to fit all lines
+      if (lines.length > maxLines) {
+        fontSize = Math.min(fontSize, storyAreaHeight / (lines.length + 1))
+      }
+      
+      const lineHeight = fontSize * 1.4
+      const totalTextHeight = lines.length * lineHeight
+      const storyY = storyAreaTop + (storyAreaHeight - totalTextHeight) / 2
+      
+      console.log('📝 Text layout:', {
+        lines: lines.length,
+        fontSize: fontSize,
+        lineHeight: lineHeight,
+        totalTextHeight: totalTextHeight,
+        storyY: storyY
+      })
+      
+      // Draw each line of the story, centered horizontally
+      for (let i = 0; i < lines.length; i++) {
+        const lineWidth = lines[i].length * fontSize * 0.6 // Approximate text width
+        const lineX = storyAreaLeft + (storyAreaWidth - lineWidth) / 2
+        
+        console.log(`📝 Drawing line ${i + 1}: "${lines[i]}" at (${lineX}, ${storyY + (lines.length - 1 - i) * lineHeight})`)
+        
+        page.drawText(lines[i], {
+          x: lineX,
+          y: storyY + (lines.length - 1 - i) * lineHeight,
+          size: fontSize,
+          color: rgb(0.3, 0.2, 0.5),
+          font: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic)
+        })
+      }
+      // Done: skip normal layout
+      await updatePdfStatus(supabase, book.id, user.id, 'Magic Memory PDF created!')
+      const pdfBytes = await pdfDoc.save()
+      // Upload PDF to storage and return download URL (copy from normal logic)
+      const pdfFileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.pdf`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('assets')
+        .upload(pdfFileName, pdfBytes, {
+          contentType: 'application/pdf',
+          upsert: true
+        })
+      if (uploadError) {
+        throw createError({ statusCode: 500, statusMessage: 'Failed to upload PDF: ' + uploadError.message })
+      }
+      // Get public URL for PDF
+      const { data: pdfUrlData } = supabase.storage
+        .from('assets')
+        .getPublicUrl(pdfFileName)
+      const pdfStorageUrl = pdfUrlData?.publicUrl
+      if (!pdfStorageUrl) {
+        throw createError({ statusCode: 500, statusMessage: 'Failed to get public URL for PDF' })
+      }
+      // Update book with PDF URL and status
+      await supabase.from('memory_books').update({
+        pdf_url: pdfStorageUrl,
+        status: 'ready',
+        generated_at: new Date().toISOString()
+      }).eq('id', book.id)
+      await updatePdfStatus(supabase, book.id, user.id, 'PDF ready for download!')
+      return { success: true, downloadUrl: pdfStorageUrl }
+    }
+    
     // 4. Layout assets into pages (using grid_layout from book settings)
     const gridLayout = book.grid_layout || '2x2'
     
@@ -660,19 +1038,21 @@ export default defineEventHandler(async (event) => {
       const gridYOffset = (pageIndex === 0) ? topMargin : 0
       const availableHeight = height - gridYOffset - bottomMargin
       
-      // Draw background image, scaled to fill page, at 50% opacity
-      const bgScale = Math.max(width / pdfBgImage.width, height / pdfBgImage.height)
-      const bgW = pdfBgImage.width * bgScale
-      const bgH = pdfBgImage.height * bgScale
-      const bgX = (width - bgW) / 2
-      const bgY = (height - bgH) / 2
-      page.drawImage(pdfBgImage, {
-        x: bgX,
-        y: bgY,
-        width: bgW,
-        height: bgH,
-        opacity: 0.5
-      })
+      // Draw background image, scaled to fill page, at 50% opacity (only if present)
+      if (pdfBgImage) {
+        const bgScale = Math.max(width / pdfBgImage.width, height / pdfBgImage.height)
+        const bgW = pdfBgImage.width * bgScale
+        const bgH = pdfBgImage.height * bgScale
+        const bgX = (width - bgW) / 2
+        const bgY = (height - bgH) / 2
+        page.drawImage(pdfBgImage, {
+          x: bgX,
+          y: bgY,
+          width: bgW,
+          height: bgH,
+          opacity: 0.5
+        })
+      }
       
       // Draw title on first page, with extra space below
       if (pageIndex === 0) {

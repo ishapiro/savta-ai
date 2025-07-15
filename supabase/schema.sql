@@ -98,6 +98,7 @@ create table if not exists memory_books (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null,
   title text,
+  magic_story text,
   layout_type text,
   page_count integer,
   grid_layout text default '2x2' check (grid_layout in ('1x1', '2x1', '2x2', '3x2', '3x3', '3x4', '4x4')),
@@ -463,6 +464,15 @@ BEGIN
       AND column_name = 'title'
   ) THEN
     ALTER TABLE memory_books ADD COLUMN title text;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'magic_story'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN magic_story text;
   END IF;
   
   IF NOT EXISTS (
