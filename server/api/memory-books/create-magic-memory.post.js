@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
         magic_story: story,
         status: 'draft',
         grid_layout: '2x2',
-        print_size: '6x4',
+        print_size: '7x5',
         include_captions: true,
         include_tags: true
       })

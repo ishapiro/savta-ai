@@ -578,9 +578,10 @@ export default defineEventHandler(async (event) => {
     // Check for Magic Memory layout
     const isMagicMemory = book.layout_type === 'magic'
     if (isMagicMemory) {
-      // Magic Memory: 6x4 inch (432x288 points)
-      const pageWidth = 432
-      const pageHeight = 288
+      // Magic Memory: 7x5 inch (504x360 points)
+      const pageWidth = 504
+      const pageHeight = 360
+      const margin = 36 // 0.5 inch margin everywhere
       const page = pdfDoc.addPage([pageWidth, pageHeight])
       
       // Use the same background handling as standard books
@@ -602,191 +603,135 @@ export default defineEventHandler(async (event) => {
         })
         console.log('✅ Magic memory using white background (no background image)')
       }
-      // Draw up to 4 photos in corners (or around center)
+      // Draw up to 4 photos in a 2x2 grid on the left half
       const assetIds = book.created_from_assets || []
       const photoAssets = assets.filter(a => assetIds.includes(a.id)).slice(0, 4)
       
-      // Calculate optimal photo size to ensure story fits
-      const photoMargin = 12
-      const storyMargin = 16
-      const minStoryHeight = 80 // Increased for better text readability
-      
-      // For 4 photos: 2 at top, 2 at bottom
-      // Available height = pageHeight - (2 * photoSize + 2 * photoMargin) - (2 * storyMargin)
-      // We need: 2 * photoSize + 2 * photoMargin + 2 * storyMargin + minStoryHeight <= pageHeight
-      // Solving: photoSize <= (pageHeight - 2 * photoMargin - 2 * storyMargin - minStoryHeight) / 2
-      const maxPhotoSize = Math.floor((pageHeight - 2 * photoMargin - 2 * storyMargin - minStoryHeight) / 2)
-      const photoSize = Math.min(120, maxPhotoSize) // Increased from 85 to 120 for larger photos
-      // --- NEW LAYOUT: 50% width for photos (left), 50% for story (right) ---
-      // Photos: 2x2 grid in the left half
+      // Layout: left half for photos, right half for story
       const gridCols = 2
       const gridRows = 2
-      const photoGridWidth = pageWidth / 2
-      const photoGridHeight = pageHeight
-      const photoCellWidth = (photoGridWidth - photoMargin * 3) / gridCols
-      const photoCellHeight = (photoGridHeight - photoMargin * 3) / gridRows
-      const photoDisplaySize = Math.min(photoCellWidth, photoCellHeight)
-      // Center grid vertically
-      const gridOffsetY = (pageHeight - (photoDisplaySize * gridRows + photoMargin * (gridRows - 1))) / 2
-      // Center grid horizontally in left half
-      const gridOffsetX = (photoGridWidth - (photoDisplaySize * gridCols + photoMargin * (gridCols - 1))) / 2
+      // The left half, minus outer margin and margin to the story area
+      const photoGridLeft = margin
+      const photoGridTop = margin
+      const photoGridWidth = pageWidth / 2 - margin // leave margin between grid and story
+      const photoGridHeight = pageHeight - 2 * margin
+      const photoCellWidth = (photoGridWidth - margin) / gridCols // margin between columns
+      const photoCellHeight = (photoGridHeight - margin) / gridRows // margin between rows
+      // Calculate positions for each photo
       let positions = []
       for (let row = 0; row < gridRows; row++) {
         for (let col = 0; col < gridCols; col++) {
           if (positions.length < photoAssets.length) {
             positions.push({
-              x: gridOffsetX + col * (photoDisplaySize + photoMargin),
-              y: pageHeight - gridOffsetY - (row + 1) * photoDisplaySize - row * photoMargin
+              x: photoGridLeft + col * (photoCellWidth + margin / (gridCols - 1)),
+              y: pageHeight - margin - (row + 1) * photoCellHeight - row * (margin / (gridRows - 1))
             })
           }
         }
       }
-      
-      // Process and draw photos - simplified: always use original aspect ratio
+      // Draw photos
       for (let i = 0; i < photoAssets.length; i++) {
         const asset = photoAssets[i]
-        
         try {
           const imageRes = await fetch(asset.storage_url)
           if (!imageRes.ok) throw new Error('Failed to fetch image')
           const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
-          
           // Get image dimensions and calculate aspect ratio
           const imageInfo = await sharp(imageBuffer).metadata()
           const aspectRatio = imageInfo.width / imageInfo.height
-          
-          // Calculate final dimensions to fit in the grid cell while preserving aspect ratio
-          let finalWidth = photoDisplaySize
-          let finalHeight = photoDisplaySize
-          
+          // Fit image inside cell, preserving aspect ratio
+          let finalWidth = photoCellWidth
+          let finalHeight = photoCellHeight
           if (aspectRatio > 1) {
-            // Landscape image - fit to width, adjust height
-            finalWidth = photoDisplaySize
-            finalHeight = photoDisplaySize / aspectRatio
+            finalWidth = photoCellWidth
+            finalHeight = photoCellWidth / aspectRatio
+            if (finalHeight > photoCellHeight) {
+              finalHeight = photoCellHeight
+              finalWidth = photoCellHeight * aspectRatio
+            }
           } else {
-            // Portrait image - fit to height, adjust width
-            finalWidth = photoDisplaySize * aspectRatio
-            finalHeight = photoDisplaySize
+            finalHeight = photoCellHeight
+            finalWidth = photoCellHeight * aspectRatio
+            if (finalWidth > photoCellWidth) {
+              finalWidth = photoCellWidth
+              finalHeight = photoCellWidth / aspectRatio
+            }
           }
-          
+          // Center image in cell
+          const imgX = positions[i].x + (photoCellWidth - finalWidth) / 2
+          const imgY = positions[i].y + (photoCellHeight - finalHeight) / 2
           // Process image at higher resolution for quality
           const targetWidth = Math.round(finalWidth * 2)
           const targetHeight = Math.round(finalHeight * 2)
           const processedImage = await processImageShape(imageBuffer, 'original', targetWidth, targetHeight, asset.storage_url)
-          
           const pdfImage = await pdfDoc.embedPng(processedImage)
           page.drawImage(pdfImage, {
-            x: positions[i].x,
-            y: positions[i].y,
+            x: imgX,
+            y: imgY,
             width: finalWidth,
             height: finalHeight
           })
-          
-          console.log(`✅ Photo ${i + 1} processed: ${finalWidth}x${finalHeight} (aspect ratio preserved)`)
+          console.log(`✅ Photo ${i + 1} processed: ${finalWidth}x${finalHeight} (aspect ratio preserved)`) 
         } catch (err) {
           console.warn(`⚠️ Failed to process photo ${i + 1}:`, err.message)
           // Draw placeholder if image fails
           page.drawRectangle({
-            x: positions[i].x, y: positions[i].y, width: photoDisplaySize, height: photoDisplaySize, color: rgb(0.9, 0.9, 1) })
+            x: positions[i].x, y: positions[i].y, width: photoCellWidth, height: photoCellHeight, color: rgb(0.9, 0.9, 1) })
         }
       }
-      
       // --- Story area: right half ---
-      const storyAreaLeft = pageWidth / 2 + storyMargin
-      const storyAreaRight = pageWidth - storyMargin
-      const storyAreaTop = storyMargin
-      const storyAreaBottom = pageHeight - storyMargin
+      const storyAreaLeft = pageWidth / 2 + margin
+      const storyAreaRight = pageWidth - margin
+      const storyAreaTop = margin
+      const storyAreaBottom = pageHeight - margin
       const storyAreaWidth = storyAreaRight - storyAreaLeft
       const storyAreaHeight = storyAreaBottom - storyAreaTop
-      
-      // Draw the story in the calculated center area
+      // Draw the story in the calculated area
       const story = book.magic_story || 'A magical family story.'
-      console.log('📖 Magic story content:', story)
-      console.log('📐 Story area dimensions:', { 
-        left: storyAreaLeft, 
-        right: storyAreaRight, 
-        top: storyAreaTop, 
-        bottom: storyAreaBottom,
-        width: storyAreaWidth,
-        height: storyAreaHeight
-      })
-      
-      let fontSize = 16 // Default starting font size for story text
-      // Smart text wrapping to fit all content in the available space
-      const words = story.split(' ')
-      const lines = []
-      let line = ''
-      
-      // Calculate optimal characters per line based on available width
-      // Use a more generous character width calculation for better text flow
-      const avgCharWidth = 0.6 // Average character width in font units
-      const maxCharsPerLine = Math.floor(storyAreaWidth / (fontSize * avgCharWidth))
-      console.log('📝 Max chars per line:', maxCharsPerLine)
-      
-      // First pass: create lines based on character count
-      for (const word of words) {
-        if ((line + ' ' + word).length <= maxCharsPerLine) {
-          line += (line ? ' ' : '') + word
-        } else {
-          if (line) lines.push(line)
-          line = word
-        }
-      }
-      if (line) lines.push(line)
-      
-      // Calculate initial font size to fit all text
-      const lineHeight = fontSize * 1.2 // Tighter line spacing
-      const totalTextHeight = lines.length * lineHeight
-      
-      // If text doesn't fit, reduce font size until it does
-      let adjustedFontSize = fontSize
-      while (totalTextHeight > storyAreaHeight && adjustedFontSize > 8) {
-        adjustedFontSize -= 0.5
-        const newLineHeight = adjustedFontSize * 1.2
-        const newTotalHeight = lines.length * newLineHeight
-        if (newTotalHeight <= storyAreaHeight) {
-          break
-        }
-      }
-      
-      // If still doesn't fit, recalculate lines with smaller font
-      if (adjustedFontSize <= 8) {
-        adjustedFontSize = 8
-        const newMaxCharsPerLine = Math.floor(storyAreaWidth / (adjustedFontSize * avgCharWidth))
-        lines.length = 0 // Clear existing lines
-        line = ''
-        
+      // Embed Times Italic font
+      const timesItalicFont = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic)
+      let fontSize = 22 // Larger default font size
+      // Function to wrap text to fit the story area width
+      function wrapText(text, font, fontSize, maxWidth) {
+        const words = text.split(' ')
+        const lines = []
+        let line = ''
         for (const word of words) {
-          if ((line + ' ' + word).length <= newMaxCharsPerLine) {
-            line += (line ? ' ' : '') + word
+          const testLine = line ? line + ' ' + word : word
+          const testLineWidth = font.widthOfTextAtSize(testLine, fontSize)
+          if (testLineWidth <= maxWidth) {
+            line = testLine
           } else {
             if (line) lines.push(line)
             line = word
           }
         }
         if (line) lines.push(line)
+        return lines
       }
-      
-      const finalLineHeight = adjustedFontSize * 1.2
-      const finalTotalHeight = lines.length * finalLineHeight
-      const storyY = storyAreaTop + (storyAreaHeight - finalTotalHeight) / 2
-      
-      // Draw each line of the story, centered horizontally
+      // Try to fit the text with the largest font size possible
+      let lines = wrapText(story, timesItalicFont, fontSize, storyAreaWidth)
+      let lineHeight = fontSize * 1.2
+      let totalTextHeight = lines.length * lineHeight
+      let adjustedFontSize = fontSize
+      while (totalTextHeight > storyAreaHeight && adjustedFontSize > 10) {
+        adjustedFontSize -= 1
+        lines = wrapText(story, timesItalicFont, adjustedFontSize, storyAreaWidth)
+        lineHeight = adjustedFontSize * 1.2
+        totalTextHeight = lines.length * lineHeight
+      }
+      // Draw the story text, left-aligned, vertically centered
+      let textY = storyAreaTop + (storyAreaHeight - totalTextHeight) / 2
       for (let i = 0; i < lines.length; i++) {
-        const lineWidth = lines[i].length * adjustedFontSize * 0.6 // Approximate text width
-        const lineX = storyAreaLeft + (storyAreaWidth - lineWidth) / 2
-        
-        console.log(`📝 Drawing line ${i + 1}: "${lines[i]}" at (${lineX}, ${storyY + (lines.length - 1 - i) * finalLineHeight})`)
-        
         page.drawText(lines[i], {
-          x: lineX,
-          y: storyY + (lines.length - 1 - i) * finalLineHeight,
+          x: storyAreaLeft,
+          y: textY + (lines.length - i - 1) * lineHeight,
           size: adjustedFontSize,
-          color: rgb(0.3, 0.2, 0.5),
-          font: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic)
+          color: rgb(0.2, 0.2, 0.2),
+          font: timesItalicFont
         })
       }
-      // Done: skip normal layout
+      // End magic memory layout
       await updatePdfStatus(supabase, book.id, user.id, 'Magic Memory PDF created!')
       const pdfBytes = await pdfDoc.save()
       // Upload PDF to storage and return download URL (copy from normal logic)
@@ -858,6 +803,10 @@ export default defineEventHandler(async (event) => {
     // Calculate page dimensions based on print size
     let pageWidth, pageHeight
     switch (printSize) {
+      case '7x5':
+        pageWidth = 504 // 7x5 inches in points (7 * 72)
+        pageHeight = 360 // 5 inches in points (5 * 72)
+        break
       case '8x10':
         pageWidth = 595 // A4 width in points
         pageHeight = 842 // A4 height in points
@@ -1326,7 +1275,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 })
-
+ 
 async function updatePdfStatus(supabase, bookId, userId, status) {
   try {
     console.log('📊 Updating PDF status:', status, 'for book:', bookId)
@@ -1345,4 +1294,4 @@ async function updatePdfStatus(supabase, bookId, userId, status) {
   } catch (error) {
     console.log('⚠️ PDF status table might not exist yet, continuing without status updates:', error.message)
   }
-} 
+}
