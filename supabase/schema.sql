@@ -52,7 +52,7 @@ create table if not exists families (
 create table if not exists memory_preferences (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null,
-  layout_type text default 'standard' check (layout_type in ('standard', 'modern', 'vintage', 'minimal')),
+  layout_type text default 'standard' check (layout_type in ('standard', 'modern', 'vintage', 'minimal', 'magic')),
   page_count integer default 20 check (page_count between 10 and 100),
   print_size text default 'a4' check (print_size in ('a4', 'a5', 'letter', 'square')),
   quality text default 'standard' check (quality in ('standard', 'premium', 'ultra')),
