@@ -23,9 +23,9 @@
     </div>
 
     <div class="text-center mb-8 sm:mb-12">
-      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Getting Started</h2>
+      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Memory Manor</h2>
       <p class="text-base sm:text-xl text-gray-600 max-w-4xl mx-auto">
-        Using a bit of AI Magic dust, create beautiful Savta Cards ready for sharing with family and friends.
+        Using a bit of AI Magic dust, create beautiful Savta Magic Memories ready for sharing with family and friends.
       </p>
     </div>
     
@@ -38,7 +38,7 @@
         <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-400 to-purple-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
           <span class="text-2xl sm:text-3xl">📸</span>
         </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Upload Memories</h3>
+        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Upload Memory Moments</h3>
         <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
           Upload your photos and memories. Our AI adds captions and smart tags automatically.
         </p>
@@ -55,7 +55,7 @@
             <div class="flex items-center gap-2 text-sm min-h-[32px]">
               <div class="flex items-center gap-2 text-purple-500 transition-colors" style="margin-left: 0;">
                 <i class="pi pi-upload text-purple-500"></i>
-                <span>Upload your memories</span>
+                <span>Upload your memory moments</span>
               </div>
             </div>
           </div>
@@ -70,9 +70,9 @@
         <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
           <span class="text-2xl sm:text-3xl">✏️</span>
         </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Review Memories</h3>
+        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Review Memory Moments</h3>
         <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-          Review and refine your memories. Approve or reject AI suggestions, edit captions, and add keywords.
+          Review and refine your memory moments. Approve or reject AI suggestions, edit captions, and add keywords.
         </p>
         <div class="space-y-2">
           <div class="flex items-center gap-2 text-sm text-pink-700">
@@ -90,7 +90,7 @@
           <div class="flex items-center gap-2 text-sm min-h-[32px]">
             <div class="flex items-center gap-2 text-pink-500 transition-colors" style="margin-left: 0;">
               <i class="pi pi-eye text-pink-500"></i>
-              <span>Review your memories</span>
+              <span>Review your memory moments</span>
             </div>
           </div>
         </div>
@@ -106,7 +106,7 @@
         </div>
         <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">AI Magic</h3>
         <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-          Our AI organizes memories into beautiful cards with custom backgrounds perfect for sharing.
+          Our AI organizes memory moments into beautiful magic memory cards with custom backgrounds perfect for sharing.
         </p>
         <div class="space-y-2">
           <div class="flex items-center gap-2 text-sm text-green-700">
@@ -115,12 +115,12 @@
           </div>
           <div class="flex items-center gap-2 text-sm text-green-700">
             <i class="pi pi-th-large text-green-500"></i>
-            <span>Organized memory cards</span>
+            <span>Organized memory moments</span>
           </div>
           <div class="flex items-center gap-2 text-sm min-h-[32px]">
             <div class="flex items-center gap-2 text-green-500 transition-colors" style="margin-left: 0;">
               <i class="pi pi-book text-green-500"></i>
-              <span>View your books</span>
+              <span>View your magic memories</span>
             </div>
           </div>
         </div>

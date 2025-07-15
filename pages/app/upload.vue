@@ -3,28 +3,27 @@
     <div class="max-w-7xl mx-auto">
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-        <div class="flex-1 flex gap-2">
+        <div class="flex-1 flex items-center gap-2 sm:gap-3">
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Upload Memory Moments</h1>
           <button
-            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
-            @click="navigateTo('/app/review')"
-          >
-            <i class="pi pi-list text-2xl animate-bounce"></i>
-            View All Memories
-          </button>
-          <button
-            class="p-3 text-blue-600 hover:text-blue-700 bg-white rounded-full shadow border border-blue-100 transition-colors"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             v-tooltip.top="'How to use this page'"
             @click="showHelpModal = true"
+            aria-label="Information about upload page"
           >
-            <i class="pi pi-info-circle text-2xl"></i>
+            <i class="pi pi-info text-lg text-blue-500"></i>
           </button>
         </div>
-      </div>
-
-      <!-- Header -->
-      <div class="mb-6">
-        <h1 class="text-3xl font-bold text-color mb-2">Upload Memories</h1>
-        <p class="text-color-secondary">Share your family photos and stories. Our AI will help organize and caption them.</p>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <button
+            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            @click="navigateTo('/app/review')"
+          >
+            <i class="pi pi-list text-lg sm:text-2xl animate-bounce"></i>
+            <span class="hidden sm:inline">View All Memory Moments</span>
+            <span class="sm:hidden">View All</span>
+          </button>
+        </div>
       </div>
 
       <!-- Upload Tabs -->
@@ -175,8 +174,31 @@
       <!-- Recent Uploads -->
       <div class="mt-8">
         <h2 class="text-xl font-semibold text-color mb-4">Recent Uploads</h2>
+        
+        <!-- Review Button Section -->
+        <div class="bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 rounded-2xl p-6 mb-6 border border-pink-200 shadow-lg">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-heart text-pink-600 text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Manage Your Magic Moments</h3>
+                <p class="text-sm text-gray-600">Use review to manage and edit your moments</p>
+              </div>
+            </div>
+            <button
+              class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
+              @click="navigateTo('/app/review')"
+            >
+              <i class="pi pi-list text-lg"></i>
+              <span>Review</span>
+            </button>
+          </div>
+        </div>
+        
         <p class="text-sm text-color-secondary mb-4">
-          Showing your 25 most recent uploads. Visit the Review page to see all your memories and manage them.
+          Showing your 10 most recent uploads. Visit the Review page to see all your memories and manage them.
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           <Card
@@ -253,35 +275,167 @@
         modal
         :closable="true"
         :dismissableMask="true"
-        header="How to Use the Upload Page"
-        class="w-full max-w-2xl"
+        header="✨ Your Magic Upload Guide ✨"
+        class="w-full max-w-3xl"
       >
         <div class="space-y-6">
-          <div>
-            <h3 class="text-lg font-semibold text-color mb-3">Overview</h3>
-            <p class="text-color-secondary">
-              Use this page to upload new photos and stories. Recent uploads are shown below. To manage or approve your memories, go to the Review page.
-            </p>
+          <!-- Welcome Section -->
+          <div class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-2xl p-6 border border-purple-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-magic text-purple-600 text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-800 mb-1">Welcome to Your Memory Workshop! 🎨</h3>
+                <p class="text-gray-600">This is where the magic begins - upload your precious moments and watch them transform into magical memories!</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 class="text-lg font-semibold text-color mb-3">What does "Pending" mean?</h3>
-            <p class="text-color-secondary">
-              <b>Pending</b> means your memory is waiting for your review and approval before it can be included in a memory book. You can approve, edit, or delete pending memories on the Review page.
-            </p>
+
+          <!-- Upload Tabs Section -->
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-images text-blue-600 text-lg"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">📸 Photos & 📝 Stories</h3>
+                <p class="text-gray-600">Choose your magical medium! Upload photos or share your family stories - both will be transformed into beautiful memory moments.</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="bg-white rounded-xl p-4 border border-blue-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-image text-blue-500"></i>
+                  <span class="font-semibold text-gray-800">Photo Magic</span>
+                </div>
+                <p class="text-sm text-gray-600">Drag & drop or click to upload your family photos. Our AI will add captions and detect people!</p>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-blue-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-file-edit text-indigo-500"></i>
+                  <span class="font-semibold text-gray-800">Story Spells</span>
+                </div>
+                <p class="text-sm text-gray-600">Share your family stories and memories. Add a title and let the magic happen!</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 class="text-lg font-semibold text-color mb-3">Recent Uploads</h3>
-            <p class="text-color-secondary">
-              Recent uploads are displayed as cards. Each card shows your caption, AI-generated caption, tags, and people/objects detected. The status badge shows if the memory is approved or pending review.
-            </p>
+
+          <!-- Status Section -->
+          <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-clock text-amber-600 text-lg"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">🔮 What Does "Pending" Mean?</h3>
+                <p class="text-gray-600">Your memory moment is waiting for your magical approval! Think of it as a spell that needs your final blessing before it can join your memory books.</p>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-amber-100">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-star text-amber-600 text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-800">✨ Only approved memory moments can be included in your magic memory books!</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="surface-100 rounded p-4">
-            <h3 class="text-lg font-semibold text-color mb-2">💡 Tips</h3>
-            <ul class="space-y-1 text-sm text-color-secondary">
-              <li>• Click "View All Memories" to manage and approve your uploads</li>
-              <li>• Only approved memories appear in memory books</li>
-              <li>• Use the Review page to edit captions, approve, or delete memories</li>
-            </ul>
+
+          <!-- Recent Uploads Section -->
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-heart text-green-600 text-lg"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">💫 Your Recent Magic Moments</h3>
+                <p class="text-gray-600">See your latest uploads displayed as beautiful cards! Each card shows your captions, AI-generated magic, tags, and detected people.</p>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-green-100">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <h4 class="font-semibold text-gray-800 mb-2">🎯 What You'll See:</h4>
+                  <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• Your personal captions</li>
+                    <li>• AI-generated magical descriptions</li>
+                    <li>• Smart tags and people detection</li>
+                    <li>• Approval status badges</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-800 mb-2">✨ Quick Actions:</h4>
+                  <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• Edit captions directly</li>
+                    <li>• View AI-generated content</li>
+                    <li>• See detected people/objects</li>
+                    <li>• Check approval status</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips Section -->
+          <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-6 border border-pink-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-lightbulb text-pink-600 text-lg"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">🌟 Magical Tips & Tricks</h3>
+                <p class="text-gray-600">Unlock the full potential of your memory workshop with these enchanting tips!</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="bg-white rounded-xl p-4 border border-pink-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-list text-pink-500"></i>
+                  <span class="font-semibold text-gray-800">Review & Manage</span>
+                </div>
+                <p class="text-sm text-gray-600">Click "View All Memory Moments" to access your complete collection and manage all your magical memories!</p>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-pink-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-check-circle text-purple-500"></i>
+                  <span class="font-semibold text-gray-800">Approval Magic</span>
+                </div>
+                <p class="text-sm text-gray-600">Only approved memory moments can be included in your beautiful magic memory books!</p>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-pink-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-edit text-pink-500"></i>
+                  <span class="font-semibold text-gray-800">Edit & Refine</span>
+                </div>
+                <p class="text-sm text-gray-600">Use the Review page to edit captions, approve, or delete memory moments with ease!</p>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-pink-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-book text-purple-500"></i>
+                  <span class="font-semibold text-gray-800">Memory Books</span>
+                </div>
+                <p class="text-sm text-gray-600">Create beautiful memory books from your approved moments - the ultimate magical collection!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Call to Action -->
+          <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-200 text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg mx-auto mb-4">
+              <i class="pi pi-rocket text-blue-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">🚀 Ready to Start Your Magic?</h3>
+            <p class="text-gray-600 mb-4">Upload your first memory moment and watch the magic unfold!</p>
+            <button
+              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
+              @click="showHelpModal = false"
+            >
+              <i class="pi pi-check mr-2"></i>
+              Let's Get Started!
+            </button>
           </div>
         </div>
       </Dialog>
@@ -316,12 +470,12 @@
             </div>
             <h2 class="text-2xl font-bold text-orange-700 mb-2">✨ Partially Complete!</h2>
             <p class="text-lg text-orange-600 mb-2">
-              We uploaded and worked our magic on <span class="font-bold">{{ successfulUploads }}</span> 
-              <span v-if="successfulUploads === 1">memory</span>
-              <span v-else>memories</span>!
+              We uploaded and worked our magic on <span class="font-bold">{{ successfulUploads }} &nbsp;</span> 
+              <span v-if="successfulUploads === 1">memory moment</span>
+              <span v-else>memory moments</span>!
             </p>
             <p class="text-sm text-orange-500">
-              Unfortunately, we could not process <span class="font-bold">{{ failedUploads }}</span> 
+              Unfortunately, we could not process <span class="font-bold">{{ failedUploads }} &nbsp;</span> 
               <span v-if="failedUploads === 1">memory</span>
               <span v-else>memories</span>.
             </p>
@@ -334,9 +488,9 @@
             </div>
             <h2 class="text-2xl font-bold text-red-700 mb-2">😔 Upload Issues</h2>
             <p class="text-lg text-red-600 mb-4">
-              Unfortunately, we could not process <span class="font-bold">{{ failedUploads }}</span> 
-              <span v-if="failedUploads === 1">memory</span>
-              <span v-else>memories</span>.
+              Unfortunately, we could not process <span class="font-bold">{{ failedUploads }} &nbsp;</span> 
+              <span v-if="failedUploads === 1">memory moment</span>
+              <span v-else>memory moments</span>.
             </p>
           </div>
 
@@ -364,7 +518,7 @@
               class="px-6 py-3 rounded-full font-semibold"
             >
               <i class="pi pi-eye mr-2"></i>
-              Review Memories
+              Review Memory Moments
             </Button>
           </div>
         </div>
@@ -411,7 +565,7 @@ onMounted(async () => {
 // Load recent assets
 const loadRecentAssets = async () => {
   try {
-    const assets = await db.assets.getAssets({ limit: 25 })
+    const assets = await db.assets.getAssets({ limit: 10 })
     recentAssets.value = assets
   } catch (error) {
     console.error('Failed to load recent assets:', error)

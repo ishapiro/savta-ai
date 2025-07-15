@@ -3,30 +3,25 @@
     <div class="max-w-7xl mx-auto">
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-        <div class="flex-1 flex gap-2">
+        <div class="flex-1 flex items-center gap-2 sm:gap-3">
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Manage your Memory Moments</h1>
           <button
-            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
-            @click="generateMemoryBook"
-            :disabled="stats.approved === 0"
-          >
-            <i class="pi pi-book text-2xl animate-bounce"></i>
-            Generate Book
-          </button>
-          <button
-            class="p-3 text-blue-600 hover:text-blue-700 bg-white rounded-full shadow border border-blue-100 transition-colors"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             v-tooltip.top="'How to use this page'"
             @click="showHelpModal = true"
+            aria-label="Information about review page"
           >
-            <i class="pi pi-info-circle text-2xl"></i>
+            <i class="pi pi-info text-lg text-blue-500"></i>
           </button>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 w-full sm:w-auto">
           <button
-            class="flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="navigateTo('/app/deleted-memories')"
           >
-            <i class="pi pi-trash text-2xl animate-bounce"></i>
-            View Deleted
+            <i class="pi pi-trash text-lg sm:text-2xl animate-bounce"></i>
+            <span class="hidden sm:inline">View Deleted</span>
+            <span class="sm:hidden">Deleted</span>
           </button>
         </div>
       </div>
@@ -370,148 +365,226 @@
         </div>
       </Dialog>
 
-      <!-- Help Modal (unchanged) -->
+      <!-- Help Modal -->
       <Dialog
         v-model:visible="showHelpModal"
         modal
         :closable="true"
         :dismissableMask="true"
-        header="How to Use the Review Page"
-        class="w-full max-w-2xl"
+        header="✨ Your Magic Review Workshop ✨"
+        class="w-full max-w-3xl"
       >
         <div class="space-y-6">
-          <!-- Overview -->
-          <div>
-            <h3 class="text-lg font-semibold text-color mb-3">Overview</h3>
-            <p class="text-color-secondary">
-              This page helps you review and manage your uploaded memories. You can approve memories for your memory book, 
-              reject them, or delete them entirely.
-            </p>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-color mb-3">What does "Pending" mean?</h3>
-            <p class="text-color-secondary">
-              <b>Pending</b> means your memory is waiting for your review and approval before it can be included in a memory book. You can approve, edit, or delete pending memories using the actions on this page.
-            </p>
+          <!-- Welcome Section -->
+          <div class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-2xl p-6 border border-purple-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-star text-purple-600 text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-800 mb-1">Welcome to Your Memory Review Workshop! ⭐</h3>
+                <p class="text-gray-600">This is where you become the curator of your magical memories - approve, edit, and organize your precious moments!</p>
+              </div>
+            </div>
           </div>
 
-          <!-- Stats Cards -->
-          <div>
-            <h3 class="text-lg font-semibold text-color mb-3">Stats Cards</h3>
+          <!-- Stats Cards Section -->
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-chart-bar text-blue-600 text-lg"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">📊 Your Memory Collection Stats</h3>
+                <p class="text-gray-600">Track your magical memory collection with these enchanting statistics!</p>
+              </div>
+            </div>
             <div class="grid grid-cols-2 gap-4">
-              <div class="surface-100 rounded p-3">
-                <div class="flex items-center mb-2">
-                  <i class="pi pi-image text-primary mr-2"></i>
-                  <span class="font-medium">Total Assets</span>
+              <div class="bg-white rounded-xl p-4 border border-blue-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-image text-blue-500"></i>
+                  <span class="font-semibold text-gray-800">Total Magic Moments</span>
                 </div>
-                <p class="text-sm text-color-secondary">All your uploaded memories</p>
+                <p class="text-sm text-gray-600">All your uploaded memories waiting to be organized</p>
               </div>
-              <div class="surface-100 rounded p-3">
-                <div class="flex items-center mb-2">
-                  <i class="pi pi-clock text-warning mr-2"></i>
-                  <span class="font-medium">Pending Review</span>
+              <div class="bg-white rounded-xl p-4 border border-blue-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-clock text-amber-500"></i>
+                  <span class="font-semibold text-gray-800">Awaiting Your Blessing</span>
                 </div>
-                <p class="text-sm text-color-secondary">Memories awaiting your decision</p>
+                <p class="text-sm text-gray-600">Memories waiting for your magical approval</p>
               </div>
-              <div class="surface-100 rounded p-3">
-                <div class="flex items-center mb-2">
-                  <i class="pi pi-check text-success mr-2"></i>
-                  <span class="font-medium">Approved</span>
+              <div class="bg-white rounded-xl p-4 border border-blue-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-check text-green-500"></i>
+                  <span class="font-semibold text-gray-800">Blessed & Approved</span>
                 </div>
-                <p class="text-sm text-color-secondary">Memories ready for memory books</p>
+                <p class="text-sm text-gray-600">Memories ready to join your magic memory books</p>
               </div>
-              <div class="surface-100 rounded p-3">
-                <div class="flex items-center mb-2">
-                  <i class="pi pi-book text-primary mr-2"></i>
-                  <span class="font-medium">Ready for Book</span>
+              <div class="bg-white rounded-xl p-4 border border-blue-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-book text-purple-500"></i>
+                  <span class="font-semibold text-gray-800">Ready for Magic Books</span>
                 </div>
-                <p class="text-sm text-color-secondary">Can be included in memory books</p>
+                <p class="text-sm text-gray-600">Can be included in your beautiful memory collections</p>
               </div>
             </div>
           </div>
 
-          <!-- Action Buttons -->
-          <div>
-            <h3 class="text-lg font-semibold text-color mb-3">Memory Action Buttons</h3>
-            <div class="space-y-3">
-              <div class="flex items-center space-x-3">
-                <button class="p-2 text-green-600">
-                  <i class="pi pi-check text-lg"></i>
-                </button>
-                <div>
-                  <span class="font-medium">Approve</span>
-                  <p class="text-sm text-color-secondary">Include this memory in your memory book</p>
-                </div>
+          <!-- Action Buttons Section -->
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-magic text-green-600 text-lg"></i>
               </div>
-              <div class="flex items-center space-x-3">
-                <button class="p-2 text-red-600">
-                  <i class="pi pi-times text-lg"></i>
-                </button>
-                <div>
-                  <span class="font-medium">Reject</span>
-                  <p class="text-sm text-color-secondary">Exclude from memory book but keep for review</p>
-                </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Memory Moment Magic Actions</h3>
+                <p class="text-gray-600">Cast your spells on each memory moment with these magical actions!</p>
               </div>
-              <div class="flex items-center space-x-3">
-                <button class="p-2 text-red-600">
-                  <i class="pi pi-trash text-lg"></i>
-                </button>
-                <div>
-                  <span class="font-medium">Delete</span>
-                  <p class="text-sm text-color-secondary">Move to deleted memories (can be restored later)</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="bg-white rounded-xl p-4 border border-green-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-check text-green-500 text-lg"></i>
+                  <span class="font-semibold text-gray-800">Approve</span>
                 </div>
+                <p class="text-sm text-gray-600">Bless this memory moment to join your Savta Magic Memory collection</p>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-green-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-pencil text-blue-500 text-lg"></i>
+                  <span class="font-semibold text-gray-800">Edit</span>
+                </div>
+                <p class="text-sm text-gray-600">Refine captions, tags, and people to make your memory perfect</p>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-green-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-trash text-red-500 text-lg"></i>
+                  <span class="font-semibold text-gray-800">Delete</span>
+                </div>
+                <p class="text-sm text-gray-600">Send to the memory vault (can be restored with magic later)</p>
               </div>
             </div>
           </div>
 
-          <!-- Status Tags -->
-          <div>
-            <h3 class="text-lg font-semibold text-color mb-3">Status Tags</h3>
-            <div class="space-y-2">
-              <div class="flex items-center space-x-3">
-                <Tag value="Pending" severity="warning" />
-                <span class="text-sm text-color-secondary">New memory awaiting review</span>
+          <!-- Status Tags Section -->
+          <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-tags text-amber-600 text-lg"></i>
               </div>
-              <div class="flex items-center space-x-3">
-                <Tag value="Approved" severity="success" />
-                <span class="text-sm text-color-secondary">Memory approved for memory books</span>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">🔮 Memory Status Spells</h3>
+                <p class="text-gray-600">Each memory moment has its own magical status - here's what they mean!</p>
               </div>
-              <div class="flex items-center space-x-3">
-                <Tag value="Rejected" severity="danger" />
-                <span class="text-sm text-color-secondary">Memory rejected (excluded from books)</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="bg-white rounded-xl p-4 border border-amber-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                    <i class="pi pi-clock text-amber-600 text-xs"></i>
+                  </div>
+                  <span class="font-semibold text-gray-800">Pending</span>
+                </div>
+                <p class="text-sm text-gray-600">New memory moment awaiting your magical review and blessing</p>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-amber-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="pi pi-check text-green-600 text-xs"></i>
+                  </div>
+                  <span class="font-semibold text-gray-800">Approved</span>
+                </div>
+                <p class="text-sm text-gray-600">Memory moment blessed and ready for magic memory books</p>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-amber-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="pi pi-times text-red-600 text-xs"></i>
+                  </div>
+                  <span class="font-semibold text-gray-800">Rejected</span>
+                </div>
+                <p class="text-sm text-gray-600">Memory excluded from books but kept in your collection</p>
               </div>
             </div>
           </div>
 
-          <!-- Page Actions -->
-          <div>
-            <h3 class="text-lg font-semibold text-color mb-3">Page Actions</h3>
-            <div class="space-y-3">
-              <div class="flex items-center space-x-3">
-                <Button icon="pi pi-book" class="px-4 py-2">
-                  <span class="ml-2">Generate Book</span>
-                </Button>
-                <span class="text-sm text-color-secondary">Create a memory book from approved memories</span>
+          <!-- Page Actions Section -->
+          <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-6 border border-pink-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-rocket text-pink-600 text-lg"></i>
               </div>
-              <div class="flex items-center space-x-3">
-                <Button icon="pi pi-trash" severity="secondary" size="small" class="px-4 py-2">
-                  <span class="ml-2">View Deleted</span>
-                </Button>
-                <span class="text-sm text-color-secondary">View and restore deleted memories</span>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">🚀 Powerful Page Actions</h3>
+                <p class="text-gray-600">Unleash the full power of your memory workshop with these magical tools!</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="bg-white rounded-xl p-4 border border-pink-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-book text-purple-500"></i>
+                  <span class="font-semibold text-gray-800">Generate Magic Memory</span>
+                </div>
+                <p class="text-sm text-gray-600">Create a beautiful memory book from your approved magical moments</p>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-pink-100">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-trash text-pink-500"></i>
+                  <span class="font-semibold text-gray-800">View Deleted Memories</span>
+                </div>
+                <p class="text-sm text-gray-600">Visit the memory vault to restore forgotten magical moments</p>
               </div>
             </div>
           </div>
 
-          <!-- Tips -->
-          <div class="surface-100 rounded p-4">
-            <h3 class="text-lg font-semibold text-color mb-2">💡 Tips</h3>
-            <ul class="space-y-1 text-sm text-color-secondary">
-              <li>• Hover over icons to see tooltips</li>
-              <li>• Use filters to find specific memories</li>
-              <li>• Edit captions by clicking on them</li>
-              <li>• Deleted memories can be restored later</li>
-              <li>• Only approved memories appear in memory books</li>
-            </ul>
+          <!-- Tips Section -->
+          <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl p-6 border border-indigo-200">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-lightbulb text-indigo-600 text-lg"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">🌟 Magical Tips & Tricks</h3>
+                <p class="text-gray-600">Master the art of memory curation with these enchanting tips!</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="bg-white rounded-xl p-4 border border-indigo-100">
+                <h4 class="font-semibold text-gray-800 mb-2">🎯 Quick Actions:</h4>
+                <ul class="text-sm text-gray-600 space-y-1">
+                  <li>• Hover over icons to see magical tooltips</li>
+                  <li>• Use filters to find specific memories</li>
+                  <li>• Edit captions by clicking on them</li>
+                  <li>• Deleted memories can be restored with magic</li>
+                </ul>
+              </div>
+              <div class="bg-white rounded-xl p-4 border border-indigo-100">
+                <h4 class="font-semibold text-gray-800 mb-2">✨ Pro Tips:</h4>
+                <ul class="text-sm text-gray-600 space-y-1">
+                  <li>• Only approved memories join magic books</li>
+                  <li>• Use tags to organize your collection</li>
+                  <li>• Add people names for better organization</li>
+                  <li>• Review regularly to keep your magic flowing</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Call to Action -->
+          <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 border border-green-200 text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center shadow-lg mx-auto mb-4">
+              <i class="pi pi-star text-green-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">⭐ Ready to Curate Your Magic?</h3>
+            <p class="text-gray-600 mb-4">Start reviewing and organizing your precious memory moments!</p>
+            <button
+              class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
+              @click="showHelpModal = false"
+            >
+              <i class="pi pi-check mr-2"></i>
+              Let's Start Reviewing!
+            </button>
           </div>
         </div>
       </Dialog>

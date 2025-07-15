@@ -38,7 +38,7 @@
                 <NuxtLink to="/app/memory-books" class="no-underline">
                   <button class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-book text-xl"></i>
-                    <span>Books</span>
+                    <span>Memories</span>
                   </button>
                 </NuxtLink>
                 
@@ -107,7 +107,7 @@
               <NuxtLink to="/app/memory-books" class="no-underline">
                 <button class="flex items-center justify-center gap-1 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
                   <i class="pi pi-book text-lg"></i>
-                  <span class="hidden sm:inline">Books</span>
+                  <span class="hidden sm:inline">Memories</span>
                 </button>
               </NuxtLink>
               
@@ -195,8 +195,8 @@
                     <i class="pi pi-home text-xl"></i>
                   </div>
                   <div>
-                    <p class="font-semibold">Dashboard</p>
-                    <p class="text-xs opacity-80">Your main workspace</p>
+                    <p class="font-semibold">Savta's Memory Manor</p>
+                    <p class="text-xs opacity-80">Cast a spell and share a memory.</p>
                   </div>
                 </div>
                 <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
@@ -248,7 +248,7 @@
                       <i class="pi pi-book text-xl"></i>
                     </div>
                     <div>
-                      <p class="font-semibold">Memory Books</p>
+                      <p class="font-semibold">Savta's Magic Memories</p>
                       <p class="text-xs opacity-80">View your collections</p>
                     </div>
                   </div>

@@ -1,52 +1,54 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 p-2 sm:p-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3 relative">
-      <div>
-        <div class="flex items-center gap-3 mb-1">
-          <h1 class="text-3xl font-bold text-gray-900">Memory Books</h1>
-          <!-- Info Icon Button -->
-          <button
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none"
-            @click="showInfoDialog = true"
-            aria-label="Information about memory books"
-          >
-            <i class="pi pi-info text-lg text-blue-500"></i>
-          </button>
-        </div>
-        <p class="text-base text-gray-500">View and manage your generated memory books.</p>
-      </div>
-      <div class="flex items-center gap-2">
+  <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 p-4">
+    <div class="max-w-7xl mx-auto">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+      <div class="flex-1 flex items-center gap-2 sm:gap-3">
+        <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Cast Magic Memory Spells</h1>
         <button
-          class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-6 py-3 text-base shadow transition-all duration-200 w-full sm:w-auto"
+          class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
+          @click="showInfoDialog = true"
+          aria-label="Information about magic memories"
+        >
+          <i class="pi pi-info text-lg text-blue-500"></i>
+        </button>
+      </div>
+      <div class="flex gap-2 w-full sm:w-auto">
+        <button
+          class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
           @click="showCreateModal = true"
         >
-          <i class="pi pi-plus mr-2"></i> Create New Book
+          <i class="pi pi-plus mr-2"></i>
+          <span class="hidden sm:inline">Create New Book</span>
+          <span class="sm:hidden">New Book</span>
         </button>
       </div>
     </div>
 
     <!-- Info Dialog -->
-    <Dialog v-model:visible="showInfoDialog" modal header="About Memory Books" class="w-full max-w-3xl sm:rounded-2xl">
+    <Dialog v-model:visible="showInfoDialog" modal header="About Savta's Magic Memories" class="w-full max-w-3xl sm:rounded-2xl">
       <div class="space-y-4">
         <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <h2 class="text-lg font-bold text-blue-700 mb-2">What is a Memory Book?</h2>
+          <h2 class="text-lg font-bold text-blue-700 mb-2">What is a Savta Magic Memory?</h2>
           <p class="text-base text-gray-700">
-            A memory book is a special collection of your favorite photos and memories, all gathered together in a beautiful book you can look at, print, or share with your family. It's like a photo album, but even more magical!
+            A magic memory is a special collection of your favorite photos, thoughts, text messages, and more, all gathered together into
+            beautiful cards you can look at, print, or share with your family. It's like a photo album, but even more magical!
           </p>
         </div>
         <div class="bg-purple-50 rounded-lg p-4 border border-purple-100">
-          <h2 class="text-lg font-bold text-purple-700 mb-2">Why Create a Memory Book?</h2>
+          <h2 class="text-lg font-bold text-purple-700 mb-2">Why Create a Magic Memory?</h2>
           <ul class="list-disc pl-5 text-base text-gray-700 space-y-1">
             <li>To keep your precious memories safe and easy to find.</li>
             <li>To share your stories with children, grandchildren, and friends.</li>
-            <li>To have a lovely book to look through whenever you want to remember happy times.</li>
+            <li>To have a lovely stack of cards to look through whenever you want to remember happy times.</li>
           </ul>
         </div>
         <div class="bg-green-50 rounded-lg p-4 border border-green-100">
           <h2 class="text-lg font-bold text-green-700 mb-2">How Do I Use It?</h2>
           <p class="text-base text-gray-700">
-            Just pick your favorite memories, create your book, and let the magic happen! You can view your book as a PDF, print it, or share it with your loved ones. It's easy and fun—no computer skills needed!
+            Just pick your favorite memory moments, design your cards, and let the magic happen! 
+            You can view your memory moment as a PDF, print it, or share it with your loved ones. 
+            It's easy and fun—no computer skills needed!  No tedius droping and dragging photos into a photo album.
           </p>
         </div>
         <div class="bg-white rounded-lg p-4 border border-gray-100">
@@ -54,31 +56,31 @@
           <ul class="space-y-3">
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-external-link text-lg text-green-600"></i></span>
-              <span class="text-gray-700"><b>View</b>: Open your memory book to view or download it.</span>
+              <span class="text-gray-700"><b>View</b>: Open your Magic Memory to view or download it.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-bolt text-lg text-purple-600"></i></span>
-              <span class="text-gray-700"><b>Generate</b>: Create your memory book for the first time.</span>
+              <span class="text-gray-700"><b>Generate</b>: Create your Magic Memory for the first time.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-refresh text-lg text-yellow-600"></i></span>
-              <span class="text-gray-700"><b>Regenerate</b>: Make a new version of your book with a fresh design.</span>
+              <span class="text-gray-700"><b>Regenerate</b>: Make a new version of your Magic Memory with a fresh design.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-check text-lg text-purple-600"></i></span>
-              <span class="text-gray-700"><b>Approve</b>: Mark your book as finished and ready to share or print.</span>
+              <span class="text-gray-700"><b>Approve</b>: Mark your Magic Memory as finished and ready to share or print.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-undo text-lg text-orange-600"></i></span>
-              <span class="text-gray-700"><b>Unapprove</b>: Move your book back to editing if you want to make changes.</span>
+              <span class="text-gray-700"><b>Unapprove</b>: Move your Magic Memory back to editing if you want to make changes.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-list text-lg text-gray-600"></i></span>
-              <span class="text-gray-700"><b>Details</b>: See more information about your memory book.</span>
+              <span class="text-gray-700"><b>Details</b>: See more information about your Magic Memory.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-cog text-lg text-blue-600"></i></span>
-              <span class="text-gray-700"><b>Settings</b>: Change the title, layout, or which memories are included.</span>
+              <span class="text-gray-700"><b>Settings</b>: Change the title, layout, or which memories moments are included.</span>
             </li>
           </ul>
         </div>
@@ -96,11 +98,11 @@
     <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-16">
       <div class="text-center">
         <i class="pi pi-spin pi-spinner text-4xl mb-4 text-primary"></i>
-        <p class="text-base text-gray-500">Loading memory books...</p>
+        <p class="text-base text-gray-500">Loading magic memories...</p>
       </div>
     </div>
 
-    <div v-else-if="memoryBooks.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div v-else-if="memoryBooks.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
         v-for="book in memoryBooks"
         :key="book.id"
@@ -208,7 +210,7 @@
     <Dialog
       v-model:visible="showCreateModal"
       modal
-      header="Create New Memory Book"
+      header="Create New Magic Memory"
       :style="{ width: '95vw', maxWidth: '500px' }"
       :closable="false"
     >
@@ -694,7 +696,7 @@
     <Dialog
       v-model:visible="showEditSettingsModal"
       modal
-      header="Edit Memory Book Settings"
+      header="Edit Magic Memory Settings"
       :style="{ width: '95vw', maxWidth: '500px' }"
       :closable="false"
     >
@@ -703,7 +705,7 @@
           <label class="block text-sm font-medium text-color mb-1">Book Title</label>
           <InputText
             v-model="editBook.title"
-            placeholder="Enter a title for your memory book"
+            placeholder="Enter a title for your magic memory"
             class="w-full"
           />
         </div>
@@ -884,13 +886,13 @@
             </div>
             <div>
               <h3 class="text-base sm:text-lg font-semibold text-color">Ready for New Magic?</h3>
-              <p class="text-xs sm:text-sm text-color-secondary">We're about to clean up your memory book</p>
+              <p class="text-xs sm:text-sm text-color-secondary">We're about to clean up your magic memory</p>
             </div>
           </div>
           <div class="bg-white rounded-lg p-3 border border-orange-200">
             <p class="text-xs sm:text-sm text-color">
-              This will reset your memory book back to draft status and clear any generated backgrounds and PDFs. 
-              You'll be able to apply fresh magic to create a brand new version of your memory book.
+              This will reset your magic memory back to draft status and clear any generated backgrounds and PDFs. 
+              You'll be able to apply fresh magic to create a brand new version of your magic memory.
             </p>
           </div>
         </div>
@@ -949,7 +951,7 @@
             <h3 class="text-base sm:text-lg font-semibold text-color">Choose Your Memories</h3>
           </div>
           <p class="text-xs sm:text-sm text-color-secondary">
-            Select the memories you'd like to include in your memory book. You can filter by tags and select multiple memories at once.
+            Select the memories you'd like to include in your magic memory. You can filter by tags and select multiple memories at once.
           </p>
         </div>
 
@@ -1072,7 +1074,7 @@
                   {{ selectedMemories.length }} memories selected
                 </p>
                 <p class="text-xs text-color-secondary">
-                  Ready to create your memory book
+                  Ready to create your magic memory
                 </p>
               </div>
             </div>
@@ -1119,6 +1121,7 @@
         </div>
       </template>
     </Dialog>
+    </div>
   </div>
 </template>
 
@@ -1314,9 +1317,9 @@ const loadMemoryBooks = async () => {
     console.log('🔍 Database composable:', !!db)
     
     // Use the database composable (which works correctly)
-    console.log('🔍 Loading memory books...')
+    console.log('🔍 Loading magic memories...')
     const books = await db.memoryBooks.getMemoryBooks()
-    console.log('✅ Memory books loaded:', books?.length, 'books')
+    console.log('✅ Magic memories loaded:', books?.length, 'books')
     memoryBooks.value = books
   } catch (error) {
     console.error('❌ Error loading memory books:', error)
@@ -1408,7 +1411,7 @@ const createMemoryBook = async () => {
       $toast.add({
         severity: 'success',
         summary: 'Created',
-        detail: 'Memory book created successfully',
+        detail: 'Magic memory created successfully',
         life: 3000
       })
     }
@@ -1498,7 +1501,7 @@ const pollPdfStatus = async () => {
       if (status.pdf_url && status.book_status === 'ready') {
         console.log('✅ PDF URL found and book status is ready, closing dialog')
         currentProgress.value = 100
-        currentProgressMessage.value = 'Your magical memory book is ready!'
+        currentProgressMessage.value = 'Your Savta Magic Memory is ready!'
         setTimeout(() => {
           stopProgressPolling()
           showProgressDialog.value = false
@@ -1511,7 +1514,7 @@ const pollPdfStatus = async () => {
       if (status.pdf_url && status.pdf_url.startsWith('https://')) {
         console.log('✅ PDF URL found, waiting for book status to be ready...')
         currentProgress.value = 95
-        currentProgressMessage.value = 'Finalizing memory book status...'
+        currentProgressMessage.value = 'Finalizing magic memory status...'
         return
       }
       
@@ -1775,7 +1778,7 @@ const forceDownloadPDF = async (book) => {
       $toast.add({
         severity: 'success',
         summary: 'Download Started',
-        detail: 'Your memory book PDF is being downloaded',
+        detail: 'Your magic memory PDF is being downloaded',
         life: 3000
       })
     }
@@ -1804,7 +1807,7 @@ const approveBook = async (bookId) => {
       $toast.add({
         severity: 'success',
         summary: 'Approved',
-        detail: 'Memory book approved',
+        detail: 'Magic memory approved',
         life: 3000
       })
     }
@@ -2243,7 +2246,7 @@ const confirmCleanup = async () => {
       $toast.add({
         severity: 'success',
         summary: 'Cleaned Up!',
-        detail: 'We have cleaned up your memory book so you can apply new magic!',
+        detail: 'We have cleaned up your magic memory so you can apply new magic!',
         life: 4000
       })
     }
