@@ -2,16 +2,32 @@
   <client-only>
     <div class="pdf-viewer-container w-full h-full">
       <VPdfViewer
+        v-if="licenseInitialized"
         :src="src"
         class="w-full h-full"
         :options="viewerOptions"
       />
+      <div v-else class="flex items-center justify-center h-full">
+        <div class="text-gray-500">Loading PDF viewer...</div>
+      </div>
     </div>
   </client-only>
 </template>
 
 <script setup>
-import { VPdfViewer } from '@vue-pdf-viewer/viewer';
+import { VPdfViewer, useLicense } from '@vue-pdf-viewer/viewer';
+import { watch } from 'vue';
+
+// Use the global license composable
+const { licenseKey, licenseInitialized } = useVuePdfViewerLicense()
+
+// Watch for when the license key becomes available and initialize the PDF viewer
+watch(licenseKey, (newLicenseKey) => {
+  if (newLicenseKey) {
+    useLicense(newLicenseKey);
+    console.log('Vue PDF Viewer license initialized in component');
+  }
+}, { immediate: true });
 
 const props = defineProps({
   src: {
