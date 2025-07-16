@@ -26,8 +26,124 @@
         </div>
       </div>
 
-      <!-- Upload Tabs -->
-      <div class="mb-6">
+            <!-- Upload Progress (Always Visible When Uploading) -->
+      <div v-if="uploadingFiles.length > 0" class="mb-6 space-y-3">
+        <!-- Upload Warning -->
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-exclamation-triangle text-amber-600 text-sm"></i>
+            <span class="text-sm font-semibold text-amber-800">⚠️ Please stay on this page until uploads complete</span>
+          </div>
+        </div>
+
+        <!-- Oversized Files Warning -->
+        <div v-if="oversizedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-3 border border-red-200">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-times-circle text-red-600 text-sm"></i>
+            <span class="text-sm font-semibold text-red-800">📁 Files too large ({{ oversizedFiles.length }} skipped)</span>
+          </div>
+          <div class="space-y-1">
+            <div v-for="file in oversizedFiles" :key="file.name" class="bg-white rounded p-2 border border-red-100">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-800 truncate flex-1 mr-2">{{ file.name }}</span>
+                <span class="text-red-600 font-semibold flex-shrink-0">{{ formatFileSize(file.size) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Progress Bar -->
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-200">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-cloud-upload text-blue-500 text-sm"></i>
+              <span class="text-sm font-semibold text-gray-800">{{ currentFileIndex }}/{{ totalFilesToUpload }} files</span>
+            </div>
+            <span class="text-sm font-medium text-gray-600">{{ Math.round(overallProgress) }}%</span>
+          </div>
+          
+          <!-- Overall Progress Bar -->
+          <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+            <div 
+              class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
+              :style="{ width: overallProgress + '%' }"
+            ></div>
+          </div>
+          
+          <!-- Progress Stats -->
+          <div class="flex justify-between text-xs text-gray-600">
+            <span>{{ successfulUploads }} done</span>
+            <span>{{ uploadingFiles.length }} uploading</span>
+            <span>{{ failedUploads }} failed</span>
+          </div>
+        </div>
+
+        <!-- Individual File Progress -->
+        <div class="space-y-2">
+          <div v-for="(file, idx) in uploadingFiles" :key="file.id" class="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2 flex-1 min-w-0">
+                <i class="pi pi-image text-blue-600 text-sm"></i>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-gray-800 truncate">{{ file.name }}</p>
+                  <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <!-- Status Icon -->
+                <div v-if="file.compressing" class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-spin pi-spinner text-orange-600 text-xs"></i>
+                </div>
+                <div v-else-if="file.processing" class="w-5 h-5 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-spin pi-spinner text-yellow-600 text-xs"></i>
+                </div>
+                <div v-else-if="file.uploading" class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-spin pi-spinner text-blue-600 text-xs"></i>
+                </div>
+                <div v-else-if="file.error" class="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-times text-red-600 text-xs"></i>
+                </div>
+                <div v-else class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-check text-green-600 text-xs"></i>
+                </div>
+                
+                <!-- Status Text -->
+                <span class="text-xs font-medium">
+                  <span v-if="file.compressing" class="text-orange-600">Compressing</span>
+                  <span v-else-if="file.processing" class="text-yellow-600">Processing</span>
+                  <span v-else-if="file.uploading" class="text-blue-600">Uploading</span>
+                  <span v-else-if="file.error" class="text-red-600">Failed</span>
+                  <span v-else class="text-green-600">Done</span>
+                </span>
+              </div>
+            </div>
+            
+            <!-- File Progress Bar -->
+            <div class="w-full bg-gray-100 rounded-full h-1.5">
+              <div 
+                class="h-1.5 rounded-full transition-all duration-300 ease-out"
+                :class="{
+                  'bg-gradient-to-r from-orange-500 to-orange-600': file.compressing,
+                  'bg-gradient-to-r from-blue-500 to-blue-600': file.uploading,
+                  'bg-gradient-to-r from-yellow-500 to-orange-500': file.processing,
+                  'bg-gradient-to-r from-green-500 to-green-600': !file.uploading && !file.processing && !file.compressing && !file.error,
+                  'bg-gradient-to-r from-red-500 to-red-600': file.error
+                }"
+                :style="{ width: getFileProgress(file) + '%' }"
+              ></div>
+            </div>
+            
+            <!-- Error Message -->
+            <div v-if="file.error" class="mt-1 text-xs text-red-600 bg-red-50 rounded p-1">
+              <i class="pi pi-exclamation-triangle mr-1"></i>
+              {{ file.error }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Tabs (Hidden During Upload) -->
+      <div class="mb-6" v-if="uploadingFiles.length === 0">
         <TabView v-model:activeIndex="activeTabIndex" class="w-full">
           <TabPanel header="📸 Photos">
             <div class="space-y-6">
@@ -62,33 +178,7 @@
                           @change="handleFileSelect"
                         />
                       </div>
-                      <p class="text-xs text-color-secondary">PNG, JPG, GIF up to 10MB each</p>
-                    </div>
-                  </div>
-
-                  <!-- Upload Progress -->
-                  <div v-if="uploadingFiles.length > 0" class="mt-6 space-y-3">
-                    <h3 class="text-sm font-medium text-color">
-                      Uploading and applying magic to {{ currentFileIndex }} of {{ totalFilesToUpload }}
-                    </h3>
-                    <div v-for="(file, idx) in uploadingFiles" :key="file.id" class="surface-100 rounded-lg p-3">
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                          <div class="w-8 h-8 bg-primary-100 rounded flex items-center justify-center">
-                            <i class="pi pi-image text-primary text-xs"></i>
-                          </div>
-                          <div>
-                            <p class="text-sm font-medium text-color">{{ file.name }}</p>
-                            <p class="text-xs text-color-secondary">{{ file.size }} bytes</p>
-                          </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                          <div v-if="file.processing" class="text-xs text-info">Magic is happening...</div>
-                          <div v-else-if="file.uploading" class="text-xs text-color-secondary">Uploading...</div>
-                          <div v-else-if="file.error" class="text-xs text-danger">{{ file.error }}</div>
-                          <div v-else class="text-xs text-success">Complete</div>
-                        </div>
-                      </div>
+                      <p class="text-xs text-color-secondary">PNG, JPG, GIF up to 15MB each (files over 5MB will be automatically compressed)</p>
                     </div>
                   </div>
                 </template>
@@ -458,8 +548,8 @@
             <h2 class="text-2xl font-bold text-green-700 mb-2">🎉 Magic Complete!</h2>
             <p class="text-lg text-green-600 mb-4">
               We uploaded and worked our magic on <span class="font-bold">{{ successfulUploads }}</span> 
-              <span v-if="successfulUploads === 1">memory</span>
-              <span v-else>memories</span>!
+              <span v-if="successfulUploads === 1">&nbsp; memory</span>
+              <span v-else>&nbsp; memories</span>!
             </p>
           </div>
 
@@ -471,13 +561,13 @@
             <h2 class="text-2xl font-bold text-orange-700 mb-2">✨ Partially Complete!</h2>
             <p class="text-lg text-orange-600 mb-2">
               We uploaded and worked our magic on <span class="font-bold">{{ successfulUploads }} &nbsp;</span> 
-              <span v-if="successfulUploads === 1">memory moment</span>
-              <span v-else>memory moments</span>!
+              <span v-if="successfulUploads === 1">&nbsp; memory moment</span>
+              <span v-else>&nbsp; memory moments</span>!
             </p>
             <p class="text-sm text-orange-500">
               Unfortunately, we could not process <span class="font-bold">{{ failedUploads }} &nbsp;</span> 
-              <span v-if="failedUploads === 1">memory</span>
-              <span v-else>memories</span>.
+              <span v-if="failedUploads === 1">&nbsp; memory</span>
+              <span v-else>&nbsp; memories</span>.
             </p>
           </div>
 
@@ -489,8 +579,8 @@
             <h2 class="text-2xl font-bold text-red-700 mb-2">😔 Upload Issues</h2>
             <p class="text-lg text-red-600 mb-4">
               Unfortunately, we could not process <span class="font-bold">{{ failedUploads }} &nbsp;</span> 
-              <span v-if="failedUploads === 1">memory moment</span>
-              <span v-else>memory moments</span>.
+              <span v-if="failedUploads === 1">&nbsp;   memory moment</span>
+              <span v-else>&nbsp; memory moments</span>.
             </p>
           </div>
 
@@ -498,27 +588,67 @@
           <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6">
             <p class="text-sm text-gray-600">
               <span v-if="successfulUploads > 0">✨ Your memories are now ready for review and approval!</span>
-              <span v-else>💡 Try uploading smaller files or check your internet connection.</span>
             </p>
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex gap-3 justify-center">
+          <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
               @click="showCompletionDialog = false"
-              class="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 px-6 py-3 rounded-full font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg"
+              class="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 px-8 py-3 rounded-full font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg whitespace-nowrap flex items-center justify-center"
             >
               <i class="pi pi-check mr-2"></i>
-              Got it!
+              <span class="pr-2">Got it!</span>
             </Button>
             <Button
               v-if="successfulUploads > 0"
               @click="navigateTo('/app/review')"
               severity="secondary"
-              class="px-6 py-3 rounded-full font-semibold"
+              class="px-8 py-3 rounded-full font-semibold whitespace-nowrap flex items-center justify-center"
             >
               <i class="pi pi-eye mr-2"></i>
-              Review Memory Moments
+              <span class="hidden sm:inline pr-2">Review Moments</span>
+              <span class="sm:hidden pr-2">Review</span>
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      <!-- Navigation Warning Dialog -->
+      <Dialog
+        v-model:visible="showNavigationWarning"
+        modal
+        :closable="false"
+        :dismissableMask="false"
+        class="w-full max-w-md"
+        header="⚠️ Uploads in Progress"
+      >
+        <div class="text-center p-6">
+          <div class="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <i class="pi pi-exclamation-triangle text-white text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-800 mb-2">Uploads in Progress</h3>
+          <p class="text-gray-600 mb-6">
+            You have {{ uploadingFiles.length }} file(s) currently uploading. 
+            If you leave now, your uploads will be canceled and you'll lose your progress.
+          </p>
+          
+          <div class="flex gap-3 justify-center">
+            <Button
+              @click="confirmNavigation"
+              severity="danger"
+              class="px-6 py-3 rounded-full font-semibold"
+            >
+              <i class="pi pi-times mr-2"></i>
+              Leave Anyway
+            </Button>
+            <Button
+              @click="cancelNavigation"
+              severity="secondary"
+              class="px-6 py-3 rounded-full font-semibold"
+            >
+              <i class="pi pi-check mr-2"></i>
+              Stay Here
             </Button>
           </div>
         </div>
@@ -529,7 +659,9 @@
 
 <script setup>
 // Set the layout for this page
-import { ref } from 'vue'
+import { ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
+
+const router = useRouter()
 
 definePageMeta({
   layout: 'default'
@@ -549,18 +681,197 @@ const showCompletionDialog = ref(false)
 const recentAssets = ref([])
 const submittingStory = ref(false)
 const showHelpModal = ref(false)
+const showNavigationWarning = ref(false)
+const pendingNavigation = ref(null)
+const oversizedFiles = ref([])
 
 // Text story form
 const textStory = ref({
   title: '',
   content: '',
-  userCaption: ''
+  userCaption: '' // Initially blank caption
 })
+
+// Computed properties for progress tracking
+const overallProgress = computed(() => {
+  if (totalFilesToUpload.value === 0) return 0
+  
+  const completed = successfulUploads.value + failedUploads.value
+  return (completed / totalFilesToUpload.value) * 100
+})
+
+// Helper function to get individual file progress
+const getFileProgress = (file) => {
+  if (file.error) return 100 // Show full bar for failed files
+  if (!file.uploading && !file.processing && !file.compressing) return 100 // Show full bar for completed files
+  if (file.compressing) return 25 // Show 25% during compression
+  if (file.uploading) return 50 // Show 50% during upload
+  if (file.processing) return 75 // Show 75% during processing
+  return 0
+}
+
+// Helper function to format file size
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
 
 // Load recent assets
 onMounted(async () => {
   await loadRecentAssets()
 })
+
+// Navigation handling functions
+const confirmNavigation = () => {
+  showNavigationWarning.value = false
+  if (pendingNavigation.value) {
+    if (pendingNavigation.value === 'back') {
+      originalBack.call(router)
+    } else if (pendingNavigation.value === 'forward') {
+      originalForward.call(router)
+    } else {
+      navigateTo(pendingNavigation.value)
+    }
+    pendingNavigation.value = null
+  }
+}
+
+const cancelNavigation = () => {
+  showNavigationWarning.value = false
+  pendingNavigation.value = null
+}
+
+// Store original router methods for restoration
+let originalPush = null
+let originalReplace = null
+let originalGo = null
+let originalBack = null
+let originalForward = null
+
+// Enhanced navigation protection
+const setupNavigationProtection = () => {
+  // Override router.push
+  originalPush = router.push
+  router.push = function(to) {
+    if (uploadingFiles.value.length > 0) {
+      pendingNavigation.value = to
+      showNavigationWarning.value = true
+      return Promise.resolve(false)
+    }
+    return originalPush.call(this, to)
+  }
+  
+  // Override router.replace
+  originalReplace = router.replace
+  router.replace = function(to) {
+    if (uploadingFiles.value.length > 0) {
+      pendingNavigation.value = to
+      showNavigationWarning.value = true
+      return Promise.resolve(false)
+    }
+    return originalReplace.call(this, to)
+  }
+  
+  // Override router.go for back/forward navigation
+  originalGo = router.go
+  router.go = function(delta) {
+    if (uploadingFiles.value.length > 0) {
+      pendingNavigation.value = delta > 0 ? 'forward' : 'back'
+      showNavigationWarning.value = true
+      return Promise.resolve(false)
+    }
+    return originalGo.call(this, delta)
+  }
+  
+  // Override router.back specifically
+  originalBack = router.back
+  router.back = function() {
+    if (uploadingFiles.value.length > 0) {
+      pendingNavigation.value = 'back'
+      showNavigationWarning.value = true
+      return Promise.resolve(false)
+    }
+    return originalBack.call(this)
+  }
+  
+  // Override router.forward
+  originalForward = router.forward
+  router.forward = function() {
+    if (uploadingFiles.value.length > 0) {
+      pendingNavigation.value = 'forward'
+      showNavigationWarning.value = true
+      return Promise.resolve(false)
+    }
+    return originalForward.call(this)
+  }
+}
+
+// Enhanced beforeunload handler
+const handleBeforeUnload = (event) => {
+  if (uploadingFiles.value.length > 0) {
+    event.preventDefault()
+    event.returnValue = 'You have uploads in progress. Are you sure you want to leave?'
+    return 'You have uploads in progress. Are you sure you want to leave?'
+  }
+}
+
+// Enhanced popstate handler for browser back/forward buttons
+const handlePopstate = (event) => {
+  if (uploadingFiles.value.length > 0) {
+    // Prevent the navigation
+    event.preventDefault()
+    
+    // Show our custom warning dialog
+    pendingNavigation.value = 'back'
+    showNavigationWarning.value = true
+    
+    // Push the current state back to prevent navigation
+    window.history.pushState(null, '', window.location.href)
+    
+    return false
+  }
+}
+
+// Add page-level route guard
+onMounted(() => {
+  setupNavigationProtection()
+  
+  // Add popstate listener for browser back/forward buttons
+  window.addEventListener('popstate', handlePopstate)
+  
+  // Push current state to history to enable popstate detection
+  window.history.pushState(null, '', window.location.href)
+})
+
+// Navigation guard to warn users about leaving during uploads
+onBeforeUnmount(() => {
+  // Remove all event listeners when component is unmounted
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+  window.removeEventListener('popstate', handlePopstate)
+  
+  // Restore all original router methods
+  if (originalPush) router.push = originalPush
+  if (originalReplace) router.replace = originalReplace
+  if (originalGo) router.go = originalGo
+  if (originalBack) router.back = originalBack
+  if (originalForward) router.forward = originalForward
+})
+
+// Watch for uploads and add/remove navigation guard
+watch(uploadingFiles, (files) => {
+  if (files.length > 0) {
+    // Add navigation guard when uploads start
+    window.addEventListener('beforeunload', handleBeforeUnload)
+  } else {
+    // Remove navigation guard when uploads complete
+    window.removeEventListener('beforeunload', handleBeforeUnload)
+  }
+}, { immediate: true })
 
 // Load recent assets
 const loadRecentAssets = async () => {
@@ -585,20 +896,73 @@ const handleFileDrop = (event) => {
   uploadFiles(files)
 }
 
+// Helper function to compress image using Sharp
+const compressImage = async (file, maxSizeMB = 5) => {
+  // If file is already under the limit, return as is
+  if (file.size <= maxSizeMB * 1024 * 1024) {
+    return file
+  }
+
+  try {
+    // Create form data for the API
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('maxSizeMB', maxSizeMB.toString())
+
+    // Call the compression API
+    const response = await $fetch('/api/compress-image', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (response.compressed) {
+      // Convert base64 back to blob
+      const compressedBlob = await fetch(`data:image/jpeg;base64,${response.compressedBuffer}`)
+        .then(res => res.blob())
+      
+      // Create a new File object with the compressed blob
+      const compressedFile = new File([compressedBlob], file.name, {
+        type: 'image/jpeg',
+        lastModified: Date.now()
+      })
+      
+      return compressedFile
+    } else {
+      // No compression needed, return original file
+      return file
+    }
+  } catch (error) {
+    console.error('Compression failed:', error)
+    // If compression fails, return original file
+    return file
+  }
+}
+
 // Upload files
 const uploadFiles = async (files) => {
-  // Set total files to upload
-  totalFilesToUpload.value = files.length
+  // Reset oversized files list
+  oversizedFiles.value = []
+  
+  // Filter out oversized files and collect them
+  const validFiles = files.filter(file => {
+    if (file.size > 15 * 1024 * 1024) { // 15MB limit
+      oversizedFiles.value.push({
+        name: file.name,
+        size: file.size
+      })
+      return false
+    }
+    return true
+  })
+  
+  // Set total files to upload (only valid files)
+  totalFilesToUpload.value = validFiles.length
   currentFileIndex.value = 0
   successfulUploads.value = 0
   failedUploads.value = 0
   
-  for (const file of files) {
+  for (const file of validFiles) {
     currentFileIndex.value++
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      console.error(`${file.name} is too large. Maximum size is 10MB.`)
-      continue
-    }
 
     const fileId = Date.now() + Math.random()
     const uploadFile = {
@@ -608,30 +972,66 @@ const uploadFiles = async (files) => {
       size: file.size,
       uploading: true,
       processing: false,
-      error: null
+      error: null,
+      compressing: false
     }
 
     uploadingFiles.value.push(uploadFile)
 
     try {
-      // Upload asset
-      const asset = await db.assets.uploadAsset({
-        type: 'photo',
-        user_caption: file.name
-      }, file)
+      // Check if compression is needed
+      if (file.size > 5 * 1024 * 1024) { // 5MB threshold
+        uploadFile.compressing = true
+        uploadFile.uploading = false
+        
+        // Compress the file using Sharp
+        const compressedFile = await compressImage(file, 5)
+        
+        // Update file info for display
+        uploadFile.size = compressedFile.size
+        uploadFile.compressing = false
+        uploadFile.uploading = true
+        
+        // Upload compressed asset
+        const asset = await db.assets.uploadAsset({
+          type: 'photo',
+          title: file.name, // Use filename as default title
+          user_caption: '' // Initially blank caption
+        }, compressedFile)
+        
+        uploadFile.uploading = false
+        uploadFile.processing = true
 
-      uploadFile.uploading = false
-      uploadFile.processing = true
+        // Process with AI using compressed version
+        await $fetch('/api/ai/process-asset', {
+          method: 'POST',
+          body: {
+            assetId: asset.id,
+            assetType: 'photo',
+            storageUrl: asset.storage_url
+          }
+        })
+      } else {
+        // Upload original asset (no compression needed)
+        const asset = await db.assets.uploadAsset({
+          type: 'photo',
+          title: file.name, // Use filename as default title
+          user_caption: '' // Initially blank caption
+        }, file)
 
-      // Process with AI
-      await $fetch('/api/ai/process-asset', {
-        method: 'POST',
-        body: {
-          assetId: asset.id,
-          assetType: 'photo',
-          storageUrl: asset.storage_url
-        }
-      })
+        uploadFile.uploading = false
+        uploadFile.processing = true
+
+        // Process with AI
+        await $fetch('/api/ai/process-asset', {
+          method: 'POST',
+          body: {
+            assetId: asset.id,
+            assetType: 'photo',
+            storageUrl: asset.storage_url
+          }
+        })
+      }
 
       uploadFile.processing = false
       successfulUploads.value++
@@ -644,6 +1044,7 @@ const uploadFiles = async (files) => {
       uploadFile.error = error.message
       uploadFile.uploading = false
       uploadFile.processing = false
+      uploadFile.compressing = false
       failedUploads.value++
       
       console.error(`Failed to upload ${file.name}:`, error.message)
@@ -700,7 +1101,7 @@ const clearTextStory = () => {
   textStory.value = {
     title: '',
     content: '',
-    userCaption: ''
+    userCaption: '' // Reset to blank caption
   }
 }
 

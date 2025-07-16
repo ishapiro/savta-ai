@@ -153,206 +153,238 @@
 
           <!-- Mobile Menu Button -->
           <div class="md:hidden flex items-center">
-            <Button
-              @click="mobileMenuOpen = !mobileMenuOpen"
-              icon="pi pi-bars"
-              rounded
-              class="bg-gray-100 hover:bg-gray-200 text-gray-700"
+            <button
+              @click="toggleMobileMenu"
+              class="relative w-8 h-8 flex flex-col justify-center items-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg transition-all duration-200"
+              :class="mobileMenuOpen ? 'bg-blue-50' : 'bg-gray-50 hover:bg-gray-100'"
               aria-label="Toggle mobile menu"
-            />
-          </div>
-        </div>
-
-        <!-- Mobile Navigation -->
-        <div v-show="mobileMenuOpen" class="md:hidden border-t border-surface-border surface-section bg-white/95 backdrop-blur-sm">
-          <div class="px-4 py-6 space-y-3">
-            <!-- User Status -->
-            <div class="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                  <i class="pi pi-user text-white text-lg"></i>
-                </div>
-                <div>
-                  <p class="text-sm font-semibold text-gray-900">
-                    {{ user ? 'Authenticated User' : 'Guest' }}
-                  </p>
-                  <p class="text-xs text-gray-500">
-                    {{ user ? user.email : 'Limited access mode' }}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Navigation Links -->
-            <div class="space-y-2">
-              <NuxtLink 
-                to="/app/dashboard" 
-                class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
-                @click="mobileMenuOpen = false"
-              >
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                    <i class="pi pi-home text-xl"></i>
-                  </div>
-                  <div>
-                    <p class="font-semibold">Savta's Memory Manor</p>
-                    <p class="text-xs opacity-80">Cast a spell and share a memory.</p>
-                  </div>
-                </div>
-                <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
-              </NuxtLink>
-              
-              <template v-if="user">
-                <!-- App Navigation -->
-                <NuxtLink 
-                  to="/app/upload" 
-                  class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
-                  @click="mobileMenuOpen = false"
-                >
-                  <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                      <i class="pi pi-upload text-xl"></i>
-                    </div>
-                    <div>
-                      <p class="font-semibold">Upload</p>
-                      <p class="text-xs opacity-80">Add photos & memories</p>
-                    </div>
-                  </div>
-                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                </NuxtLink>
-                
-                <NuxtLink 
-                  to="/app/review" 
-                  class="flex items-center justify-between p-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
-                  @click="mobileMenuOpen = false"
-                >
-                  <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                      <i class="pi pi-check-circle text-xl"></i>
-                    </div>
-                    <div>
-                      <p class="font-semibold">Review</p>
-                      <p class="text-xs opacity-80">Review & approve content</p>
-                    </div>
-                  </div>
-                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                </NuxtLink>
-                
-                <NuxtLink 
-                  to="/app/memory-books" 
-                  class="flex items-center justify-between p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
-                  @click="mobileMenuOpen = false"
-                >
-                  <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                      <i class="pi pi-book text-xl"></i>
-                    </div>
-                    <div>
-                      <p class="font-semibold">Savta's Magic Memories</p>
-                      <p class="text-xs opacity-80">View your collections</p>
-                    </div>
-                  </div>
-                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                </NuxtLink>
-                
-                <!-- Admin/Editor Navigation - Only for authenticated users -->
-                <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
-                  <NuxtLink 
-                    to="/app/editor" 
-                    class="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
-                    @click="mobileMenuOpen = false"
-                  >
-                    <div class="flex items-center space-x-3">
-                      <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                        <i class="pi pi-palette text-xl"></i>
-                      </div>
-                      <div>
-                        <p class="font-semibold">Editor</p>
-                        <p class="text-xs opacity-80">Content management</p>
-                      </div>
-                    </div>
-                    <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                  </NuxtLink>
-                </template>
-                
-                <template v-if="userProfile && userProfile.role === 'admin'">
-                  <NuxtLink 
-                    to="/app/admin" 
-                    class="flex items-center justify-between p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
-                    @click="mobileMenuOpen = false"
-                  >
-                    <div class="flex items-center space-x-3">
-                      <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                        <i class="pi pi-cog text-xl"></i>
-                      </div>
-                      <div>
-                        <p class="font-semibold">Admin</p>
-                        <p class="text-xs opacity-80">System administration</p>
-                      </div>
-                    </div>
-                    <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                  </NuxtLink>
-                </template>
-                
-                <!-- Sign Out Button -->
-                <button
-                  @click="handleSignOut"
-                  class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
-                >
-                  <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                      <i class="pi pi-sign-out text-xl"></i>
-                    </div>
-                    <div>
-                      <p class="font-semibold">Sign Out</p>
-                      <p class="text-xs opacity-80">End your session</p>
-                    </div>
-                  </div>
-                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                </button>
-              </template>
-              
-              <template v-else>
-                <!-- Auth Buttons -->
-                <NuxtLink 
-                  to="/app/login" 
-                  class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
-                  @click="mobileMenuOpen = false"
-                >
-                  <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                      <i class="pi pi-sign-in text-xl"></i>
-                    </div>
-                    <div>
-                      <p class="font-semibold">Sign In</p>
-                      <p class="text-xs opacity-80">Access your account</p>
-                    </div>
-                  </div>
-                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                </NuxtLink>
-                
-                <NuxtLink 
-                  to="/app/signup" 
-                  class="flex items-center justify-between p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 no-underline group"
-                  @click="mobileMenuOpen = false"
-                >
-                  <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                      <i class="pi pi-user-plus text-xl"></i>
-                    </div>
-                    <div>
-                      <p class="font-semibold">Sign Up</p>
-                      <p class="text-xs opacity-80">Create new account</p>
-                    </div>
-                  </div>
-                  <i class="pi pi-chevron-right text-lg opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                </NuxtLink>
-              </template>
-            </div>
+            >
+              <!-- Hamburger Icon with Animation -->
+              <span 
+                class="w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ease-in-out"
+                :class="mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''"
+              ></span>
+              <span 
+                class="w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ease-in-out mt-1"
+                :class="mobileMenuOpen ? 'opacity-0' : ''"
+              ></span>
+              <span 
+                class="w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ease-in-out mt-1"
+                :class="mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''"
+              ></span>
+            </button>
           </div>
         </div>
       </nav>
     </header>
+
+    <!-- Mobile Menu Backdrop -->
+    <div 
+      v-if="mobileMenuOpen" 
+      @click="closeMobileMenu"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 md:hidden transition-opacity duration-300"
+    ></div>
+
+    <!-- Mobile Navigation -->
+    <div 
+      class="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-in-out"
+      :class="mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'"
+    >
+      <!-- Mobile Menu Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+            <i class="pi pi-user text-white text-lg"></i>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">
+              {{ user ? 'Authenticated User' : 'Guest' }}
+            </p>
+            <p class="text-xs text-gray-500">
+              {{ user ? user.email : 'Limited access mode' }}
+            </p>
+          </div>
+        </div>
+        <button
+          @click="closeMobileMenu"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <i class="pi pi-times text-gray-500"></i>
+        </button>
+      </div>
+
+      <!-- Mobile Menu Content -->
+      <div class="flex-1 overflow-y-auto">
+        <div class="p-4 space-y-2">
+          <!-- Navigation Links -->
+          <div class="space-y-1">
+            <NuxtLink 
+              to="/app/dashboard" 
+              class="flex items-center justify-between p-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 no-underline group"
+              @click="closeMobileMenu"
+            >
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                  <i class="pi pi-home text-lg"></i>
+                </div>
+                <div>
+                  <p class="font-semibold text-sm">Savta's Memory Manor</p>
+                  <p class="text-xs opacity-80">Cast a spell and share a memory.</p>
+                </div>
+              </div>
+              <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>
+            </NuxtLink>
+            
+            <template v-if="user">
+              <!-- App Navigation -->
+              <NuxtLink 
+                to="/app/upload" 
+                class="flex items-center justify-between p-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 no-underline group"
+                @click="closeMobileMenu"
+              >
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                    <i class="pi pi-upload text-lg"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-sm">Upload</p>
+                    <p class="text-xs opacity-80">Add photos & memories</p>
+                  </div>
+                </div>
+                <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>
+              </NuxtLink>
+              
+              <NuxtLink 
+                to="/app/review" 
+                class="flex items-center justify-between p-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 no-underline group"
+                @click="closeMobileMenu"
+              >
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                    <i class="pi pi-check-circle text-lg"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-sm">Review</p>
+                    <p class="text-xs opacity-80">Review & approve content</p>
+                  </div>
+                </div>
+                <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>
+              </NuxtLink>
+              
+              <NuxtLink 
+                to="/app/memory-books" 
+                class="flex items-center justify-between p-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 no-underline group"
+                @click="closeMobileMenu"
+              >
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                    <i class="pi pi-book text-lg"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-sm">Savta's Magic Memories</p>
+                    <p class="text-xs opacity-80">View your collections</p>
+                  </div>
+                </div>
+                <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>
+              </NuxtLink>
+              
+              <!-- Admin/Editor Navigation - Only for authenticated users -->
+              <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
+                <NuxtLink 
+                  to="/app/editor" 
+                  class="flex items-center justify-between p-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 no-underline group"
+                  @click="closeMobileMenu"
+                >
+                  <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                      <i class="pi pi-palette text-lg"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold text-sm">Editor</p>
+                      <p class="text-xs opacity-80">Content management</p>
+                    </div>
+                  </div>
+                  <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </NuxtLink>
+              </template>
+              
+              <template v-if="userProfile && userProfile.role === 'admin'">
+                <NuxtLink 
+                  to="/app/admin" 
+                  class="flex items-center justify-between p-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 no-underline group"
+                  @click="closeMobileMenu"
+                >
+                  <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                      <i class="pi pi-cog text-lg"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold text-sm">Admin</p>
+                      <p class="text-xs opacity-80">System administration</p>
+                    </div>
+                  </div>
+                  <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                </NuxtLink>
+              </template>
+              
+              <!-- Sign Out Button -->
+              <button
+                @click="handleSignOut"
+                class="w-full flex items-center justify-between p-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+              >
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                    <i class="pi pi-sign-out text-lg"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-sm">Sign Out</p>
+                    <p class="text-xs opacity-80">End your session</p>
+                  </div>
+                </div>
+                <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>
+              </button>
+            </template>
+            
+            <template v-else>
+              <!-- Auth Buttons -->
+              <NuxtLink 
+                to="/app/login" 
+                class="flex items-center justify-between p-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 no-underline group"
+                @click="closeMobileMenu"
+              >
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                    <i class="pi pi-sign-in text-lg"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-sm">Sign In</p>
+                    <p class="text-xs opacity-80">Access your account</p>
+                  </div>
+                </div>
+                <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>
+              </NuxtLink>
+              
+              <NuxtLink 
+                to="/app/signup" 
+                class="flex items-center justify-between p-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 no-underline group"
+                @click="closeMobileMenu"
+              >
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                    <i class="pi pi-user-plus text-lg"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-sm">Sign Up</p>
+                    <p class="text-xs opacity-80">Create new account</p>
+                  </div>
+                </div>
+                <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>
+              </NuxtLink>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Breadcrumb aligned with header content -->
     <div class="hidden md:block bg-gray-50">
@@ -421,6 +453,15 @@ const mobileMenuOpen = ref(false)
 const config = useRuntimeConfig()
 const buildInfo = config.public.buildDate
 const userProfile = ref(null)
+
+// Mobile menu methods
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false
+}
 
 // Load user profile when user changes
 watch(() => user.value, async (newUser) => {
