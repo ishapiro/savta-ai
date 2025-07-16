@@ -1023,20 +1023,85 @@ export default defineEventHandler(async (event) => {
               const longestLine = displayLines.reduce((longest, line) => line.length > longest.length ? line : longest, '')
               const textWidth = longestLine.length * 4.5 // Approximate width
               
-              // Draw white background rectangle for caption
+              // Calculate caption box dimensions with extra padding for better appearance
+              const captionWidth = Math.min(textWidth + 20, drawWidth - 10)
+              const captionHeight = totalHeight + 12
+              const captionX = x + (drawWidth - captionWidth) / 2 // Center the caption box
+              const captionY = y + 15
+              const cornerRadius = 6
+              
+              // Draw rounded rectangle background for caption using circles and rectangles
+              const whiteColor = rgb(1, 1, 1)
+              
+              // Draw the main rectangle (background)
               page.drawRectangle({
-                x: x + 5,
-                y: y + 15,
-                width: Math.min(textWidth + 10, drawWidth - 10), // Don't exceed image width
-                height: totalHeight + 6,
-                color: rgb(1, 1, 1)
+                x: captionX + cornerRadius,
+                y: captionY,
+                width: captionWidth - 2 * cornerRadius,
+                height: captionHeight,
+                color: whiteColor
               })
               
-              // Draw black text line by line
+              // Draw left rectangle
+              page.drawRectangle({
+                x: captionX,
+                y: captionY + cornerRadius,
+                width: cornerRadius,
+                height: captionHeight - 2 * cornerRadius,
+                color: whiteColor
+              })
+              
+              // Draw right rectangle
+              page.drawRectangle({
+                x: captionX + captionWidth - cornerRadius,
+                y: captionY + cornerRadius,
+                width: cornerRadius,
+                height: captionHeight - 2 * cornerRadius,
+                color: whiteColor
+              })
+              
+              // Draw corner circles
+              // Top-left corner
+              page.drawCircle({
+                x: captionX + cornerRadius,
+                y: captionY + cornerRadius,
+                size: cornerRadius,
+                color: whiteColor
+              })
+              
+              // Top-right corner
+              page.drawCircle({
+                x: captionX + captionWidth - cornerRadius,
+                y: captionY + cornerRadius,
+                size: cornerRadius,
+                color: whiteColor
+              })
+              
+              // Bottom-left corner
+              page.drawCircle({
+                x: captionX + cornerRadius,
+                y: captionY + captionHeight - cornerRadius,
+                size: cornerRadius,
+                color: whiteColor
+              })
+              
+              // Bottom-right corner
+              page.drawCircle({
+                x: captionX + captionWidth - cornerRadius,
+                y: captionY + captionHeight - cornerRadius,
+                size: cornerRadius,
+                color: whiteColor
+              })
+              
+              // Draw black text line by line, centered
               displayLines.forEach((line, index) => {
+                const lineTextWidth = line.length * 4.5 // Approximate width of this line
+                const textX = captionX + (captionWidth - lineTextWidth) / 2 // Center text horizontally
+                const textY = captionY + captionHeight - 8 - (displayLines.length - 1 - index) * lineHeight // Position from top
+                
                 page.drawText(line, {
-                  x: x + 10,
-                  y: y + 20 + (displayLines.length - 1 - index) * lineHeight, // Draw from bottom up
+                  x: textX,
+                  y: textY,
                   size: 8,
                   color: rgb(0, 0, 0)
                 })
@@ -1102,20 +1167,85 @@ export default defineEventHandler(async (event) => {
               const longestLine = displayLines.reduce((longest, line) => line.length > longest.length ? line : longest, '')
               const textWidth = longestLine.length * 4.5 // Approximate width
               
-              // Draw white background rectangle for caption
+              // Calculate caption box dimensions with extra padding for better appearance
+              const captionWidth = Math.min(textWidth + 20, drawWidth - 10)
+              const captionHeight = totalHeight + 12
+              const captionX = x + (drawWidth - captionWidth) / 2 // Center the caption box
+              const captionY = y + 15
+              const cornerRadius = 6
+              
+              // Draw rounded rectangle background for caption using circles and rectangles
+              const whiteColor = rgb(1, 1, 1)
+              
+              // Draw the main rectangle (background)
               page.drawRectangle({
-                x: x + 5,
-                y: y + 15,
-                width: Math.min(textWidth + 10, drawWidth - 10), // Don't exceed image width
-                height: totalHeight + 6,
-                color: rgb(1, 1, 1)
+                x: captionX + cornerRadius,
+                y: captionY,
+                width: captionWidth - 2 * cornerRadius,
+                height: captionHeight,
+                color: whiteColor
               })
               
-              // Draw black text line by line
+              // Draw left rectangle
+              page.drawRectangle({
+                x: captionX,
+                y: captionY + cornerRadius,
+                width: cornerRadius,
+                height: captionHeight - 2 * cornerRadius,
+                color: whiteColor
+              })
+              
+              // Draw right rectangle
+              page.drawRectangle({
+                x: captionX + captionWidth - cornerRadius,
+                y: captionY + cornerRadius,
+                width: cornerRadius,
+                height: captionHeight - 2 * cornerRadius,
+                color: whiteColor
+              })
+              
+              // Draw corner circles
+              // Top-left corner
+              page.drawCircle({
+                x: captionX + cornerRadius,
+                y: captionY + cornerRadius,
+                size: cornerRadius,
+                color: whiteColor
+              })
+              
+              // Top-right corner
+              page.drawCircle({
+                x: captionX + captionWidth - cornerRadius,
+                y: captionY + cornerRadius,
+                size: cornerRadius,
+                color: whiteColor
+              })
+              
+              // Bottom-left corner
+              page.drawCircle({
+                x: captionX + cornerRadius,
+                y: captionY + captionHeight - cornerRadius,
+                size: cornerRadius,
+                color: whiteColor
+              })
+              
+              // Bottom-right corner
+              page.drawCircle({
+                x: captionX + captionWidth - cornerRadius,
+                y: captionY + captionHeight - cornerRadius,
+                size: cornerRadius,
+                color: whiteColor
+              })
+              
+              // Draw black text line by line, centered
               displayLines.forEach((line, index) => {
+                const lineTextWidth = line.length * 4.5 // Approximate width of this line
+                const textX = captionX + (captionWidth - lineTextWidth) / 2 // Center text horizontally
+                const textY = captionY + captionHeight - 8 - (displayLines.length - 1 - index) * lineHeight // Position from top
+                
                 page.drawText(line, {
-                  x: x + 10,
-                  y: y + 20 + (displayLines.length - 1 - index) * lineHeight, // Draw from bottom up
+                  x: textX,
+                  y: textY,
                   size: 8,
                   color: rgb(0, 0, 0)
                 })

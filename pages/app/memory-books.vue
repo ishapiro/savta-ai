@@ -18,7 +18,7 @@
             class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 animate-pulse focus:outline-none magic-memory-btn"
             @click="openMagicMemoryDialog"
           >
-            <i class="pi pi-sparkles text-lg sm:text-xl text-yellow-300 drop-shadow"></i>
+            <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
             <span class="hidden sm:inline">Savta's Magic Spells</span>
             <span class="sm:hidden">Magic</span>
           </button>
@@ -114,10 +114,20 @@
       <div
         v-for="book in memoryBooks"
         :key="book.id"
-        :class="[ 'bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-2xl shadow-lg border border-gray-100 flex flex-col transition-all duration-300 hover:shadow-2xl p-0', book.layout_type === 'magic' ? 'magic-memory-card' : '' ]"
+        :class="[
+          'rounded-xl shadow-lg border flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-105 p-0 overflow-hidden',
+          book.layout_type === 'magic' 
+            ? 'bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-100 border-purple-200 magic-memory-card' 
+            : 'bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 border-blue-200'
+        ]"
       >
         <!-- Book Cover with Gradient -->
-        <div class="relative h-32 bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 rounded-t-2xl flex items-center justify-center">
+        <div :class="[
+          'relative h-32 flex items-center justify-center',
+          book.layout_type === 'magic'
+            ? 'bg-gradient-to-br from-purple-200 via-pink-200 to-indigo-200'
+            : 'bg-gradient-to-br from-blue-200 via-cyan-200 to-blue-300'
+        ]">
           <div class="absolute top-3 right-3">
             <div :class="getStatusBadgeClass(book.status)" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-md backdrop-blur-sm">
               <i :class="getStatusIcon(book.status)" class="text-xs"></i>
@@ -125,84 +135,92 @@
             </div>
           </div>
           <div class="flex flex-col items-center">
-            <div class="w-14 h-14 bg-white/80 rounded-full flex items-center justify-center shadow-lg mb-2 relative">
-              <i v-if="book.layout_type === 'magic'" class="pi pi-sparkles text-3xl text-yellow-400 animate-pulse magic-sparkle"></i>
-              <i v-else class="pi pi-book text-2xl text-blue-600"></i>
+            <div :class="[
+              'w-14 h-14 rounded-xl flex items-center justify-center shadow-lg mb-2 relative group-hover:scale-110 transition-transform duration-300',
+              book.layout_type === 'magic'
+                ? 'bg-gradient-to-br from-purple-400 to-pink-400'
+                : 'bg-gradient-to-br from-blue-400 to-cyan-400'
+            ]">
+              <Wand2 v-if="book.layout_type === 'magic'" class="w-8 h-8 text-white" />
+              <i v-else class="pi pi-book text-2xl text-white"></i>
             </div>
-            <span class="text-xs font-semibold text-gray-700">{{ book.layout_type === 'magic' ? 'Magic Memory' : 'Memory Spell' }}</span>
+            <span class="text-xs font-semibold text-gray-700 text-center px-2 leading-tight">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Spell #' + book.id.slice(-6))) }}</span>
           </div>
         </div>
         <!-- Card Content -->
-        <div class="flex-1 flex flex-col p-5 pb-2">
-          <h3 class="text-lg font-bold text-gray-900 mb-1 truncate">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Spell #' + book.id.slice(-6))) }}</h3>
-          <div v-if="book.layout_type === 'magic' && book.magic_story" class="text-purple-900 text-sm magic-story animate-fade-in">
-            <i class="pi pi-sparkles text-yellow-400 mr-2"></i>{{ book.magic_story.length > 100 ? book.magic_story.slice(0, 100) + '...' : book.magic_story }}
+        <div class="flex-1 flex flex-col p-5 pb-3 min-h-[160px]">
+          <div v-if="book.layout_type === 'magic' && book.magic_story" class="text-purple-900 text-sm magic-story animate-fade-in mb-3 relative leading-relaxed">
+            <Sparkle class="w-4 h-4 text-yellow-400 absolute left-0 top-0" />
+            <span class="ml-6">{{ book.magic_story.length > 115 ? book.magic_story.slice(0, 115) + '...' : book.magic_story }}</span>
           </div>
-          <div class="space-y-1 text-xs text-gray-600 mb-2">
+          <div class="space-y-2 text-sm text-gray-600 mb-3">
             <div class="flex justify-between items-center">
-              <span class="font-medium">Created:</span>
-              <span>{{ formatDate(book.created_at) }}</span>
+              <span class="font-semibold text-gray-700">Created:</span>
+              <span class="font-mono text-xs">{{ formatDate(book.created_at) }}</span>
             </div>
             <div v-if="book.generated_at" class="flex justify-between items-center">
-              <span class="font-medium">Generated:</span>
-              <span>{{ formatDate(book.generated_at) }}</span>
+              <span class="font-semibold text-gray-700">Generated:</span>
+              <span class="font-mono text-xs">{{ formatDate(book.generated_at) }}</span>
             </div>
             <div v-if="book.approved_at" class="flex justify-between items-center">
-              <span class="font-medium">Approved:</span>
-              <span>{{ formatDate(book.approved_at) }}</span>
+              <span class="font-semibold text-gray-700">Approved:</span>
+              <span class="font-mono text-xs">{{ formatDate(book.approved_at) }}</span>
             </div>
             <div v-if="book.created_from_assets" class="flex justify-between items-center">
-              <span class="font-medium">Assets:</span>
-              <span class="bg-gray-100 px-2 py-1 rounded-full text-xs font-medium">{{ book.created_from_assets.length }}</span>
+              <span class="font-semibold text-gray-700">Assets:</span>
+              <span class="bg-gradient-to-r from-blue-100 to-purple-100 px-3 py-1 rounded-full text-xs font-bold text-gray-700 border border-gray-200">{{ book.created_from_assets.length }}</span>
             </div>
           </div>
-          <div v-if="book.review_notes" class="mb-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
-            <p class="text-xs text-amber-800">{{ book.review_notes }}</p>
+          <div v-if="book.review_notes" class="mb-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+            <p class="text-xs text-amber-800 font-medium leading-relaxed">{{ book.review_notes }}</p>
           </div>
         </div>
         <!-- Action Bar -->
-        <div class="bg-white/80 border-t border-gray-200 px-2 py-3 rounded-b-2xl">
-          <div class="flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-4 gap-y-3">
-            <!-- View Button -->
-            <div class="flex flex-col items-center cursor-pointer group min-w-[56px] sm:min-w-[48px] p-1" @click="onDownloadClick(book)">
-              <i class="pi pi-external-link text-lg sm:text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-green-700 mt-0.5">View</span>
-            </div>
-            <!-- Generate Button (only for draft, not magic) -->
-            <div v-if="book.status === 'draft' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group min-w-[56px] sm:min-w-[48px] p-1" @click="onGenerateClick(book)">
-              <i class="pi pi-bolt text-lg sm:text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-purple-700 mt-0.5">Generate</span>
-            </div>
-            <!-- Regenerate Button (for ready or background_ready, not magic) -->
-            <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group min-w-[56px] sm:min-w-[48px] p-1" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
-              <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-0.5">{{ book.status === 'background_ready' ? 'Processing' : 'Regenerate' }}</span>
-            </div>
-            <!-- Approve Button (not magic) -->
-            <div v-if="book.status === 'ready' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group min-w-[56px] sm:min-w-[48px] p-1" @click="approveBook(book.id)">
-              <i class="pi pi-check text-lg sm:text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-purple-700 mt-0.5">Approve</span>
-            </div>
-            <!-- Unapprove Button (not magic) -->
-            <div v-if="book.status === 'approved' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group min-w-[56px] sm:min-w-[48px] p-1" @click="unapproveBook(book.id)">
-              <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-orange-700 mt-0.5">Unapprove</span>
-            </div>
-            <!-- View Details Button -->
-            <div class="flex flex-col items-center cursor-pointer group min-w-[56px] sm:min-w-[48px] p-1" @click="viewBookDetails(book)">
-              <i class="pi pi-list text-lg sm:text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-gray-700 mt-0.5">Details</span>
-            </div>
-            <!-- Edit Settings Button (not magic) -->
-            <div v-if="book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group min-w-[56px] sm:min-w-[48px] p-1" @click="openEditSettings(book)">
-              <i class="pi pi-cog text-lg sm:text-xl text-blue-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-blue-700 mt-0.5">Settings</span>
-            </div>
-            <!-- Delete Button -->
-            <div class="flex flex-col items-center cursor-pointer group min-w-[56px] sm:min-w-[48px] p-1" @click="confirmDeleteBook(book)">
-              <i class="pi pi-trash text-lg sm:text-xl text-red-500 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-red-700 mt-0.5">Delete</span>
-            </div>
+        <div :class="[
+          'px-3 py-4 flex flex-wrap items-center justify-center gap-3',
+          book.layout_type === 'magic'
+            ? 'bg-gradient-to-r from-purple-100/80 to-pink-100/80 border-t border-purple-200'
+            : 'bg-gradient-to-r from-blue-100/80 to-cyan-100/80 border-t border-blue-200'
+        ]">
+          <!-- View Button -->
+          <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onDownloadClick(book)">
+            <i class="pi pi-external-link text-lg sm:text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-green-700 mt-1 font-medium">View</span>
+          </div>
+          <!-- Generate Button (only for draft, not magic) -->
+          <div v-if="book.status === 'draft' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onGenerateClick(book)">
+            <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 group-hover:scale-125 transition-transform" />
+            <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Generate</span>
+          </div>
+          <!-- Regenerate Button (for ready or background_ready, not magic) -->
+          <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
+            <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Regenerate' }}</span>
+          </div>
+          <!-- Approve Button (not magic) -->
+          <div v-if="book.status === 'ready' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="approveBook(book.id)">
+            <i class="pi pi-check text-lg sm:text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Approve</span>
+          </div>
+          <!-- Unapprove Button (not magic) -->
+          <div v-if="book.status === 'approved' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="unapproveBook(book.id)">
+            <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
+          </div>
+          <!-- View Details Button -->
+          <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="viewBookDetails(book)">
+            <i class="pi pi-list text-lg sm:text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-gray-700 mt-1 font-medium">Details</span>
+          </div>
+          <!-- Edit Settings Button (not magic) -->
+          <div v-if="book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="openEditSettings(book)">
+            <i class="pi pi-cog text-lg sm:text-xl text-blue-600 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-blue-700 mt-1 font-medium">Settings</span>
+          </div>
+          <!-- Delete Button -->
+          <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="confirmDeleteBook(book)">
+            <i class="pi pi-trash text-lg sm:text-xl text-red-500 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-red-700 mt-1 font-medium">Delete</span>
           </div>
         </div>
       </div>
@@ -217,7 +235,7 @@
       <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Create your first magic memory from your approved assets.</p>
       <button
         class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-xs"
-        @click="showCreateModal = true"
+        @click="openCreateModal"
       >
         <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Magic Memory
       </button>
@@ -266,32 +284,6 @@
             />
           </div>
         </div>
-
-        <!-- <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Quality</label>
-            <Dropdown
-              v-model="newBook.quality"
-              :options="qualityOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select quality"
-              class="w-full"
-            />
-          </div> -->
-<!-- 
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Medium</label>
-            <Dropdown
-              v-model="newBook.medium"
-              :options="mediumOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select medium"
-              class="w-full"
-            />
-          </div>
-        </div> -->
 
         <div class="field">
           <label class="block text-sm font-medium text-gray-900 mb-1">Theme</label>
@@ -353,7 +345,6 @@
                 v-model="newBook.includeCaptions"
                 :binary="true"
               />
-              <!-- <span class="text-sm text-gray-600">Include AI-generated captions</span> -->
             </div>
           </div>
 
@@ -364,7 +355,6 @@
                 v-model="newBook.includeTags"
                 :binary="true"
               />
-              <!-- <span class="text-sm text-gray-600">Include asset tags</span> -->
             </div>
           </div>
         </div>
@@ -392,6 +382,8 @@
         </div>
       </template>
     </Dialog>
+
+
 
     <!-- Success Dialog -->
     <Dialog
@@ -424,9 +416,9 @@
           </p>
           
           <div class="flex items-center justify-center gap-3 bg-white rounded-lg p-3 border border-purple-200">
-            <i class="pi pi-bolt text-2xl text-yellow-500 animate-pulse"></i>
+            <Wand2 class="w-6 h-6 text-yellow-500 animate-pulse" />
             <p class="text-base text-gray-700 font-medium">
-              Click on the <span class="text-yellow-600 font-bold">lightning bolt</span> on the Magic Memory card below
+              Click on the <span class="text-yellow-600 font-bold">magic wand</span> on the Magic Memory card below
               to make it happen!
             </p>
           </div>
@@ -502,7 +494,7 @@
             </div>
             <div v-if="selectedBook.generated_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-bolt text-purple-600 text-xs sm:text-sm"></i>
+                <Wand2 class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
                 <span class="text-xs font-medium text-gray-600">Generated</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.generated_at) }}</p>
@@ -622,7 +614,7 @@
                 class="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="onGenerateClick(selectedBook)"
               >
-                <i class="pi pi-bolt text-xs sm:text-sm"></i>
+                <Wand2 class="w-3 h-3 sm:w-4 sm:h-4" />
                 <span class="hidden sm:inline">Generate Book</span>
                 <span class="sm:hidden">Generate</span>
               </button>
@@ -696,30 +688,48 @@
       </div>
     </Dialog>
     <!-- Regenerate Confirmation Dialog -->
-    <Dialog v-model:visible="showRegenerateDialog" modal :header="null" :closable="false" class="w-full md:w-[60%] lg:w-[50%] p-0">
-      <div class="py-4 px-4 sm:px-6">
-        <p class="text-sm sm:text-base leading-relaxed">Would you like to create a fresh, new version of this magic memory with a brand new AI-generated background design? It's like giving your memories a beautiful new frame! This will take a few moments to create something special just for you. If you're happy with the current version and just want to view it right away, you can use the view button below - that's much faster!</p>
-        <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6">
+    <Dialog
+      v-model:visible="showRegenerateDialog"
+      modal
+      header="Want to Cast a Different Spell?"
+      class="w-full md:w-[60%] lg:w-[50%] sm:rounded-2xl"
+      :closable="false"
+    >
+      <div class="py-6 px-4 sm:px-8 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 rounded-2xl">
+        <div class="flex flex-col items-center mb-4">
+          <div class="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center shadow mb-2">
+            <Sparkles class="w-8 h-8 text-yellow-400 animate-pulse" />
+          </div>
+          <h2 class="text-lg sm:text-xl font-bold text-purple-700 mb-2">Ready for a Magical Makeover?</h2>
+          <p class="text-sm sm:text-base text-gray-700 leading-relaxed text-center">
+            Would you like to create a fresh, new version of this magic memory with a brand new AI-generated background design?
+            <span class="font-semibold text-purple-600">It's like giving your memories a beautiful new frame!</span>
+            <br />
+            This will take a few moments to create something special just for you.<br />
+            If you're happy with the current version and just want to view it right away, you can use the view button below – that's much faster!
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-center gap-2 w-full mt-6">
           <button
-            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-7 py-2 text-xs sm:text-sm shadow transition-all duration-200 min-w-[120px] sm:min-w-[150px]"
+            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="downloadCurrentBook"
           >
-            <i class="pi pi-external-link text-sm sm:text-base"></i>
+            <i class="pi pi-external-link text-xl"></i>
             View Current
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-4 sm:px-7 py-2 text-xs sm:text-sm shadow transition-all duration-200 min-w-[120px] sm:min-w-[150px]"
+            class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="cancelDialog"
           >
-            <i class="pi pi-times text-sm sm:text-base"></i>
+            <i class="pi pi-times text-xl"></i>
             Cancel
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-4 sm:px-7 py-2 text-xs sm:text-sm shadow transition-all duration-200 min-w-[140px] sm:min-w-[180px]"
+            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="confirmRegenerate"
           >
-            <i class="pi pi-refresh text-sm sm:text-base"></i>
-            Reapply AI Magic
+            <Sparkles class="w-5 h-5" />
+            Cast New Spell
           </button>
         </div>
       </div>
@@ -1211,15 +1221,37 @@
     <Dialog
       v-model:visible="showMagicMemoryDialog"
       modal
-      header="✨ Create a Magic Memory ✨"
+      :header="magicMemoryStep === 1 ? '✨ Name Your Magic Memory ✨' : '✨ Create a Magic Memory ✨'"
       class="w-[95vw] max-w-3xl sm:rounded-2xl magic-memory-dialog"
       :closable="true"
     >
-      <div v-if="!loadingAssets" class="space-y-4">
+      <!-- Step 1: Title Input -->
+      <div v-if="magicMemoryStep === 1" class="space-y-6">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Sparkles class="w-8 h-8 text-white" />
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">What would you like to call this memory?</h3>
+          <p class="text-gray-600">Give your magic memory a special name that captures the moment</p>
+        </div>
+        
+        <div class="field">
+          <label class="block text-sm font-medium text-gray-900 mb-2">Memory Name</label>
+          <InputText
+            v-model="magicMemoryTitle"
+            placeholder="e.g., 'Summer Vacation 2024', 'Grandma's Birthday', 'Family Reunion'"
+            class="w-full text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+            @keyup.enter="nextMagicMemoryStep"
+          />
+        </div>
+      </div>
+
+      <!-- Step 2: Photo Selection -->
+      <div v-if="magicMemoryStep === 2 && !loadingAssets" class="space-y-4">
         <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200 flex items-center gap-3 animate-pulse">
           <i class="pi pi-sparkles text-2xl text-yellow-400 animate-bounce"></i>
           <div>
-            <h3 class="text-lg font-bold text-purple-700 mb-1">Select up to 12 Memory Moments</h3>
+            <h3 class="text-lg font-bold text-purple-700 mb-1">Select up to 12 Memory Moments for "{{ magicMemoryTitle }}"</h3>
             <p class="text-sm text-gray-700">Choose up to 12 photos by tag to inspire your Magic Memory story. The AI will weave them into something special!</p>
           </div>
         </div>
@@ -1281,7 +1313,7 @@
           </div>
         </div>
       </div>
-      <div v-else class="flex items-center justify-center py-8">
+      <div v-else-if="loadingAssets" class="flex items-center justify-center py-8">
         <div class="text-center">
           <i class="pi pi-spin pi-spinner text-3xl text-purple-400 mb-3"></i>
           <p class="text-sm text-gray-600">Loading your magical photos...</p>
@@ -1290,13 +1322,22 @@
       <template #footer>
         <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
           <Button
-            label="Cancel"
-            icon="pi pi-times"
+            :label="magicMemoryStep === 1 ? 'Cancel' : 'Back'"
+            :icon="magicMemoryStep === 1 ? 'pi pi-times' : 'pi pi-arrow-left'"
             severity="secondary"
-            @click="showMagicMemoryDialog = false"
+            @click="magicMemoryStep === 1 ? showMagicMemoryDialog = false : previousMagicMemoryStep()"
             class="rounded-full px-4 py-2 text-xs font-bold shadow w-full sm:w-auto"
           />
           <Button
+            v-if="magicMemoryStep === 1"
+            label="Next: Select Photos"
+            icon="pi pi-arrow-right"
+            :disabled="!magicMemoryTitle.trim()"
+            @click="nextMagicMemoryStep"
+            class="bg-gradient-to-r from-yellow-400 to-purple-500 hover:from-yellow-500 hover:to-purple-600 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold"
+          />
+          <Button
+            v-if="magicMemoryStep === 2"
             label="Cast Spell!"
             icon="pi pi-bolt"
             :disabled="magicSelectedMemories.length < 2 || magicLoading"
@@ -1333,6 +1374,7 @@
 <script setup>
 import { ref, watch, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useToast } from 'primevue/usetoast'
+import { Sparkles, Sparkle, Wand2 } from 'lucide-vue-next'
 const toast = useToast()
 
 const showPdfModal = ref(false)
@@ -1392,6 +1434,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 const memoryBooks = ref([])
 const loadingMemoryBooks = ref(true)
 const showCreateModal = ref(false)
+
 const showSuccessDialog = ref(false)
 const showDetailsModal = ref(false)
 const selectedBook = ref(null)
@@ -1419,8 +1462,49 @@ const newBook = ref({
   includeTags: true
 })
 
+// Create modal step state
+const createStep = ref(1)
+
 // Asset selection for new book
 const selectedAssets = ref([])
+
+// Create modal navigation functions
+const nextStep = () => {
+  if (createStep.value === 1 && newBook.value.title.trim()) {
+    createStep.value = 2
+  }
+}
+
+const previousStep = () => {
+  if (createStep.value === 2) {
+    createStep.value = 1
+  }
+}
+
+const resetCreateModal = () => {
+  createStep.value = 1
+  newBook.value = {
+    title: '',
+    layoutType: 'grid',
+    printSize: '8x10',
+    quality: 'standard',
+    medium: 'digital',
+    theme: 'classic',
+    gridLayout: '2x2',
+    memoryShape: 'original',
+    includeCaptions: true,
+    includeTags: true
+  }
+  selectedAssets.value = []
+}
+
+
+
+const closeCreateModal = () => {
+  showCreateModal.value = false
+}
+
+
 
 // Options for dropdowns
 const layoutOptions = ref([
@@ -1656,20 +1740,7 @@ const createMemoryBook = async () => {
     showSuccessDialog.value = true
 
     // Reset form and close modal
-    newBook.value = {
-      title: '',
-      layoutType: 'grid',
-      printSize: '8x10',
-      quality: 'standard',
-      medium: 'digital',
-      theme: 'classic',
-      gridLayout: '2x2',
-      memoryShape: 'magic',
-      includeCaptions: true,
-      includeTags: true
-    }
-    selectedAssets.value = [] // Reset selected assets
-    showCreateModal.value = false
+    resetCreateModal()
 
     // Reload memory books
     await loadMemoryBooks()
@@ -2364,7 +2435,9 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     })
   } catch (error) {
     return 'Unknown date'
@@ -2664,6 +2737,8 @@ const showInfoDialog = ref(false)
 import PdfViewer from '~/components/PdfViewer.vue'
 
 const showMagicMemoryDialog = ref(false)
+const magicMemoryStep = ref(1) // 1 = title input, 2 = photo selection
+const magicMemoryTitle = ref('')
 
 const magicSelectedTagFilter = ref([])
 const magicSelectedMemories = ref([])
@@ -2724,11 +2799,11 @@ async function onMagicMemoryContinue() {
     magicStatusMessage.value = '📚 Saving your Magic Memory...'
     const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
       method: 'POST',
-      body: {
-        asset_ids: aiRes.selected_photo_ids,
-        story: aiRes.story,
-        title: 'Magic Memory',
-      },
+              body: {
+          asset_ids: aiRes.selected_photo_ids,
+          story: aiRes.story,
+          title: magicMemoryTitle.value || 'Magic Memory',
+        },
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
@@ -2762,6 +2837,10 @@ async function onMagicMemoryContinue() {
 }
 
 const openMagicMemoryDialog = async () => {
+  magicMemoryStep.value = 1
+  magicMemoryTitle.value = ''
+  magicSelectedMemories.value = []
+  magicSelectedTagFilter.value = []
   loadingAssets.value = true
   try {
     const allApprovedAssets = await db.assets.getAssets({ approved: true })
@@ -2771,6 +2850,18 @@ const openMagicMemoryDialog = async () => {
   } finally {
     loadingAssets.value = false
     showMagicMemoryDialog.value = true
+  }
+}
+
+const nextMagicMemoryStep = () => {
+  if (magicMemoryStep.value === 1 && magicMemoryTitle.value.trim()) {
+    magicMemoryStep.value = 2
+  }
+}
+
+const previousMagicMemoryStep = () => {
+  if (magicMemoryStep.value === 2) {
+    magicMemoryStep.value = 1
   }
 }
 
