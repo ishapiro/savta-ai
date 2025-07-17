@@ -128,8 +128,9 @@
             ? 'bg-gradient-to-br from-purple-200 via-pink-200 to-indigo-200'
             : 'bg-gradient-to-br from-blue-200 via-cyan-200 to-blue-300'
         ]">
-          <div class="absolute top-3 right-3">
-            <div :class="getStatusBadgeClass(book.status)" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-md backdrop-blur-sm">
+          <!-- Status Badge: absolute top-right, smaller -->
+          <div class="absolute top-2 right-2 z-10">
+            <div :class="getStatusBadgeClass(book.status)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md backdrop-blur-sm min-w-[48px] min-h-[22px] justify-center">
               <i :class="getStatusIcon(book.status)" class="text-xs"></i>
               <span class="hidden sm:inline">{{ getStatusText(book.status) }}</span>
             </div>
@@ -149,7 +150,7 @@
         </div>
         <!-- Card Content -->
         <div class="flex-1 flex flex-col p-5 pb-3 min-h-[160px]">
-          <div v-if="book.layout_type === 'magic' && book.magic_story" class="text-purple-900 text-sm magic-story animate-fade-in mb-3 relative leading-relaxed">
+          <div v-if="book.layout_type === 'magic' && book.magic_story" class="text-purple-900 text-xs magic-story animate-fade-in mb-3 relative leading-relaxed">
             <Sparkle class="w-4 h-4 text-yellow-400 absolute left-0 top-0" />
             <span class="ml-6">{{ book.magic_story.length > 115 ? book.magic_story.slice(0, 115) + '...' : book.magic_story }}</span>
           </div>
@@ -192,18 +193,38 @@
             <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 group-hover:scale-125 transition-transform" />
             <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Compose</span>
           </div>
+          <!-- Magic Generate Button (for draft magic books) -->
+          <div v-if="book.status === 'draft' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onGenerateClick(book)">
+            <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 group-hover:scale-125 transition-transform" />
+            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Cast Spell</span>
+          </div>
           <!-- Regenerate Button (for ready or background_ready, not magic) -->
           <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
             <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
             <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recompose' }}</span>
+          </div>
+          <!-- Magic Regenerate Button (for ready magic books) -->
+          <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
+            <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recast Spell' }}</span>
           </div>
           <!-- Approve Button (not magic) -->
           <div v-if="book.status === 'ready' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="approveBook(book.id)">
             <i class="pi pi-check text-lg sm:text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
             <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Approve</span>
           </div>
+          <!-- Magic Approve Button -->
+          <div v-if="book.status === 'ready' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="approveBook(book.id)">
+            <i class="pi pi-check text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Approve</span>
+          </div>
           <!-- Unapprove Button (not magic) -->
           <div v-if="book.status === 'approved' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="unapproveBook(book.id)">
+            <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
+            <span class="text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
+          </div>
+          <!-- Magic Unapprove Button -->
+          <div v-if="book.status === 'approved' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="unapproveBook(book.id)">
             <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
             <span class="text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
           </div>
@@ -219,6 +240,15 @@
           >
             <i class="pi pi-cog text-xs sm:text-sm"></i>
             <span class="hidden sm:inline">Edit Settings</span>
+            <span class="sm:hidden">Edit</span>
+          </div>
+          <!-- Magic Edit Settings Button -->
+          <div v-if="selectedBook && selectedBook.layout_type === 'magic'"
+            class="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+            @click="openEditSettings(selectedBook)"
+          >
+            <i class="pi pi-cog text-xs sm:text-sm"></i>
+            <span class="hidden sm:inline">Edit Spell</span>
             <span class="sm:hidden">Edit</span>
           </div>
           <!-- Delete Button -->
@@ -275,7 +305,7 @@
     <MemoryBookDialog
       :visible="showCreateModal"
       :isEditing="false"
-      :initialData="{}"
+      :initialData="{ layoutType: 'magic' }"
       :loading="creatingBook"
       @close="showCreateModal = false"
       @submit="createMemoryBookFromDialog"
@@ -632,7 +662,7 @@
         <!-- Content Section -->
         <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <!-- Magic Story Section (for Magic Memories) -->
-          <div v-if="selectedBook.layout_type === 'magic' && selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+          <div v-if="selectedBook.layout_type === 'magic' && selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-yellow-100 to-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <i class="pi pi-sparkles text-yellow-400 text-sm sm:text-base"></i>
@@ -1280,8 +1310,79 @@
         </div>
       </div>
 
-      <!-- Step 4: Photo Selection -->
-      <div v-if="magicMemoryStep === 4 && !loadingAssets" class="space-y-4">
+      <!-- Step 4: Background Selection -->
+      <div v-if="magicMemoryStep === 4" class="space-y-6">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-palette text-2xl text-white"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">What kind of background would you like?</h3>
+          <p class="text-gray-600">Choose a clean white background or let me create a magical design that matches your story's theme!</p>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div
+            class="relative cursor-pointer"
+            @click="magicBackgroundType = 'white'"
+          >
+            <div
+              class="border-2 rounded-lg p-6 text-center transition-all duration-200 h-full"
+              :class="magicBackgroundType === 'white' 
+                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+            >
+              <div class="w-12 h-12 bg-white border-2 border-gray-300 rounded-lg mx-auto mb-3 flex items-center justify-center">
+                <i class="pi pi-file text-gray-600 text-xl"></i>
+              </div>
+              <div class="text-lg font-bold text-gray-900 mb-2">Clean & Simple</div>
+              <div class="text-sm text-gray-600 mb-3">Pure white background for a classic, elegant look</div>
+              <div class="text-xs text-gray-500">Perfect for formal events and timeless memories</div>
+              <div v-if="magicBackgroundType === 'white'" class="absolute top-3 right-3">
+                <i class="pi pi-check text-purple-500 text-lg"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div
+            class="relative cursor-pointer"
+            @click="magicBackgroundType = 'magical'"
+          >
+            <div
+              class="border-2 rounded-lg p-6 text-center transition-all duration-200 h-full"
+              :class="magicBackgroundType === 'magical' 
+                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+            >
+              <div class="w-12 h-12 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-lg mx-auto mb-3 flex items-center justify-center">
+                <i class="pi pi-sparkles text-purple-600 text-xl"></i>
+              </div>
+              <div class="text-lg font-bold text-gray-900 mb-2">Magical Design</div>
+              <div class="text-sm text-gray-600 mb-3">AI-generated background that matches your story's theme</div>
+              <div class="text-xs text-gray-500">Adds a whimsical, personalized touch to your memory</div>
+              <div v-if="magicBackgroundType === 'magical'" class="absolute top-3 right-3">
+                <i class="pi pi-check text-purple-500 text-lg"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <div class="flex items-start gap-3">
+            <i class="pi pi-info-circle text-blue-500 mt-1"></i>
+            <div>
+              <h4 class="font-semibold text-blue-900 mb-1">Background Details</h4>
+              <p class="text-sm text-blue-800">
+                {{ magicBackgroundType === 'white' 
+                  ? 'A clean white background will make your photos and story the star of the show.' 
+                  : 'I\'ll create a beautiful background design that complements your story and makes your memory even more special.' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Photo Selection -->
+      <div v-if="magicMemoryStep === 5 && !loadingAssets" class="space-y-4">
         <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200 flex items-center gap-3 animate-pulse">
           <i class="pi pi-sparkles text-2xl text-yellow-400 animate-bounce"></i>
           <div>
@@ -1380,13 +1481,20 @@
           />
           <Button
             v-if="magicMemoryStep === 3"
-            label="Next: Show me your photos"
+            label="Next: Choose your background"
             icon="pi pi-arrow-right"
             @click="nextMagicMemoryStep"
             class="bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold"
           />
           <Button
             v-if="magicMemoryStep === 4"
+            label="Next: Show me your photos"
+            icon="pi pi-arrow-right"
+            @click="nextMagicMemoryStep"
+            class="bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold"
+          />
+          <Button
+            v-if="magicMemoryStep === 5"
             label="Let's make some magic!"
             icon="pi pi-bolt"
             :disabled="magicSelectedMemories.length < 1 || magicLoading"
@@ -1422,7 +1530,7 @@
     <div class="mt-4 px-3 py-2 sm:mt-6 sm:px-6 sm:py-3 rounded-2xl shadow-lg bg-white/70 text-purple-800 text-base sm:text-lg font-caveat flex items-center gap-2 sm:gap-3 animate-magic-fade max-w-xs sm:max-w-md md:max-w-lg w-auto break-words">
       <i class="pi pi-sparkles text-yellow-400 text-xl sm:text-2xl animate-bounce flex-shrink-0"></i>
       <span class="italic truncate">The magic whispers:</span>
-      <span class="font-bold break-words">“{{ lastAICaption }}”</span>
+      <span class="font-bold break-words">"{{ lastAICaption }}"</span>
       <i class="pi pi-sparkles text-yellow-400 text-xl sm:text-2xl animate-bounce flex-shrink-0"></i>
     </div>
   </div>
@@ -1523,7 +1631,7 @@ const newBook = ref({
   memoryShape: 'original',
   includeCaptions: true,
   includeTags: true,
-  aiBackground: true,
+  backgroundType: 'white',
   memoryEvent: '',
   customMemoryEvent: ''
 })
@@ -1560,7 +1668,7 @@ const resetCreateModal = () => {
     memoryShape: 'original',
     includeCaptions: true,
     includeTags: true,
-    aiBackground: true,
+    backgroundType: 'white',
     memoryEvent: '',
     customMemoryEvent: ''
   }
@@ -1677,9 +1785,40 @@ const confirmGenerate = () => {
   if (pendingBook.value) generatePDF(pendingBook.value)
   pendingBook.value = null
 }
-const confirmRegenerate = () => {
+const confirmRegenerate = async () => {
   showRegenerateDialog.value = false
-  if (pendingBook.value) generatePDF(pendingBook.value)
+  if (!pendingBook.value) return
+
+  // Use the Savta Magic Spell pipeline for magic books
+  if (pendingBook.value.layout_type === 'magic') {
+    try {
+      const supabase = useNuxtApp().$supabase
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+      await $fetch('/api/memory-books/reset-for-regeneration', {
+        method: 'POST',
+        body: { bookId: pendingBook.value.id },
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
+      // Now trigger the full magic pipeline
+      await generatePDF(pendingBook.value)
+    } catch (error) {
+      console.error('❌ Error resetting magic book for regeneration:', error)
+      if ($toast && $toast.add) {
+        $toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to reset magic book for regeneration',
+          life: 4000
+        })
+      }
+    }
+  } else {
+    // Traditional pipeline
+    await generatePDF(pendingBook.value)
+  }
   pendingBook.value = null
 }
 const downloadCurrentBook = () => {
@@ -1810,7 +1949,14 @@ const createMemoryBook = async () => {
       include_tags: newBook.value.includeTags,
       ai_background: newBook.value.aiBackground,
       memory_event: newBook.value.memoryEvent === 'custom' ? newBook.value.customMemoryEvent : newBook.value.memoryEvent,
-      created_from_assets: assetsToUse,
+      // For magic memories: selected assets go to photo_selection_pool, created_from_assets will be set by AI
+      // For regular memories: selected assets go to created_from_assets
+      ...(newBook.value.layoutType === 'magic' ? {
+        photo_selection_pool: assetsToUse,
+        created_from_assets: [] // Will be populated by AI during story generation
+      } : {
+        created_from_assets: assetsToUse
+      }),
       status: 'draft'
     }
     console.log('🔧 [createMemoryBook] Calling db.memoryBooks.createMemoryBook with:', JSON.parse(JSON.stringify(bookData)))
@@ -2015,8 +2161,16 @@ const generatePDF = async (book) => {
   console.log('generatePDF called for book:', book.id)
   
   // Check if the book has assets
-  if (!book.created_from_assets || book.created_from_assets.length === 0) {
+  // For magic memories, check photo_selection_pool instead of created_from_assets
+  const hasAssets = book.layout_type === 'magic' 
+    ? (book.photo_selection_pool && book.photo_selection_pool.length > 0)
+    : (book.created_from_assets && book.created_from_assets.length > 0)
+  
+  if (!hasAssets) {
     console.error('❌ Cannot generate PDF: No assets found in memory book')
+    console.log('Book layout type:', book.layout_type)
+    console.log('Photo selection pool:', book.photo_selection_pool)
+    console.log('Created from assets:', book.created_from_assets)
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'error',
@@ -2859,10 +3013,11 @@ import { defineAsyncComponent } from 'vue'
 const PdfViewer = defineAsyncComponent(() => import('~/components/PdfViewer.vue'))
 
 const showMagicMemoryDialog = ref(false)
-const magicMemoryStep = ref(1) // 1 = title input, 2 = event selection, 3 = photo count, 4 = photo selection
+const magicMemoryStep = ref(1) // 1 = title input, 2 = event selection, 3 = photo count, 4 = background selection, 5 = photo selection
 const magicMemoryTitle = ref('')
 const magicMemoryEvent = ref('')
 const magicPhotoCount = ref(4) // Default to 4 photos
+const magicBackgroundType = ref('white') // 'white' or 'magical'
 
 const magicSelectedTagFilter = ref([])
 const magicSelectedMemories = ref([])
@@ -2912,6 +3067,7 @@ async function onMagicMemoryContinue() {
       title: magicMemoryTitle.value,
       memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
       photo_count: magicPhotoCount.value,
+      background_type: magicBackgroundType.value,
       theme: 'classic' // Default theme since it's not collected in the Magic Memory dialog
     }
     if (photos.length <= magicPhotoCount.value) {
@@ -2937,7 +3093,8 @@ async function onMagicMemoryContinue() {
           asset_ids: aiRes.selected_photo_ids,
           story: aiRes.story,
           title: magicMemoryTitle.value || 'Magic Memory',
-          memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value
+          memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+          background_type: aiRes.background_type || magicBackgroundType.value
         },
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -2976,6 +3133,7 @@ const openMagicMemoryDialog = async () => {
   magicMemoryTitle.value = ''
   magicMemoryEvent.value = ''
   magicPhotoCount.value = 4
+  magicBackgroundType.value = 'white'
   magicSelectedMemories.value = []
   magicSelectedTagFilter.value = []
   loadingAssets.value = true
@@ -2997,11 +3155,15 @@ const nextMagicMemoryStep = () => {
     magicMemoryStep.value = 3
   } else if (magicMemoryStep.value === 3) {
     magicMemoryStep.value = 4
+  } else if (magicMemoryStep.value === 4) {
+    magicMemoryStep.value = 5
   }
 }
 
 const previousMagicMemoryStep = () => {
-  if (magicMemoryStep.value === 4) {
+  if (magicMemoryStep.value === 5) {
+    magicMemoryStep.value = 4
+  } else if (magicMemoryStep.value === 4) {
     magicMemoryStep.value = 3
   } else if (magicMemoryStep.value === 3) {
     magicMemoryStep.value = 2
@@ -3071,11 +3233,18 @@ async function createMemoryBookFromDialog(data) {
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,
       includeTags: data.includeTags,
-      aiBackground: data.aiBackground,
+      backgroundType: data.backgroundType,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
       // Store selected asset IDs for the book
-      created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
+      // For magic memories: selected assets go to photo_selection_pool, created_from_assets will be set by AI
+      // For regular memories: selected assets go to created_from_assets
+      ...(data.layoutType === 'magic' ? {
+        photo_selection_pool: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : [],
+        created_from_assets: [] // Will be populated by AI during story generation
+      } : {
+        created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
+      })
     }
     
     console.log('🔧 [createMemoryBookFromDialog] Mapped newBook.value:', newBook.value)
@@ -3110,11 +3279,18 @@ async function saveEditBookFromDialog(data) {
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,
       includeTags: data.includeTags,
-      aiBackground: data.aiBackground,
+      backgroundType: data.backgroundType,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
-      // Update created_from_assets with the selected asset IDs from the dialog
-      created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
+      // Update asset references based on layout type
+      // For magic memories: selected assets go to photo_selection_pool, created_from_assets will be set by AI
+      // For regular memories: selected assets go to created_from_assets
+      ...(data.layoutType === 'magic' ? {
+        photo_selection_pool: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : [],
+        created_from_assets: [] // Will be populated by AI during story generation
+      } : {
+        created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
+      })
     }
     
     console.log('🔧 [saveEditBookFromDialog] Mapped editBook.value:', editBook.value)

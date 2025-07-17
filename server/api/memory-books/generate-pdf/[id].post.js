@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
     
     // Verify the memory book exists and belongs to the user
     console.log('📚 Fetching memory book from database...')
-    const { data: book, error: bookError } = await supabase
+    let { data: book, error: bookError } = await supabase
       .from('memory_books')
       .select('*')
       .eq('id', bookId)
@@ -73,17 +73,48 @@ export default defineEventHandler(async (event) => {
     if (book.layout_type === 'magic') {
       console.log('✨ Magic memory detected, generating a new magic story for regeneration')
       
-      // Fetch the assets to get photo metadata
+      // Update status for magic story generation
+      await updatePdfStatus(supabase, book.id, user.id, '✨ Crafting your magical story... ✨')
+      
+      // Fetch the photos from the user's selection pool (up to 12 photos they want to consider)
+      // For existing books without photo_selection_pool, fall back to created_from_assets
+      const photoPool = book.photo_selection_pool && book.photo_selection_pool.length > 0 
+        ? book.photo_selection_pool 
+        : book.created_from_assets || []
+      
+      console.log('📸 Fetching photos from user selection pool...')
+      console.log('Photo pool to use:', photoPool)
+      
       const { data: assets, error: assetsError } = await supabase
         .from('assets')
         .select('*')
-        .in('id', book.created_from_assets || [])
+        .in('id', photoPool)
         .eq('approved', true)
         .eq('deleted', false)
 
       if (assetsError || !assets || assets.length === 0) {
-        throw new Error('Failed to fetch assets for magic memory regeneration')
+        console.error('❌ No photos found in selection pool:', photoPool)
+        throw new Error('Failed to fetch photos from selection pool for magic memory regeneration')
       }
+
+      console.log("****************************")
+      console.log("Photos in user selection pool:")
+      console.log("****************************")
+      console.log("Number of assets:", assets.length)
+      console.log("Photo selection pool:", photoPool)
+      console.log("Original photo_selection_pool:", book.photo_selection_pool)
+      console.log("Photos used in final memory:", book.created_from_assets)
+      assets.forEach((asset, index) => {
+        console.log(`Asset ${index + 1}:`, {
+          id: asset.id,
+          in_pool: photoPool.includes(asset.id) ? 'YES' : 'NO',
+          in_final: book.created_from_assets?.includes(asset.id) ? 'YES' : 'NO',
+          ai_caption: asset.ai_caption,
+          people_detected: asset.people_detected,
+          tags: asset.tags
+        })
+      })
+      console.log("****************************")
 
       // Convert assets to photos format expected by magic-memory endpoint
       const photos = assets.map(asset => ({
@@ -101,8 +132,9 @@ export default defineEventHandler(async (event) => {
         zip_code: asset.zip_code || null
       }))
 
-      // Determine photo count based on number of assets (default to 4 if not specified)
-      const photoCount = Math.min(assets.length, 4) // Default to 4, but could be stored in book data
+      // Determine photo count based on the user's selection (1, 4, or 6 photos)
+      // This follows the original pipeline: user selects pool, AI selects best ones from pool
+      const photoCount = Math.min(assets.length, 4) // Default to 4, but could be 1 or 6 based on user preference
 
       // Always generate a new magic story for magic memory books
       const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
@@ -116,7 +148,8 @@ export default defineEventHandler(async (event) => {
           title: book.title,
           memory_event: book.memory_event,
           theme: book.theme || 'classic',
-          photo_count: photoCount
+          photo_count: photoCount,
+          background_type: book.background_type || 'white'
         })
       })
       if (!magicRes.ok) {
@@ -127,16 +160,35 @@ export default defineEventHandler(async (event) => {
         })
       }
       const magicData = await magicRes.json()
-      // Update the book with the new magic story
+      // Update the book with the new magic story and selected photos
       const { error: updateError } = await supabase
         .from('memory_books')
-        .update({ magic_story: magicData.story })
+        .update({ 
+          magic_story: magicData.story,
+          created_from_assets: magicData.selected_photo_ids
+        })
         .eq('id', book.id)
       if (updateError) {
-        console.error('❌ Failed to update book with magic story:', updateError)
+        console.error('❌ Failed to update book with magic story and selected photos:', updateError)
       } else {
-        console.log('✨ Magic story updated successfully')
+        console.log('✨ Magic story and selected photos updated successfully')
+        console.log('Selected photo IDs:', magicData.selected_photo_ids)
       }
+      
+      // Refresh the book object to get the updated magic_story
+      const { data: updatedBook, error: refreshError } = await supabase
+        .from('memory_books')
+        .select('*')
+        .eq('id', book.id)
+        .single()
+      
+      if (refreshError) {
+        console.error('❌ Failed to refresh book object:', refreshError)
+      } else {
+        console.log('✅ Book object refreshed with new magic story')
+        book = updatedBook // Update the book object with the new data
+      }
+      
       // Continue with standard PDF generation but with magic layout
       console.log('✨ Proceeding with magic memory PDF creation')
     }
@@ -161,8 +213,9 @@ export default defineEventHandler(async (event) => {
 
     console.log('🔄 PDF URL not found, generating new PDF...')
     
-    // Update status 
-    await updatePdfStatus(supabase, book.id, user.id, 'Retrieving you memories ...')
+    // Update status - use magic-specific messages for magic books
+    const statusMessage = book.layout_type === 'magic' ? 'Gathering your magical memories...' : 'Retrieving your memories...'
+    await updatePdfStatus(supabase, book.id, user.id, statusMessage)
     
     // 1. Fetch approved assets for this book
     console.log('📸 Fetching assets for book:', book.created_from_assets)
@@ -187,8 +240,9 @@ export default defineEventHandler(async (event) => {
     // 2. Get the background image from storage
     console.log('🎨 Loading background image from storage...')
 
-    // Update status 
-    await updatePdfStatus(supabase, book.id, user.id, 'Retrieving background image ...')
+    // Update status - use magic-specific messages for magic books
+    const bgStatusMessage = book.layout_type === 'magic' ? 'Retrieving magical background...' : 'Retrieving background image...'
+    await updatePdfStatus(supabase, book.id, user.id, bgStatusMessage)
     let backgroundBuffer
     
     if (book.background_url) {
@@ -201,9 +255,57 @@ export default defineEventHandler(async (event) => {
       }
       backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
       console.log('✅ Background downloaded, size:', backgroundBuffer.length, 'bytes')
+    } else if (book.background_type === 'magical') {
+      // Generate background for magical background type
+      console.log('🎨 Generating magical background...')
+      await updatePdfStatus(supabase, book.id, user.id, 'Creating magical background...')
+      
+      try {
+        const bgGenRes = await fetch(`${config.public.siteUrl}/api/memory-books/generate-background/${book.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (!bgGenRes.ok) {
+          console.error('❌ Background generation failed:', bgGenRes.status)
+          throw new Error(`Background generation failed: ${bgGenRes.status}`)
+        }
+        
+        const bgGenData = await bgGenRes.json()
+        console.log('✅ Background generated successfully:', bgGenData.backgroundUrl)
+        
+        // Download the newly generated background
+        console.log('⬇️ Downloading newly generated background...')
+        const bgRes = await fetch(bgGenData.backgroundUrl)
+        if (!bgRes.ok) {
+          console.error('❌ Failed to fetch generated background:', bgRes.status, bgRes.statusText)
+          throw new Error(`Failed to fetch generated background: ${bgRes.status}`)
+        }
+        backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
+        console.log('✅ Generated background downloaded, size:', backgroundBuffer.length, 'bytes')
+        
+        // Update the book with the new background URL
+        const { error: updateError } = await supabase
+          .from('memory_books')
+          .update({ background_url: bgGenData.backgroundUrl })
+          .eq('id', book.id)
+        
+        if (updateError) {
+          console.error('❌ Failed to update book with background URL:', updateError)
+        } else {
+          console.log('✅ Book updated with new background URL')
+        }
+      } catch (bgError) {
+        console.error('❌ Background generation error:', bgError)
+        console.warn('⚠️ Proceeding with white background due to generation failure')
+        // Continue with white background if generation fails
+      }
     } else {
-      console.warn('No background URL found for this book, proceeding with blank background.')
-      // Continue without throwing; background will be blank
+      console.log('ℹ️ No background URL found and background_type is white, proceeding with white background.')
+      // Continue without throwing; background will be white
     }
     
     // 3. Create PDF document
@@ -678,24 +780,25 @@ export default defineEventHandler(async (event) => {
       })
       console.log(`🖼️ Magic Memory border drawn: ${borderMargin} points from edge, width: ${pageWidth - 2 * borderMargin}x${pageHeight - 2 * borderMargin}`)
       
-      // Use the same background handling as standard books
-      if (pdfBgImage) {
-        // Draw background image to fill the page
+      // Use the same background handling as standard books, but respect background type
+      if (pdfBgImage && book.background_type !== 'white') {
+        // Draw background image to fill the page with appropriate opacity
         page.drawImage(pdfBgImage, {
           x: 0,
           y: 0,
           width: pageWidth,
-          height: pageHeight
+          height: pageHeight,
+          opacity: book.background_type === 'magical' ? 0.3 : 0.5
         })
-        console.log('✅ Magic memory background image applied')
+        console.log(`✅ Magic memory background image applied with ${book.background_type === 'magical' ? '30%' : '50%'} opacity`)
       } else {
-        // Fallback to white background if no background image
+        // Use white background (either no background image or white background type)
         page.drawRectangle({
           x: 0, y: 0, width: pageWidth, height: pageHeight,
           color: rgb(1, 1, 1), // white
           opacity: 1
         })
-        console.log('✅ Magic memory using white background (no background image)')
+        console.log('✅ Magic memory using white background')
       }
       // Draw photos based on count - single photo gets special treatment
       const assetIds = book.created_from_assets || []
@@ -862,9 +965,17 @@ export default defineEventHandler(async (event) => {
       const storyAreaHeight = storyAreaBottom - storyAreaTop
       // Draw the story in the calculated area
       const story = book.magic_story || 'A magical family story.'
+      
+      console.log("****************************")
+      console.log("Story being used in PDF:")
+      console.log("****************************")
+      console.log("book.magic_story:", book.magic_story)
+      console.log("Final story:", story)
+      console.log("****************************")
+      
       // Embed Times Italic font
       const timesItalicFont = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic)
-      let fontSize = 22 // Larger default font size
+      let fontSize = 19 // 15% smaller than previous default (22 * 0.85 ≈ 19)
       // Function to wrap text to fit the story area width
       function wrapText(text, font, fontSize, maxWidth) {
         const words = text.split(' ')
@@ -906,7 +1017,7 @@ export default defineEventHandler(async (event) => {
         })
       }
       // End magic memory layout
-      await updatePdfStatus(supabase, book.id, user.id, 'Magic Memory PDF created!')
+      await updatePdfStatus(supabase, book.id, user.id, '✨ Magic Memory PDF created! ✨')
       const pdfBytes = await pdfDoc.save()
       // Upload PDF to storage and return download URL (copy from normal logic)
       const pdfFileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.pdf`
@@ -933,7 +1044,7 @@ export default defineEventHandler(async (event) => {
         status: 'ready',
         generated_at: new Date().toISOString()
       }).eq('id', book.id)
-      await updatePdfStatus(supabase, book.id, user.id, 'PDF ready for download!')
+      await updatePdfStatus(supabase, book.id, user.id, '✨ Your Magic Memory is ready! ✨')
       return { success: true, downloadUrl: pdfStorageUrl }
     }
     
@@ -1047,8 +1158,8 @@ export default defineEventHandler(async (event) => {
       const gridYOffset = (pageIndex === 0) ? topMargin : 0
       const availableHeight = height - gridYOffset - bottomMargin
       
-      // Draw background image, scaled to fill page, at 50% opacity (only if present)
-      if (pdfBgImage) {
+      // Draw background image, scaled to fill page, at 50% opacity (only if present and not white background)
+      if (pdfBgImage && book.background_type !== 'white') {
         const bgScale = Math.max(width / pdfBgImage.width, height / pdfBgImage.height)
         const bgW = pdfBgImage.width * bgScale
         const bgH = pdfBgImage.height * bgScale

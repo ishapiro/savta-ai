@@ -158,11 +158,22 @@ export default defineEventHandler(async (event) => {
         await updatePdfStatus(supabase, book.id, user.id, 'Creating beautiful background design...')
         
         // Fetch approved assets for this book to get tags
-        console.log('📸 Fetching assets for book:', book.created_from_assets)
+        // For magic memories, check photo_selection_pool instead of created_from_assets
+        const assetIds = book.layout_type === 'magic' 
+          ? (book.photo_selection_pool && book.photo_selection_pool.length > 0 
+              ? book.photo_selection_pool 
+              : book.created_from_assets || [])
+          : (book.created_from_assets || [])
+        
+        console.log('📸 Fetching assets for book:', assetIds)
+        console.log('Book layout type:', book.layout_type)
+        console.log('Photo selection pool:', book.photo_selection_pool)
+        console.log('Created from assets:', book.created_from_assets)
+        
         const { data: assets, error: assetsError } = await supabase
           .from('assets')
           .select('*')
-          .in('id', book.created_from_assets || [])
+          .in('id', assetIds)
           .eq('approved', true)
           .eq('deleted', false)
 
@@ -174,6 +185,12 @@ export default defineEventHandler(async (event) => {
         console.log('✅ Found assets:', assets?.length || 0)
 
         if (!assets || assets.length === 0) {
+          console.error('❌ No assets found for book:', {
+            layout_type: book.layout_type,
+            photo_selection_pool: book.photo_selection_pool,
+            created_from_assets: book.created_from_assets,
+            assetIds: assetIds
+          })
           throw new Error('No approved assets found for this book')
         }
 

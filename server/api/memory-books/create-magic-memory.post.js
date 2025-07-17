@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { asset_ids, story, title } = body
+    const { asset_ids, story, title, background_type = 'white' } = body
     if (!asset_ids || !Array.isArray(asset_ids) || asset_ids.length < 1 || asset_ids.length > 6 || !story) {
       throw createError({ statusCode: 400, statusMessage: '1-6 asset_ids and story are required' })
     }
@@ -36,6 +36,7 @@ export default defineEventHandler(async (event) => {
         layout_type: 'magic',
         created_from_assets: asset_ids,
         magic_story: story,
+        background_type: background_type,
         status: 'draft',
         grid_layout: '2x2',
         print_size: '7x5',

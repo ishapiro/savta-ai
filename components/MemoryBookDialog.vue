@@ -71,9 +71,9 @@
           <i class="pi pi-file-pdf text-green-600"></i>
           Layout & Print
         </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Layout Type -->
-          <div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Layout Type (hidden for magic memories) -->
+          <div class="hidden">
             <label class="block text-sm font-medium text-gray-700 mb-2">Layout Type</label>
             <Dropdown
               v-model="form.layoutType"
@@ -167,30 +167,73 @@
           <i class="pi pi-magic text-yellow-600"></i>
           AI & Captions
         </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="flex items-center space-x-3">
-            <Checkbox
-              v-model="form.aiBackground"
-              :binary="true"
-              input-id="aiBackground"
-            />
-            <label for="aiBackground" class="text-sm font-medium text-gray-700">AI Background</label>
+        <div class="space-y-4">
+          <!-- Background Type Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Background Style</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div
+                class="relative cursor-pointer"
+                @click="form.backgroundType = 'white'"
+              >
+                <div
+                  class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
+                  :class="form.backgroundType === 'white' 
+                    ? 'border-yellow-500 bg-yellow-50 shadow-lg scale-105' 
+                    : 'border-gray-200 hover:border-yellow-300 hover:bg-yellow-25'"
+                >
+                  <div class="w-8 h-8 bg-white border-2 border-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                    <i class="pi pi-file text-gray-600 text-sm"></i>
+                  </div>
+                  <div class="text-sm font-bold text-gray-900 mb-1">Clean & Simple</div>
+                  <div class="text-xs text-gray-600">Pure white background for a classic, elegant look</div>
+                  <div v-if="form.backgroundType === 'white'" class="absolute top-2 right-2">
+                    <i class="pi pi-check text-yellow-500 text-sm"></i>
+                  </div>
+                </div>
+              </div>
+              
+              <div
+                class="relative cursor-pointer"
+                @click="form.backgroundType = 'magical'"
+              >
+                <div
+                  class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
+                  :class="form.backgroundType === 'magical' 
+                    ? 'border-yellow-500 bg-yellow-50 shadow-lg scale-105' 
+                    : 'border-gray-200 hover:border-yellow-300 hover:bg-yellow-25'"
+                >
+                  <div class="w-8 h-8 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                    <i class="pi pi-sparkles text-purple-600 text-sm"></i>
+                  </div>
+                  <div class="text-sm font-bold text-gray-900 mb-1">Magical Design</div>
+                  <div class="text-xs text-gray-600">AI-generated background that matches your theme</div>
+                  <div v-if="form.backgroundType === 'magical'" class="absolute top-2 right-2">
+                    <i class="pi pi-check text-yellow-500 text-sm"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center space-x-3">
-            <Checkbox
-              v-model="form.includeCaptions"
-              :binary="true"
-              input-id="includeCaptions"
-            />
-            <label for="includeCaptions" class="text-sm font-medium text-gray-700">AI Captions</label>
-          </div>
-          <div class="flex items-center space-x-3">
-            <Checkbox
-              v-model="form.includeTags"
-              :binary="true"
-              input-id="includeTags"
-            />
-            <label for="includeTags" class="text-sm font-medium text-gray-700">Photo Tags</label>
+          
+          <!-- Other AI Options -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex items-center space-x-3">
+              <Checkbox
+                v-model="form.includeCaptions"
+                :binary="true"
+                input-id="includeCaptions"
+              />
+              <label for="includeCaptions" class="text-sm font-medium text-gray-700">AI Captions</label>
+            </div>
+            <div class="flex items-center space-x-3">
+              <Checkbox
+                v-model="form.includeTags"
+                :binary="true"
+                input-id="includeTags"
+              />
+              <label for="includeTags" class="text-sm font-medium text-gray-700">Photo Tags</label>
+            </div>
           </div>
         </div>
       </div>
@@ -478,14 +521,14 @@ const emit = defineEmits(['submit', 'close', 'cleanup'])
 
 const form = ref({
   title: '',
-  layoutType: 'grid',
+  layoutType: 'grid', // Default to grid for traditional memory books
   printSize: '8x10',
   quality: 'standard',
   medium: 'digital',
   theme: 'classic',
   memoryEvent: '',
   customMemoryEvent: '',
-  aiBackground: true,
+  backgroundType: 'white',
   includeCaptions: true,
   includeTags: true,
   gridLayout: '2x2',
@@ -502,6 +545,7 @@ const selectedTagFilter = ref([])
 
 // Options for dropdowns
 const layoutOptions = ref([
+  { label: 'Savta Magic Spell', value: 'magic' },
   { label: 'Grid Layout', value: 'grid' },
   { label: 'Timeline Layout', value: 'timeline' },
   { label: 'Story Layout', value: 'story' },
@@ -596,9 +640,22 @@ const computedAvailableTags = computed(() => {
 // Watch for initial data changes
 watch(() => props.initialData, (val) => {
   if (val && Object.keys(val).length > 0) {
+    // Reset form to defaults first, then apply initial data
     form.value = {
-      ...form.value,
-      ...val
+      title: '',
+      layoutType: 'grid', // Default to grid for traditional memory books
+      printSize: '8x10',
+      quality: 'standard',
+      medium: 'digital',
+      theme: 'classic',
+      memoryEvent: '',
+      customMemoryEvent: '',
+      backgroundType: 'white',
+      includeCaptions: true,
+      includeTags: true,
+      gridLayout: '2x2',
+      memoryShape: 'original',
+      ...val // Override with initial data
     }
   }
 }, { immediate: true })
@@ -672,6 +729,7 @@ function handleSubmit() {
   emit('submit', {
     ...form.value,
     memoryEvent: form.value.memoryEvent === 'custom' ? form.value.customMemoryEvent : form.value.memoryEvent,
+    backgroundType: form.value.backgroundType,
     selectedAssets: selectedAssets.value
   })
 }

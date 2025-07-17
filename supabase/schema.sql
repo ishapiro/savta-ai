@@ -120,6 +120,7 @@ create table if not exists memory_books (
   background_url text check (background_url is null or length(background_url) <= 1000),
   review_notes text,
   created_from_assets uuid[] default array[]::uuid[],
+  photo_selection_pool uuid[] default array[]::uuid[],
   generated_at timestamp with time zone,
   approved_at timestamp with time zone,
   distributed_at timestamp with time zone,
@@ -566,5 +567,14 @@ BEGIN
       AND column_name = 'include_tags'
   ) THEN
     ALTER TABLE memory_books ADD COLUMN include_tags boolean DEFAULT true;
+  END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'background_type'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN background_type text DEFAULT 'white' CHECK (background_type in ('white', 'magical'));
   END IF;
 END $$; 

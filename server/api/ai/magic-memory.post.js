@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { photos, forceAll, title, theme, memory_event, photo_count = 4 } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
+    const { photos, forceAll, title, theme, memory_event, photo_count = 4, background_type = 'white' } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
     if (!photos || !Array.isArray(photos) || photos.length < 1) {
       throw createError({ statusCode: 400, statusMessage: 'At least 1 photo is required' })
     }
@@ -60,14 +60,15 @@ STYLE REQUIREMENTS:
 - Natural, personal, and delightful language
 - Use photo context (captions, tags, people) for richness, but don't mention them literally
 - Refer to location information if available to make the story more specific and personal
+- IMPORTANT: Only use letters and symbols from the Latin character set (no Hebrew, Cyrillic, or other scripts). All output must be in English and use only Latin characters.
 
 ${memoryBookContext}
 STORY GUIDELINES:
-- ALWAYS select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} when ${targetPhotoCount} or more are available
+- ALWAYS select exactly ${targetPhotoCount} photo ${targetPhotoCount > 1 ? 's' : ''} when ${targetPhotoCount} or more are available
 - Choose the most meaningful or emotionally connected photos, even if not perfect fits
 - Weave together the photos into a single cohesive story
 - Focus on relationships, emotions, and shared experiences
-- Make it feel like a personal family memory${targetPhotoCount === 1 ? `
+- Make it feel like a personal family memory ${targetPhotoCount === 1 ? `
 PHOTO SELECTION FOR SINGLE PHOTO:
 - When selecting 1 photo, prioritize photos with orientation="portrait" 
 - Portrait photos work best for single-photo layouts as they can fill 50% of the card area effectively
@@ -81,7 +82,7 @@ ${photoSummaries}
 INSTRUCTIONS:
 ${forceAll ? 
   `Use ALL provided photos in the order given.` : 
-  `ALWAYS select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} when available. Choose the most meaningful ones, even if not perfect fits, and arrange them in the best storytelling order.`
+  `You have access to ${photos.length} photos from the user's selection pool. ALWAYS select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} for the story. Choose the most meaningful and emotionally connected photos from this pool, even if not perfect fits, and arrange them in the best storytelling order. Consider the relationships and themes across all photos in the pool when making your selection.`
 }
 
 RESPONSE FORMAT:
@@ -126,16 +127,29 @@ ${photoDataSection}`
     const openaiData = await openaiRes.json()
     const aiText = openaiData.choices[0].message.content
 
+    console.log("****************************")
+    console.log("AI response received")
+    console.log("****************************")
+    console.log(aiText)
+    console.log("****************************")
+
     // Parse JSON from AI response
     let result
     try {
       const jsonMatch = aiText.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         result = JSON.parse(jsonMatch[0])
+        console.log("****************************")
+        console.log("Parsed JSON result")
+        console.log("****************************")
+        console.log(JSON.stringify(result, null, 2))
+        console.log("****************************")
       } else {
         throw new Error('No JSON found in response')
       }
     } catch (err) {
+      console.error('JSON parsing error:', err)
+      console.error('Raw AI response:', aiText)
       throw createError({ statusCode: 500, statusMessage: 'Failed to parse AI response: ' + err.message })
     }
 
@@ -146,7 +160,8 @@ ${photoDataSection}`
     return {
       success: true,
       selected_photo_ids: result.selected_photo_ids,
-      story: result.story
+      story: result.story,
+      background_type: background_type
     }
   } catch (error) {
     console.error('Magic Memory AI error:', error)
