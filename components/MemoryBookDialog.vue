@@ -17,47 +17,80 @@
       <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-          <input v-model="form.title" type="text" class="w-full px-4 py-2 border rounded" required />
+          <InputText
+            v-model="form.title"
+            placeholder="Enter memory book title"
+            class="w-full"
+            required
+          />
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Layout Type</label>
-          <select v-model="form.layoutType" class="w-full px-4 py-2 border rounded">
-            <option value="grid">Grid Layout</option>
-            <option value="timeline">Timeline Layout</option>
-            <option value="story">Story Layout</option>
-            <option value="album">Album Layout</option>
-          </select>
+          <Dropdown
+            v-model="form.layoutType"
+            :options="[
+              { label: 'Grid Layout', value: 'grid' },
+              { label: 'Timeline Layout', value: 'timeline' },
+              { label: 'Story Layout', value: 'story' },
+              { label: 'Album Layout', value: 'album' }
+            ]"
+            option-label="label"
+            option-value="value"
+            placeholder="Select layout type"
+            class="w-full"
+          />
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Print Size</label>
-          <select v-model="form.printSize" class="w-full px-4 py-2 border rounded">
-            <option value="5x7">5x7</option>
-            <option value="6x8">6x8</option>
-            <option value="8x10">8x10</option>
-            <option value="11x14">11x14</option>
-            <option value="12x12">12x12</option>
-            <option value="a4">A4</option>
-          </select>
+          <Dropdown
+            v-model="form.printSize"
+            :options="[
+              { label: '5x7', value: '5x7' },
+              { label: '6x8', value: '6x8' },
+              { label: '8x10', value: '8x10' },
+              { label: '11x14', value: '11x14' },
+              { label: '12x12', value: '12x12' },
+              { label: 'A4', value: 'a4' }
+            ]"
+            option-label="label"
+            option-value="value"
+            placeholder="Select print size"
+            class="w-full"
+          />
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Quality</label>
-          <select v-model="form.quality" class="w-full px-4 py-2 border rounded">
-            <option value="standard">Standard</option>
-            <option value="high">High Quality</option>
-            <option value="premium">Premium</option>
-          </select>
+          <Dropdown
+            v-model="form.quality"
+            :options="[
+              { label: 'Standard', value: 'standard' },
+              { label: 'High Quality', value: 'high' },
+              { label: 'Premium', value: 'premium' }
+            ]"
+            option-label="label"
+            option-value="value"
+            placeholder="Select quality"
+            class="w-full"
+          />
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Medium</label>
-          <select v-model="form.medium" class="w-full px-4 py-2 border rounded">
-            <option value="digital">Digital PDF</option>
-            <option value="print">Print Ready</option>
-            <option value="web">Web View</option>
-          </select>
+          <Dropdown
+            v-model="form.medium"
+            :options="[
+              { label: 'Digital PDF', value: 'digital' },
+              { label: 'Print Ready', value: 'print' },
+              { label: 'Web View', value: 'web' }
+            ]"
+            option-label="label"
+            option-value="value"
+            placeholder="Select medium"
+            class="w-full"
+          />
         </div>
         
         <!-- Asset Selection Section -->
@@ -107,44 +140,69 @@
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Grid Layout</label>
-          <select v-model="form.gridLayout" class="w-full px-4 py-2 border rounded">
-            <option value="1x1">1 memory per page (1x1)</option>
-            <option value="2x1">2 memories per page (2x1)</option>
-            <option value="2x2">4 memories per page (2x2)</option>
-            <option value="3x2">6 memories per page (3x2)</option>
-            <option value="3x3">9 memories per page (3x3)</option>
-            <option value="3x4">12 memories per page (3x4)</option>
-            <option value="4x4">16 memories per page (4x4)</option>
-          </select>
+          <Dropdown
+            v-model="form.gridLayout"
+            :options="[
+              { label: '1 memory per page (1x1)', value: '1x1' },
+              { label: '2 memories per page (2x1)', value: '2x1' },
+              { label: '4 memories per page (2x2)', value: '2x2' },
+              { label: '6 memories per page (3x2)', value: '3x2' },
+              { label: '9 memories per page (3x3)', value: '3x3' },
+              { label: '12 memories per page (3x4)', value: '3x4' },
+              { label: '16 memories per page (4x4)', value: '4x4' }
+            ]"
+            option-label="label"
+            option-value="value"
+            placeholder="Select grid layout"
+            class="w-full"
+          />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Memory Shape</label>
-          <select v-model="form.memoryShape" class="w-full px-4 py-2 border rounded">
-            <option value="original">Original (keep natural aspect ratio)</option>
-            <option value="magic">Magic (AI chooses best shape)</option>
-          </select>
+          <Dropdown
+            v-model="form.memoryShape"
+            :options="[
+              { label: 'Original (keep natural aspect ratio)', value: 'original' },
+              { label: 'Magic (AI chooses best shape)', value: 'magic' }
+            ]"
+            option-label="label"
+            option-value="value"
+            placeholder="Select memory shape"
+            class="w-full"
+          />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Theme</label>
-          <select v-model="form.theme" class="w-full px-4 py-2 border rounded">
-            <option value="classic">Classic</option>
-            <option value="modern">Modern</option>
-            <option value="vintage">Vintage</option>
-            <option value="minimalist">Minimalist</option>
-          </select>
+          <Dropdown
+            v-model="form.theme"
+            :options="[
+              { label: 'Classic', value: 'classic' },
+              { label: 'Modern', value: 'modern' },
+              { label: 'Vintage', value: 'vintage' },
+              { label: 'Minimalist', value: 'minimalist' }
+            ]"
+            option-label="label"
+            option-value="value"
+            placeholder="Select theme"
+            class="w-full"
+          />
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Memory Event</label>
-          <select v-model="form.memoryEvent" class="w-full px-4 py-2 border rounded">
-            <option value="">Select event</option>
-            <option value="vacation">Vacation</option>
-            <option value="birthday">Birthday</option>
-            <option value="anniversary">Anniversary</option>
-            <option value="graduation">Graduation</option>
-            <option value="family_trip">Family Trip</option>
-            <option value="custom">Other (custom)</option>
-          </select>
-          <input v-if="form.memoryEvent === 'custom'" v-model="form.customMemoryEvent" type="text" class="w-full mt-2 px-4 py-2 border rounded" placeholder="Enter custom event" />
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Memory Event</label>
+          <Dropdown
+            v-model="form.memoryEvent"
+            :options="memoryEventOptions"
+            option-label="label"
+            option-value="value"
+            placeholder="Select event"
+            class="w-full"
+          />
+          <InputText
+            v-if="form.memoryEvent === 'custom'"
+            v-model="form.customMemoryEvent"
+            class="w-full mt-2"
+            placeholder="Enter custom event"
+          />
         </div>
         <div class="flex items-center space-x-4">
           <label class="flex items-center space-x-2">
