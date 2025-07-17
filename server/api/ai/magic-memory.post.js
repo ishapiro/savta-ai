@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { photos, forceAll } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean
+    const { photos, forceAll, title, theme, memory_event } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
     if (!photos || !Array.isArray(photos) || photos.length < 1) {
       throw createError({ statusCode: 400, statusMessage: 'At least 1 photo is required' })
     }
@@ -20,10 +20,22 @@ export default defineEventHandler(async (event) => {
       `Photo ${i+1}:\n- id: ${p.id}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
     ).join('\n\n')
 
+    // Build memory book context string
+    let memoryBookContext = ''
+    if (title && title.trim()) {
+      memoryBookContext += ` with a title of "${title.trim()}"`
+    }
+    if (theme && theme.trim()) {
+      memoryBookContext += ` in the style of "${theme.trim()}"`
+    }
+    if (memory_event && memory_event.trim()) {
+      memoryBookContext += ` for a ${memory_event.trim()}`
+    }
+
     // Prose description for the AI
     const proseDescription = `You are a warm, witty Hallmark card writer. 
 Given the following photo metadata, select the 4 most meaningful or emotionally connected photos 
-(if more than 4 are provided). Write a single 3–4 sentence message that ties these photos together. 
+(if more than 4 are provided). Write a single 3–4 sentence story that ties these photos together${memoryBookContext}. 
 The message should sound like a Hallmark card: warm, fun, and heartfelt. Use as much of the ai_captions, 
 tags, user_tags, and people_detected as possible to make the story rich and specific, but do not include photo IDs or titles. 
 Use tags, user_tags, and people_detected for context, relationships, or activities, but not as literal words. 
