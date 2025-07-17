@@ -995,8 +995,45 @@
         </div>
       </div>
 
-      <!-- Step 2: Photo Selection -->
-      <div v-if="magicMemoryStep === 2 && !loadingAssets" class="space-y-4">
+      <!-- Step 2: Event Selection -->
+      <div v-if="magicMemoryStep === 2" class="space-y-6">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-calendar text-2xl text-white"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">What type of event is this?</h3>
+          <p class="text-gray-600">You can leave this blank, or select Other to type your own event.</p>
+        </div>
+        <div class="field">
+          <label class="block text-sm font-medium text-gray-900 mb-2">Event Type</label>
+          <Dropdown
+            v-model="magicMemoryEvent"
+            :options="[
+              { label: 'Vacation', value: 'vacation' },
+              { label: 'Birthday', value: 'birthday' },
+              { label: 'Anniversary', value: 'anniversary' },
+              { label: 'Graduation', value: 'graduation' },
+              { label: 'Family Trip', value: 'family_trip' },
+              { label: 'Other (custom)', value: 'custom' }
+            ]"
+            option-label="label"
+            option-value="value"
+            placeholder="Select an event type..."
+            class="w-full text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+          />
+        </div>
+        <div v-if="magicMemoryEvent === 'custom'" class="field mt-4">
+          <label class="block text-sm font-medium text-gray-900 mb-2">Custom Event</label>
+          <input
+            v-model="magicCustomMemoryEvent"
+            placeholder="Type your event (e.g., 'Bar Mitzvah', 'Retirement', 'First Day of School')"
+            class="w-full text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+          />
+        </div>
+      </div>
+
+      <!-- Step 3: Photo Selection -->
+      <div v-if="magicMemoryStep === 3 && !loadingAssets" class="space-y-4">
         <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200 flex items-center gap-3 animate-pulse">
           <i class="pi pi-sparkles text-2xl text-yellow-400 animate-bounce"></i>
           <div>
@@ -1079,7 +1116,7 @@
           />
           <Button
             v-if="magicMemoryStep === 1"
-            label="Next: Select Photos"
+            label="Next: Event"
             icon="pi pi-arrow-right"
             :disabled="!magicMemoryTitle.trim()"
             @click="nextMagicMemoryStep"
@@ -1087,6 +1124,14 @@
           />
           <Button
             v-if="magicMemoryStep === 2"
+            label="Next: Photos"
+            icon="pi pi-arrow-right"
+            :disabled="!magicMemoryEvent.trim()"
+            @click="nextMagicMemoryStep"
+            class="bg-gradient-to-r from-yellow-400 to-purple-500 hover:from-yellow-500 hover:to-purple-600 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold"
+          />
+          <Button
+            v-if="magicMemoryStep === 3"
             label="Cast Spell!"
             icon="pi pi-bolt"
             :disabled="magicSelectedMemories.length < 2 || magicLoading"
@@ -2533,8 +2578,9 @@ const showInfoDialog = ref(false)
 import PdfViewer from '~/components/PdfViewer.vue'
 
 const showMagicMemoryDialog = ref(false)
-const magicMemoryStep = ref(1) // 1 = title input, 2 = photo selection
+const magicMemoryStep = ref(1) // 1 = title input, 2 = event selection, 3 = photo selection
 const magicMemoryTitle = ref('')
+const magicMemoryEvent = ref('')
 
 const magicSelectedTagFilter = ref([])
 const magicSelectedMemories = ref([])
@@ -2599,6 +2645,7 @@ async function onMagicMemoryContinue() {
           asset_ids: aiRes.selected_photo_ids,
           story: aiRes.story,
           title: magicMemoryTitle.value || 'Magic Memory',
+          memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value
         },
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -2635,6 +2682,7 @@ async function onMagicMemoryContinue() {
 const openMagicMemoryDialog = async () => {
   magicMemoryStep.value = 1
   magicMemoryTitle.value = ''
+  magicMemoryEvent.value = ''
   magicSelectedMemories.value = []
   magicSelectedTagFilter.value = []
   loadingAssets.value = true
@@ -2652,12 +2700,17 @@ const openMagicMemoryDialog = async () => {
 const nextMagicMemoryStep = () => {
   if (magicMemoryStep.value === 1 && magicMemoryTitle.value.trim()) {
     magicMemoryStep.value = 2
+  } else if (magicMemoryStep.value === 2) {
+    magicMemoryStep.value = 3
   }
 }
 
 const previousMagicMemoryStep = () => {
-  if (magicMemoryStep.value === 2) {
+  if (magicMemoryStep.value === 3) {
+    magicMemoryStep.value = 2
+  } else if (magicMemoryStep.value === 2) {
     magicMemoryStep.value = 1
+    magicCustomMemoryEvent.value = ''
   }
 }
 
@@ -2778,6 +2831,8 @@ async function saveEditBookFromDialog(data) {
     throw error
   }
 }
+
+const magicCustomMemoryEvent = ref('')
 
 </script> 
 

@@ -23,20 +23,21 @@ export default defineEventHandler(async (event) => {
     // Build memory book context string
     let memoryBookContext = ''
     if (title && title.trim()) {
-      memoryBookContext += ` with a title of "${title.trim()}"`
-    }
-    if (theme && theme.trim()) {
-      memoryBookContext += ` in the style of "${theme.trim()}"`
+      memoryBookContext += `The story is titled "${title.trim()}". `
     }
     if (memory_event && memory_event.trim()) {
-      memoryBookContext += ` for a ${memory_event.trim()}`
+      memoryBookContext += `It is for a ${memory_event.trim()} event. `
+    }
+    if (theme && theme.trim()) {
+      memoryBookContext += `The theme is "${theme.trim()}". `
     }
 
     // Prose description for the AI
     const proseDescription = `You are a warm, witty Hallmark card writer. 
 Given the following photo metadata, select the 4 most meaningful or emotionally connected photos 
-(if more than 4 are provided). Write a single 3–4 sentence story that ties these photos together${memoryBookContext}. 
-The message should sound like a Hallmark card: warm, fun, and heartfelt. Use as much of the ai_captions, 
+(if more than 4 are provided). Write a single 2-3 sentence story that ties these photos together. 
+${memoryBookContext}The message should sound like a Hallmark card: warm, fun, and heartfelt. 
+Keep the langunage at a 8th grade reading level. Use as much of the ai_captions, 
 tags, user_tags, and people_detected as possible to make the story rich and specific, but do not include photo IDs or titles. 
 Use tags, user_tags, and people_detected for context, relationships, or activities, but not as literal words. 
 The story should feel natural, personal, and delightful.`
