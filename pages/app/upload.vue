@@ -91,10 +91,7 @@
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
                 <!-- Status Icon -->
-                <div v-if="file.compressing" class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center">
-                  <i class="pi pi-spin pi-spinner text-orange-600 text-xs"></i>
-                </div>
-                <div v-else-if="file.processing" class="w-5 h-5 bg-yellow-100 rounded-full flex items-center justify-center">
+                <div v-if="file.processing" class="w-5 h-5 bg-yellow-100 rounded-full flex items-center justify-center">
                   <i class="pi pi-spin pi-spinner text-yellow-600 text-xs"></i>
                 </div>
                 <div v-else-if="file.uploading" class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
@@ -109,8 +106,7 @@
                 
                 <!-- Status Text -->
                 <span class="text-xs font-medium">
-                  <span v-if="file.compressing" class="text-orange-600">Compressing</span>
-                  <span v-else-if="file.processing" class="text-yellow-600">Processing</span>
+                  <span v-if="file.processing" class="text-yellow-600">Processing</span>
                   <span v-else-if="file.uploading" class="text-blue-600">Uploading</span>
                   <span v-else-if="file.error" class="text-red-600">Failed</span>
                   <span v-else class="text-green-600">Done</span>
@@ -123,10 +119,9 @@
               <div 
                 class="h-1.5 rounded-full transition-all duration-300 ease-out"
                 :class="{
-                  'bg-gradient-to-r from-orange-500 to-orange-600': file.compressing,
                   'bg-gradient-to-r from-blue-500 to-blue-600': file.uploading,
                   'bg-gradient-to-r from-yellow-500 to-orange-500': file.processing,
-                  'bg-gradient-to-r from-green-500 to-green-600': !file.uploading && !file.processing && !file.compressing && !file.error,
+                  'bg-gradient-to-r from-green-500 to-green-600': !file.uploading && !file.processing && !file.error,
                   'bg-gradient-to-r from-red-500 to-red-600': file.error
                 }"
                 :style="{ width: getFileProgress(file) + '%' }"
@@ -703,8 +698,7 @@ const overallProgress = computed(() => {
 // Helper function to get individual file progress
 const getFileProgress = (file) => {
   if (file.error) return 100 // Show full bar for failed files
-  if (!file.uploading && !file.processing && !file.compressing) return 100 // Show full bar for completed files
-  if (file.compressing) return 25 // Show 25% during compression
+  if (!file.uploading && !file.processing) return 100 // Show full bar for completed files
   if (file.uploading) return 50 // Show 50% during upload
   if (file.processing) return 75 // Show 75% during processing
   return 0
@@ -897,46 +891,7 @@ const handleFileDrop = (event) => {
 }
 
 // Helper function to compress image using Sharp
-const compressImage = async (file, maxSizeMB = 5) => {
-  // If file is already under the limit, return as is
-  if (file.size <= maxSizeMB * 1024 * 1024) {
-    return file
-  }
-
-  try {
-    // Create form data for the API
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('maxSizeMB', maxSizeMB.toString())
-
-    // Call the compression API
-    const response = await $fetch('/api/compress-image', {
-      method: 'POST',
-      body: formData
-    })
-
-    if (response.compressed) {
-      // Convert base64 back to blob
-      const compressedBlob = await fetch(`data:image/jpeg;base64,${response.compressedBuffer}`)
-        .then(res => res.blob())
-      
-      // Create a new File object with the compressed blob
-      const compressedFile = new File([compressedBlob], file.name, {
-        type: 'image/jpeg',
-        lastModified: Date.now()
-      })
-      
-      return compressedFile
-    } else {
-      // No compression needed, return original file
-      return file
-    }
-  } catch (error) {
-    console.error('Compression failed:', error)
-    // If compression fails, return original file
-    return file
-  }
-}
+// Compression is now handled in the useDatabase composable
 
 // Upload files
 const uploadFiles = async (files) => {
@@ -972,66 +927,31 @@ const uploadFiles = async (files) => {
       size: file.size,
       uploading: true,
       processing: false,
-      error: null,
-      compressing: false
+      error: null
     }
 
     uploadingFiles.value.push(uploadFile)
 
     try {
-      // Check if compression is needed
-      if (file.size > 5 * 1024 * 1024) { // 5MB threshold
-        uploadFile.compressing = true
-        uploadFile.uploading = false
-        
-        // Compress the file using Sharp
-        const compressedFile = await compressImage(file, 5)
-        
-        // Update file info for display
-        uploadFile.size = compressedFile.size
-        uploadFile.compressing = false
-        uploadFile.uploading = true
-        
-        // Upload compressed asset
-        const asset = await db.assets.uploadAsset({
-          type: 'photo',
-          title: file.name, // Use filename as default title
-          user_caption: '' // Initially blank caption
-        }, compressedFile)
-        
-        uploadFile.uploading = false
-        uploadFile.processing = true
+      // Upload asset (compression, geocoding, and metadata extraction handled in composable)
+      const asset = await db.assets.uploadAsset({
+        type: 'photo',
+        title: file.name, // Use filename as default title
+        user_caption: '' // Initially blank caption
+      }, file)
 
-        // Process with AI using compressed version
-        await $fetch('/api/ai/process-asset', {
-          method: 'POST',
-          body: {
-            assetId: asset.id,
-            assetType: 'photo',
-            storageUrl: asset.storage_url
-          }
-        })
-      } else {
-        // Upload original asset (no compression needed)
-        const asset = await db.assets.uploadAsset({
-          type: 'photo',
-          title: file.name, // Use filename as default title
-          user_caption: '' // Initially blank caption
-        }, file)
+      uploadFile.uploading = false
+      uploadFile.processing = true
 
-        uploadFile.uploading = false
-        uploadFile.processing = true
-
-        // Process with AI
-        await $fetch('/api/ai/process-asset', {
-          method: 'POST',
-          body: {
-            assetId: asset.id,
-            assetType: 'photo',
-            storageUrl: asset.storage_url
-          }
-        })
-      }
+      // Process with AI
+      await $fetch('/api/ai/process-asset', {
+        method: 'POST',
+        body: {
+          assetId: asset.id,
+          assetType: 'photo',
+          storageUrl: asset.storage_url
+        }
+      })
 
       uploadFile.processing = false
       successfulUploads.value++
@@ -1044,7 +964,6 @@ const uploadFiles = async (files) => {
       uploadFile.error = error.message
       uploadFile.uploading = false
       uploadFile.processing = false
-      uploadFile.compressing = false
       failedUploads.value++
       
       console.error(`Failed to upload ${file.name}:`, error.message)

@@ -78,6 +78,7 @@ export default defineNuxtConfig({
     openaiApiKey: process.env.OPENAI_API_KEY,
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     vpvLicenseKey: process.env.NUXT_VPV_LICENSE_KEY,
+    mapboxToken: process.env.MAPBOX_TOKEN,
     
     public: {
       // @ts-ignore

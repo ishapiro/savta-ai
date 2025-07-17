@@ -176,6 +176,28 @@
                 />
               </div>
             </div>
+
+            <!-- Location -->
+            <div v-if="asset.city || asset.state || asset.country" class="mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Location</label>
+              <div class="flex flex-wrap gap-1">
+                <Chip
+                  v-if="asset.city"
+                  :label="asset.city"
+                  class="text-xs bg-green-100 text-green-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                />
+                <Chip
+                  v-if="asset.state"
+                  :label="asset.state"
+                  class="text-xs bg-blue-100 text-blue-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                />
+                <Chip
+                  v-if="asset.country"
+                  :label="asset.country"
+                  class="text-xs bg-purple-100 text-purple-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                />
+              </div>
+            </div>
           </div>
 
           <!-- Action Bar - Fixed at Bottom -->

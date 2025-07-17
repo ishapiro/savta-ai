@@ -267,16 +267,94 @@ export const useDatabase = () => {
     uploadAsset: async (assetData, file = null) => {
       if (!user.value) throw new Error('User not authenticated')
       
+      console.log('🚀 uploadAsset called with:', { 
+        type: assetData.type, 
+        hasFile: !!file, 
+        fileName: file?.name,
+        fileSize: file?.size 
+      })
+      
       let storageUrl = null
+      let photoMetadata = null
+      let fileToUpload = file
+      
+      // Process image for metadata, geocoding, and compression if it's an image file
+      if (file && file.type && file.type.startsWith('image/')) {
+        try {
+          console.log('📸 Starting image analysis in uploadAsset...')
+          
+          // Check if compression is needed (5MB threshold)
+          if (file.size > 5 * 1024 * 1024) {
+            console.log('🗜️ File size exceeds 5MB, compressing...')
+            try {
+              // Create form data for the compression API
+              const formData = new FormData()
+              formData.append('file', file)
+              formData.append('maxSizeMB', '5')
+
+              // Call the compression API
+              const response = await $fetch('/api/compress-image', {
+                method: 'POST',
+                body: formData
+              })
+
+              if (response.compressed) {
+                // Convert base64 back to blob
+                const compressedBlob = await fetch(`data:image/jpeg;base64,${response.compressedBuffer}`)
+                  .then(res => res.blob())
+                
+                // Create a new File object with the compressed blob
+                fileToUpload = new File([compressedBlob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                })
+                
+                console.log(`🗜️ Compression successful: ${file.size} -> ${fileToUpload.size} bytes`)
+              } else {
+                console.log('🗜️ No compression needed')
+              }
+            } catch (compressionError) {
+              console.warn('⚠️ Compression failed, using original file:', compressionError.message)
+              fileToUpload = file
+            }
+          }
+          
+          // Analyze image metadata and geocoding on the server
+          console.log('📸 Analyzing image metadata...')
+          try {
+            const analysisFormData = new FormData()
+            analysisFormData.append('file', fileToUpload)
+            
+            const analysisResponse = await $fetch('/api/analyze-image', {
+              method: 'POST',
+              body: analysisFormData
+            })
+            
+            if (analysisResponse.success) {
+              photoMetadata = analysisResponse.metadata
+              console.log('📸 Image analysis completed successfully:', photoMetadata)
+            } else {
+              console.warn('⚠️ Image analysis failed')
+            }
+          } catch (analysisError) {
+            console.warn('⚠️ Failed to analyze image:', analysisError.message)
+            // Continue without metadata
+          }
+          
+        } catch (error) {
+          console.error('❌ Failed to process image:', error)
+          // Continue without metadata
+        }
+      }
       
       // Upload file to Supabase Storage if provided
-      if (file) {
+      if (fileToUpload) {
         // Use user-specific folder structure for organization
-        const fileName = `${user.value.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+        const fileName = `${user.value.id}/${Date.now()}-${fileToUpload.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('assets')
-          .upload(fileName, file)
+          .upload(fileName, fileToUpload)
         
         if (uploadError) {
           console.error('Storage upload error:', uploadError)
@@ -291,11 +369,23 @@ export const useDatabase = () => {
         storageUrl = urlData.publicUrl
       }
       
-      // Create asset record
+      // Create asset record with photo metadata if available
       const assetRecord = {
         user_id: user.value.id,
         storage_url: storageUrl,
         ...assetData
+      }
+      
+      // Add photo metadata if available
+      if (photoMetadata) {
+        assetRecord.width = photoMetadata.width
+        assetRecord.height = photoMetadata.height
+        assetRecord.orientation = photoMetadata.orientation
+        assetRecord.location = photoMetadata.location
+        assetRecord.city = photoMetadata.city
+        assetRecord.state = photoMetadata.state
+        assetRecord.country = photoMetadata.country
+        assetRecord.zip_code = photoMetadata.zip_code
       }
       
       const { data, error } = await supabase
@@ -315,6 +405,7 @@ export const useDatabase = () => {
         hasFile: !!file 
       })
       
+      console.log('✅ Upload completed successfully')
       return data
     },
 

@@ -2,9 +2,12 @@ import sharp from 'sharp'
 
 export default defineEventHandler(async (event) => {
   try {
+    console.log('🗜️ Compression endpoint called')
     const formData = await readFormData(event)
     const file = formData.get('file')
     const maxSizeMB = parseInt(formData.get('maxSizeMB') || '5')
+    
+    console.log(`🗜️ File received: ${file ? file.name : 'No file'}, maxSizeMB: ${maxSizeMB}`)
     
     if (!file) {
       throw createError({
@@ -21,7 +24,10 @@ export default defineEventHandler(async (event) => {
     
     // Check if compression is needed
     const originalSizeMB = buffer.length / (1024 * 1024)
+    console.log(`🗜️ Original size: ${originalSizeMB.toFixed(2)}MB, threshold: ${maxSizeMB}MB`)
+    
     if (originalSizeMB <= maxSizeMB) {
+      console.log('🗜️ No compression needed')
       return {
         compressed: false,
         originalSize: buffer.length,
@@ -29,6 +35,8 @@ export default defineEventHandler(async (event) => {
         originalBuffer: buffer
       }
     }
+    
+    console.log('🗜️ Compression needed, starting compression...')
 
     // Calculate new dimensions while maintaining aspect ratio
     const maxDimension = 1920
@@ -57,6 +65,7 @@ export default defineEventHandler(async (event) => {
           progressive: true,
           mozjpeg: true
         })
+        .withMetadata() // Preserve EXIF data including GPS coordinates
         .toBuffer()
       
       const compressedSizeMB = compressedBuffer.length / (1024 * 1024)
@@ -68,6 +77,9 @@ export default defineEventHandler(async (event) => {
       quality -= 10
     }
 
+    const compressedSizeMB = compressedBuffer.length / (1024 * 1024)
+    console.log(`🗜️ Compression complete: ${originalSizeMB.toFixed(2)}MB -> ${compressedSizeMB.toFixed(2)}MB (quality: ${quality})`)
+    
     return {
       compressed: true,
       originalSize: buffer.length,
