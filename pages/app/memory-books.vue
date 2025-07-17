@@ -68,11 +68,11 @@
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-bolt text-lg text-purple-600"></i></span>
-              <span class="text-gray-700"><b>Generate</b>: Create your Magic Memory for the first time.</span>
+              <span class="text-gray-700"><b>Compose</b>: Create your Magic Memory for the first time.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-refresh text-lg text-yellow-600"></i></span>
-              <span class="text-gray-700"><b>Regenerate</b>: Make a new version of your Magic Memory with a fresh design.</span>
+              <span class="text-gray-700"><b>Recompose</b>: Make a new version of your Magic Memory with a fresh design.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-check text-lg text-purple-600"></i></span>
@@ -190,12 +190,12 @@
           <!-- Generate Button (only for draft, not magic) -->
           <div v-if="book.status === 'draft' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onGenerateClick(book)">
             <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 group-hover:scale-125 transition-transform" />
-            <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Generate</span>
+            <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Compose</span>
           </div>
           <!-- Regenerate Button (for ready or background_ready, not magic) -->
           <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
             <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Regenerate' }}</span>
+            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recompose' }}</span>
           </div>
           <!-- Approve Button (not magic) -->
           <div v-if="book.status === 'ready' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="approveBook(book.id)">
@@ -493,8 +493,8 @@
                 @click="onGenerateClick(selectedBook)"
               >
                 <Wand2 class="w-3 h-3 sm:w-4 sm:h-4" />
-                <span class="hidden sm:inline">Generate Book</span>
-                <span class="sm:hidden">Generate</span>
+                <span class="hidden sm:inline">Compose Memory</span>
+                <span class="sm:hidden">Compose</span>
               </button>
               <button
                 v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
@@ -503,8 +503,8 @@
                 :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
               >
                 <i class="pi pi-refresh text-xs sm:text-sm"></i>
-                <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing...' : 'Regenerate' }}</span>
-                <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Regenerate' }}</span>
+                <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing...' : 'Recompose' }}</span>
+                <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Recompose' }}</span>
               </button>
               <button
                 v-if="selectedBook.status === 'ready'"
@@ -605,7 +605,7 @@
     <!-- Generate Confirmation Dialog -->
     <Dialog v-model:visible="showGenerateDialog" modal header="Give It Another Magical Spin" class="w-[95vw] max-w-md">
       <div class="py-4">
-        <p class="text-sm sm:text-base">Generate this magic memory? This may take a little time.</p>
+        <p class="text-sm sm:text-base">Compose this magic memory? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
           <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
           <Button label="Generate" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmGenerate" />
