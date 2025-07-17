@@ -69,6 +69,45 @@ export default defineEventHandler(async (event) => {
     }
     console.log('✅ Memory book found:', book.id, 'Status:', book.status)
     
+    // Check if this is a magic memory book
+    if (book.layout_type === 'magic') {
+      console.log('✨ Magic memory detected, generating a new magic story for regeneration')
+      // Always generate a new magic story for magic memory books
+      const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          asset_ids: book.created_from_assets,
+          title: book.title,
+          memory_event: book.memory_event,
+          theme: book.theme || 'classic'
+        })
+      })
+      if (!magicRes.ok) {
+        console.error('❌ Magic memory generation failed:', magicRes.status)
+        throw createError({
+          statusCode: 500,
+          statusMessage: 'Failed to generate magic memory'
+        })
+      }
+      const magicData = await magicRes.json()
+      // Update the book with the new magic story
+      const { error: updateError } = await supabase
+        .from('memory_books')
+        .update({ magic_story: magicData.story })
+        .eq('id', book.id)
+      if (updateError) {
+        console.error('❌ Failed to update book with magic story:', updateError)
+      } else {
+        console.log('✨ Magic story updated successfully')
+      }
+      // Continue with standard PDF generation but with magic layout
+      console.log('✨ Proceeding with magic memory PDF creation')
+    }
+
     // Check if the book has background ready
     if (book.status !== 'background_ready' && book.status !== 'ready' && book.status !== 'draft') {
       console.log('❌ Book not ready for PDF generation, status:', book.status)

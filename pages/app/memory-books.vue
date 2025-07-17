@@ -213,9 +213,13 @@
             <span class="text-[10px] sm:text-[11px] text-gray-700 mt-1 font-medium">Details</span>
           </div>
           <!-- Edit Settings Button (not magic) -->
-          <div v-if="book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="openEditSettings(book)">
-            <i class="pi pi-cog text-lg sm:text-xl text-blue-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-blue-700 mt-1 font-medium">Settings</span>
+          <div v-if="selectedBook && selectedBook.layout_type !== 'magic'"
+            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+            @click="openEditSettings(selectedBook)"
+          >
+            <i class="pi pi-cog text-xs sm:text-sm"></i>
+            <span class="hidden sm:inline">Edit Settings</span>
+            <span class="sm:hidden">Edit</span>
           </div>
           <!-- Delete Button -->
           <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="confirmDeleteBook(book)">
@@ -738,12 +742,13 @@
                 <span class="sm:hidden">Approve</span>
               </button>
               <button
-                class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                v-if="selectedBook && selectedBook.layout_type !== 'magic'"
+                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
                 @click="openEditSettings(selectedBook)"
               >
                 <i class="pi pi-cog text-xs sm:text-sm"></i>
                 <span class="hidden sm:inline">Edit Settings</span>
-                <span class="sm:hidden">Settings</span>
+                <span class="sm:hidden">Edit</span>
               </button>
             </div>
           </div>
@@ -835,49 +840,20 @@
       </div>
     </Dialog>
     <!-- Regenerate Confirmation Dialog -->
-    <Dialog
-      v-model:visible="showRegenerateDialog"
-      modal
-      header="Want to Cast a Different Spell?"
-      class="w-full md:w-[60%] lg:w-[50%] sm:rounded-2xl"
-      :closable="false"
-    >
-      <div class="py-6 px-4 sm:px-8 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 rounded-2xl">
-        <div class="flex flex-col items-center mb-4">
-          <div class="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center shadow mb-2">
-            <Sparkles class="w-8 h-8 text-yellow-400 animate-pulse" />
-          </div>
-          <h2 class="text-lg sm:text-xl font-bold text-purple-700 mb-2">Ready for a Magical Makeover?</h2>
-          <p class="text-sm sm:text-base text-gray-700 leading-relaxed text-center">
-            Would you like to create a fresh, new version of this magic memory with a brand new AI-generated background design?
-            <span class="font-semibold text-purple-600">It's like giving your memories a beautiful new frame!</span>
-            <br />
-            This will take a few moments to create something special just for you.<br />
-            If you're happy with the current version and just want to view it right away, you can use the view button below – that's much faster!
-          </p>
-        </div>
-        <div class="flex flex-col sm:flex-row justify-center gap-2 w-full mt-6">
-          <button
-            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
-            @click="downloadCurrentBook"
-          >
-            <i class="pi pi-external-link text-xl"></i>
-            View Current
-          </button>
-          <button
-            class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
-            @click="cancelDialog"
-          >
-            <i class="pi pi-times text-xl"></i>
-            Cancel
-          </button>
-          <button
-            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
-            @click="confirmRegenerate"
-          >
-            <Sparkles class="w-5 h-5" />
-            Cast New Spell
-          </button>
+    <Dialog v-model:visible="showRegenerateDialog" modal header="Recompose Memory Book" class="w-[95vw] max-w-md">
+      <div class="p-4">
+        <p class="text-sm sm:text-base mb-2">
+          Are you sure you want to recompose this memory book?
+        </p>
+        <p v-if="pendingBook && pendingBook.layout_type === 'magic'" class="text-purple-700 font-semibold text-sm sm:text-base mb-2">
+          ✨ Your magic story will be <b>rewritten</b> with new AI magic!
+        </p>
+        <p v-else class="text-gray-600 text-xs sm:text-sm mb-2">
+          This will regenerate the PDF with the latest settings and assets.
+        </p>
+        <div class="flex gap-3 justify-end mt-4">
+          <Button label="Cancel" class="p-button-secondary" @click="cancelDialog" />
+          <Button label="Yes, Recompose" class="p-button-danger" @click="confirmRegenerate" />
         </div>
       </div>
     </Dialog>
@@ -2007,11 +1983,20 @@ const generatePDF = async (book) => {
     if (book.status === 'ready' && (book.background_url || book.pdf_url)) {
       console.log('🔄 Regenerating memory, clearing existing URLs...')
       try {
-        await db.memoryBooks.updateMemoryBook(book.id, {
+        // Preserve the layout_type when clearing for regeneration
+        const updateData = {
           background_url: null,
           pdf_url: null,
           status: 'draft'
-        })
+        }
+        
+        // If this is a magic memory book, ensure we preserve the magic story
+        if (book.layout_type === 'magic') {
+          console.log('✨ Preserving magic memory layout and story for regeneration')
+          // Keep the magic_story and layout_type intact
+        }
+        
+        await db.memoryBooks.updateMemoryBook(book.id, updateData)
         console.log('✅ Cleared existing URLs for regeneration')
       } catch (clearError) {
         console.warn('⚠️ Failed to clear existing URLs:', clearError)
@@ -2814,7 +2799,9 @@ const cleanupBook = async (bookId) => {
 
 const showInfoDialog = ref(false)
 
-import PdfViewer from '~/components/PdfViewer.vue'
+// import PdfViewer from '~/components/PdfViewer.vue'
+import { defineAsyncComponent } from 'vue'
+const PdfViewer = defineAsyncComponent(() => import('~/components/PdfViewer.vue'))
 
 const showMagicMemoryDialog = ref(false)
 const magicMemoryStep = ref(1) // 1 = title input, 2 = event selection, 3 = photo selection

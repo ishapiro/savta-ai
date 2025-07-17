@@ -133,3 +133,36 @@ body {
   white-space: normal !important;
   text-align: left !important;
 } 
+
+/* Hide PDF viewer toolbar buttons */
+.vpv-toolbar-btn[aria-label="Print"],
+button[aria-label="Print"],
+[class*="vpv-toolbar-btn"][aria-label="Print"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+.vpv-toolbar-btn[aria-label="Open local file"],
+button[aria-label="Open local file"],
+[class*="vpv-toolbar-btn"][aria-label="Open local file"],
+.vpv-toolbar-btn.vp-h-8.vp-w-8[aria-label="Open local file"],
+button.vpv-toolbar-btn.vp-h-8.vp-w-8[aria-label="Open local file"],
+[data-v-851e235f][aria-label="Open local file"],
+[data-v-971703f0][aria-label="Open local file"],
+[data-v-1218acd3][aria-label="Open local file"],
+[data-v-da4050df][aria-label="Open local file"],
+.vpv-toolbar-end .vpv-toolbar-btn[aria-label="Open local file"],
+.vpv-toolbar-end button[aria-label="Open local file"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+} 
