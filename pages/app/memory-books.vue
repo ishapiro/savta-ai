@@ -660,12 +660,14 @@
       </div>
     </Dialog>
     <!-- View Draft Dialog -->
-    <Dialog v-model:visible="showDownloadDraftDialog" modal header="Magic Memory Not Generated" class="w-[95vw] max-w-md">
+    <Dialog v-model:visible="showDownloadDraftDialog" modal header="Magic Memory Not Composed" class="w-[95vw] max-w-md">
       <div class="py-4">
-        <p class="text-sm sm:text-base">You need to generate the magic memory before viewing. Would you like to generate it now? This may take a little time.</p>
+        <p class="text-sm sm:text-base">You need to compose the magic memory before viewing. 
+          Would you like to compose it now? 
+          This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
           <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
-          <Button label="Generate Now" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmDownloadDraft" />
+          <Button label="Compose Now" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmDownloadDraft" />
         </div>
       </div>
     </Dialog>
