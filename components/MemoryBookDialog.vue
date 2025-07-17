@@ -222,7 +222,7 @@
                 label="Select Memories"
                 icon="pi pi-plus"
                 size="small"
-                @click="showAssetSelector = true"
+                @click="openAssetSelector"
                 class="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 border-0 text-xs px-3 py-2"
               />
             </div>
@@ -256,6 +256,14 @@
 
       <!-- Form Actions -->
       <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-4 border-t border-gray-200">
+        <Button
+          type="button"
+          label="Cleanup"
+          icon="pi pi-broom"
+          severity="danger"
+          @click="$emit('cleanup')"
+          class="w-full sm:w-auto bg-gradient-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 border-0 text-white"
+        />
         <Button
           type="button"
           label="Cancel"
@@ -466,7 +474,7 @@ const props = defineProps({
   visible: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['submit', 'close'])
+const emit = defineEmits(['submit', 'close', 'cleanup'])
 
 const form = ref({
   title: '',

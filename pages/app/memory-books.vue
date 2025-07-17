@@ -259,6 +259,7 @@
       :loading="savingEditBook"
       @close="showEditSettingsModal = false"
       @submit="saveEditBookFromDialog"
+      @cleanup="() => { if (editBook) { cleanupBookId = editBook.id; showCleanupConfirmationModal = true; } }"
     />
 
     <!-- Success Dialog -->
@@ -531,25 +532,72 @@
     <Dialog
       v-model:visible="showProgressDialog"
       modal
-      header="Casting a Spell to Create Your Magic Memory"
-      :style="{ width: '95vw', maxWidth: '400px' }"
+      :style="{ width: '95vw', maxWidth: '450px' }"
       :closable="false"
       :z-index="9999"
+      :showHeader="false"
     >
+      <div class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 rounded-2xl p-6 sm:p-8">
+        <!-- Magic Header -->
+        <div class="text-center mb-6">
+          <div class="relative mb-4">
+            <!-- Floating sparkles -->
+            <div class="absolute -top-2 -left-2 w-4 h-4 bg-yellow-300 rounded-full animate-ping"></div>
+            <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+            <div class="absolute -bottom-1 -left-1 w-2 h-2 bg-blue-300 rounded-full animate-ping" style="animation-delay: 1s;"></div>
+            
+            <!-- Main magic circle -->
+            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-full flex items-center justify-center shadow-lg mx-auto animate-pulse">
+              <i class="pi pi-sparkles text-3xl sm:text-4xl text-purple-600 animate-bounce"></i>
+            </div>
+          </div>
+          
+          <h2 class="text-lg sm:text-xl font-bold text-purple-700 mb-2 animate-fade-in">
+            ✨ Casting a Spell to Create Your Magic Memory ✨
+          </h2>
+          <p class="text-sm sm:text-base text-purple-600 font-medium">
+            The AI is weaving your memories into something magical...
+          </p>
+        </div>
 
-      <div class="text-center py-4">
-        <div class="mb-4">
-          <i class="pi pi-spin pi-spinner text-3xl sm:text-4xl text-blue-600"></i>
+        <!-- Progress Section -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-purple-200 shadow-lg">
+          <div class="text-center">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">
+              {{ currentProgressMessage }}
+            </h3>
+            
+            <!-- Animated progress bar -->
+            <div class="relative mb-4">
+              <div class="w-full bg-gradient-to-r from-purple-100 to-blue-100 rounded-full h-3 shadow-inner">
+                <div 
+                  class="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 h-3 rounded-full transition-all duration-500 ease-out shadow-lg relative overflow-hidden"
+                  :style="`width: ${currentProgress}%`"
+                >
+                  <!-- Shimmer effect -->
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Magic status -->
+            <div class="flex items-center justify-center gap-2 text-sm sm:text-base text-gray-700">
+              <i class="pi pi-magic text-purple-500 animate-pulse"></i>
+              <span class="font-medium">Magic in Progress...</span>
+            </div>
+          </div>
         </div>
-        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">Processing...</h3>
-        <p class="text-sm text-gray-600 mb-4">{{ currentProgressMessage }}</p>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            class="bg-primary h-2 rounded-full transition-all duration-300"
-            :class="`w-[${currentProgress}%]`"
-          ></div>
+
+        <!-- Magic particles effect -->
+        <div class="relative mt-4 h-8">
+          <div class="absolute inset-0 flex justify-center">
+            <div class="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+            <div class="w-2 h-2 bg-purple-400 rounded-full animate-bounce ml-2" style="animation-delay: 0.2s;"></div>
+            <div class="w-2 h-2 bg-pink-400 rounded-full animate-bounce ml-2" style="animation-delay: 0.4s;"></div>
+            <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce ml-2" style="animation-delay: 0.6s;"></div>
+            <div class="w-2 h-2 bg-yellow-400 rounded-full animate-bounce ml-2" style="animation-delay: 0.8s;"></div>
+          </div>
         </div>
-        <p class="text-xs sm:text-sm text-gray-600 mt-2">{{ currentProgress }}% complete</p>
       </div>
     </Dialog>
 
