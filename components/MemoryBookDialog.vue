@@ -1,119 +1,241 @@
 <template>
-  <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-      <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-2xl p-6 flex items-center justify-between">
-        <div>
-          <h2 class="text-xl font-bold text-white">
-            {{ isEditing ? 'Edit Magic Memory Settings' : 'Create Memory Book' }}
-          </h2>
-          <p class="text-blue-100 text-sm">
-            {{ isEditing ? 'Update your memory book settings' : 'Create a beautiful memory book with AI enhancements' }}
-          </p>
-        </div>
-        <button @click="$emit('close')" class="text-white hover:text-blue-100 transition-colors" aria-label="Close dialog">
-          ×
-        </button>
-      </div>
-      <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-          <InputText
-            v-model="form.title"
-            placeholder="Enter memory book title"
-            class="w-full"
-            required
-          />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Layout Type</label>
-          <Dropdown
-            v-model="form.layoutType"
-            :options="[
-              { label: 'Grid Layout', value: 'grid' },
-              { label: 'Timeline Layout', value: 'timeline' },
-              { label: 'Story Layout', value: 'story' },
-              { label: 'Album Layout', value: 'album' }
-            ]"
-            option-label="label"
-            option-value="value"
-            placeholder="Select layout type"
-            class="w-full"
-          />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Print Size</label>
-          <Dropdown
-            v-model="form.printSize"
-            :options="[
-              { label: '5x7', value: '5x7' },
-              { label: '6x8', value: '6x8' },
-              { label: '8x10', value: '8x10' },
-              { label: '11x14', value: '11x14' },
-              { label: '12x12', value: '12x12' },
-              { label: 'A4', value: 'a4' }
-            ]"
-            option-label="label"
-            option-value="value"
-            placeholder="Select print size"
-            class="w-full"
-          />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Quality</label>
-          <Dropdown
-            v-model="form.quality"
-            :options="[
-              { label: 'Standard', value: 'standard' },
-              { label: 'High Quality', value: 'high' },
-              { label: 'Premium', value: 'premium' }
-            ]"
-            option-label="label"
-            option-value="value"
-            placeholder="Select quality"
-            class="w-full"
-          />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Medium</label>
-          <Dropdown
-            v-model="form.medium"
-            :options="[
-              { label: 'Digital PDF', value: 'digital' },
-              { label: 'Print Ready', value: 'print' },
-              { label: 'Web View', value: 'web' }
-            ]"
-            option-label="label"
-            option-value="value"
-            placeholder="Select medium"
-            class="w-full"
-          />
-        </div>
-        
-        <!-- Asset Selection Section -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Select Memories</label>
-          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-sm text-gray-600">
-                {{ selectedAssets.length }} memories selected
-              </span>
-              <button 
-                type="button"
-                @click="openAssetSelector"
-                class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full transition-colors">
-                {{ selectedAssets.length > 0 ? 'Change Selection' : 'Select Memories' }}
-              </button>
+  <Dialog
+    v-model:visible="showDialog"
+    modal
+    :header="isEditing ? 'Edit Memory Spell' : 'Create New Memory Spell'"
+    class="w-[95vw] max-w-4xl memory-book-dialog"
+    :closable="false"
+  >
+    <form @submit.prevent="handleSubmit" class="space-y-6">
+      <!-- Book Details Section -->
+      <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-book text-blue-600"></i>
+          Book Details
+        </h3>
+        <div class="space-y-4">
+          <!-- Title -->
+          <div>
+            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+              Title
+            </label>
+            <InputText
+              id="title"
+              v-model="form.title"
+              class="w-full"
+              placeholder="Enter memory book title"
+              required
+            />
+          </div>
+          
+          <!-- Memory Event and Theme side by side -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Memory Event -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Memory Event</label>
+              <Dropdown
+                v-model="form.memoryEvent"
+                :options="memoryEventOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select event"
+                class="w-full"
+              />
+              <InputText
+                v-if="form.memoryEvent === 'custom'"
+                v-model="form.customMemoryEvent"
+                class="w-full mt-2"
+                placeholder="Enter custom event"
+              />
             </div>
-            <!-- Selected Assets Preview -->
-            <div v-if="selectedAssets.length > 0" class="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
-              <div 
-                v-for="asset in selectedAssets"
+            
+            <!-- Theme -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Theme</label>
+              <Dropdown
+                v-model="form.theme"
+                :options="themeOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select theme"
+                class="w-full"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layout & Print Section -->
+      <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 border border-green-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-file-pdf text-green-600"></i>
+          Layout & Print
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Layout Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Layout Type</label>
+            <Dropdown
+              v-model="form.layoutType"
+              :options="layoutOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select layout"
+              class="w-full"
+            />
+          </div>
+          
+          <!-- Print Size -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Print Size</label>
+            <Dropdown
+              v-model="form.printSize"
+              :options="printSizeOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select size"
+              class="w-full"
+            />
+          </div>
+          
+          <!-- Quality -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Quality</label>
+            <Dropdown
+              v-model="form.quality"
+              :options="qualityOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select quality"
+              class="w-full"
+            />
+          </div>
+          
+          <!-- Medium -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Medium</label>
+            <Dropdown
+              v-model="form.medium"
+              :options="mediumOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select medium"
+              class="w-full"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid & Shape Section -->
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-th-large text-purple-600"></i>
+          Grid & Shape
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Grid Layout -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Grid Layout</label>
+            <Dropdown
+              v-model="form.gridLayout"
+              :options="gridLayoutOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select grid layout"
+              class="w-full"
+            />
+          </div>
+          
+          <!-- Memory Shape -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Memory Shape</label>
+            <Dropdown
+              v-model="form.memoryShape"
+              :options="memoryShapeOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select shape"
+              class="w-full"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- AI & Captions Section -->
+      <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-4 border border-yellow-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-magic text-yellow-600"></i>
+          AI & Captions
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="flex items-center space-x-3">
+            <Checkbox
+              v-model="form.aiBackground"
+              :binary="true"
+              input-id="aiBackground"
+            />
+            <label for="aiBackground" class="text-sm font-medium text-gray-700">AI Background</label>
+          </div>
+          <div class="flex items-center space-x-3">
+            <Checkbox
+              v-model="form.includeCaptions"
+              :binary="true"
+              input-id="includeCaptions"
+            />
+            <label for="includeCaptions" class="text-sm font-medium text-gray-700">AI Captions</label>
+          </div>
+          <div class="flex items-center space-x-3">
+            <Checkbox
+              v-model="form.includeTags"
+              :binary="true"
+              input-id="includeTags"
+            />
+            <label for="includeTags" class="text-sm font-medium text-gray-700">Photo Tags</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Asset Selection Section -->
+      <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-4 border border-indigo-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="pi pi-images text-indigo-600"></i>
+          Memory Selection
+        </h3>
+        <div class="space-y-4">
+          <!-- Selected Assets Summary -->
+          <div class="bg-white rounded-lg p-3 border border-gray-200">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-heart text-indigo-600 text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">
+                    {{ selectedAssets.length }} memories selected
+                  </p>
+                  <p class="text-xs text-gray-600">
+                    {{ selectedAssets.length === 0 ? 'No memories selected' : 'Ready to create your magic memory' }}
+                  </p>
+                </div>
+              </div>
+              <Button
+                label="Select Memories"
+                icon="pi pi-plus"
+                size="small"
+                @click="showAssetSelector = true"
+                class="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 border-0 text-xs px-3 py-2"
+              />
+            </div>
+          </div>
+          
+          <!-- Selected Assets Grid -->
+          <div v-if="selectedAssets.length > 0" class="bg-white rounded-lg p-3 border border-gray-200">
+            <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-32 overflow-y-auto">
+              <div
+                v-for="asset in selectedAssets.slice(0, 16)"
                 :key="asset.id"
-                class="relative aspect-square bg-gray-100 rounded overflow-hidden border border-gray-200">
+                class="aspect-square bg-gray-100 rounded-lg border border-gray-200 overflow-hidden"
+              >
                 <img 
                   v-if="asset.storage_url"
                   :src="asset.storage_url"
@@ -121,111 +243,37 @@
                   class="w-full h-full object-cover"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center">
-                  <i class="pi pi-image text-gray-400"></i>
+                  <i class="pi pi-image text-gray-400 text-xs"></i>
                 </div>
-                <button 
-                  type="button"
-                  @click.stop="removeAsset(asset.id)"
-                  class="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
-                  ×
-                </button>
               </div>
-            </div>
-            <div v-else class="text-center py-4">
-              <i class="pi pi-images text-2xl mb-2 block"></i>
-              <p class="text-sm">No memories selected</p>
+              <div v-if="selectedAssets.length > 16" class="aspect-square bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-xs text-gray-500 font-medium">
+                +{{ selectedAssets.length - 16 }}
+              </div>
             </div>
           </div>
         </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Grid Layout</label>
-          <Dropdown
-            v-model="form.gridLayout"
-            :options="[
-              { label: '1 memory per page (1x1)', value: '1x1' },
-              { label: '2 memories per page (2x1)', value: '2x1' },
-              { label: '4 memories per page (2x2)', value: '2x2' },
-              { label: '6 memories per page (3x2)', value: '3x2' },
-              { label: '9 memories per page (3x3)', value: '3x3' },
-              { label: '12 memories per page (3x4)', value: '3x4' },
-              { label: '16 memories per page (4x4)', value: '4x4' }
-            ]"
-            option-label="label"
-            option-value="value"
-            placeholder="Select grid layout"
-            class="w-full"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Memory Shape</label>
-          <Dropdown
-            v-model="form.memoryShape"
-            :options="[
-              { label: 'Original (keep natural aspect ratio)', value: 'original' },
-              { label: 'Magic (AI chooses best shape)', value: 'magic' }
-            ]"
-            option-label="label"
-            option-value="value"
-            placeholder="Select memory shape"
-            class="w-full"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Theme</label>
-          <Dropdown
-            v-model="form.theme"
-            :options="[
-              { label: 'Classic', value: 'classic' },
-              { label: 'Modern', value: 'modern' },
-              { label: 'Vintage', value: 'vintage' },
-              { label: 'Minimalist', value: 'minimalist' }
-            ]"
-            option-label="label"
-            option-value="value"
-            placeholder="Select theme"
-            class="w-full"
-          />
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Memory Event</label>
-          <Dropdown
-            v-model="form.memoryEvent"
-            :options="memoryEventOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select event"
-            class="w-full"
-          />
-          <InputText
-            v-if="form.memoryEvent === 'custom'"
-            v-model="form.customMemoryEvent"
-            class="w-full mt-2"
-            placeholder="Enter custom event"
-          />
-        </div>
-        <div class="flex items-center space-x-4">
-          <label class="flex items-center space-x-2">
-            <input type="checkbox" v-model="form.aiBackground" />
-            <span>AI Background</span>
-          </label>
-          <label class="flex items-center space-x-2">
-            <input type="checkbox" v-model="form.includeCaptions" />
-            <span>AI Captions</span>
-          </label>
-          <label class="flex items-center space-x-2">
-            <input type="checkbox" v-model="form.includeTags" />
-            <span>Photo Tags</span>
-          </label>
-        </div>
-        <div class="flex justify-end space-x-2 pt-4">
-          <button type="button" @click="$emit('close')" class="px-4 py-2 rounded bg-gray-100 text-gray-700">Cancel</button>
-          <button type="submit" :disabled="loading || selectedAssets.length === 0" class="px-4 py-2 rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold disabled:opacity-50">
-            {{ isEditing ? 'Update' : 'Create' }}
-          </button>
-        </div>
-      </form>
-    </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-4 border-t border-gray-200">
+        <Button
+          type="button"
+          label="Cancel"
+          icon="pi pi-times"
+          severity="secondary"
+          @click="$emit('close')"
+          class="w-full sm:w-auto"
+        />
+        <Button
+          type="submit"
+          :label="isEditing ? 'Update' : 'Create'"
+          icon="pi pi-check"
+          :loading="loading"
+          :disabled="loading || selectedAssets.length === 0"
+          class="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
+        />
+      </div>
+    </form>
 
     <!-- Asset Selection Modal -->
     <Dialog
@@ -404,7 +452,7 @@
         </div>
       </template>
     </Dialog>
-  </div>
+  </Dialog>
 </template>
 
 <script setup>
@@ -414,7 +462,8 @@ const props = defineProps({
   isEditing: Boolean,
   initialData: { type: Object, default: () => ({}) },
   loading: Boolean,
-  initialSelectedAssets: { type: Array, default: () => [] }
+  initialSelectedAssets: { type: Array, default: () => [] },
+  visible: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['submit', 'close'])
@@ -443,11 +492,80 @@ const selectedAssets = ref([])
 const selectedMemories = ref([])
 const selectedTagFilter = ref([])
 
+// Options for dropdowns
+const layoutOptions = ref([
+  { label: 'Grid Layout', value: 'grid' },
+  { label: 'Timeline Layout', value: 'timeline' },
+  { label: 'Story Layout', value: 'story' },
+  { label: 'Album Layout', value: 'album' }
+])
+
+const printSizeOptions = ref([
+  { label: '5x7 inches', value: '5x7' },
+  { label: '6x8 inches', value: '6x8' },
+  { label: '8x10 inches', value: '8x10' },
+  { label: '11x14 inches', value: '11x14' },
+  { label: '12x12 inches', value: '12x12' },
+  { label: 'A4', value: 'a4' }
+])
+
+const qualityOptions = ref([
+  { label: 'Standard', value: 'standard' },
+  { label: 'High Quality', value: 'high' },
+  { label: 'Premium', value: 'premium' }
+])
+
+const mediumOptions = ref([
+  { label: 'Digital PDF', value: 'digital' },
+  { label: 'Print Ready', value: 'print' },
+  { label: 'Web View', value: 'web' }
+])
+
+const themeOptions = ref([
+  { label: 'Classic', value: 'classic' },
+  { label: 'Modern', value: 'modern' },
+  { label: 'Vintage', value: 'vintage' },
+  { label: 'Minimalist', value: 'minimalist' }
+])
+
+const gridLayoutOptions = ref([
+  { label: '1 memory per page (1x1)', value: '1x1' },
+  { label: '2 memories per page (2x1)', value: '2x1' },
+  { label: '4 memories per page (2x2)', value: '2x2' },
+  { label: '6 memories per page (3x2)', value: '3x2' },
+  { label: '9 memories per page (3x3)', value: '3x3' },
+  { label: '12 memories per page (3x4)', value: '3x4' },
+  { label: '16 memories per page (4x4)', value: '4x4' }
+])
+
+const memoryShapeOptions = ref([
+  { label: 'Original (keep natural aspect ratio)', value: 'original' },
+  { label: 'Magic (AI chooses best shape)', value: 'magic' }
+])
+
+const memoryEventOptions = ref([
+  { label: 'Vacation', value: 'vacation' },
+  { label: 'Birthday', value: 'birthday' },
+  { label: 'Anniversary', value: 'anniversary' },
+  { label: 'Graduation', value: 'graduation' },
+  { label: 'Family Trip', value: 'family_trip' },
+  { label: 'Other (custom)', value: 'custom' }
+])
+
 // Database composable
 const { $supabase: supabase } = useNuxtApp()
 const db = useDatabase()
 
 // Computed properties
+const showDialog = computed({
+  get: () => props.visible,
+  set: (value) => {
+    if (!value) {
+      emit('close')
+    }
+  }
+})
+
 const filteredAssets = computed(() => {
   if (!Array.isArray(availableAssets.value)) return []
   return availableAssets.value.filter(asset =>

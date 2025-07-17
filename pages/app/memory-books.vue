@@ -243,7 +243,7 @@
 
     <!-- Create Memory Book Modal (replaces old Dialog) -->
     <MemoryBookDialog
-      v-if="showCreateModal"
+      :visible="showCreateModal"
       :isEditing="false"
       :initialData="{}"
       :loading="creatingBook"
@@ -253,9 +253,9 @@
 
     <!-- Edit Memory Book Settings Modal (replaces old Dialog) -->
     <MemoryBookDialog
-      v-if="showEditSettingsModal && editBook"
+      :visible="showEditSettingsModal && !!editBook"
       :isEditing="true"
-      :initialData="editBook"
+      :initialData="editBook || {}"
       :loading="savingEditBook"
       @close="showEditSettingsModal = false"
       @submit="saveEditBookFromDialog"
