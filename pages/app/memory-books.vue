@@ -1404,15 +1404,18 @@ const createMemoryBook = async () => {
   creatingBook.value = true
   try {
     // Use selected assets if any, otherwise get all approved assets
-    let assetsToUse = []
-    if (selectedAssets.value.length > 0) {
-      assetsToUse = selectedAssets.value
-      console.log('🔧 [createMemoryBook] Using selected assets:', assetsToUse)
+    let assetsToUse = [];
+    if (newBook.value.created_from_assets && newBook.value.created_from_assets.length > 0) {
+      assetsToUse = newBook.value.created_from_assets;
+      console.log('🔧 [createMemoryBook] Using selected assets from newBook:', assetsToUse);
+    } else if (selectedAssets.value.length > 0) {
+      assetsToUse = selectedAssets.value;
+      console.log('🔧 [createMemoryBook] Using selected assets from selectedAssets:', assetsToUse);
     } else {
-      console.log('🔧 [createMemoryBook] Getting all approved assets...')
-      const approvedAssets = await db.assets.getAssets({ approved: true })
-      assetsToUse = approvedAssets.map(asset => asset.id)
-      console.log('🔧 [createMemoryBook] Found approved assets:', assetsToUse)
+      console.log('🔧 [createMemoryBook] Getting all approved assets...');
+      const approvedAssets = await db.assets.getAssets({ approved: true });
+      assetsToUse = approvedAssets.map(asset => asset.id);
+      console.log('🔧 [createMemoryBook] Found approved assets:', assetsToUse);
     }
     if (assetsToUse.length === 0) {
       console.log('🔧 [createMemoryBook] No assets available')
@@ -1643,6 +1646,21 @@ const stopProgressPolling = () => {
 // Generate PDF
 const generatePDF = async (book) => {
   console.log('generatePDF called for book:', book.id)
+  
+  // Check if the book has assets
+  if (!book.created_from_assets || book.created_from_assets.length === 0) {
+    console.error('❌ Cannot generate PDF: No assets found in memory book')
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'No Assets Found',
+        detail: 'This memory book has no assets to generate a PDF from. Please add some memories first.',
+        life: 4000
+      })
+    }
+    return
+  }
+  
   try {
     // Start progress polling
     console.log('Starting progress polling...')
@@ -2613,6 +2631,20 @@ async function deleteBookConfirmed() {
 async function createMemoryBookFromDialog(data) {
   console.log('🔧 [createMemoryBookFromDialog] Starting with data:', data)
   
+  // Check if assets are selected
+  if (!data.selectedAssets || data.selectedAssets.length === 0) {
+    // Show dialog explaining the requirement
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'warn',
+        summary: 'Assets Required',
+        detail: 'Please select at least one memory to include in your magic memory book.',
+        life: 4000
+      })
+    }
+    return // Don't proceed with creation
+  }
+  
   try {
     // Map dialog data to newBook structure
     newBook.value = {
@@ -2628,7 +2660,9 @@ async function createMemoryBookFromDialog(data) {
       includeTags: data.includeTags,
       aiBackground: data.aiBackground,
       memoryEvent: data.memoryEvent,
-      customMemoryEvent: data.customMemoryEvent
+      customMemoryEvent: data.customMemoryEvent,
+      // Store selected asset IDs for the book
+      created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
     }
     
     console.log('🔧 [createMemoryBookFromDialog] Mapped newBook.value:', newBook.value)
