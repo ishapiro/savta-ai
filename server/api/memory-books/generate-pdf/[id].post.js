@@ -94,7 +94,11 @@ export default defineEventHandler(async (event) => {
         ai_caption: asset.ai_caption || '',
         people_detected: asset.people_detected || [],
         tags: asset.tags || [],
-        user_tags: asset.user_tags || []
+        user_tags: asset.user_tags || [],
+        city: asset.city || null,
+        state: asset.state || null,
+        country: asset.country || null,
+        zip_code: asset.zip_code || null
       }))
 
       // Determine photo count based on number of assets (default to 4 if not specified)

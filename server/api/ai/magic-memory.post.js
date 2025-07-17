@@ -20,9 +20,22 @@ export default defineEventHandler(async (event) => {
     const targetPhotoCount = validPhotoCounts.includes(photo_count) ? photo_count : 4
 
     // Construct prompt for OpenAI
-    const photoSummaries = photos.map((p, i) =>
-      `Photo ${i+1}:\n- id: ${p.id}\n- orientation: ${p.orientation || 'unknown'}\n- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
-    ).join('\n\n')
+    const photoSummaries = photos.map((p, i) => {
+      let summary = `Photo ${i+1}:\n- id: ${p.id}\n- orientation: ${p.orientation || 'unknown'}\n- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
+      
+      // Add location information if available
+      const locationParts = []
+      if (p.city && p.city.trim()) locationParts.push(p.city.trim())
+      if (p.state && p.state.trim()) locationParts.push(p.state.trim())
+      if (p.country && p.country.trim()) locationParts.push(p.country.trim())
+      if (p.zip_code && p.zip_code.trim()) locationParts.push(p.zip_code.trim())
+      
+      if (locationParts.length > 0) {
+        summary += `\n- location: ${locationParts.join(', ')}`
+      }
+      
+      return summary
+    }).join('\n\n')
 
     // Build memory book context string
     let memoryBookContext = ''
@@ -46,6 +59,7 @@ STYLE REQUIREMENTS:
 - 8th grade reading level
 - Natural, personal, and delightful language
 - Use photo context (captions, tags, people) for richness, but don't mention them literally
+- Refer to location information if available to make the story more specific and personal
 
 ${memoryBookContext}
 STORY GUIDELINES:

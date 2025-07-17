@@ -2901,7 +2901,11 @@ async function onMagicMemoryContinue() {
       ai_caption: a.ai_caption || '',
       people_detected: a.people_detected || [],
       tags: a.tags || [],
-      user_tags: a.user_tags || []
+      user_tags: a.user_tags || [],
+      city: a.city || null,
+      state: a.state || null,
+      country: a.country || null,
+      zip_code: a.zip_code || null
     }))
     let aiBody = { 
       photos,
