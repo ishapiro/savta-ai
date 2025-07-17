@@ -228,17 +228,43 @@
 
     <!-- Empty State -->
     <div v-else class="flex flex-col items-center justify-center py-12 sm:py-20 px-4">
-      <div class="text-gray-600 mb-4">
-        <i class="pi pi-book text-4xl sm:text-6xl"></i>
+      <!-- No assets state -->
+      <div v-if="!hasAssets" class="text-center">
+        <div class="text-gray-600 mb-4">
+          <i class="pi pi-images text-4xl sm:text-6xl"></i>
+        </div>
+        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No photos uploaded yet</h3>
+        <p class="text-sm sm:text-base text-gray-500 mb-6 text-center max-w-md">You need some photos to create your first magic memory. Would you like to upload some now?</p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
+            @click="showUploadDialog = true"
+          >
+            <i class="pi pi-upload mr-1 sm:mr-2"></i> Upload Photos
+          </button>
+          <button
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
+            @click="skipUpload"
+          >
+            Maybe Later
+          </button>
+        </div>
       </div>
-      <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2 text-center">No magic memories yet</h3>
-      <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Create your first magic memory from your approved assets.</p>
-      <button
-        class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-xs"
-        @click="openCreateModal"
-      >
-        <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Magic Memory
-      </button>
+
+      <!-- Has assets but no magic memories state -->
+      <div v-else class="text-center">
+        <div class="text-gray-600 mb-4">
+          <i class="pi pi-book text-4xl sm:text-6xl"></i>
+        </div>
+        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No magic memories yet</h3>
+        <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Great! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first magic memory?</p>
+        <button
+          class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
+          @click="openMagicMemoryDialog"
+        >
+          <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Magic Memory
+        </button>
+      </div>
     </div>
 
     <!-- Create Memory Book Modal (replaces old Dialog) -->
@@ -311,6 +337,202 @@
           Let's Make Some Magic! ✨
         </button>
       </div>
+    </Dialog>
+
+    <!-- Upload Photos Dialog -->
+    <Dialog
+      v-model:visible="showUploadDialog"
+      modal
+      :closable="!isUploading"
+      :dismissableMask="!isUploading"
+      header="✨ Photo Magic Workshop ✨"
+      class="w-[95vw] max-w-2xl mx-auto magic-upload-dialog"
+      @hide="resetUploadDialog"
+    >
+      <div class="space-y-6">
+        <!-- Upload Instructions -->
+        <div v-if="!isUploading && uploadedFiles.length === 0" class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200 relative overflow-hidden">
+          <!-- Magical sparkles -->
+          <div class="absolute top-2 right-2 w-3 h-3 bg-yellow-300 rounded-full animate-ping"></div>
+          <div class="absolute bottom-2 left-2 w-2 h-2 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+          <div class="absolute top-1/2 right-4 w-2 h-2 bg-blue-300 rounded-full animate-ping" style="animation-delay: 1s;"></div>
+          
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 rounded-full flex items-center justify-center shadow-lg relative">
+              <i class="pi pi-sparkles text-purple-600 text-xl"></i>
+              <!-- Glow effect -->
+              <div class="absolute inset-0 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full opacity-50 animate-pulse"></div>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-purple-800 mb-1">✨ Ready for Some Magic? ✨</h3>
+              <p class="text-sm text-purple-600">Let's turn your photos into magical memories!</p>
+            </div>
+          </div>
+          <div class="bg-white/80 rounded-lg p-4 border border-purple-200">
+            <p class="text-sm text-gray-700 leading-relaxed">
+              <span class="font-semibold text-purple-700">🌟 What happens next:</span><br>
+              • Your photos will be automatically approved<br>
+              • Our AI crystal ball will analyze each image<br>
+              • We'll detect people, add captions, and create tags<br>
+              • Your photos will be ready for magic memory creation!
+            </p>
+          </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <div v-if="isUploading" class="space-y-4">
+          <!-- Overall Progress -->
+          <div class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200 relative overflow-hidden">
+            <!-- Magical sparkles -->
+            <div class="absolute top-3 right-3 w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
+            <div class="absolute bottom-3 left-3 w-2 h-2 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.7s;"></div>
+            
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-sparkles text-purple-600 text-lg animate-pulse"></i>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-lg font-bold text-purple-800">✨ Magic in Progress ✨</span>
+                  <span class="text-lg font-bold text-purple-600">{{ uploadProgress }}%</span>
+                </div>
+                <div class="w-full bg-white/60 rounded-full h-4 border border-purple-200">
+                  <div 
+                    class="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 h-4 rounded-full transition-all duration-500 shadow-lg"
+                    :style="{ width: uploadProgress + '%' }"
+                  ></div>
+                </div>
+                <p class="text-sm text-purple-700 mt-2 font-medium">{{ uploadStatus }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current File Progress -->
+          <div v-if="uploadingFiles.length > 0" class="bg-white/90 rounded-xl p-6 border-2 border-purple-200 shadow-lg">
+            <h4 class="text-lg font-bold text-purple-800 mb-4 flex items-center gap-2">
+              <i class="pi pi-sparkles text-purple-600"></i>
+              🔮 Crystal Ball Readings 🔮
+            </h4>
+            <div class="space-y-3">
+              <div 
+                v-for="file in uploadingFiles" 
+                :key="file.name"
+                class="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 transition-all duration-200 hover:shadow-md"
+              >
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-md">
+                  <i class="pi pi-image text-purple-600 text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-purple-800 truncate">{{ file.name }}</p>
+                  <p class="text-xs text-purple-600 font-medium">{{ getMagicStatusText(file.status) }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div v-if="file.status === 'uploading'" class="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div v-else-if="file.status === 'processing'" class="w-5 h-5 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div v-else-if="file.status === 'completed'" class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-md">
+                    <i class="pi pi-check text-white text-xs"></i>
+                  </div>
+                  <div v-else-if="file.status === 'failed'" class="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-md">
+                    <i class="pi pi-times text-white text-xs"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Results -->
+        <div v-if="uploadedFiles.length > 0 || failedFiles.length > 0" class="space-y-4">
+          <!-- Success Results -->
+          <div v-if="uploadedFiles.length > 0" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200 shadow-lg relative overflow-hidden">
+            <!-- Success sparkles -->
+            <div class="absolute top-3 right-3 w-3 h-3 bg-green-300 rounded-full animate-ping"></div>
+            <div class="absolute bottom-3 left-3 w-2 h-2 bg-emerald-300 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+            
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-sparkles text-green-600 text-xl animate-bounce"></i>
+              </div>
+              <div>
+                <h4 class="text-xl font-bold text-green-800">✨ Magic Complete! ✨</h4>
+                <p class="text-sm text-green-600">Your photos are now enchanted!</p>
+              </div>
+            </div>
+            <div class="bg-white/80 rounded-lg p-4 border border-green-200">
+              <div class="space-y-2">
+                <div 
+                  v-for="file in uploadedFiles" 
+                  :key="file.name"
+                  class="flex items-center gap-2 text-sm text-green-700"
+                >
+                  <i class="pi pi-check text-green-600"></i>
+                  <span class="font-medium">{{ file.name }}</span>
+                  <span class="text-xs text-green-500">✨ Enchanted</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Failed Results -->
+          <div v-if="failedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border-2 border-red-200 shadow-lg">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-red-100 to-orange-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-xl font-bold text-red-800">😔 Magic Fizzled</h4>
+                <p class="text-sm text-red-600">Some spells didn't work as expected</p>
+              </div>
+            </div>
+            <div class="bg-white/80 rounded-lg p-4 border border-red-200">
+              <div class="space-y-2">
+                <div 
+                  v-for="file in failedFiles" 
+                  :key="file.name"
+                  class="flex items-center gap-2 text-sm text-red-700"
+                >
+                  <i class="pi pi-times text-red-600"></i>
+                  <span class="font-medium">{{ file.name }}</span>
+                  <span class="text-xs text-red-500">({{ file.error }})</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-between items-center w-full">
+          <div class="text-sm text-gray-500">
+            {{ uploadedFiles.length }} uploaded, {{ failedFiles.length }} failed
+          </div>
+          <div class="flex gap-2">
+            <button
+              v-if="!isUploading"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-4 py-2 text-sm shadow transition-all duration-200"
+              @click="showUploadDialog = false"
+            >
+              Close
+            </button>
+            <button
+              v-if="!isUploading && uploadedFiles.length === 0"
+              class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-6 py-3 text-sm shadow-lg transition-all duration-200 transform hover:scale-105"
+              @click="selectFiles"
+            >
+              <i class="pi pi-sparkles mr-2"></i>
+              ✨ Start Magic ✨
+            </button>
+            <button
+              v-if="!isUploading && (uploadedFiles.length > 0 || failedFiles.length > 0)"
+              class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-full px-6 py-3 text-sm shadow-lg transition-all duration-200 transform hover:scale-105"
+              @click="finishUpload"
+            >
+              <i class="pi pi-sparkles mr-2"></i>
+              🎉 Magic Complete! 🎉
+            </button>
+          </div>
+        </div>
+      </template>
     </Dialog>
 
     <!-- Book Details Modal -->
@@ -687,11 +909,13 @@
         <!-- PDF Viewer -->
         <div class="flex-1 w-full flex items-center justify-center" style="min-height: 0;">
           <div class="w-[95%] h-[95%]">
-            <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" class="w-full h-full" />
-            <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
-              <i class="pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
-              <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
-            </div>
+            <ClientOnly>
+              <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" class="w-full h-full" />
+              <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
+                <i class="pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
+                <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
+              </div>
+            </ClientOnly>
           </div>
         </div>
         
@@ -1163,6 +1387,14 @@
       </div>
     </div>
   </Dialog>
+  <div v-if="showAICaptionOverlay" class="fixed top-0 left-0 w-full z-50 flex justify-center pointer-events-none">
+    <div class="mt-4 px-3 py-2 sm:mt-6 sm:px-6 sm:py-3 rounded-2xl shadow-lg bg-white/70 text-purple-800 text-base sm:text-lg font-caveat flex items-center gap-2 sm:gap-3 animate-magic-fade max-w-xs sm:max-w-md md:max-w-lg w-auto break-words">
+      <i class="pi pi-sparkles text-yellow-400 text-xl sm:text-2xl animate-bounce flex-shrink-0"></i>
+      <span class="italic truncate">The magic whispers:</span>
+      <span class="font-bold break-words">“{{ lastAICaption }}”</span>
+      <i class="pi pi-sparkles text-yellow-400 text-xl sm:text-2xl animate-bounce flex-shrink-0"></i>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -1235,6 +1467,11 @@ const showDetailsModal = ref(false)
 const selectedBook = ref(null)
 const creatingBook = ref(false)
 const assetThumbnails = ref({})
+
+// Asset checking for empty state
+const hasAssets = ref(false)
+const approvedAssetsCount = ref(0)
+const loadingAssets = ref(false)
 
 // PDF Progress tracking
 const showProgressDialog = ref(false)
@@ -1483,6 +1720,9 @@ onMounted(async () => {
     /Chrome/.test(ua) &&
     /Google Inc/.test(navigator.vendor) &&
     !/Edg|Brave|OPR/.test(ua)
+  
+  // Check for assets to determine empty state
+  await checkAssets()
 })
 
 // Cleanup on unmount
@@ -2274,7 +2514,6 @@ const showEditSettingsModal = ref(false)
 const editBook = ref(null)
 const savingEditBook = ref(false)
 const availableAssets = ref([])
-const loadingAssets = ref(false)
 
 const openEditSettings = async (book) => {
   loadingAssets.value = true
@@ -2621,7 +2860,12 @@ async function onMagicMemoryContinue() {
       tags: a.tags || [],
       user_tags: a.user_tags || []
     }))
-    let aiBody = { photos }
+    let aiBody = { 
+      photos,
+      title: magicMemoryTitle.value,
+      memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+      theme: 'classic' // Default theme since it's not collected in the Magic Memory dialog
+    }
     if (photos.length <= 4) {
       aiBody.forceAll = true
     }
@@ -2834,6 +3078,213 @@ async function saveEditBookFromDialog(data) {
 
 const magicCustomMemoryEvent = ref('')
 
+// Upload dialog state
+const showUploadDialog = ref(false)
+const uploadProgress = ref(0)
+const uploadStatus = ref('')
+const uploadingFiles = ref([])
+const uploadedFiles = ref([])
+const failedFiles = ref([])
+const isUploading = ref(false)
+
+// Asset checking and upload functions
+const checkAssets = async () => {
+  loadingAssets.value = true
+  try {
+    const db = useDatabase()
+    const assets = await db.assets.getAssets({ approved: true })
+    hasAssets.value = assets && assets.length > 0
+    approvedAssetsCount.value = assets ? assets.length : 0
+    console.log(`📸 Found ${approvedAssetsCount.value} approved assets`)
+  } catch (error) {
+    console.error('❌ Error checking assets:', error)
+    hasAssets.value = false
+    approvedAssetsCount.value = 0
+  } finally {
+    loadingAssets.value = false
+  }
+}
+
+// File selection function
+const selectFiles = () => {
+  const fileInput = document.createElement('input')
+  fileInput.type = 'file'
+  fileInput.multiple = true
+  fileInput.accept = 'image/*'
+  
+  fileInput.onchange = async (event) => {
+    const files = Array.from(event.target.files)
+    if (files.length === 0) return
+    
+    await startUpload(files)
+  }
+  
+  fileInput.click()
+}
+
+// Start upload process
+const startUpload = async (files) => {
+  isUploading.value = true
+  uploadProgress.value = 0
+  uploadStatus.value = '✨ Preparing magical upload... ✨'
+  uploadedFiles.value = []
+  failedFiles.value = []
+  
+  // Initialize file tracking
+  uploadingFiles.value = files.map(file => ({
+    name: file.name,
+    file: file,
+    status: 'pending'
+  }))
+  
+  const db = useDatabase()
+  const totalFiles = files.length
+  let completedFiles = 0
+  
+  for (let i = 0; i < files.length; i++) {
+    const fileData = uploadingFiles.value[i]
+    const file = fileData.file
+    
+    try {
+      // Update status to uploading
+      fileData.status = 'uploading'
+      uploadStatus.value = `🌟 Uploading ${file.name} to our magical realm...`
+      
+      // Upload asset with approved status
+      const asset = await db.assets.uploadAsset({
+        type: 'photo',
+        title: file.name,
+        user_caption: '',
+        approved: true // Set as approved since it's a direct upload
+      }, file)
+      
+      // Update status to processing
+      fileData.status = 'processing'
+      uploadStatus.value = `🔮 Looking into our crystal ball for ${file.name}...`
+      
+      // Process with AI
+      const aiResult = await $fetch('/api/ai/process-asset', {
+        method: 'POST',
+        body: {
+          assetId: asset.id,
+          assetType: 'photo',
+          storageUrl: asset.storage_url
+        }
+      })
+      if (aiResult && aiResult.caption && aiResult.caption.trim()) {
+        showMagicCaption(aiResult.caption)
+      }
+      
+      // Mark as completed
+      fileData.status = 'completed'
+      uploadedFiles.value.push({
+        name: file.name,
+        asset: asset
+      })
+      
+      completedFiles++
+      uploadProgress.value = Math.round((completedFiles / totalFiles) * 100)
+      uploadStatus.value = `✨ Enchanted ${completedFiles} of ${totalFiles} photos! ✨`
+      
+    } catch (error) {
+      console.error(`❌ Failed to upload ${file.name}:`, error)
+      fileData.status = 'failed'
+      failedFiles.value.push({
+        name: file.name,
+        error: error.message || 'Magic fizzled'
+      })
+      
+      completedFiles++
+      uploadProgress.value = Math.round((completedFiles / totalFiles) * 100)
+      uploadStatus.value = `✨ Processed ${completedFiles} of ${totalFiles} photos! ✨`
+    }
+  }
+  
+  isUploading.value = false
+  
+  if (uploadedFiles.value.length > 0) {
+    uploadStatus.value = `🎉 Successfully enchanted ${uploadedFiles.value.length} photos! 🎉`
+    
+    // Refresh asset count
+    await checkAssets()
+  }
+  
+  if (failedFiles.value.length > 0) {
+    uploadStatus.value += ` 😔 ${failedFiles.value.length} spells fizzled.`
+  }
+}
+
+// Finish upload and close dialog
+const finishUpload = () => {
+  showUploadDialog.value = false
+  // Reset state
+  uploadingFiles.value = []
+  uploadedFiles.value = []
+  failedFiles.value = []
+  uploadProgress.value = 0
+  uploadStatus.value = ''
+  isUploading.value = false
+}
+
+// Legacy function for backward compatibility
+const uploadPhotos = async () => {
+  showUploadDialog.value = true
+}
+
+// Reset upload dialog state
+const resetUploadDialog = () => {
+  if (!isUploading.value) {
+    uploadingFiles.value = []
+    uploadedFiles.value = []
+    failedFiles.value = []
+    uploadProgress.value = 0
+    uploadStatus.value = ''
+  }
+}
+
+// Convert status to magical language
+const getMagicStatusText = (status) => {
+  switch (status) {
+    case 'pending':
+      return '🌟 Waiting for magic...'
+    case 'uploading':
+      return '📤 Flying to magical realm...'
+    case 'processing':
+      return '🔮 Crystal ball reading...'
+    case 'completed':
+      return '✨ Enchanted! ✨'
+    case 'failed':
+      return '😔 Magic fizzled'
+    default:
+      return status
+  }
+}
+
+const skipUpload = () => {
+  toast.add({ 
+    severity: 'info', 
+    summary: 'No Problem', 
+    detail: 'You can upload photos anytime from the Upload page', 
+    life: 3000 
+  })
+}
+
+// Add after other refs
+const lastAICaption = ref('')
+const showAICaptionOverlay = ref(false)
+let aiCaptionTimeout = null
+
+// Helper to show the overlay
+function showMagicCaption(caption) {
+  if (!caption || !caption.trim()) return
+  lastAICaption.value = caption
+  showAICaptionOverlay.value = true
+  if (aiCaptionTimeout) clearTimeout(aiCaptionTimeout)
+  aiCaptionTimeout = setTimeout(() => {
+    showAICaptionOverlay.value = false
+  }, 4000) // Show for 4 seconds
+}
+
 </script> 
 
 <style scoped>
@@ -2913,11 +3364,33 @@ const magicCustomMemoryEvent = ref('')
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+.magic-upload-dialog {
+  box-shadow: 0 0 32px 12px #fbbf24, 0 0 48px 24px #a78bfa;
+  border: 2px solid #a78bfa;
+  background: linear-gradient(135deg, #fef9c3 0%, #f3e8ff 100%);
+  border-radius: 1.5rem;
+  animation: magic-card-glow 2.5s infinite alternate;
+}
+
 .magic-status-dialog {
   box-shadow: 0 0 32px 12px #fbbf24, 0 0 48px 24px #a78bfa;
   border: 2px solid #a78bfa;
   background: linear-gradient(135deg, #fef9c3 0%, #f3e8ff 100%);
   border-radius: 1.5rem;
   animation: magic-card-glow 2.5s infinite alternate;
+}
+
+@keyframes magic-fade {
+  0% { opacity: 0; transform: translateY(-30px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+.animate-magic-fade {
+  animation: magic-fade 4s ease-in-out;
+}
+.font-caveat {
+  font-family: 'Caveat', cursive, sans-serif;
 }
 </style>

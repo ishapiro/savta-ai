@@ -591,6 +591,21 @@ export default defineEventHandler(async (event) => {
       const margin = 18 // 1/4 inch margin everywhere
       const page = pdfDoc.addPage([pageWidth, pageHeight])
       
+      console.log(`📐 Magic Memory page dimensions: ${pageWidth}x${pageHeight} points (${(pageWidth/72).toFixed(2)}x${(pageHeight/72).toFixed(2)} inches)`)
+      
+      // Add border at 1/8" inside the page edge (1/8" = 9 points)
+      const borderMargin = 9
+      page.drawRectangle({
+        x: borderMargin,
+        y: borderMargin,
+        width: pageWidth - 2 * borderMargin,
+        height: pageHeight - 2 * borderMargin,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 3, // Increased from 1 to 3 points for better visibility
+        color: rgb(1, 1, 1) // white fill
+      })
+      console.log(`🖼️ Magic Memory border drawn: ${borderMargin} points from edge, width: ${pageWidth - 2 * borderMargin}x${pageHeight - 2 * borderMargin}`)
+      
       // Use the same background handling as standard books
       if (pdfBgImage) {
         // Draw background image to fill the page
@@ -858,6 +873,21 @@ export default defineEventHandler(async (event) => {
       // Add page to PDF with calculated dimensions
       const page = pdfDoc.addPage([pageWidth, pageHeight])
       const { width, height } = page.getSize()
+      
+      console.log(`📐 Page ${pageIndex + 1} dimensions: ${width}x${height} points (${(width/72).toFixed(2)}x${(height/72).toFixed(2)} inches)`)
+      
+      // Add border at 1/8" inside the page edge (1/8" = 9 points)
+      const borderMargin = 9
+      page.drawRectangle({
+        x: borderMargin,
+        y: borderMargin,
+        width: width - 2 * borderMargin,
+        height: height - 2 * borderMargin,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 3, // Increased from 1 to 3 points for better visibility
+        color: rgb(1, 1, 1) // white fill
+      })
+      console.log(`🖼️ Border drawn: ${borderMargin} points from edge, width: ${width - 2 * borderMargin}x${height - 2 * borderMargin}`)
       
       // Margins
       const topMargin = 60 // for heading

@@ -20,8 +20,8 @@
             @click="navigateTo('/app/deleted-memories')"
           >
             <i class="pi pi-trash text-lg sm:text-2xl animate-bounce"></i>
-            <span class="hidden sm:inline">View Deleted</span>
-            <span class="sm:hidden">Deleted</span>
+            <span class="hidden sm:inline">Trash</span>
+            <span class="sm:hidden">Trash</span>
           </button>
         </div>
       </div>
@@ -92,109 +92,115 @@
       </Card>
 
       <!-- Memory Cards Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        <Card
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+        <div
           v-for="asset in filteredAssets"
           :key="asset.id"
-          class="bg-white rounded-2xl shadow-xl p-0 flex flex-col justify-between hover:shadow-2xl transition-shadow border border-gray-100 text-xs"
+          class="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl hover:shadow-xl sm:hover:shadow-2xl transition-shadow border border-gray-100 h-[500px] sm:h-[600px]"
+          style="display: flex; flex-direction: column;"
         >
-          <template #content>
-            <!-- Photo -->
-            <div class="rounded-t-2xl overflow-hidden bg-gray-100">
-              <div class="w-full h-40 flex items-center justify-center">
+          <!-- Photo Section - Fixed Height -->
+          <div class="rounded-t-xl sm:rounded-t-2xl overflow-hidden bg-gray-100 h-[150px] sm:h-[200px]" style="flex-shrink: 0;">
+            <div class="w-full h-full flex items-center justify-center">
               <img
                 v-if="asset.storage_url"
                 :src="asset.storage_url"
                 :alt="asset.user_caption || 'Family photo'"
-                  class="max-w-full max-h-full object-contain"
+                class="max-w-full max-h-full object-contain"
               />
-                <i v-else class="pi pi-image text-2xl text-gray-400"></i>
+              <i v-else class="pi pi-image text-xl sm:text-2xl text-gray-400"></i>
+            </div>
+          </div>
+
+          <!-- Content Section - Flexible Height -->
+          <div class="flex-1 p-2 sm:p-3 overflow-y-auto" style="min-height: 0;">
+            <!-- Title -->
+            <div class="mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Title</label>
+              <div class="text-xs sm:text-sm font-medium text-gray-900 bg-yellow-50 rounded p-1.5 sm:p-2 border border-yellow-200">
+                {{ asset.title || getImageName(asset.storage_url) || 'Untitled' }}
               </div>
             </div>
-            <div class="flex-1 flex flex-col p-2">
-              <!-- Title -->
-              <div class="mb-1">
-                <label class="block text-xs font-semibold text-color mb-1">Title</label>
-                <div class="text-xs font-medium text-color bg-yellow-50 rounded p-1 border border-yellow-200">
-                  {{ asset.title || getImageName(asset.storage_url) || 'Untitled' }}
-                </div>
+
+            <!-- User Caption -->
+            <div class="mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Your Caption</label>
+              <div v-if="asset.user_caption && asset.user_caption !== getImageName(asset.storage_url)" class="text-xs sm:text-sm text-gray-900 bg-blue-50 rounded p-1.5 sm:p-2 border border-blue-200">
+                {{ asset.user_caption }}
               </div>
-              <!-- User Caption -->
-              <div class="mb-1">
-                <label class="block text-xs font-semibold text-color mb-1">Your Caption</label>
-                <div v-if="asset.user_caption && asset.user_caption !== getImageName(asset.storage_url)" class="text-xs text-color bg-blue-50 rounded p-1 border border-blue-200">
-                  {{ asset.user_caption }}
-                </div>
-                <div v-else class="text-xs text-gray-400 italic bg-gray-50 rounded p-1 border border-gray-200">
-                  No caption added
-                </div>
-              </div>
-              <!-- AI Caption -->
-              <div v-if="asset.ai_caption" class="mb-1">
-                <label class="block text-xs font-semibold text-color mb-1">AI Caption</label>
-                <div class="italic text-xs text-color-secondary bg-slate-50 rounded p-1">"{{ asset.ai_caption }}"</div>
-              </div>
-              <!-- Tags -->
-              <div v-if="(asset.tags && asset.tags.length > 0) || (asset.user_tags && asset.user_tags.length > 0)" class="mb-1">
-                <label class="block text-xs font-semibold text-color mb-1">Tags</label>
-                <div class="flex flex-wrap gap-1">
-                  <Chip
-                    v-for="tag in asset.tags || []"
-                    :key="`ai-${tag}`"
-                    :label="tag"
-                    class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5"
-                  />
-                  <Chip
-                    v-for="tag in asset.user_tags || []"
-                    :key="`user-${tag}`"
-                    :label="tag"
-                    class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5"
-                  />
-                </div>
-              </div>
-              <!-- People Detected -->
-              <div v-if="(asset.people_detected && asset.people_detected.length > 0) || (asset.user_people && asset.user_people.length > 0)" class="mb-1">
-                <label class="block text-xs font-semibold text-color mb-1">People/Objects</label>
-                <div class="flex flex-wrap gap-1">
-                  <Chip
-                    v-for="person in asset.people_detected || []"
-                    :key="`ai-${person}`"
-                    :label="person"
-                    class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5"
-                  />
-                  <Chip
-                    v-for="person in asset.user_people || []"
-                    :key="`user-${person}`"
-                    :label="person"
-                    class="text-xs bg-pink-100 text-pink-700 px-2 py-0.5"
-                  />
-                </div>
+              <div v-else class="text-xs sm:text-sm text-gray-400 italic bg-gray-50 rounded p-1.5 sm:p-2 border border-gray-200">
+                No caption added
               </div>
             </div>
-            <!-- Action Bar -->
-            <div class="rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-4 py-3 flex items-center justify-between gap-4 border-t border-gray-200">
-              <div class="flex items-center gap-4 flex-1 justify-center">
-                <div v-if="!asset.approved" class="flex flex-col items-center cursor-pointer group" @click="approveAsset(asset.id)" v-tooltip.top="'Approve'">
-                  <i class="pi pi-check text-3xl text-green-500 group-hover:scale-125 transition-transform"></i>
-                  <span class="text-xs text-green-700 mt-1">Approve</span>
-                </div>
-                <div class="flex flex-col items-center cursor-pointer group" @click="openEditDialog(asset)" v-tooltip.top="'Edit'">
-                  <i class="pi pi-pencil text-3xl text-blue-500 group-hover:scale-125 transition-transform"></i>
-                  <span class="text-xs text-blue-700 mt-1">Edit</span>
-                </div>
-                <div class="flex flex-col items-center cursor-pointer group" @click="deleteAsset(asset.id)" v-tooltip.top="'Delete'">
-                  <i class="pi pi-trash text-3xl text-red-500 group-hover:scale-125 transition-transform"></i>
-                  <span class="text-xs text-red-700 mt-1">Delete</span>
-                </div>
-              </div>
-              <div>
-                <span v-if="!asset.approved && !asset.rejected" class="inline-block px-3 py-1 rounded-full bg-orange-200 text-orange-800 font-semibold text-xs shadow">Pending</span>
-                <span v-else-if="asset.approved" class="inline-block px-3 py-1 rounded-full bg-green-200 text-green-800 font-semibold text-xs shadow">Approved</span>
-                <span v-else-if="asset.rejected" class="inline-block px-3 py-1 rounded-full bg-red-200 text-red-800 font-semibold text-xs shadow">Rejected</span>
+
+            <!-- AI Caption -->
+            <div v-if="asset.ai_caption" class="mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">AI Caption</label>
+              <div class="italic text-xs sm:text-sm text-gray-600 bg-slate-50 rounded p-1.5 sm:p-2 border border-gray-200">"{{ asset.ai_caption }}"</div>
+            </div>
+
+            <!-- Tags -->
+            <div v-if="(asset.tags && asset.tags.length > 0) || (asset.user_tags && asset.user_tags.length > 0)" class="mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Tags</label>
+              <div class="flex flex-wrap gap-1">
+                <Chip
+                  v-for="tag in asset.tags || []"
+                  :key="`ai-${tag}`"
+                  :label="tag"
+                  class="text-xs bg-gray-100 text-gray-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                />
+                <Chip
+                  v-for="tag in asset.user_tags || []"
+                  :key="`user-${tag}`"
+                  :label="tag"
+                  class="text-xs bg-blue-100 text-blue-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                />
               </div>
             </div>
-          </template>
-        </Card>
+
+            <!-- People Detected -->
+            <div v-if="(asset.people_detected && asset.people_detected.length > 0) || (asset.user_people && asset.user_people.length > 0)" class="mb-2">
+              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">People/Objects</label>
+              <div class="flex flex-wrap gap-1">
+                <Chip
+                  v-for="person in asset.people_detected || []"
+                  :key="`ai-${person}`"
+                  :label="person"
+                  class="text-xs bg-gray-100 text-gray-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                />
+                <Chip
+                  v-for="person in asset.user_people || []"
+                  :key="`user-${person}`"
+                  :label="person"
+                  class="text-xs bg-pink-100 text-pink-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Bar - Fixed at Bottom -->
+          <div class="rounded-b-xl sm:rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 border-t border-gray-200 h-[70px] sm:h-[80px]" style="flex-shrink: 0;">
+            <div class="flex items-center gap-2 sm:gap-4 flex-1 justify-center">
+              <div v-if="!asset.approved" class="flex flex-col items-center cursor-pointer group" @click="approveAsset(asset.id)" v-tooltip.top="'Approve'">
+                <i class="pi pi-check text-2xl sm:text-3xl text-green-500 group-hover:scale-125 transition-transform"></i>
+                <span class="text-xs text-green-700 mt-0.5 sm:mt-1">Approve</span>
+              </div>
+              <div class="flex flex-col items-center cursor-pointer group" @click="openEditDialog(asset)" v-tooltip.top="'Edit'">
+                <i class="pi pi-pencil text-2xl sm:text-3xl text-blue-500 group-hover:scale-125 transition-transform"></i>
+                <span class="text-xs text-blue-700 mt-0.5 sm:mt-1">Edit</span>
+              </div>
+                                <div class="flex flex-col items-center cursor-pointer group" @click="deleteAsset(asset.id)" v-tooltip.top="'Trash'">
+                    <i class="pi pi-trash text-2xl sm:text-3xl text-red-500 group-hover:scale-125 transition-transform"></i>
+                    <span class="text-xs text-red-700 mt-0.5 sm:mt-1">Trash</span>
+                  </div>
+            </div>
+            <div>
+              <span v-if="!asset.approved && !asset.rejected" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-orange-200 text-orange-800 font-semibold text-xs shadow">Pending</span>
+              <span v-else-if="asset.approved" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-green-200 text-green-800 font-semibold text-xs shadow">Approved</span>
+              <span v-else-if="asset.rejected" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-red-200 text-red-800 font-semibold text-xs shadow">Rejected</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Edit Asset Dialog -->
@@ -708,8 +714,8 @@ const calculateStats = () => {
   stats.value = {
     total: assets.value.length,
     pending: assets.value.filter(a => !a.approved && !a.rejected).length,
-    approved: assets.value.filter(a => a.approved).length,
-    readyForBook: assets.value.filter(a => a.approved).length
+    approved: assets.value.filter(a => a.approved && !a.deleted).length,
+    readyForBook: assets.value.filter(a => a.approved && !a.deleted).length
   }
 }
 

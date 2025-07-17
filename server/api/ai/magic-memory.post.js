@@ -23,46 +23,54 @@ export default defineEventHandler(async (event) => {
     // Build memory book context string
     let memoryBookContext = ''
     if (title && title.trim()) {
-      memoryBookContext += `The story is titled "${title.trim()}". `
+      memoryBookContext += `Title: "${title.trim()}"\n`
     }
     if (memory_event && memory_event.trim()) {
-      memoryBookContext += `It is for a ${memory_event.trim()} event. `
+      memoryBookContext += `Event: ${memory_event.trim()}\n`
     }
     if (theme && theme.trim()) {
-      memoryBookContext += `The theme is "${theme.trim()}". `
+      memoryBookContext += `Theme: "${theme.trim()}"\n`
     }
 
-    // Prose description for the AI
-    const proseDescription = `You are a warm, witty Hallmark card writer. 
-Given the following photo metadata, select the 4 most meaningful or emotionally connected photos 
-(if more than 4 are provided). Write a single 2-3 sentence story that ties these photos together. 
-${memoryBookContext}The message should sound like a Hallmark card: warm, fun, and heartfelt. 
-Keep the langunage at a 8th grade reading level. Use as much of the ai_captions, 
-tags, user_tags, and people_detected as possible to make the story rich and specific, but do not include photo IDs or titles. 
-Use tags, user_tags, and people_detected for context, relationships, or activities, but not as literal words. 
-The story should feel natural, personal, and delightful.`
+    // System context and instructions
+    const systemInstructions = `You are a warm, witty Hallmark card writer creating personalized family stories from photos.
 
-    // Formatting instructions for the AI
-    const formattingInstructionsForceAll = `Return a JSON object with two fields:
- - selected_photo_ids: an array of ALL the provided photo IDs in the order given
- - story: the story text
+TASK: Create a 2-3 sentence story that connects 4 meaningful photos into a cohesive narrative.
 
- Photo metadata:
- ${photoSummaries}`
+STYLE REQUIREMENTS:
+- Warm, fun, and heartfelt tone like a Hallmark card
+- 8th grade reading level
+- Natural, personal, and delightful language
+- Use photo context (captions, tags, people) for richness, but don't mention them literally
 
-    const formattingInstructionsSelect = `Return a JSON object with two fields:
- - selected_photo_ids: an array of the 4 most meaningful photo IDs you selected, in the order you chose them
- - story: the story text
+${memoryBookContext}
+STORY GUIDELINES:
+- ALWAYS select exactly 4 photos when 4 or more are available
+- Choose the most meaningful or emotionally connected photos, even if not perfect fits
+- Weave together the photos into a single cohesive story
+- Focus on relationships, emotions, and shared experiences
+- Make it feel like a personal family memory`
 
- Photo metadata:
- ${photoSummaries}`
+    // Photo data section
+    const photoDataSection = `PHOTO METADATA:
+${photoSummaries}
 
-    let prompt
-    if (forceAll) {
-      prompt = `${proseDescription}\n\n${formattingInstructionsForceAll}`
-    } else {
-      prompt = `${proseDescription}\n\n${formattingInstructionsSelect}`
-    }
+INSTRUCTIONS:
+${forceAll ? 
+  'Use ALL provided photos in the order given.' : 
+  'ALWAYS select exactly 4 photos when available. Choose the most meaningful ones, even if not perfect fits, and arrange them in the best storytelling order.'
+}
+
+RESPONSE FORMAT:
+Return ONLY a valid JSON object with these exact fields:
+{
+  "selected_photo_ids": ["photo_id_1", "photo_id_2", "photo_id_3", "photo_id_4"],
+  "story": "Your 2-3 sentence story here..."
+}`
+
+    const prompt = `${systemInstructions}
+
+${photoDataSection}`
 
     console.log("****************************")
     console.log("magic story prompt")
@@ -83,7 +91,7 @@ The story should feel natural, personal, and delightful.`
           { role: 'system', content: 'You are a warm, witty Hallmark card writer.' },
           { role: 'user', content: prompt }
         ],
-        max_tokens: 600
+        max_tokens: 3000
       })
     })
 
