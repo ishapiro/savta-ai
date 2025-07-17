@@ -256,6 +256,7 @@
       :visible="showEditSettingsModal && !!editBook"
       :isEditing="true"
       :initialData="editBook || {}"
+      :initialSelectedAssets="editBook?.selectedAssetObjects || []"
       :loading="savingEditBook"
       @close="showEditSettingsModal = false"
       @submit="saveEditBookFromDialog"
@@ -2235,6 +2236,17 @@ const openEditSettings = async (book) => {
     const allApprovedAssets = await db.assets.getAssets({ approved: true })
     availableAssets.value = allApprovedAssets || []
     
+    // Load the actual asset objects for the book's created_from_assets
+    const selectedAssetObjects = []
+    if (book.created_from_assets && book.created_from_assets.length > 0) {
+      for (const assetId of book.created_from_assets) {
+        const asset = allApprovedAssets.find(a => a.id === assetId)
+        if (asset) {
+          selectedAssetObjects.push(asset)
+        }
+      }
+    }
+    
     // Map book fields to editable fields
     editBook.value = {
       id: book.id,
@@ -2251,7 +2263,8 @@ const openEditSettings = async (book) => {
       aiBackground: book.ai_background ?? book.aiBackground ?? true,
       memoryEvent: book.memory_event || book.memoryEvent || '',
       customMemoryEvent: (book.memory_event && !['vacation','birthday','anniversary','graduation','family_trip'].includes((book.memory_event || '').toLowerCase())) ? book.memory_event : '',
-      created_from_assets: book.created_from_assets || []
+      created_from_assets: book.created_from_assets || [],
+      selectedAssetObjects: selectedAssetObjects
     }
     showEditSettingsModal.value = true
   } catch (error) {
@@ -2734,7 +2747,7 @@ async function saveEditBookFromDialog(data) {
   try {
     // Map dialog data to editBook structure
     editBook.value = {
-      ...editBook.value, // Keep existing fields like id and created_from_assets
+      ...editBook.value, // Keep existing fields like id
       title: data.title,
       layoutType: data.layoutType,
       printSize: data.printSize,
@@ -2747,7 +2760,9 @@ async function saveEditBookFromDialog(data) {
       includeTags: data.includeTags,
       aiBackground: data.aiBackground,
       memoryEvent: data.memoryEvent,
-      customMemoryEvent: data.customMemoryEvent
+      customMemoryEvent: data.customMemoryEvent,
+      // Update created_from_assets with the selected asset IDs from the dialog
+      created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
     }
     
     console.log('🔧 [saveEditBookFromDialog] Mapped editBook.value:', editBook.value)
