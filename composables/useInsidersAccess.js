@@ -6,7 +6,7 @@ export const useInsidersAccess = () => {
   const checkInsidersAccess = () => {
     if (process.client) {
       try {
-        insidersAccessState.value = sessionStorage.getItem('insiders-access') === 'true'
+        insidersAccessState.value = ((sessionStorage.getItem('insiders-access') || '').toLowerCase() === 'true'.toLowerCase())
       } catch (error) {
         console.error('Error checking insiders access:', error)
         insidersAccessState.value = false

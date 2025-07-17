@@ -178,7 +178,7 @@ const handleSubscribe = async () => {
 }
 
 const checkPassword = () => {
-  if (password.value === config.public.insidersPassword) {
+  if ((password.value || '').toLowerCase() === (config.public.insidersPassword || '').toLowerCase()) {
     showPasswordDialog.value = false
     password.value = ''
     passwordError.value = ''

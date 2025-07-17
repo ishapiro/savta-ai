@@ -60,7 +60,9 @@ export default defineNuxtRouteMiddleware((to) => {
   
   // Allow access to dashboard for users with insiders access, full authentication, or guest mode
   if (to.path === '/app/dashboard') {
-    if (user.value || hasInsidersAccess.value || (process.client && sessionStorage.getItem('guestMode') === 'true')) {
+    // Check insiders access directly from sessionStorage for immediate access
+    const insidersAccess = process.client ? ((sessionStorage.getItem('insiders-access') || '').toLowerCase() === 'true') : false;
+    if (user.value || hasInsidersAccess.value || insidersAccess || (process.client && sessionStorage.getItem('guestMode') === 'true')) {
       return
     }
     // If no access, redirect to login

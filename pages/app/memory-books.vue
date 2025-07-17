@@ -241,149 +241,25 @@
       </button>
     </div>
 
-    <!-- Create Memory Book Modal -->
-    <Dialog
-      v-model:visible="showCreateModal"
-      modal
-      header="Create New Magic Memory"
-      class="w-[95vw] max-w-lg"
-      :closable="false"
-    >
-      <div class="space-y-3">
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Memory Title</label>
-          <InputText
-            v-model="newBook.title"
-            placeholder="Enter a title for your custom magic memory"
-            class="w-full"
-          />
-        </div>
+    <!-- Create Memory Book Modal (replaces old Dialog) -->
+    <MemoryBookDialog
+      v-if="showCreateModal"
+      :isEditing="false"
+      :initialData="{}"
+      :loading="creatingBook"
+      @close="showCreateModal = false"
+      @submit="createMemoryBookFromDialog"
+    />
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Layout Type</label>
-            <Dropdown
-              v-model="newBook.layoutType"
-              :options="layoutOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select layout type"
-              class="w-full"
-            />
-          </div>
-
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Print Size</label>
-            <Dropdown
-              v-model="newBook.printSize"
-              :options="printSizeOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select print size"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Theme</label>
-          <Dropdown
-            v-model="newBook.theme"
-            :options="themeOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select theme"
-            class="w-full"
-          />
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Grid Layout</label>
-          <Dropdown
-            v-model="newBook.gridLayout"
-            :options="gridLayoutOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select grid layout"
-            class="w-full"
-          />
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Memory Shape</label>
-          <Dropdown
-            v-model="newBook.memoryShape"
-            :options="memoryShapeOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select memory shape"
-            class="w-full"
-          />
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Select Memories</label>
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-600">
-              {{ selectedAssets.length }} memories selected
-            </div>
-            <Button
-              label="Select Memories"
-              icon="pi pi-images"
-              size="small"
-              class="text-xs px-3 py-2"
-              @click="openSelectMemoriesDialog"
-            />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Include Captions</label>
-            <div class="flex items-center space-x-2">
-              <Checkbox
-                v-model="newBook.includeCaptions"
-                :binary="true"
-              />
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Include Tags</label>
-            <div class="flex items-center space-x-2">
-              <Checkbox
-                v-model="newBook.includeTags"
-                :binary="true"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
-          <div class="flex gap-2 w-full sm:w-auto">
-            <Button
-              label="Cancel"
-              icon="pi pi-times"
-              severity="secondary"
-              @click="showCreateModal = false"
-              class="rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
-            />
-          </div>
-          <Button
-            label="Save Magic Spell"
-            icon="pi pi-check"
-            :loading="creatingBook"
-            :disabled="!newBook.title"
-            @click="createMemoryBook"
-            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm shadow w-full sm:w-auto"
-          />
-        </div>
-      </template>
-    </Dialog>
-
-
+    <!-- Edit Memory Book Settings Modal (replaces old Dialog) -->
+    <MemoryBookDialog
+      v-if="showEditSettingsModal && editBook"
+      :isEditing="true"
+      :initialData="editBook"
+      :loading="savingEditBook"
+      @close="showEditSettingsModal = false"
+      @submit="saveEditBookFromDialog"
+    />
 
     <!-- Success Dialog -->
     <Dialog
@@ -787,184 +663,6 @@
           />
         </div>
       </div>
-    </Dialog>
-
-    <!-- Edit Memory Book Settings Modal -->
-    <Dialog
-      v-model:visible="showEditSettingsModal"
-      modal
-      header="Edit Magic Memory Settings"
-      class="w-[95vw] max-w-lg"
-      :closable="false"
-    >
-      <div v-if="editBook" class="space-y-3">
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Book Title</label>
-          <InputText
-            v-model="editBook.title"
-            placeholder="Enter a title for your magic memory"
-            class="w-full"
-          />
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Layout Type</label>
-            <Dropdown
-              v-model="editBook.layoutType"
-              :options="layoutOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select layout type"
-              class="w-full"
-            />
-          </div>
-
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Print Size</label>
-            <Dropdown
-              v-model="editBook.printSize"
-              :options="printSizeOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select print size"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Quality</label>
-            <Dropdown
-              v-model="editBook.quality"
-              :options="qualityOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select quality"
-              class="w-full"
-            />
-          </div>
-
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Medium</label>
-            <Dropdown
-              v-model="editBook.medium"
-              :options="mediumOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select medium"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Theme</label>
-          <Dropdown
-            v-model="editBook.theme"
-            :options="themeOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select theme"
-            class="w-full"
-          />
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Grid Layout</label>
-          <Dropdown
-            v-model="editBook.gridLayout"
-            :options="gridLayoutOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select grid layout"
-            class="w-full"
-          />
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Memory Shape</label>
-          <Dropdown
-            v-model="editBook.memoryShape"
-            :options="memoryShapeOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select memory shape"
-            class="w-full"
-          />
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Include Captions</label>
-            <div class="flex items-center space-x-2">
-              <Checkbox
-                v-model="editBook.includeCaptions"
-                :binary="true"
-              />
-              <!-- <span class="text-sm text-gray-600">Include AI-generated captions</span> -->
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="block text-sm font-medium text-gray-900 mb-1">Include Tags</label>
-            <div class="flex items-center space-x-2">
-              <Checkbox
-                v-model="editBook.includeTags"
-                :binary="true"
-              />
-              <!-- <span class="text-sm text-gray-600">Include asset tags</span> -->
-            </div>
-          </div>
-        </div>
-        
-        <!-- Select Memories Button -->
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-1">Select Memories</label>
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-600">
-              {{ editBook.created_from_assets.length }} memories selected
-            </div>
-            <Button
-              label="Select Memories"
-              icon="pi pi-images"
-              size="small"
-              class="text-xs px-3 py-2"
-              @click="openSelectMemoriesDialog"
-            />
-          </div>
-        </div>
-      </div>
-      <template #footer>
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
-          <div class="flex gap-2 w-full sm:w-auto">
-            <Button
-              v-if="editBook && editBook.status !== 'draft'"
-              label="Cleanup/Unstick"
-              icon="pi pi-broom"
-              severity="danger"
-              @click="showCleanupConfirmation(editBook.id)"
-              class="bg-red-500 hover:bg-red-600 border-0 text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm shadow w-full sm:w-auto"
-            />
-            <Button
-              label="Cancel"
-              icon="pi pi-times"
-              severity="secondary"
-              @click="showEditSettingsModal = false"
-              class="rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
-            />
-          </div>
-          <Button
-            label="Save"
-            icon="pi pi-check"
-            :loading="savingEditBook"
-            :disabled="!editBook.title"
-            @click="saveEditBook"
-            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm shadow w-full sm:w-auto"
-          />
-        </div>
-      </template>
     </Dialog>
 
     <!-- Cleanup Confirmation Dialog -->
@@ -1375,6 +1073,7 @@
 import { ref, watch, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { Sparkles, Sparkle, Wand2 } from 'lucide-vue-next'
+import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
 const toast = useToast()
 
 const showPdfModal = ref(false)
@@ -1459,7 +1158,10 @@ const newBook = ref({
   gridLayout: '2x2',
   memoryShape: 'original',
   includeCaptions: true,
-  includeTags: true
+  includeTags: true,
+  aiBackground: true,
+  memoryEvent: '',
+  customMemoryEvent: ''
 })
 
 // Create modal step state
@@ -1493,7 +1195,10 @@ const resetCreateModal = () => {
     gridLayout: '2x2',
     memoryShape: 'original',
     includeCaptions: true,
-    includeTags: true
+    includeTags: true,
+    aiBackground: true,
+    memoryEvent: '',
+    customMemoryEvent: ''
   }
   selectedAssets.value = []
 }
@@ -1555,6 +1260,15 @@ const gridLayoutOptions = ref([
 const memoryShapeOptions = ref([
   { label: 'Original (keep natural aspect ratio)', value: 'original' },
   { label: 'Magic (AI chooses best shape)', value: 'magic' }
+])
+
+const memoryEventOptions = ref([
+  { label: 'Vacation', value: 'vacation' },
+  { label: 'Birthday', value: 'birthday' },
+  { label: 'Anniversary', value: 'anniversary' },
+  { label: 'Graduation', value: 'graduation' },
+  { label: 'Family Trip', value: 'family_trip' },
+  { label: 'Other (custom)', value: 'custom' }
 ])
 
 // Dialog state
@@ -1682,24 +1396,26 @@ onUnmounted(() => {
 
 // Create memory book
 const createMemoryBook = async () => {
-  if (!newBook.value.title) return
-
+  console.log('🔧 [createMemoryBook] Called. newBook.value:', JSON.parse(JSON.stringify(newBook.value)))
+  if (!newBook.value.title) {
+    console.log('🔧 [createMemoryBook] No title provided, returning')
+    return
+  }
   creatingBook.value = true
-
   try {
     // Use selected assets if any, otherwise get all approved assets
     let assetsToUse = []
-    
     if (selectedAssets.value.length > 0) {
-      // Use selected assets
       assetsToUse = selectedAssets.value
+      console.log('🔧 [createMemoryBook] Using selected assets:', assetsToUse)
     } else {
-      // Get all approved assets
+      console.log('🔧 [createMemoryBook] Getting all approved assets...')
       const approvedAssets = await db.assets.getAssets({ approved: true })
       assetsToUse = approvedAssets.map(asset => asset.id)
+      console.log('🔧 [createMemoryBook] Found approved assets:', assetsToUse)
     }
-    
     if (assetsToUse.length === 0) {
+      console.log('🔧 [createMemoryBook] No assets available')
       if ($toast && $toast.add) {
         $toast.add({
           severity: 'warn',
@@ -1710,9 +1426,8 @@ const createMemoryBook = async () => {
       }
       return
     }
-
-    // Create memory book
-    const memoryBook = await db.memoryBooks.createMemoryBook({
+    // Prepare data for API
+    const bookData = {
       title: newBook.value.title,
       layout_type: newBook.value.layoutType,
       print_size: newBook.value.printSize,
@@ -1723,10 +1438,14 @@ const createMemoryBook = async () => {
       memory_shape: newBook.value.memoryShape,
       include_captions: newBook.value.includeCaptions,
       include_tags: newBook.value.includeTags,
+      ai_background: newBook.value.aiBackground,
+      memory_event: newBook.value.memoryEvent === 'custom' ? newBook.value.customMemoryEvent : newBook.value.memoryEvent,
       created_from_assets: assetsToUse,
       status: 'draft'
-    })
-
+    }
+    console.log('🔧 [createMemoryBook] Calling db.memoryBooks.createMemoryBook with:', JSON.parse(JSON.stringify(bookData)))
+    const memoryBook = await db.memoryBooks.createMemoryBook(bookData)
+    console.log('🔧 [createMemoryBook] API call successful, response:', memoryBook)
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'success',
@@ -1735,18 +1454,11 @@ const createMemoryBook = async () => {
         life: 3000
       })
     }
-
-    // Show the fun success dialog
     showSuccessDialog.value = true
-
-    // Reset form and close modal
     resetCreateModal()
-
-    // Reload memory books
     await loadMemoryBooks()
-
   } catch (error) {
-    console.error('Error creating memory book:', error)
+    console.error('❌ [createMemoryBook] Error creating memory book:', error)
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'error',
@@ -2470,6 +2182,9 @@ const openEditSettings = async (book) => {
       memoryShape: book.memory_shape || 'original',
       includeCaptions: book.include_captions ?? book.includeCaptions ?? true,
       includeTags: book.include_tags ?? book.includeTags ?? true,
+      aiBackground: book.ai_background ?? book.aiBackground ?? true,
+      memoryEvent: book.memory_event || book.memoryEvent || '',
+      customMemoryEvent: (book.memory_event && !['vacation','birthday','anniversary','graduation','family_trip'].includes((book.memory_event || '').toLowerCase())) ? book.memory_event : '',
       created_from_assets: book.created_from_assets || []
     }
     showEditSettingsModal.value = true
@@ -2891,6 +2606,77 @@ async function deleteBookConfirmed() {
   } finally {
     showDeleteDialog.value = false
     bookToDelete.value = null
+  }
+}
+
+// Add the following methods:
+async function createMemoryBookFromDialog(data) {
+  console.log('🔧 [createMemoryBookFromDialog] Starting with data:', data)
+  
+  try {
+    // Map dialog data to newBook structure
+    newBook.value = {
+      title: data.title,
+      layoutType: data.layoutType,
+      printSize: data.printSize,
+      quality: data.quality,
+      medium: data.medium,
+      theme: data.theme,
+      gridLayout: data.gridLayout,
+      memoryShape: data.memoryShape,
+      includeCaptions: data.includeCaptions,
+      includeTags: data.includeTags,
+      aiBackground: data.aiBackground,
+      memoryEvent: data.memoryEvent,
+      customMemoryEvent: data.customMemoryEvent
+    }
+    
+    console.log('🔧 [createMemoryBookFromDialog] Mapped newBook.value:', newBook.value)
+    
+    // Call the existing createMemoryBook method
+    console.log('🔧 [createMemoryBookFromDialog] Calling createMemoryBook...')
+    await createMemoryBook()
+    console.log('🔧 [createMemoryBookFromDialog] createMemoryBook completed successfully')
+    
+    // Close the create dialog after successful creation
+    showCreateModal.value = false
+  } catch (error) {
+    console.error('❌ [createMemoryBookFromDialog] Error:', error)
+    throw error
+  }
+}
+
+async function saveEditBookFromDialog(data) {
+  console.log('🔧 [saveEditBookFromDialog] Starting with data:', data)
+  
+  try {
+    // Map dialog data to editBook structure
+    editBook.value = {
+      ...editBook.value, // Keep existing fields like id and created_from_assets
+      title: data.title,
+      layoutType: data.layoutType,
+      printSize: data.printSize,
+      quality: data.quality,
+      medium: data.medium,
+      theme: data.theme,
+      gridLayout: data.gridLayout,
+      memoryShape: data.memoryShape,
+      includeCaptions: data.includeCaptions,
+      includeTags: data.includeTags,
+      aiBackground: data.aiBackground,
+      memoryEvent: data.memoryEvent,
+      customMemoryEvent: data.customMemoryEvent
+    }
+    
+    console.log('🔧 [saveEditBookFromDialog] Mapped editBook.value:', editBook.value)
+    
+    // Call the existing saveEditBook method
+    console.log('🔧 [saveEditBookFromDialog] Calling saveEditBook...')
+    await saveEditBook()
+    console.log('🔧 [saveEditBookFromDialog] saveEditBook completed successfully')
+  } catch (error) {
+    console.error('❌ [saveEditBookFromDialog] Error:', error)
+    throw error
   }
 }
 

@@ -40,7 +40,7 @@ const props = defineProps({
 const viewerOptions = {
   defaultZoom: 1.0,
   enableDownload: true,
-  enablePrint: true,
+  enablePrint: false,
   enableSearch: true,
   enableThumbnail: true,
   enableToolbar: true,

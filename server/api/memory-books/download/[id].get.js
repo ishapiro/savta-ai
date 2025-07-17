@@ -149,9 +149,9 @@ export default defineEventHandler(async (event) => {
       console.log('✅ Cleared existing URLs from database')
     }
     
-    // Step 1: Generate background if not already present
-    if (!book.background_url) {
-      console.log('🎨 Background not ready, generating background...')
+    // Step 1: Generate background if not already present and AI background is enabled
+    if (!book.background_url && book.ai_background !== false) {
+      console.log('🎨 Background not ready and AI background enabled, generating background...')
       
       try {
         // Update status to indicate background generation

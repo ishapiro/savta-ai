@@ -119,7 +119,9 @@ create table if not exists memory_books (
   updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false,
   include_captions boolean default true,
-  include_tags boolean default true
+  include_tags boolean default true,
+  ai_background boolean default true,
+  memory_event text
 );
 
 -- PDF status tracking table
