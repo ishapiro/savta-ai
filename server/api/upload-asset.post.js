@@ -12,6 +12,9 @@ export default defineEventHandler(async (event) => {
       config.public.supabaseKey
     )
     
+    // Import Sharp for image processing
+    const sharp = await import('sharp')
+    
     // Get user from the request (you'll need to pass auth token)
     const authHeader = getHeader(event, 'authorization')
     if (!authHeader) {
@@ -33,6 +36,7 @@ export default defineEventHandler(async (event) => {
     }
     
     let storageUrl = null
+    let photoMetadata = null
     
     // Handle file upload if provided
     if (file) {
@@ -46,6 +50,36 @@ export default defineEventHandler(async (event) => {
           statusCode: 400,
           statusMessage: 'Invalid file data'
         })
+      }
+      
+      // Detect photo orientation and dimensions if it's an image
+      if (file.type && file.type.startsWith('image/')) {
+        try {
+          console.log('📸 Analyzing image dimensions and orientation...')
+          const imageInfo = await sharp.default(fileBuffer).metadata()
+          
+          const width = imageInfo.width || 0
+          const height = imageInfo.height || 0
+          
+          // Determine orientation
+          let orientation = 'square'
+          if (width > height) {
+            orientation = 'landscape'
+          } else if (height > width) {
+            orientation = 'portrait'
+          }
+          
+          photoMetadata = {
+            width,
+            height,
+            orientation
+          }
+          
+          console.log(`📐 Image analysis: ${width}x${height} (${orientation})`)
+        } catch (error) {
+          console.warn('⚠️ Failed to analyze image dimensions:', error.message)
+          // Continue without metadata
+        }
       }
       
       // Create file name
@@ -74,14 +108,23 @@ export default defineEventHandler(async (event) => {
       storageUrl = urlData.publicUrl
     }
     
-    // Create asset record
+    // Create asset record with photo metadata if available
+    const assetRecord = {
+      user_id: user.id,
+      storage_url: storageUrl,
+      ...assetData
+    }
+    
+    // Add photo metadata if available
+    if (photoMetadata) {
+      assetRecord.width = photoMetadata.width
+      assetRecord.height = photoMetadata.height
+      assetRecord.orientation = photoMetadata.orientation
+    }
+    
     const { data, error } = await supabase
       .from('assets')
-      .insert([{
-        user_id: user.id,
-        storage_url: storageUrl,
-        ...assetData
-      }])
+      .insert([assetRecord])
       .select()
       .single()
     

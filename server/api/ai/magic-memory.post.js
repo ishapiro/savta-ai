@@ -10,14 +10,18 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { photos, forceAll, title, theme, memory_event } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
+    const { photos, forceAll, title, theme, memory_event, photo_count = 4 } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
     if (!photos || !Array.isArray(photos) || photos.length < 1) {
       throw createError({ statusCode: 400, statusMessage: 'At least 1 photo is required' })
     }
 
+    // Validate photo_count
+    const validPhotoCounts = [1, 4, 6]
+    const targetPhotoCount = validPhotoCounts.includes(photo_count) ? photo_count : 4
+
     // Construct prompt for OpenAI
     const photoSummaries = photos.map((p, i) =>
-      `Photo ${i+1}:\n- id: ${p.id}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
+      `Photo ${i+1}:\n- id: ${p.id}\n- orientation: ${p.orientation || 'unknown'}\n- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
     ).join('\n\n')
 
     // Build memory book context string
@@ -35,7 +39,7 @@ export default defineEventHandler(async (event) => {
     // System context and instructions
     const systemInstructions = `You are a warm, witty Hallmark card writer creating personalized family stories from photos.
 
-TASK: Create a 2-3 sentence story that connects 4 meaningful photos into a cohesive narrative.
+TASK: Create a 2-3 sentence story that connects ${targetPhotoCount} meaningful photo${targetPhotoCount > 1 ? 's' : ''} into a cohesive narrative.
 
 STYLE REQUIREMENTS:
 - Warm, fun, and heartfelt tone like a Hallmark card
@@ -45,11 +49,16 @@ STYLE REQUIREMENTS:
 
 ${memoryBookContext}
 STORY GUIDELINES:
-- ALWAYS select exactly 4 photos when 4 or more are available
+- ALWAYS select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} when ${targetPhotoCount} or more are available
 - Choose the most meaningful or emotionally connected photos, even if not perfect fits
 - Weave together the photos into a single cohesive story
 - Focus on relationships, emotions, and shared experiences
-- Make it feel like a personal family memory`
+- Make it feel like a personal family memory${targetPhotoCount === 1 ? `
+PHOTO SELECTION FOR SINGLE PHOTO:
+- When selecting 1 photo, prioritize photos with orientation="portrait" 
+- Portrait photos work best for single-photo layouts as they can fill 50% of the card area effectively
+- If no portrait photos are available, choose landscape photos that can be effectively cropped to portrait
+- Look for photos with good vertical composition or subjects that can be centered in a portrait crop` : ''}`
 
     // Photo data section
     const photoDataSection = `PHOTO METADATA:
@@ -57,14 +66,14 @@ ${photoSummaries}
 
 INSTRUCTIONS:
 ${forceAll ? 
-  'Use ALL provided photos in the order given.' : 
-  'ALWAYS select exactly 4 photos when available. Choose the most meaningful ones, even if not perfect fits, and arrange them in the best storytelling order.'
+  `Use ALL provided photos in the order given.` : 
+  `ALWAYS select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} when available. Choose the most meaningful ones, even if not perfect fits, and arrange them in the best storytelling order.`
 }
 
 RESPONSE FORMAT:
 Return ONLY a valid JSON object with these exact fields:
 {
-  "selected_photo_ids": ["photo_id_1", "photo_id_2", "photo_id_3", "photo_id_4"],
+  "selected_photo_ids": ["photo_id_1"${targetPhotoCount > 1 ? ', "photo_id_2"' : ''}${targetPhotoCount > 2 ? ', "photo_id_3"' : ''}${targetPhotoCount > 3 ? ', "photo_id_4"' : ''}${targetPhotoCount > 4 ? ', "photo_id_5"' : ''}${targetPhotoCount > 5 ? ', "photo_id_6"' : ''}],
   "story": "Your 2-3 sentence story here..."
 }`
 

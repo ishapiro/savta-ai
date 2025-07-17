@@ -72,6 +72,34 @@ export default defineEventHandler(async (event) => {
     // Check if this is a magic memory book
     if (book.layout_type === 'magic') {
       console.log('✨ Magic memory detected, generating a new magic story for regeneration')
+      
+      // Fetch the assets to get photo metadata
+      const { data: assets, error: assetsError } = await supabase
+        .from('assets')
+        .select('*')
+        .in('id', book.created_from_assets || [])
+        .eq('approved', true)
+        .eq('deleted', false)
+
+      if (assetsError || !assets || assets.length === 0) {
+        throw new Error('Failed to fetch assets for magic memory regeneration')
+      }
+
+      // Convert assets to photos format expected by magic-memory endpoint
+      const photos = assets.map(asset => ({
+        id: asset.id,
+        width: asset.width,
+        height: asset.height,
+        orientation: asset.orientation,
+        ai_caption: asset.ai_caption || '',
+        people_detected: asset.people_detected || [],
+        tags: asset.tags || [],
+        user_tags: asset.user_tags || []
+      }))
+
+      // Determine photo count based on number of assets (default to 4 if not specified)
+      const photoCount = Math.min(assets.length, 4) // Default to 4, but could be stored in book data
+
       // Always generate a new magic story for magic memory books
       const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
         method: 'POST',
@@ -80,10 +108,11 @@ export default defineEventHandler(async (event) => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          asset_ids: book.created_from_assets,
+          photos: photos,
           title: book.title,
           memory_event: book.memory_event,
-          theme: book.theme || 'classic'
+          theme: book.theme || 'classic',
+          photo_count: photoCount
         })
       })
       if (!magicRes.ok) {
@@ -664,63 +693,134 @@ export default defineEventHandler(async (event) => {
         })
         console.log('✅ Magic memory using white background (no background image)')
       }
-      // Draw up to 4 photos in a 2x2 grid on the left half
+      // Draw photos based on count - single photo gets special treatment
       const assetIds = book.created_from_assets || []
-      const photoAssets = assets.filter(a => assetIds.includes(a.id)).slice(0, 4)
+      const photoAssets = assets.filter(a => assetIds.includes(a.id))
       
-      // Layout: left half for photos, right half for story
-      const gridCols = 2
-      const gridRows = 2
-      // The left half, minus outer margin and margin to the story area
-      const photoGridLeft = margin
-      const photoGridTop = margin
-      const photoGridWidth = pageWidth / 2 - margin // leave margin between grid and story
-      const photoGridHeight = pageHeight - 2 * margin
-      const photoCellWidth = (photoGridWidth - margin) / gridCols // margin between columns
-      const photoCellHeight = (photoGridHeight - margin) / gridRows // margin between rows
-      // Calculate positions for each photo
-      let positions = []
-      for (let row = 0; row < gridRows; row++) {
-        for (let col = 0; col < gridCols; col++) {
-          if (positions.length < photoAssets.length) {
-            positions.push({
-              x: photoGridLeft + col * (photoCellWidth + margin / (gridCols - 1)),
-              y: pageHeight - margin - (row + 1) * photoCellHeight - row * (margin / (gridRows - 1))
-            })
+      // Determine layout based on photo count
+      let photoLayout
+      if (photoAssets.length === 1) {
+        // Single photo: fill 50% of the card area (left half)
+        photoLayout = {
+          type: 'single',
+          photoArea: {
+            x: margin,
+            y: margin,
+            width: pageWidth / 2 - margin, // 50% of card width minus margin
+            height: pageHeight - 2 * margin // Full height minus margins
+          }
+        }
+      } else {
+        // Multiple photos: determine grid layout based on photo count
+        let gridCols, gridRows
+        if (photoAssets.length === 2) {
+          gridCols = 2
+          gridRows = 1
+        } else if (photoAssets.length === 4) {
+          gridCols = 2
+          gridRows = 2
+        } else if (photoAssets.length === 6) {
+          gridCols = 3
+          gridRows = 2
+        } else {
+          // Fallback for other counts
+          gridCols = 2
+          gridRows = 2
+        }
+        
+        photoLayout = {
+          type: 'grid',
+          gridCols: gridCols,
+          gridRows: gridRows,
+          photoGridLeft: margin,
+          photoGridTop: margin,
+          photoGridWidth: pageWidth / 2 - margin,
+          photoGridHeight: pageHeight - 2 * margin,
+          photoCellWidth: (pageWidth / 2 - margin - margin) / gridCols, // Account for margin between cells
+          photoCellHeight: (pageHeight - 2 * margin - margin) / gridRows // Account for margin between cells
+        }
+        
+        // Calculate positions for grid layout
+        photoLayout.positions = []
+        for (let row = 0; row < photoLayout.gridRows; row++) {
+          for (let col = 0; col < photoLayout.gridCols; col++) {
+            if (photoLayout.positions.length < photoAssets.length) {
+              photoLayout.positions.push({
+                x: photoLayout.photoGridLeft + col * (photoLayout.photoCellWidth + margin / (photoLayout.gridCols - 1)),
+                y: pageHeight - margin - (row + 1) * photoLayout.photoCellHeight - row * (margin / (photoLayout.gridRows - 1))
+              })
+            }
           }
         }
       }
-      // Draw photos
+      // Draw photos based on layout type
       for (let i = 0; i < photoAssets.length; i++) {
         const asset = photoAssets[i]
         try {
           const imageRes = await fetch(asset.storage_url)
           if (!imageRes.ok) throw new Error('Failed to fetch image')
           const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+          
           // Get image dimensions and calculate aspect ratio
           const imageInfo = await sharp(imageBuffer).metadata()
           const aspectRatio = imageInfo.width / imageInfo.height
-          // Fit image inside cell, preserving aspect ratio
-          let finalWidth = photoCellWidth
-          let finalHeight = photoCellHeight
-          if (aspectRatio > 1) {
-            finalWidth = photoCellWidth
-            finalHeight = photoCellWidth / aspectRatio
-            if (finalHeight > photoCellHeight) {
-              finalHeight = photoCellHeight
-              finalWidth = photoCellHeight * aspectRatio
+          
+          let finalWidth, finalHeight, imgX, imgY
+          
+          if (photoLayout.type === 'single') {
+            // Single photo: fill the entire photo area (50% of card)
+            const photoArea = photoLayout.photoArea
+            
+            // For single photos, prioritize portrait orientation to fill the area better
+            if (aspectRatio < 1) {
+              // Portrait photo - can fill more of the area
+              finalHeight = photoArea.height
+              finalWidth = photoArea.height * aspectRatio
+              if (finalWidth > photoArea.width) {
+                finalWidth = photoArea.width
+                finalHeight = photoArea.width / aspectRatio
+              }
+            } else {
+              // Landscape photo - fit to width and crop height if needed
+              finalWidth = photoArea.width
+              finalHeight = photoArea.width / aspectRatio
+              if (finalHeight > photoArea.height) {
+                finalHeight = photoArea.height
+                finalWidth = photoArea.height * aspectRatio
+              }
             }
+            
+            // Center image in photo area
+            imgX = photoArea.x + (photoArea.width - finalWidth) / 2
+            imgY = photoArea.y + (photoArea.height - finalHeight) / 2
+            
+            console.log(`📸 Single photo layout: ${finalWidth}x${finalHeight} in ${photoArea.width}x${photoArea.height} area`)
           } else {
-            finalHeight = photoCellHeight
-            finalWidth = photoCellHeight * aspectRatio
-            if (finalWidth > photoCellWidth) {
+            // Grid layout: fit image inside cell, preserving aspect ratio
+            const photoCellWidth = photoLayout.photoCellWidth
+            const photoCellHeight = photoLayout.photoCellHeight
+            
+            if (aspectRatio > 1) {
               finalWidth = photoCellWidth
               finalHeight = photoCellWidth / aspectRatio
+              if (finalHeight > photoCellHeight) {
+                finalHeight = photoCellHeight
+                finalWidth = photoCellHeight * aspectRatio
+              }
+            } else {
+              finalHeight = photoCellHeight
+              finalWidth = photoCellHeight * aspectRatio
+              if (finalWidth > photoCellWidth) {
+                finalWidth = photoCellWidth
+                finalHeight = photoCellWidth / aspectRatio
+              }
             }
+            
+            // Center image in cell
+            imgX = photoLayout.positions[i].x + (photoCellWidth - finalWidth) / 2
+            imgY = photoLayout.positions[i].y + (photoCellHeight - finalHeight) / 2
           }
-          // Center image in cell
-          const imgX = positions[i].x + (photoCellWidth - finalWidth) / 2
-          const imgY = positions[i].y + (photoCellHeight - finalHeight) / 2
+          
           // Process image at higher resolution for quality
           const targetWidth = Math.round(finalWidth * 2)
           const targetHeight = Math.round(finalHeight * 2)
@@ -732,12 +832,21 @@ export default defineEventHandler(async (event) => {
             width: finalWidth,
             height: finalHeight
           })
-          console.log(`✅ Photo ${i + 1} processed: ${finalWidth}x${finalHeight} (aspect ratio preserved)`)
+          console.log(`✅ Photo ${i + 1} processed: ${finalWidth}x${finalHeight} (${photoLayout.type} layout)`)
         } catch (err) {
           console.warn(`⚠️ Failed to process photo ${i + 1}:`, err.message)
           // Draw placeholder if image fails
-          page.drawRectangle({
-            x: positions[i].x, y: positions[i].y, width: photoCellWidth, height: photoCellHeight, color: rgb(0.9, 0.9, 1) })
+          if (photoLayout.type === 'single') {
+            const photoArea = photoLayout.photoArea
+            page.drawRectangle({
+              x: photoArea.x, y: photoArea.y, width: photoArea.width, height: photoArea.height, color: rgb(0.9, 0.9, 1)
+            })
+          } else {
+            page.drawRectangle({
+              x: photoLayout.positions[i].x, y: photoLayout.positions[i].y, 
+              width: photoLayout.photoCellWidth, height: photoLayout.photoCellHeight, color: rgb(0.9, 0.9, 1)
+            })
+          }
         }
       }
       // --- Story area: right half ---

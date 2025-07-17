@@ -23,8 +23,8 @@ export default defineEventHandler(async (event) => {
 
     const body = await readBody(event)
     const { asset_ids, story, title } = body
-    if (!asset_ids || !Array.isArray(asset_ids) || asset_ids.length < 2 || asset_ids.length > 4 || !story) {
-      throw createError({ statusCode: 400, statusMessage: '2-4 asset_ids and story are required' })
+    if (!asset_ids || !Array.isArray(asset_ids) || asset_ids.length < 1 || asset_ids.length > 6 || !story) {
+      throw createError({ statusCode: 400, statusMessage: '1-6 asset_ids and story are required' })
     }
 
     // Insert new memory book

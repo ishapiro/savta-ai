@@ -1170,7 +1170,7 @@
     <Dialog
       v-model:visible="showMagicMemoryDialog"
       modal
-      :header="magicMemoryStep === 1 ? '✨ Name Your Magic Memory ✨' : '✨ Create a Magic Memory ✨'"
+      :header="magicMemoryStep === 1 ? '✨ What should we call this memory? ✨' : '✨ Let\'s create something magical together ✨'"
       class="w-[95vw] max-w-3xl sm:rounded-2xl magic-memory-dialog"
       :closable="true"
     >
@@ -1180,8 +1180,8 @@
           <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4">
             <Sparkles class="w-8 h-8 text-white" />
           </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2">What would you like to call this memory?</h3>
-          <p class="text-gray-600">Give your magic memory a special name that captures the moment</p>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">What should we call this special memory?</h3>
+          <p class="text-gray-600">Give your magic memory a special name that captures the moment - I can't wait to see what we create together!</p>
         </div>
         
         <div class="field">
@@ -1201,8 +1201,8 @@
           <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
             <i class="pi pi-calendar text-2xl text-white"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2">What type of event is this?</h3>
-          <p class="text-gray-600">You can leave this blank, or select Other to type your own event.</p>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">Tell me what kind of event this was</h3>
+          <p class="text-gray-600">You can leave this blank if you prefer, or select Other to tell me about a special event.</p>
         </div>
         <div class="field">
           <label class="block text-sm font-medium text-gray-900 mb-2">Event Type</label>
@@ -1232,13 +1232,61 @@
         </div>
       </div>
 
-      <!-- Step 3: Photo Selection -->
-      <div v-if="magicMemoryStep === 3 && !loadingAssets" class="space-y-4">
+      <!-- Step 3: Photo Count Selection -->
+      <div v-if="magicMemoryStep === 3" class="space-y-6">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-images text-2xl text-white"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">How many photos should I choose for you?</h3>
+          <p class="text-gray-600">Select how many photos I should pick from your memory collection to create your magic story - trust me, this will be amazing!</p>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-4">
+          <div
+            v-for="count in [1, 4, 6]"
+            :key="count"
+            class="relative cursor-pointer"
+            @click="magicPhotoCount = count"
+          >
+            <div
+              class="border-2 rounded-lg p-4 text-center transition-all duration-200"
+              :class="magicPhotoCount === count 
+                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+            >
+              <div class="text-2xl font-bold text-gray-900 mb-1">{{ count }}</div>
+              <div class="text-sm text-gray-600">
+                {{ count === 1 ? 'Photo' : 'Photos' }}
+              </div>
+              <div v-if="magicPhotoCount === count" class="absolute top-2 right-2">
+                <i class="pi pi-check text-purple-500 text-lg"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <div class="flex items-start gap-3">
+            <i class="pi pi-info-circle text-blue-500 mt-1"></i>
+            <div>
+              <h4 class="font-semibold text-blue-900 mb-1">Selection Process</h4>
+              <p class="text-sm text-blue-800">
+                You'll select up to 12 photos in the next step, then I'll choose the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your selection. 
+                Your magic card will be split 50% for photos and 50% for text.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Photo Selection -->
+      <div v-if="magicMemoryStep === 4 && !loadingAssets" class="space-y-4">
         <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200 flex items-center gap-3 animate-pulse">
           <i class="pi pi-sparkles text-2xl text-yellow-400 animate-bounce"></i>
           <div>
-            <h3 class="text-lg font-bold text-purple-700 mb-1">Select up to 12 Memory Moments for "{{ magicMemoryTitle }}"</h3>
-            <p class="text-sm text-gray-700">Choose up to 12 photos by tag to inspire your Magic Memory story. The AI will weave them into something special!</p>
+            <h3 class="text-lg font-bold text-purple-700 mb-1">Show me up to 12 Memory Moments for "{{ magicMemoryTitle }}"</h3>
+            <p class="text-sm text-gray-700">Choose up to 12 photos by tag to inspire your Magic Memory story. I'll select the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your choices - you have such beautiful memories to work with!</p>
           </div>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-4">
@@ -1294,7 +1342,7 @@
             </div>
           </div>
           <div class="mt-2 text-xs text-gray-600 text-center">
-            <span>{{ magicSelectedMemories.length }} selected (AI will pick the best 4 for your story)</span>
+            <span>{{ magicSelectedMemories.length }} selected (I'll pick the best {{ magicPhotoCount }} from your choices)</span>
             <span v-if="magicSelectedTagFilter && magicSelectedTagFilter.length > 0"> • Filtered by: {{ magicSelectedTagFilter.join(', ') }}</span>
           </div>
         </div>
@@ -1302,7 +1350,7 @@
       <div v-else-if="loadingAssets" class="flex items-center justify-center py-8">
         <div class="text-center">
           <i class="pi pi-spin pi-spinner text-3xl text-purple-400 mb-3"></i>
-          <p class="text-sm text-gray-600">Loading your magical photos...</p>
+          <p class="text-sm text-gray-600">Looking through your beautiful memories...</p>
         </div>
       </div>
       <template #footer>
@@ -1316,7 +1364,7 @@
           />
           <Button
             v-if="magicMemoryStep === 1"
-            label="Next: Event"
+            label="Next: Tell me about the event"
             icon="pi pi-arrow-right"
             :disabled="!magicMemoryTitle.trim()"
             @click="nextMagicMemoryStep"
@@ -1324,7 +1372,7 @@
           />
           <Button
             v-if="magicMemoryStep === 2"
-            label="Next: Photos"
+            label="Next: How many photos?"
             icon="pi pi-arrow-right"
             :disabled="!magicMemoryEvent.trim()"
             @click="nextMagicMemoryStep"
@@ -1332,9 +1380,16 @@
           />
           <Button
             v-if="magicMemoryStep === 3"
-            label="Cast Spell!"
+            label="Next: Show me your photos"
+            icon="pi pi-arrow-right"
+            @click="nextMagicMemoryStep"
+            class="bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold"
+          />
+          <Button
+            v-if="magicMemoryStep === 4"
+            label="Let's make some magic!"
             icon="pi pi-bolt"
-            :disabled="magicSelectedMemories.length < 2 || magicLoading"
+            :disabled="magicSelectedMemories.length < 1 || magicLoading"
             :loading="magicLoading"
             @click="onMagicMemoryContinue"
             class="bg-gradient-to-r from-yellow-400 to-purple-500 hover:from-yellow-500 hover:to-purple-600 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold animate-pulse"
@@ -1347,7 +1402,7 @@
   <Dialog v-model:visible="magicStatusDialog" modal :closable="false" :showHeader="false" class="magic-status-dialog" style="max-width: 350px; text-align: center;">
     <div class="flex flex-col items-center justify-center py-6">
       <i class="pi pi-sparkles text-4xl text-yellow-400 animate-bounce mb-2"></i>
-      <div class="text-lg font-bold text-purple-700 mb-2">Magic in Progress...</div>
+      <div class="text-lg font-bold text-purple-700 mb-2">I'm working my magic...</div>
       <div class="text-md text-gray-800 mb-2">{{ magicStatusMessage }}</div>
       <div class="w-full h-2 bg-gradient-to-r from-yellow-200 via-purple-200 to-blue-200 rounded-full animate-pulse"></div>
     </div>
@@ -2804,9 +2859,10 @@ import { defineAsyncComponent } from 'vue'
 const PdfViewer = defineAsyncComponent(() => import('~/components/PdfViewer.vue'))
 
 const showMagicMemoryDialog = ref(false)
-const magicMemoryStep = ref(1) // 1 = title input, 2 = event selection, 3 = photo selection
+const magicMemoryStep = ref(1) // 1 = title input, 2 = event selection, 3 = photo count, 4 = photo selection
 const magicMemoryTitle = ref('')
 const magicMemoryEvent = ref('')
+const magicPhotoCount = ref(4) // Default to 4 photos
 
 const magicSelectedTagFilter = ref([])
 const magicSelectedMemories = ref([])
@@ -2834,10 +2890,10 @@ const magicStatusDialog = ref(false)
 const magicStatusMessage = ref('')
 
 async function onMagicMemoryContinue() {
-  if (magicSelectedMemories.value.length < 2) return
+  if (magicSelectedMemories.value.length < 1) return
   magicLoading.value = true
   magicStatusDialog.value = true
-  magicStatusMessage.value = '🧙 Gathering your memories...'
+  magicStatusMessage.value = '🧙 Looking through your beautiful memories...'
   try {
     const selectedAssets = availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
     const photos = selectedAssets.map(a => ({
@@ -2851,25 +2907,26 @@ async function onMagicMemoryContinue() {
       photos,
       title: magicMemoryTitle.value,
       memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+      photo_count: magicPhotoCount.value,
       theme: 'classic' // Default theme since it's not collected in the Magic Memory dialog
     }
-    if (photos.length <= 4) {
+    if (photos.length <= magicPhotoCount.value) {
       aiBody.forceAll = true
     }
-    magicStatusMessage.value = '🔮 Summoning the story...'
+    magicStatusMessage.value = '🔮 Crafting your special story...'
     const aiRes = await $fetch('/api/ai/magic-memory', {
       method: 'POST',
       body: aiBody
     })
-    if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 2 || aiRes.selected_photo_ids.length > 4) {
-      throw new Error('AI did not return 2-4 photo IDs. Please try again or select different photos.')
+    if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1 || aiRes.selected_photo_ids.length > magicPhotoCount.value) {
+      throw new Error(`I need a bit more to work with. Let me try again with different photos.`)
     }
     if (!aiRes.story || typeof aiRes.story !== 'string' || aiRes.story.trim().length < 10) {
-      throw new Error('AI did not return a valid story. Please try again.')
+      throw new Error('I need to try again to create something special for you.')
     }
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
-    magicStatusMessage.value = '📚 Saving your Magic Memory...'
+    magicStatusMessage.value = '📚 Saving your magic card...'
     const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
       method: 'POST',
               body: {
@@ -2882,8 +2939,8 @@ async function onMagicMemoryContinue() {
         Authorization: `Bearer ${accessToken}`
       }
     })
-    if (!dbRes.success) throw new Error('DB save failed')
-    magicStatusMessage.value = '✨ Casting the PDF spell...'
+    if (!dbRes.success) throw new Error('I need to try again to save your magic card.')
+    magicStatusMessage.value = '✨ Creating your magic card...'
     // Trigger PDF generation
     const pdfRes = await $fetch(`/api/memory-books/generate-pdf/${dbRes.book_id}`, {
       method: 'POST',
@@ -2894,17 +2951,17 @@ async function onMagicMemoryContinue() {
         printSize: '6x4'
       }
     })
-    if (!pdfRes.success) throw new Error('PDF generation failed')
-    magicStatusMessage.value = '🎉 Your Magic Memory is ready!'
+    if (!pdfRes.success) throw new Error('I need to try again to create your magic card.')
+    magicStatusMessage.value = '🎉 Your magic card is ready!'
     setTimeout(() => { magicStatusDialog.value = false }, 2000)
     showMagicMemoryDialog.value = false
     magicSelectedMemories.value = []
     magicSelectedTagFilter.value = []
     if (typeof loadMemoryBooks === 'function') await loadMemoryBooks()
-    toast.add({ severity: 'success', summary: '✨ Magic Memory Created!', detail: 'Your magical story and PDF are ready!', life: 4000 })
+    toast.add({ severity: 'success', summary: '✨ Your magic card is ready!', detail: 'I\'ve created something special just for you!', life: 4000 })
   } catch (err) {
     magicStatusDialog.value = false
-    toast.add({ severity: 'error', summary: 'Magic Failed', detail: err.message || 'Something went wrong', life: 5000 })
+    toast.add({ severity: 'error', summary: 'Let me try again', detail: err.message || 'I need to try again to create something special for you.', life: 5000 })
   } finally {
     magicLoading.value = false
   }
@@ -2914,6 +2971,7 @@ const openMagicMemoryDialog = async () => {
   magicMemoryStep.value = 1
   magicMemoryTitle.value = ''
   magicMemoryEvent.value = ''
+  magicPhotoCount.value = 4
   magicSelectedMemories.value = []
   magicSelectedTagFilter.value = []
   loadingAssets.value = true
@@ -2933,11 +2991,15 @@ const nextMagicMemoryStep = () => {
     magicMemoryStep.value = 2
   } else if (magicMemoryStep.value === 2) {
     magicMemoryStep.value = 3
+  } else if (magicMemoryStep.value === 3) {
+    magicMemoryStep.value = 4
   }
 }
 
 const previousMagicMemoryStep = () => {
-  if (magicMemoryStep.value === 3) {
+  if (magicMemoryStep.value === 4) {
+    magicMemoryStep.value = 3
+  } else if (magicMemoryStep.value === 3) {
     magicMemoryStep.value = 2
   } else if (magicMemoryStep.value === 2) {
     magicMemoryStep.value = 1

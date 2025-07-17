@@ -76,6 +76,9 @@ create table if not exists assets (
   user_tags text[] default array[]::text[],
   people_detected jsonb default '[]'::jsonb,
   user_people jsonb default '[]'::jsonb,
+  width integer,
+  height integer,
+  orientation text check (orientation in ('portrait', 'landscape', 'square')),
   ai_processed boolean default false,
   approved boolean default false,
   rejected boolean default false,
@@ -156,6 +159,8 @@ create index if not exists idx_memory_preferences_user_id on memory_preferences(
 create index if not exists idx_assets_user_id on assets(user_id);
 create index if not exists idx_assets_type on assets(type);
 create index if not exists idx_assets_approved on assets(approved);
+create index if not exists idx_assets_orientation on assets(orientation);
+create index if not exists idx_assets_dimensions on assets(width, height);
 create index if not exists idx_asset_tags_asset_id on asset_tags(asset_id);
 create index if not exists idx_asset_tags_tag_id on asset_tags(tag_id);
 create index if not exists idx_memory_books_user_id on memory_books(user_id);
