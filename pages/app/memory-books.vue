@@ -865,8 +865,8 @@
                 @click="onGenerateClick(selectedBook)"
               >
                 <Wand2 class="w-3 h-3 sm:w-4 sm:h-4" />
-                <span class="hidden sm:inline">Compose Memory</span>
-                <span class="sm:hidden">Compose</span>
+                <span class="hidden sm:inline">Create Memory</span>
+                <span class="sm:hidden">Create</span>
               </button>
               <button
                 v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
@@ -875,8 +875,8 @@
                 :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
               >
                 <i class="pi pi-refresh text-xs sm:text-sm"></i>
-                <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing ...' : 'Recreating ...' }}</span>
-                <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Recreating ...' }}</span>
+                <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing ...' : 'Recreate' }}</span>
+                <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
               </button>
               <button
                 v-if="selectedBook.status === 'ready'"
@@ -884,7 +884,7 @@
                 @click="approveBook(selectedBook.id)"
               >
                 <i class="pi pi-check text-xs sm:text-sm"></i>
-                <span class="hidden sm:inline">Approve Book</span>
+                <span class="hidden sm:inline">Approve</span>
                 <span class="sm:hidden">Approve</span>
               </button>
               <button

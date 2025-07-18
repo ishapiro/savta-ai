@@ -3,7 +3,7 @@
     v-model:visible="showDialog"
     modal
     :header="isEditing ? 'Edit Memory Spell' : 'Create New Memory Spell'"
-    class="w-[95vw] max-w-4xl memory-book-dialog"
+    class="w-[95vw] max-w-4xl memory-book-dialog mt-3"
     :closable="false"
   >
     <form @submit.prevent="handleSubmit" class="space-y-6">

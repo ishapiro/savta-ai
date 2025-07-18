@@ -1004,13 +1004,13 @@ export default defineEventHandler(async (event) => {
       }
       // Try to fit the text with the largest font size possible
       let lines = wrapText(story, timesBoldItalicFont, fontSize, storyAreaWidth)
-      let lineHeight = fontSize * 1.2
+      let lineHeight = fontSize * 2.0
       let totalTextHeight = lines.length * lineHeight
       let adjustedFontSize = fontSize
       while (totalTextHeight > storyAreaHeight && adjustedFontSize > 10) {
         adjustedFontSize -= 1
         lines = wrapText(story, timesBoldItalicFont, adjustedFontSize, storyAreaWidth)
-        lineHeight = adjustedFontSize * 1.2
+        lineHeight = adjustedFontSize * 2.0
         totalTextHeight = lines.length * lineHeight
       }
       // Draw the story text, left-aligned, vertically centered
@@ -1598,6 +1598,7 @@ async function createCaptionImage(captionText, maxWidth, maxHeight) {
     const minFontSize = 6;
     const maxFontSize = 14;
     const padding = 12;
+    const scaleFactor = 2; // Create at 2x resolution for better sharpness
     let fontSize = maxFontSize;
     let displayLines = [];
     let captionHeight = 0;
@@ -1605,7 +1606,7 @@ async function createCaptionImage(captionText, maxWidth, maxHeight) {
     
     // Try different font sizes until text fits
     while (fontSize >= minFontSize) {
-      const lineHeight = fontSize + 4; // Line height proportional to font size
+      const lineHeight = fontSize * 2.0; // Proportional line height (60% of font size)
       const charWidth = fontSize * 0.6; // Approximate character width
       const maxCharsPerLine = Math.floor((maxWidth - padding * 2) / charWidth);
       
@@ -1653,7 +1654,7 @@ async function createCaptionImage(captionText, maxWidth, maxHeight) {
     // If we couldn't fit the text even with minimum font size, use the smallest size
     if (displayLines.length === 0) {
       fontSize = minFontSize;
-      const lineHeight = fontSize + 4;
+      const lineHeight = fontSize * 2.0; // Proportional line height (60% of font size)
       const charWidth = fontSize * 0.6;
       const maxCharsPerLine = Math.floor((maxWidth - padding * 2) / charWidth);
       
@@ -1701,7 +1702,7 @@ async function createCaptionImage(captionText, maxWidth, maxHeight) {
     console.log('Caption dimensions calculated:', { captionWidth, captionHeight, displayLines: displayLines.length });
     
     // Create SVG with gradient background and text
-    const lineHeight = fontSize + 4;
+    const lineHeight = fontSize * 2.0; // Proportional line height (60% of font size)
     const totalTextHeight = displayLines.length * lineHeight;
     const textStartY = (captionHeight - totalTextHeight) / 2 + lineHeight / 2 - 5; // Center the text block, moved up 5px
     
@@ -1710,7 +1711,7 @@ async function createCaptionImage(captionText, maxWidth, maxHeight) {
     ).join('');
     
     const svg = `
-      <svg width="${captionWidth}" height="${captionHeight}">
+      <svg width="${captionWidth * scaleFactor}" height="${captionHeight * scaleFactor}">
         <!-- Gradient background with soft edges -->
         <defs>
           <radialGradient id="captionGradient" cx="50%" cy="50%" r="50%">
@@ -1721,30 +1722,27 @@ async function createCaptionImage(captionText, maxWidth, maxHeight) {
         </defs>
         
         <!-- Background with rounded corners and gradient -->
-        <rect x="4" y="4" width="${captionWidth - 8}" height="${captionHeight - 8}" 
-              rx="6" ry="6" fill="url(#captionGradient)" 
-              stroke="white" stroke-width="1" stroke-opacity="0.3"/>
+        <rect x="${4 * scaleFactor}" y="${4 * scaleFactor}" width="${(captionWidth - 8) * scaleFactor}" height="${(captionHeight - 8) * scaleFactor}" 
+              rx="${6 * scaleFactor}" ry="${6 * scaleFactor}" fill="url(#captionGradient)" 
+              stroke="white" stroke-width="${1 * scaleFactor}" stroke-opacity="0.3"/>
         
-        <!-- Text -->
-        <text x="50%" y="${textStartY}" text-anchor="middle" 
-              font-size="${fontSize}" fill="#3a277a" font-family="sans-serif" 
-              font-weight="500" dominant-baseline="hanging">
+        <!-- Text with improved sharpness -->
+        <text x="50%" y="${textStartY * scaleFactor}" text-anchor="middle" 
+              font-size="${fontSize * scaleFactor}" fill="#3a277a" font-family="sans-serif" 
+              font-weight="600" dominant-baseline="hanging"
+              style="text-rendering: optimizeLegibility; font-smooth: never;">
           ${svgLines}
         </text>
       </svg>
     `;
     
-    // Create image using sharp with validated dimensions
-    const buffer = await sharp({
-      create: {
-        width: Math.round(captionWidth),
-        height: Math.round(captionHeight),
-        channels: 4,
-        background: { r: 0, g: 0, b: 0, alpha: 0 } // transparent background
-      }
-    })
-      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-      .png()
+    // Create image using sharp with validated dimensions and enhanced sharpness
+    const buffer = await sharp(Buffer.from(svg))
+      .resize(Math.round(captionWidth), Math.round(captionHeight), {
+        kernel: 'lanczos3',
+        fit: 'fill'
+      })
+      .png({ quality: 100, compressionLevel: 0 })
       .toBuffer();
     
     console.log('Caption image created successfully:', { width: captionWidth, height: captionHeight, bufferSize: buffer.length });
