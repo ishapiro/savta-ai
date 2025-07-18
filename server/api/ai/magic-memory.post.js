@@ -54,8 +54,14 @@ export default defineEventHandler(async (event) => {
 
 TASK: Create a 2-3 sentence story that connects ${targetPhotoCount} meaningful photo${targetPhotoCount > 1 ? 's' : ''} into a cohesive narrative.
 
+RESTRICTIONS:
+- Keep the story PG
+- Never use the location "West Ridge" 
+- Do not say "young ones" or "youngsters" use "kids" or "children"
+
 STYLE REQUIREMENTS:
-- Warm, fun, and heartfelt tone like a Hallmark card
+- Warm, fun, and lighthearted tone like a Hallmark card
+- But not too sappy or corny
 - 8th grade reading level
 - Natural, personal, and delightful language
 - Use photo context (captions, tags, people) for richness, but don't mention them literally

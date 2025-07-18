@@ -1572,7 +1572,7 @@
               >
                 <i class="pi pi-upload"></i>
                 <span v-if="!isUploading">✨ Upload New Photos ✨</span>
-                <span v-else>✨ Uploading... ✨</span>
+                <span v-else>✨ Uploading and working our magic... ✨</span>
               </button>
               <p class="text-xs text-gray-500 mt-2">New photos will be automatically approved and available for selection</p>
             </div>
@@ -3585,7 +3585,7 @@ const selectFiles = () => {
   const fileInput = document.createElement('input')
   fileInput.type = 'file'
   fileInput.multiple = true
-  fileInput.accept = 'image/*'
+  fileInput.accept = 'image/jpeg,image/jpg,image/png'
   
   fileInput.onchange = async (event) => {
     const files = Array.from(event.target.files)
@@ -3602,7 +3602,7 @@ const selectFilesForMagicMemory = () => {
   const fileInput = document.createElement('input')
   fileInput.type = 'file'
   fileInput.multiple = true
-  fileInput.accept = 'image/*'
+  fileInput.accept = 'image/jpeg,image/jpg,image/png'
   
   fileInput.onchange = async (event) => {
     const files = Array.from(event.target.files)
