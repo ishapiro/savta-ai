@@ -1029,8 +1029,19 @@
       :z-index="40"
     >
       <div class="flex flex-col h-full w-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
-        <!-- PDF Viewer -->
-        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto">
+        <!-- PDF Viewer - Mobile (with overflow) -->
+        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto sm:hidden">
+          <ClientOnly>
+            <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
+            <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
+              <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
+              <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
+            </div>
+          </ClientOnly>
+        </div>
+        
+        <!-- PDF Viewer - Desktop (without overflow) -->
+        <div class="hidden sm:flex flex-1 min-h-0 w-full items-start justify-center pt-2">
           <ClientOnly>
             <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
@@ -3895,7 +3906,7 @@ function showMagicCaption(caption) {
 const pdfViewerStyle = computed(() => {
   if (window.innerWidth < 640) { // Tailwind's sm breakpoint is 640px
     return {
-      height: '65vh',
+      height: '68vh',
       width: '100%',
       maxWidth: '100%'
     };
