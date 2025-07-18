@@ -997,21 +997,20 @@
     </Dialog>
 
     <!-- PDF Preview Modal -->
-    <!-- :style="{ width: '95vw', maxWidth: '900px', height: '85vh', maxHeight: '85vh', padding: 0, marginTop: '2rem' }" -->
     <Dialog
       v-model:visible="showPdfModal"
       modal
       header="PDF Preview"
-      class="w-full max-w-6xl h-[85vh] mt-6"
-      :contentStyle="{ height: '85vh', padding: 0 }"
+      class="w-[95vw] max-w-6xl h-[90vh] sm:h-[85vh] mt-2 sm:mt-6"
+      :contentStyle="{ height: '90vh', maxHeight: '90vh', padding: 0 }"
       :closable="false"
       :auto-z-index="false"
       :z-index="1000"
     >
-      <div class="pdf-preview-container flex flex-col w-full h-full" style="height: 85vh; width: 100%; padding: 0;">
+      <div class="pdf-preview-container flex flex-col w-full h-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
         <!-- PDF Viewer -->
         <div class="flex-1 w-full flex items-center justify-center" style="min-height: 0;">
-          <div class="w-full h-[85%]">
+          <div class="w-full h-[80%] sm:h-[85%]">
             <ClientOnly>
               <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" class="w-full h-full" />
               <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
@@ -1023,20 +1022,20 @@
         </div>
         
         <!-- Action Buttons -->
-        <div class="flex justify-center items-center gap-4 py-6 px-4 bg-gray-50 border-t border-gray-200">
+        <div class="flex justify-center items-center gap-3 sm:gap-4 py-4 sm:py-6 px-4 bg-gray-50 border-t border-gray-200 min-h-[60px] sm:min-h-[80px]">
           <Button
             v-if="canShare"
             label="Share"
             icon="pi pi-share"
             size="small"
-            class="text-sm px-6 py-3 bg-blue-500 hover:bg-blue-600 border-0"
+            class="text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 border-0"
             @click="sharePdf"
           />
           <Button
             label="Close"
             severity="secondary"
             size="small"
-            class="text-sm px-6 py-3"
+            class="text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3"
             @click="showPdfModal = false"
           />
         </div>
