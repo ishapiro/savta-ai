@@ -1,10 +1,11 @@
 <template>
-  <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
+  <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
+    <div class="max-w-7xl mx-auto">
     <!-- Guest Mode Warning Banner -->
     <div v-if="isGuestMode" class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
       <div class="flex items-start gap-3">
         <div class="flex-shrink-0">
-          <i class="pi pi-exclamation-triangle text-yellow-600 text-lg"></i>
+          <AlertTriangle class="w-5 h-5 text-yellow-600" />
         </div>
         <div class="flex-1">
           <h3 class="text-sm font-medium text-yellow-800 mb-1">Guest Mode</h3>
@@ -29,150 +30,161 @@
       </p>
     </div>
     
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-      <!-- Photo Upload Card -->
-      <div 
-        class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6 sm:p-8 border border-purple-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
-        @click="handleCardClick('upload')"
-      >
-        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-400 to-purple-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-          <span class="text-2xl sm:text-3xl">📸</span>
-        </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Upload Memory Moments</h3>
-        <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-          Upload your photos and memories. Our AI adds captions and smart tags automatically.
-        </p>
-        <div class="space-y-2">
-          <div class="flex items-center gap-2 text-sm text-purple-700">
-            <i class="pi pi-tag text-purple-500"></i>
-            <span>Smart tagging</span>
-          </div>
-          <div class="flex items-center gap-2 text-sm text-purple-700">
-            <i class="pi pi-comments text-purple-500"></i>
-            <span>AI captions</span>
-          </div>
-          <div class="space-y-1">
-            <div class="flex items-center gap-2 text-sm min-h-[32px]">
-              <div class="flex items-center gap-2 text-purple-500 transition-colors" style="margin-left: 0;">
-                <i class="pi pi-upload text-purple-500"></i>
-                <span>Upload your memory moments</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <!-- Primary Action: Cast a Magic Spell -->
+    <div class="mb-8 sm:mb-12">
+      <div class="text-center mb-6">
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 tracking-tight">✨ Get Started ✨</h3>
+        <p class="text-base sm:text-lg text-gray-600 font-medium">Begin your magical journey here</p>
       </div>
       
-      <!-- Review Memories Card -->
       <div 
-        class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl shadow-lg p-6 sm:p-8 border border-pink-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
-        @click="handleCardClick('review')"
-      >
-        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-          <span class="text-2xl sm:text-3xl">✏️</span>
-        </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Review Memory Moments</h3>
-        <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-          Review and refine your memory moments. Approve or reject AI suggestions, edit captions, and add keywords.
-        </p>
-        <div class="space-y-2">
-          <div class="flex items-center gap-2 text-sm text-pink-700">
-            <i class="pi pi-check-circle text-pink-500"></i>
-            <span>Approve/reject</span>
-          </div>
-          <div class="flex items-center gap-2 text-sm text-pink-700">
-            <i class="pi pi-pencil text-pink-500"></i>
-            <span>Edit captions</span>
-          </div>
-          <div class="flex items-center gap-2 text-sm text-pink-700">
-            <i class="pi pi-tag text-pink-500"></i>
-            <span>Add keywords</span>
-          </div>
-          <div class="flex items-center gap-2 text-sm min-h-[32px]">
-            <div class="flex items-center gap-2 text-pink-500 transition-colors" style="margin-left: 0;">
-              <i class="pi pi-eye text-pink-500"></i>
-              <span>Review your memory moments</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- AI Generation Card -->
-      <div 
-        class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl shadow-lg p-6 sm:p-8 border border-green-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+        class="bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-12 border-2 border-green-200 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500 cursor-pointer group relative overflow-hidden"
         @click="handleCardClick('ai')"
       >
-        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-emerald-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-          <span class="text-2xl sm:text-3xl">✨</span>
+        <!-- Animated background elements -->
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute top-4 left-4 w-8 h-8 bg-green-300 rounded-full animate-ping"></div>
+          <div class="absolute top-8 right-8 w-6 h-6 bg-emerald-300 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+          <div class="absolute bottom-8 left-8 w-4 h-4 bg-green-400 rounded-full animate-ping" style="animation-delay: 1s;"></div>
+          <div class="absolute bottom-4 right-4 w-6 h-6 bg-emerald-400 rounded-full animate-ping" style="animation-delay: 1.5s;"></div>
         </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Cast a Magic Spell</h3>
-        <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-          Our AI organizes memory moments into beautiful magic memory cards with custom backgrounds perfect for sharing.
-        </p>
-        <div class="space-y-2">
-          <div class="flex items-center gap-2 text-sm text-green-700">
-            <i class="pi pi-image text-green-500"></i>
-            <span>Beautiful backgrounds</span>
-          </div>
-          <div class="flex items-center gap-2 text-sm text-green-700">
-            <i class="pi pi-th-large text-green-500"></i>
-            <span>Organized memory moments</span>
-          </div>
-          <div class="flex items-center gap-2 text-sm min-h-[32px]">
-            <div class="flex items-center gap-2 text-green-500 transition-colors" style="margin-left: 0;">
-              <i class="pi pi-book text-green-500"></i>
-              <span>View your magic memories</span>
+        
+        <div class="relative z-10">
+          <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
+            <!-- Left Column (2/3 width) -->
+            <div class="lg:w-2/3 text-center lg:text-left">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-green-500 to-emerald-400 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
+              </div>
+              <h3 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 tracking-tight leading-tight">Cast a Magic Spell</h3>
+              <p class="text-gray-700 text-lg sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
+                Our AI organizes memory moments into beautiful magic memory cards with custom backgrounds perfect for sharing.
+              </p>
             </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Monthly Delivery Card -->
-      <div 
-        class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-6 sm:p-8 border border-blue-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
-        @click="handleCardClick('monthly')"
-      >
-        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-blue-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-          <span class="text-2xl sm:text-3xl">💌</span>
-        </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Share & Deliver</h3>
-        <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-          Share digitally or send printed cards to the people you love.
-        </p>
-        <div class="space-y-2">
-          <div class="flex items-center gap-2 text-sm text-blue-700">
-            <i class="pi pi-share-alt text-blue-500"></i>
-            <span>Digital sharing</span>
-          </div>
-          <div class="flex items-center gap-2 text-sm text-blue-700">
-            <i class="pi pi-print text-blue-500"></i>
-            <span>Printed cards</span>
-          </div>
-          <div class="flex items-center gap-2 text-sm min-h-[32px]">
-            <div class="flex items-center gap-2 text-blue-500 transition-colors" style="margin-left: 0;">
-              <i class="pi pi-send text-blue-500"></i>
-              <span>Share and deliver</span>
+            
+            <!-- Right Column (1/3 width) -->
+            <div class="lg:w-1/3 flex items-center justify-center">
+              <div class="space-y-2 w-full max-w-xs ml-12 md:ml-0 -mt-4 lg:mt-0">
+                <div class="flex items-center gap-3 text-green-700">
+                  <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Image class="w-4 h-4 text-green-600" />
+                  </div>
+                  <span class="font-semibold text-sm sm:text-base">Beautiful backgrounds</span>
+                </div>
+                <div class="flex items-center gap-3 text-green-700">
+                  <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Grid class="w-4 h-4 text-green-600" />
+                  </div>
+                  <span class="font-semibold text-sm sm:text-base">Organized memories</span>
+                </div>
+                <div class="flex items-center gap-3 text-green-700">
+                  <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Sparkles class="w-4 h-4 text-green-600" />
+                  </div>
+                  <span class="font-semibold text-sm sm:text-base">AI-powered magic</span>
+                </div>
+                <div class="flex items-center gap-3 text-green-700">
+                  <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Share2 class="w-4 h-4 text-green-600" />
+                  </div>
+                  <span class="font-semibold text-sm sm:text-base">Ready to share</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- <div class="mt-8 text-center">
-      <button
-        :class="[
-          'flex items-center justify-center gap-2 font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full max-w-xs sm:max-w-md mx-auto',
-          user === null
-            ? 'bg-gray-300 text-white opacity-60 cursor-not-allowed'
-            : 'bg-green-500 hover:bg-green-600 text-white cursor-pointer'
-        ]"
-        @click="handleGetStarted"
-        :disabled="user === null"
-        :aria-disabled="user === null"
-      >
-        <i :class="['pi pi-book text-2xl', user === null ? '' : 'animate-bounce']"></i>
-        Get Started
-      </button>
-    </div> -->
+    <!-- Secondary Actions -->
+    <div class="mb-8">
+      <div class="text-center mb-6">
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 tracking-tight">Other Actions</h3>
+        <p class="text-base sm:text-lg text-gray-600 font-medium">Additional tools to enhance your experience</p>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Photo Upload Card -->
+        <div 
+          class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6 sm:p-8 border border-purple-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+          @click="handleCardClick('upload')"
+        >
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-400 to-purple-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <Camera class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+          </div>
+          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 tracking-tight">Upload Memory Moments</h3>
+          <p class="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 font-medium">
+            Upload your photos and memories. Our AI adds captions and smart tags automatically.
+          </p>
+          <div class="space-y-2">
+            <div class="flex items-center gap-3 text-sm sm:text-base text-purple-700">
+              <Tag class="w-4 h-4 text-purple-500" />
+              <span class="font-semibold">Smart Tagging</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm sm:text-base text-purple-700">
+              <MessageCircle class="w-4 h-4 text-purple-500" />
+              <span class="font-semibold">Automatic AI Generated Captions</span>
+            </div>
+              <div class="flex items-center gap-3 text-sm sm:text-base text-purple-700">
+                <FileText class="w-4 h-4 text-purple-500" />
+                <span class="font-semibold">Add Text Based Memories</span>
+              </div>
+          </div>
+        </div>
+        
+        <!-- Review Memories Card -->
+        <div 
+          class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl shadow-lg p-6 sm:p-8 border border-pink-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+          @click="handleCardClick('review')"
+        >
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <Edit class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+          </div>
+          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 tracking-tight">Review Memory Moments</h3>
+          <p class="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 font-medium">
+            Review and refine your memory moments. Approve or reject AI suggestions, edit captions, and add keywords.
+          </p>
+          <div class="space-y-2">
+            <div class="flex items-center gap-3 text-sm sm:text-base text-pink-700">
+              <CheckCircle class="w-4 h-4 text-pink-500" />
+              <span class="font-semibold">Approve/reject photos shared via email</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm sm:text-base text-pink-700">
+              <Edit class="w-4 h-4 text-pink-500" />
+              <span class="font-semibold">Edit captions and tags</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm sm:text-base text-pink-700">
+              <Tag class="w-4 h-4 text-pink-500" />
+              <span class="font-semibold">Crop and Adjust Photos</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Monthly Delivery Card -->
+        <div 
+          class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-6 sm:p-8 border border-blue-200 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+          @click="handleCardClick('monthly')"
+        >
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-blue-400 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <Send class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+          </div>
+          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 tracking-tight">Share & Deliver</h3>
+          <p class="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 font-medium">
+            Share digitally or send printed cards to the people you love.
+          </p>
+          <div class="space-y-2">
+            <div class="flex items-center gap-3 text-sm sm:text-base text-blue-700">
+              <Share2 class="w-4 h-4 text-blue-500" />
+              <span class="font-semibold">Digital sharing</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm sm:text-base text-blue-700">
+              <Printer class="w-4 h-4 text-blue-500" />
+              <span class="font-semibold">Printed cards</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Authentication Dialog -->
     <Dialog 
@@ -185,7 +197,7 @@
       <template #header>
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
-            <i class="pi pi-heart text-pink-500 text-lg"></i>
+            <Heart class="w-5 h-5 text-pink-500" />
           </div>
           <h3 class="text-xl font-semibold text-gray-900">Join the Family</h3>
         </div>
@@ -220,12 +232,34 @@
         </div>
       </div>
     </Dialog>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { useSupabaseUser } from '~/composables/useSupabase'
 import { watchEffect, ref } from 'vue'
+import { 
+  Wand2, 
+  Sparkles, 
+  Image, 
+  Grid, 
+  Share2, 
+  BookOpen, 
+  ArrowRight, 
+  Camera, 
+  Tag, 
+  MessageCircle, 
+  FileText,
+  Upload, 
+  Edit, 
+  CheckCircle, 
+  Eye, 
+  Send, 
+  Printer, 
+  Heart, 
+  AlertTriangle 
+} from 'lucide-vue-next'
 
 const user = useSupabaseUser()
 const showAuthDialog = ref(false)
