@@ -1001,7 +1001,7 @@
       v-model:visible="showPdfModal"
       modal
       header="PDF Preview"
-      class="w-[95vw] max-w-6xl h-[90vh] sm:h-[85vh] mt-2 sm:mt-6"
+      class="w-full max-w-6xl h-[90vh] sm:h-[85vh] mt-2 sm:mt-6"
       :contentStyle="{ height: '90vh', maxHeight: '90vh', padding: 0 }"
       :closable="false"
       :auto-z-index="false"
@@ -1011,7 +1011,7 @@
         <!-- PDF Viewer -->
         <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto">
           <ClientOnly>
-            <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" style="height: 200px; width: 200px; max-width: 100%;" />
+            <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
               <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
               <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
@@ -3705,6 +3705,23 @@ function showMagicCaption(caption) {
     showAICaptionOverlay.value = false
   }, 4000) // Show for 4 seconds
 }
+
+// Responsive PDF viewer height
+const pdfViewerStyle = computed(() => {
+  if (window.innerWidth < 640) { // Tailwind's sm breakpoint is 640px
+    return {
+      height: '45vh',
+      width: '100%',
+      maxWidth: '100%'
+    };
+  } else {
+    return {
+      height: '70vh',
+      width: '100%',
+      maxWidth: '100%'
+    };
+  }
+});
 
 </script> 
 
