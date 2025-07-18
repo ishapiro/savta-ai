@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="showDialog"
     modal
-    :header="isEditing ? 'Edit Memory Spell' : 'Create New Memory Spell'"
+    :header="isEditing ? 'Edit Memory Recipe' : 'Create New Memory Recipe'"
     class="w-[95vw] max-w-4xl memory-book-dialog mt-3"
     :closable="false"
   >

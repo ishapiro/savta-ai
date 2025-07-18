@@ -31,7 +31,7 @@
               @click="showCreateModal = true"
             >
               <i class="pi pi-plus mr-1 sm:mr-2"></i>
-              <span class="hidden sm:inline">Magic Memory Books</span>
+              <span class="hidden sm:inline">Special Memory Books</span>
               <span class="sm:hidden">Memory Books</span>
             </button>
             <p class="text-sm text-gray-600 mt-1 text-center">Advanced Users</p>
@@ -43,17 +43,17 @@
     <Dialog v-model:visible="showInfoDialog" modal header="About Savta's Magic Memories" class="w-full max-w-3xl sm:rounded-2xl">
       <div class="space-y-4">
         <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <h2 class="text-lg font-bold text-blue-700 mb-2">What are Magic Memory Cards?</h2>
+          <h2 class="text-lg font-bold text-blue-700 mb-2">What are Special Memory Cards?</h2>
           <p class="text-base text-gray-700">
-            Magic Memory Cards are perfect for everyone! They create beautiful single cards for digital and physical distribution. 
+            Special Memory Cards are perfect for everyone! They create beautiful single cards for digital and physical distribution. 
             Our AI selects the best photos from your collection and generates a heartwarming story based on those photos. 
             It's like having a personal storyteller create a magical moment just for you!
           </p>
         </div>
         <div class="bg-purple-50 rounded-lg p-4 border border-purple-100">
-          <h2 class="text-lg font-bold text-purple-700 mb-2">What are Magic Memory Books?</h2>
+          <h2 class="text-lg font-bold text-purple-700 mb-2">What are Special Memory Books?</h2>
           <p class="text-base text-gray-700 mb-3">
-            Magic Memory Books are for advanced users who want more control. They create multiple-page books with lots of layout options. 
+            Special Memory Books are for advanced users who want more control. They create multiple-page books with lots of layout options. 
             You select exactly which photos to include and have full control over the design and layout of your memory book.
           </p>
           <h3 class="text-md font-bold text-purple-600 mb-2">Why Create Magic Memories?</h3>
@@ -76,27 +76,27 @@
           <ul class="space-y-3">
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-external-link text-lg text-green-600"></i></span>
-                              <span class="text-gray-700"><b>View</b>: Open your Magic Memory Card to view or download it.</span>
+                              <span class="text-gray-700"><b>View</b>: Open your Special Memory Card to view or download it.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-bolt text-lg text-purple-600"></i></span>
-                              <span class="text-gray-700"><b>Compose</b>: Create your Magic Memory Card for the first time.</span>
+                              <span class="text-gray-700"><b>Compose</b>: Create your Special Memory Card for the first time.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-refresh text-lg text-yellow-600"></i></span>
-                              <span class="text-gray-700"><b>Recreate</b>: Make a new version of your Magic Memory Card with a fresh design.</span>
+                              <span class="text-gray-700"><b>Recreate</b>: Make a new version of your Special Memory Card with a fresh design.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-check text-lg text-purple-600"></i></span>
-                              <span class="text-gray-700"><b>Approve</b>: Mark your Magic Memory Card as finished and ready to share or print.</span>
+                              <span class="text-gray-700"><b>Approve</b>: Mark your Special Memory Card as finished and ready to share or print.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-undo text-lg text-orange-600"></i></span>
-                              <span class="text-gray-700"><b>Unapprove</b>: Move your Magic Memory Card back to editing if you want to make changes.</span>
+                              <span class="text-gray-700"><b>Unapprove</b>: Move your Special Memory Card back to editing if you want to make changes.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-list text-lg text-gray-600"></i></span>
-                              <span class="text-gray-700"><b>Details</b>: See more information about your Magic Memory Card.</span>
+                              <span class="text-gray-700"><b>Details</b>: See more information about your Special Memory Card.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-cog text-lg text-blue-600"></i></span>
@@ -157,7 +157,7 @@
               <Wand2 v-if="book.layout_type === 'magic'" class="w-8 h-8 text-white" />
               <i v-else class="pi pi-book text-2xl text-white"></i>
             </div>
-            <span class="text-xs font-semibold text-gray-700 text-center px-2 leading-tight bg-white/80 rounded-lg py-1">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Spell #' + book.id.slice(-6))) }}</span>
+            <span class="text-xs font-semibold text-gray-700 text-center px-2 leading-tight bg-white/80 rounded-lg py-1">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6))) }}</span>
           </div>
         </div>
         <!-- Card Content -->
@@ -223,7 +223,7 @@
           <!-- Magic Generate Button (for draft magic books) -->
           <div v-if="book.status === 'draft' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onGenerateClick(book)">
             <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 group-hover:scale-125 transition-transform" />
-            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Cast Spell</span>
+            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Create Recipe</span>
           </div>
           <!-- Regenerate Button (for ready or background_ready, not magic) -->
           <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
@@ -233,7 +233,7 @@
           <!-- Magic Regenerate Button (for ready magic books) -->
           <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
             <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recast Spell' }}</span>
+            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate Recipe' }}</span>
           </div>
           <!-- Approve Button (not magic) -->
           <div v-if="book.status === 'ready' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="approveBook(book.id)">
@@ -275,7 +275,7 @@
             @click="openEditSettings(selectedBook)"
           >
             <i class="pi pi-cog text-xs sm:text-sm"></i>
-            <span class="hidden sm:inline">Edit Spell</span>
+            <span class="hidden sm:inline">Edit Recipe</span>
             <span class="sm:hidden">Edit</span>
           </div>
           <!-- Delete Button -->
@@ -295,7 +295,7 @@
           <i class="pi pi-images text-4xl sm:text-6xl"></i>
         </div>
         <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No photos uploaded yet</h3>
-        <p class="text-sm sm:text-base text-gray-500 mb-6 text-center max-w-md">You need some photos to create your first magic memory. Would you like to upload some now?</p>
+        <p class="text-sm sm:text-base text-gray-500 mb-6 text-center max-w-md">You need some photos to create your first special memory. Would you like to upload some now?</p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
@@ -317,13 +317,13 @@
         <div class="text-gray-600 mb-4">
           <i class="pi pi-book text-4xl sm:text-6xl"></i>
         </div>
-        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No magic memories yet</h3>
-        <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Great! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first magic memory?</p>
+        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No special memories yet</h3>
+        <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Great! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first special memory?</p>
         <button
           class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
           @click="openMagicMemoryDialog"
         >
-          <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Magic Memory
+          <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Special Memory
         </button>
       </div>
     </div>
@@ -385,7 +385,7 @@
         
         <!-- Enhanced success message -->
         <h2 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-3 sm:mb-4 animate-fade-in">
-          ✨ Spell Cast Successfully! ✨
+          ✨ Recipe Created Successfully! ✨
         </h2>
         
         <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-2xl p-5 sm:p-6 border-2 border-purple-200 mb-4 sm:mb-6 shadow-xl relative overflow-hidden">
@@ -394,7 +394,7 @@
           <div class="absolute bottom-2 left-2 w-2 h-2 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.7s;"></div>
           
           <p class="text-lg sm:text-xl text-gray-800 leading-relaxed mb-3 sm:mb-4">
-            You have just defined the <span class="font-bold text-purple-600">magical spell</span> we will use to generate your custom magic memory!
+            You have just defined the <span class="font-bold text-purple-600">special recipe</span> we will use to generate your custom magic memory!
           </p>
           
           <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 sm:p-4 border border-blue-200 shadow-lg">
@@ -571,7 +571,7 @@
                 >
                   <i class="pi pi-check text-green-600"></i>
                   <span class="font-medium">{{ file.name }}</span>
-                  <span class="text-xs text-green-500">✨ Enchanted</span>
+                  <span class="text-xs text-green-500">✨ Prepared</span>
                 </div>
               </div>
             </div>
@@ -584,8 +584,8 @@
                 <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
               </div>
               <div>
-                <h4 class="text-xl font-bold text-red-800">😔 Magic Fizzled</h4>
-                <p class="text-sm text-red-600">Some spells didn't work as expected</p>
+                <h4 class="text-xl font-bold text-red-800">😔 Preparation Failed</h4>
+                <p class="text-sm text-red-600">Some preparations didn't work as expected</p>
               </div>
             </div>
             <div class="bg-white/80 rounded-lg p-4 border border-red-200">
@@ -624,7 +624,7 @@
               @click="selectFiles"
             >
               <i class="pi pi-sparkles mr-2"></i>
-              ✨ Start Magic ✨
+              ✨ Start Preparing ✨
             </button>
             <button
               v-if="!isUploading && (uploadedFiles.length > 0 || failedFiles.length > 0)"
@@ -632,7 +632,7 @@
               @click="finishUpload"
             >
               <i class="pi pi-sparkles mr-2"></i>
-              🎉 Magic Complete! 🎉
+              🎉 Preparation Complete! 🎉
             </button>
           </div>
         </div>
@@ -784,8 +784,8 @@
                 <i class="pi pi-sparkles text-yellow-400 text-sm sm:text-base"></i>
               </div>
               <div class="min-w-0 flex-1">
-                <h3 class="text-base sm:text-lg font-bold text-purple-700">Magic Story</h3>
-                <p class="text-xs sm:text-sm text-gray-600">The AI-generated story for your magic memory</p>
+                <h3 class="text-base sm:text-lg font-bold text-purple-700">Special Story</h3>
+                <p class="text-xs sm:text-sm text-gray-600">The AI-generated story for your special memory</p>
               </div>
             </div>
             <div class="overflow-y-auto max-h-48 sm:max-h-64 bg-gradient-to-br from-yellow-50 to-purple-50 rounded-xl p-3 sm:p-4 border border-purple-200 text-purple-900 text-sm magic-story" style="word-break: break-word; line-height: 1.5;">
@@ -976,9 +976,9 @@
     </Dialog>
 
     <!-- Generate Confirmation Dialog -->
-    <Dialog v-model:visible="showGenerateDialog" modal header="Give It Another Magical Spin" class="w-[95vw] max-w-md">
+    <Dialog v-model:visible="showGenerateDialog" modal header="Try Another Recipe" class="w-[95vw] max-w-md">
       <div class="py-4">
-        <p class="text-sm sm:text-base">Compose this magic memory? This may take a little time.</p>
+        <p class="text-sm sm:text-base">Compose this special memory? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
           <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
           <Button label="Compose" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmGenerate" />
@@ -1005,9 +1005,9 @@
       </div>
     </Dialog>
     <!-- View Draft Dialog -->
-    <Dialog v-model:visible="showDownloadDraftDialog" modal header="Magic Memory Not Composed" class="w-[95vw] max-w-md">
+    <Dialog v-model:visible="showDownloadDraftDialog" modal header="Special Memory Not Composed" class="w-[95vw] max-w-md">
       <div class="py-4">
-        <p class="text-sm sm:text-base">You need to compose the magic memory before viewing. 
+        <p class="text-sm sm:text-base">You need to compose the special memory before viewing. 
           Would you like to compose it now? 
           This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
@@ -1086,13 +1086,13 @@
             </div>
             <div>
               <h3 class="text-base sm:text-lg font-semibold text-gray-900">Ready for New Magic?</h3>
-              <p class="text-xs sm:text-sm text-gray-600">We're about to clean up your magic memory</p>
+              <p class="text-xs sm:text-sm text-gray-600">We're about to clean up your special memory</p>
             </div>
           </div>
           <div class="bg-white rounded-lg p-3 border border-orange-200">
             <p class="text-xs sm:text-sm text-gray-900">
-              This will reset your magic memory back to draft status and clear any generated backgrounds and PDFs. 
-              You'll be able to apply fresh magic to create a brand new version of your magic memory.
+              This will reset your special memory back to draft status and clear any generated backgrounds and PDFs. 
+              You'll be able to apply fresh magic to create a brand new version of your special memory.
             </p>
           </div>
         </div>
@@ -1150,7 +1150,7 @@
             <h3 class="text-base sm:text-lg font-semibold text-gray-900">Choose Your Memories</h3>
           </div>
           <p class="text-xs sm:text-sm text-gray-600">
-            Select the memories you'd like to include in your magic memory. You can filter by tags and select multiple memories at once.
+            Select the memories you'd like to include in your special memory. You can filter by tags and select multiple memories at once.
           </p>
         </div>
 
@@ -1273,7 +1273,7 @@
                   {{ selectedMemories.length }} memories selected
                 </p>
                 <p class="text-xs text-gray-600">
-                  Ready to create your magic memory
+                  Ready to create your special memory
                 </p>
               </div>
             </div>
@@ -1325,7 +1325,7 @@
     <Dialog
       v-model:visible="showMagicMemoryDialog"
       modal
-      :header="magicMemoryStep === 1 ? '✨ What should we call this memory? ✨' : '✨ Let\'s create something magical together ✨'"
+              :header="magicMemoryStep === 1 ? '✨ What should we call this memory? ✨' : '✨ Let\'s create something special together ✨'"
       :class="[
         'magic-memory-dialog',
         magicMemoryStep === 5 
@@ -1455,7 +1455,7 @@
             <i class="pi pi-palette text-2xl text-white"></i>
           </div>
           <h3 class="text-xl font-bold text-gray-900 mb-2">What kind of background would you like?</h3>
-          <p class="text-gray-600">Choose a clean white background or let me create a magical design that matches your story's theme!</p>
+          <p class="text-gray-600">Choose a clean white background or let me create a special design that matches your story's theme!</p>
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1494,7 +1494,7 @@
               <div class="w-12 h-12 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-lg mx-auto mb-3 flex items-center justify-center">
                 <i class="pi pi-sparkles text-purple-600 text-xl"></i>
               </div>
-              <div class="text-lg font-bold text-gray-900 mb-2">Magical Design</div>
+              <div class="text-lg font-bold text-gray-900 mb-2">Special Design</div>
               <div class="text-sm text-gray-600 mb-3">AI-generated background that matches your story's theme</div>
               <div class="text-xs text-gray-500">Adds a whimsical, personalized touch to your memory</div>
               <div v-if="magicBackgroundType === 'magical'" class="absolute top-3 right-3">
@@ -1936,7 +1936,7 @@ const confirmRegenerate = async () => {
   showRegenerateDialog.value = false
   if (!pendingBook.value) return
 
-  // Use the Savta Magic Spell pipeline for magic books
+          // Use the Savta Recipe way for magic books
   if (pendingBook.value.layout_type === 'magic') {
     try {
       const supabase = useNuxtApp().$supabase
@@ -2207,7 +2207,7 @@ const pollPdfStatus = async () => {
         console.log('✅ PDF URL found and book status is ready, closing dialog')
         currentProgress.value = 100
         currentProgressMessage.value = isRegenerating.value 
-          ? 'Your magical memory is ready!' 
+          ? 'Your special memory is ready!' 
           : 'Your memory book is ready!'
         setTimeout(() => {
           stopProgressPolling()
@@ -2237,7 +2237,7 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = 'Weaving your memories into pages...'
       } else if (status.pdf_status === 'finalizing') {
         currentProgress.value = 90
-        currentProgressMessage.value = 'Adding the final magical touches...'
+        currentProgressMessage.value = 'Adding the final special touches...'
       } else if (status.pdf_status === 'completed') {
         currentProgress.value = 100
         currentProgressMessage.value = 'Your memory book is ready!'
@@ -2251,7 +2251,7 @@ const pollPdfStatus = async () => {
         }, 2000)
       } else if (status.pdf_status === 'not_started') {
         currentProgress.value = 5
-        currentProgressMessage.value = 'Gathering magical ingredients...'
+        currentProgressMessage.value = 'Gathering special ingredients...'
       } else if (status.pdf_status === 'Creating beautiful background design...') {
         currentProgress.value = 15
         currentProgressMessage.value = 'Creating beautiful background design...'
@@ -2270,25 +2270,25 @@ const pollPdfStatus = async () => {
       } else if (status.pdf_status === 'Background ready, creating pages...') {
         currentProgress.value = 45
         currentProgressMessage.value = 'Background ready, creating pages...'
-      } else if (status.pdf_status === '✨ Crafting your magical story... ✨') {
+              } else if (status.pdf_status === '✨ Crafting your special story... ✨') {
         currentProgress.value = 8
         currentProgressMessage.value = 'Generating story and selecting photos...'
-      } else if (status.pdf_status === 'Gathering your magical memories...') {
+              } else if (status.pdf_status === 'Gathering your special memories...') {
         currentProgress.value = 12
         currentProgressMessage.value = 'Gathering memories...'
-      } else if (status.pdf_status === 'Retrieving magical background...') {
+              } else if (status.pdf_status === 'Retrieving special background...') {
         currentProgress.value = 18
         currentProgressMessage.value = 'Retrieving background...'
       } else if (status.pdf_status === 'Retrieving background image...') {
         currentProgress.value = 18
         currentProgressMessage.value = 'Retrieving background image...'
-      } else if (status.pdf_status === 'Creating magical background...') {
+              } else if (status.pdf_status === 'Creating special background...') {
         currentProgress.value = 22
         currentProgressMessage.value = 'Creating background...'
       } else if (status.pdf_status === 'Weaving your memories into pages...') {
         currentProgress.value = 55
         currentProgressMessage.value = 'Creating PDF pages...'
-      } else if (status.pdf_status === 'Adding the final magical touches...') {
+              } else if (status.pdf_status === 'Adding the final special touches...') {
         currentProgress.value = 85
         currentProgressMessage.value = 'Adding final touches...'
       } else if (status.pdf_status === 'Finalizing magic memory status...') {
@@ -2324,7 +2324,7 @@ const startProgressPolling = (bookId, regenerating = false) => {
   currentProgress.value = 0
   isRegenerating.value = regenerating
   currentProgressMessage.value = regenerating 
-    ? 'Brewing up a spell...' 
+            ? 'Preparing your recipe...' 
     : 'Starting memory book creation...'
   showProgressDialog.value = true
   console.log('showProgressDialog set to:', showProgressDialog.value)
@@ -2472,7 +2472,7 @@ const calculateComposeTime = () => {
   
   let totalTime = 0
   
-  // Add base time for custom background only if magical background was selected
+          // Add base time for custom background only if special background was selected
   if (newlyCreatedBook.value.background_type === 'magical') {
     totalTime += 20 // 20 seconds for custom background generation
   }
@@ -2653,7 +2653,7 @@ const unapproveBook = async (bookId) => {
       $toast.add({
         severity: 'success',
         summary: 'Unapproved',
-        detail: 'Magical memory unapproved',
+        detail: 'Special memory unapproved',
         life: 3000
       })
     }
@@ -3743,7 +3743,7 @@ const startUploadForMagicMemory = async (files) => {
 const startUpload = async (files) => {
   isUploading.value = true
   uploadProgress.value = 0
-  uploadStatus.value = '✨ Preparing magical upload... ✨'
+          uploadStatus.value = '✨ Preparing special upload... ✨'
   uploadedFiles.value = []
   failedFiles.value = []
   
@@ -3765,7 +3765,7 @@ const startUpload = async (files) => {
     try {
       // Update status to uploading
       fileData.status = 'uploading'
-      uploadStatus.value = `🌟 Uploading ${file.name} to our magical realm...`
+              uploadStatus.value = `🌟 Uploading ${file.name} to our special collection...`
       
       // Upload asset with approved status
       const asset = await db.assets.uploadAsset({
@@ -3801,7 +3801,7 @@ const startUpload = async (files) => {
       
       completedFiles++
       uploadProgress.value = Math.round((completedFiles / totalFiles) * 100)
-      uploadStatus.value = `✨ Enchanted ${completedFiles} of ${totalFiles} photos! ✨`
+              uploadStatus.value = `✨ Prepared ${completedFiles} of ${totalFiles} photos! ✨`
       
     } catch (error) {
       console.error(`❌ Failed to upload ${file.name}:`, error)
@@ -3820,14 +3820,14 @@ const startUpload = async (files) => {
   isUploading.value = false
   
   if (uploadedFiles.value.length > 0) {
-    uploadStatus.value = `🎉 Successfully enchanted ${uploadedFiles.value.length} photos! 🎉`
+            uploadStatus.value = `🎉 Successfully prepared ${uploadedFiles.value.length} photos! 🎉`
     
     // Refresh asset count
     await checkAssets()
   }
   
   if (failedFiles.value.length > 0) {
-    uploadStatus.value += ` 😔 ${failedFiles.value.length} spells fizzled.`
+            uploadStatus.value += ` 😔 ${failedFiles.value.length} preparations didn't work.`
   }
 }
 
@@ -3865,13 +3865,13 @@ const getMagicStatusText = (status) => {
     case 'pending':
       return '🌟 Waiting for magic...'
     case 'uploading':
-      return '📤 Flying to magical realm...'
+              return '📤 Uploading to collection...'
     case 'processing':
       return '🔮 Crystal ball reading...'
     case 'completed':
-      return '✨ Enchanted! ✨'
+              return '✨ Prepared! ✨'
     case 'failed':
-      return '😔 Magic fizzled'
+              return '😔 Preparation failed'
     default:
       return status
   }

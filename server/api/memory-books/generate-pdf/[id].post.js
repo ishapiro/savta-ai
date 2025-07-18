@@ -972,7 +972,7 @@ export default defineEventHandler(async (event) => {
       const storyAreaWidth = storyTextRight - storyTextLeft
       const storyAreaHeight = storyTextBottom - storyTextTop
       // Draw the story in the calculated area
-      const story = book.magic_story || 'A magical family story.'
+              const story = book.magic_story || 'A special family story.'
       
       console.log("****************************")
       console.log("Story being used in PDF:")

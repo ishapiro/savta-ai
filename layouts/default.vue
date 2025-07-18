@@ -228,8 +228,8 @@
                   <i class="pi pi-home text-lg"></i>
                 </div>
                 <div>
-                  <p class="font-semibold text-sm">Magic Memory Home</p>
-                  <p class="text-xs opacity-80">Cast a spell and share a memory.</p>
+                  <p class="font-semibold text-sm">Savta Special Memory Home</p>
+                  <p class="text-xs opacity-80">Create a memory card or book</p>
                 </div>
               </div>
               <i class="pi pi-chevron-right text-sm opacity-60 group-hover:opacity-100 transition-opacity"></i>

@@ -24,9 +24,9 @@
     </div>
 
     <div class="text-center mb-8 sm:mb-12">
-      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Magic Memory Home</h2>
+      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Savta Special Memory Home</h2>
       <p class="text-base sm:text-xl text-gray-600 max-w-4xl mx-auto">
-        Using a bit of AI Magic dust, create beautiful Savta Magic Memories ready for sharing with family and friends.
+        Using a bit of AI to create beautiful Savta Special Memories ready for sharing with family and friends.
       </p>
     </div>
     
@@ -34,7 +34,7 @@
     <div class="mb-8 sm:mb-12">
       <div class="text-center mb-6">
         <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 tracking-tight">✨ Get Started ✨</h3>
-        <p class="text-base sm:text-lg text-gray-600 font-medium">Begin your magical journey here</p>
+        <p class="text-base sm:text-lg text-gray-600 font-medium">Begin your special journey here</p>
       </div>
       
       <div 
@@ -56,9 +56,9 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-green-500 to-emerald-400 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
               </div>
-              <h3 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 tracking-tight leading-tight">Cast a Magic Spell</h3>
+              <h3 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 tracking-tight leading-tight">Capture a Special Memory</h3>
               <p class="text-gray-700 text-lg sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
-                Our AI organizes memory moments into beautiful magic memory cards with custom backgrounds perfect for sharing.
+                Our AI organizes memory moments into beautiful Memory Cards and Books with custom backgrounds perfect for sharing.
               </p>
             </div>
             
@@ -205,9 +205,9 @@
       
       <div class="text-center py-4">
         <div class="mb-6">
-          <h4 class="text-lg font-medium text-gray-900 mb-3">Create Your First Magic Memory</h4>
+          <h4 class="text-lg font-medium text-gray-900 mb-3">Create Your First Savta Special Memory</h4>
           <p class="text-gray-600 leading-relaxed">
-            Start preserving your precious family moments with AI-powered scrapbooks. 
+            Start preserving your precious family moments with Savta Special Cards and Books. 
             Create an account to begin your journey of capturing and sharing beautiful memories.
           </p>
         </div>
