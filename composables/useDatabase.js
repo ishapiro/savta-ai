@@ -386,6 +386,7 @@ export const useDatabase = () => {
         assetRecord.state = photoMetadata.state
         assetRecord.country = photoMetadata.country
         assetRecord.zip_code = photoMetadata.zip_code
+        assetRecord.asset_date = photoMetadata.asset_date
       }
       
       const { data, error } = await supabase

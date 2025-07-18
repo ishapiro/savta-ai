@@ -84,6 +84,7 @@ create table if not exists assets (
   state text,
   country text,
   zip_code text,
+  asset_date timestamp with time zone,
   ai_processed boolean default false,
   approved boolean default false,
   rejected boolean default false,

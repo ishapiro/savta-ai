@@ -129,7 +129,8 @@ export default defineEventHandler(async (event) => {
         city: asset.city || null,
         state: asset.state || null,
         country: asset.country || null,
-        zip_code: asset.zip_code || null
+        zip_code: asset.zip_code || null,
+        asset_date: asset.asset_date || null
       }))
 
       // Determine photo count based on the user's selection (1, 4, or 6 photos)

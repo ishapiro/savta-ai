@@ -34,7 +34,8 @@ export default defineEventHandler(async (event) => {
       city: null,
       state: null,
       country: null,
-      zip_code: null
+      zip_code: null,
+      asset_date: null
     }
     
     // Determine orientation
@@ -66,6 +67,31 @@ export default defineEventHandler(async (event) => {
       // Log other useful EXIF data
       if (exifData && exifData.DateTime) {
         console.log(`📍 Photo taken: ${exifData.DateTime}`)
+        
+        // Extract and parse the date from EXIF
+        try {
+          // EXIF DateTime format is typically "YYYY:MM:DD HH:MM:SS"
+          const dateTimeStr = exifData.DateTime
+          console.log(`📅 Raw EXIF DateTime: ${dateTimeStr}`)
+          
+          // Parse the EXIF date format
+          const [datePart, timePart] = dateTimeStr.split(' ')
+          const [year, month, day] = datePart.split(':').map(Number)
+          const [hour, minute, second] = timePart.split(':').map(Number)
+          
+          // Create a Date object (months are 0-indexed in JavaScript)
+          const photoDate = new Date(year, month - 1, day, hour, minute, second)
+          
+          // Validate the date
+          if (!isNaN(photoDate.getTime()) && photoDate.getFullYear() > 1900 && photoDate.getFullYear() <= new Date().getFullYear()) {
+            photoMetadata.asset_date = photoDate.toISOString()
+            console.log(`📅 Parsed asset date: ${photoMetadata.asset_date}`)
+          } else {
+            console.warn(`⚠️ Invalid date parsed from EXIF: ${dateTimeStr}`)
+          }
+        } catch (dateError) {
+          console.warn('⚠️ Failed to parse EXIF date:', dateError.message)
+        }
       }
       if (exifData && (exifData.Make || exifData.Model)) {
         console.log(`📍 Camera: ${exifData.Make || ''} ${exifData.Model || ''}`.trim())
@@ -135,6 +161,9 @@ export default defineEventHandler(async (event) => {
     }
     
     console.log(`📐 Image analysis complete: ${photoMetadata.width}x${photoMetadata.height} (${photoMetadata.orientation})`)
+    if (photoMetadata.asset_date) {
+      console.log(`📅 Asset date: ${photoMetadata.asset_date}`)
+    }
     
     return {
       success: true,

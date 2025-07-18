@@ -34,6 +34,17 @@ export default defineEventHandler(async (event) => {
         summary += `\n- location: ${locationParts.join(', ')}`
       }
       
+      // Add date information if available
+      if (p.asset_date) {
+        const photoDate = new Date(p.asset_date)
+        const formattedDate = photoDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })
+        summary += `\n- date: ${formattedDate}`
+      }
+      
       return summary
     }).join('\n\n')
 
@@ -74,6 +85,8 @@ STORY GUIDELINES:
 - Choose the most meaningful or emotionally connected photos, even if not perfect fits
 - Weave together the photos into a single cohesive story
 - Focus on relationships, emotions, and shared experiences
+- If the date is available, use it to make the story more specific and personal
+- If the date is not available, use the date to select photos that best fit together
 - Make it feel like a personal family memory ${targetPhotoCount === 1 ? `
 PHOTO SELECTION FOR SINGLE PHOTO:
 - When selecting 1 photo, prioritize photos with orientation="portrait" 
