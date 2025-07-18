@@ -1007,10 +1007,10 @@
       :auto-z-index="false"
       :z-index="40"
     >
-      <div class="pdf-preview-container flex flex-col w-full h-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
+      <div class="flex flex-col h-full w-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
         <!-- PDF Viewer -->
-        <div class="flex-1 w-full flex items-center justify-center" style="min-height: 0;">
-          <div class="w-full h-[80%] sm:h-[85%]">
+        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto">
+          <div class="w-full h-full">
             <ClientOnly>
               <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" class="w-full h-full" />
               <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
@@ -1020,7 +1020,6 @@
             </ClientOnly>
           </div>
         </div>
-        
         <!-- Action Buttons -->
         <div class="z-50 flex justify-center items-center gap-3 sm:gap-4 py-4 sm:py-6 px-4 bg-gray-50 border-t border-gray-200 min-h-[60px] sm:min-h-[80px]">
           <Button
