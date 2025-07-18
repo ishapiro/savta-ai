@@ -42,7 +42,7 @@ const props = defineProps({
 
 // Viewer options for better mobile experience
 const viewerOptions = {
-  defaultZoom: 1.0,
+  defaultZoom: 0.9,
   enableDownload: true,
   enablePrint: false,
   enablePrinting: false,

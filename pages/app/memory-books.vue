@@ -3710,7 +3710,7 @@ function showMagicCaption(caption) {
 const pdfViewerStyle = computed(() => {
   if (window.innerWidth < 640) { // Tailwind's sm breakpoint is 640px
     return {
-      height: '45vh',
+      height: '65vh',
       width: '100%',
       maxWidth: '100%'
     };
