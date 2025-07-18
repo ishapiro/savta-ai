@@ -1,6 +1,6 @@
 <template>
   <client-only>
-    <div class="pdf-viewer-container w-full h-full">
+    <div class="pdf-viewer-container w-full" :style="{ height }">
       <VPdfViewer
         v-if="licenseInitialized"
         :src="src"
@@ -33,6 +33,10 @@ const props = defineProps({
   src: {
     type: String,
     required: true
+  },
+  height: {
+    type: String,
+    default: '100%'
   }
 });
 
