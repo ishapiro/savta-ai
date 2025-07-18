@@ -130,9 +130,6 @@ const viewerOptions = {
 }
 
 /* Ensure the PDF viewer takes full height */
-:deep(.rpv-core__viewer) {
-  height: 100% !important;
-}
 
 /* Hide the print button in the toolbar */
 :deep([data-testid="print__button"]),
