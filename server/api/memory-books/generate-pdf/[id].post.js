@@ -961,8 +961,15 @@ export default defineEventHandler(async (event) => {
       const storyAreaRight = pageWidth - margin
       const storyAreaTop = margin
       const storyAreaBottom = pageHeight - margin
-      const storyAreaWidth = storyAreaRight - storyAreaLeft
-      const storyAreaHeight = storyAreaBottom - storyAreaTop
+      
+      // Add 1/2" margin (36 points) around the story text within the story area
+      const storyMargin = 36 // 1/2 inch in points
+      const storyTextLeft = storyAreaLeft + storyMargin
+      const storyTextRight = storyAreaRight - storyMargin
+      const storyTextTop = storyAreaTop + storyMargin
+      const storyTextBottom = storyAreaBottom - storyMargin
+      const storyAreaWidth = storyTextRight - storyTextLeft
+      const storyAreaHeight = storyTextBottom - storyTextTop
       // Draw the story in the calculated area
       const story = book.magic_story || 'A magical family story.'
       
@@ -973,9 +980,9 @@ export default defineEventHandler(async (event) => {
       console.log("Final story:", story)
       console.log("****************************")
       
-      // Embed Times Italic font
-      const timesItalicFont = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic)
-      let fontSize = 19 // 15% smaller than previous default (22 * 0.85 ≈ 19)
+      // Embed Times Bold Italic font for semi-bold appearance
+      const timesBoldItalicFont = await pdfDoc.embedFont(StandardFonts.TimesRomanBoldItalic)
+      let fontSize = 18 // Slightly smaller to make bold appear more like semi-bold
       // Function to wrap text to fit the story area width
       function wrapText(text, font, fontSize, maxWidth) {
         const words = text.split(' ')
@@ -995,25 +1002,25 @@ export default defineEventHandler(async (event) => {
         return lines
       }
       // Try to fit the text with the largest font size possible
-      let lines = wrapText(story, timesItalicFont, fontSize, storyAreaWidth)
+      let lines = wrapText(story, timesBoldItalicFont, fontSize, storyAreaWidth)
       let lineHeight = fontSize * 1.2
       let totalTextHeight = lines.length * lineHeight
       let adjustedFontSize = fontSize
       while (totalTextHeight > storyAreaHeight && adjustedFontSize > 10) {
         adjustedFontSize -= 1
-        lines = wrapText(story, timesItalicFont, adjustedFontSize, storyAreaWidth)
+        lines = wrapText(story, timesBoldItalicFont, adjustedFontSize, storyAreaWidth)
         lineHeight = adjustedFontSize * 1.2
         totalTextHeight = lines.length * lineHeight
       }
       // Draw the story text, left-aligned, vertically centered
-      let textY = storyAreaTop + (storyAreaHeight - totalTextHeight) / 2
+      let textY = storyTextTop + (storyAreaHeight - totalTextHeight) / 2
       for (let i = 0; i < lines.length; i++) {
         page.drawText(lines[i], {
-          x: storyAreaLeft,
+          x: storyTextLeft,
           y: textY + (lines.length - i - 1) * lineHeight,
           size: adjustedFontSize,
           color: rgb(0.2, 0.2, 0.2),
-          font: timesItalicFont
+          font: timesBoldItalicFont
         })
       }
       // End magic memory layout

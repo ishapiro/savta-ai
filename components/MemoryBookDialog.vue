@@ -216,23 +216,25 @@
             </div>
           </div>
           
-          <!-- Other AI Options -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="flex items-center space-x-3">
-              <Checkbox
-                v-model="form.includeCaptions"
-                :binary="true"
-                input-id="includeCaptions"
-              />
-              <label for="includeCaptions" class="text-sm font-medium text-gray-700">AI Captions</label>
-            </div>
-            <div class="flex items-center space-x-3">
-              <Checkbox
-                v-model="form.includeTags"
-                :binary="true"
-                input-id="includeTags"
-              />
-              <label for="includeTags" class="text-sm font-medium text-gray-700">Photo Tags</label>
+          <!-- AI Captions Option -->
+          <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-comment text-purple-600 text-sm"></i>
+                </div>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <Checkbox
+                      v-model="form.includeCaptions"
+                      :binary="true"
+                      input-id="includeCaptions"
+                    />
+                    <label for="includeCaptions" class="text-sm font-semibold text-gray-900">Captions</label>
+                  </div>
+                  <p class="text-xs text-gray-600 mt-1">Include AI or user provided captions with each photo</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -530,7 +532,6 @@ const form = ref({
   customMemoryEvent: '',
   backgroundType: 'white',
   includeCaptions: true,
-  includeTags: true,
   gridLayout: '2x2',
   memoryShape: 'original'
 })
@@ -545,7 +546,6 @@ const selectedTagFilter = ref([])
 
 // Options for dropdowns
 const layoutOptions = ref([
-  { label: 'Savta Magic Spell', value: 'magic' },
   { label: 'Grid Layout', value: 'grid' },
   { label: 'Timeline Layout', value: 'timeline' },
   { label: 'Story Layout', value: 'story' },
@@ -652,7 +652,6 @@ watch(() => props.initialData, (val) => {
       customMemoryEvent: '',
       backgroundType: 'white',
       includeCaptions: true,
-      includeTags: true,
       gridLayout: '2x2',
       memoryShape: 'original',
       ...val // Override with initial data

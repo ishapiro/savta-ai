@@ -552,7 +552,7 @@
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-book text-purple-500"></i>
-                  <span class="font-semibold text-gray-800">Generate Magic Memory</span>
+                  <span class="font-semibold text-gray-800">Compose Magic Memory</span>
                 </div>
                 <p class="text-sm text-gray-600">Create a beautiful memory book from your approved magical moments</p>
               </div>

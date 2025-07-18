@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900">Cast Magic Memory Spells</h1>
+          <h1 class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900">Create Magic Memories</h1>
           <button
             class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             @click="showInfoDialog = true"
@@ -13,23 +13,29 @@
             <i class="pi pi-info text-sm sm:text-lg text-blue-500"></i>
           </button>
         </div>
-        <div class="flex gap-2 w-full sm:w-auto">
-          <button
-            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 animate-pulse focus:outline-none magic-memory-btn"
-            @click="openMagicMemoryDialog"
-          >
-            <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
-            <span class="hidden sm:inline">Savta's Magic Spells</span>
-            <span class="sm:hidden">Magic</span>
-          </button>
-          <button
-            class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
-            @click="showCreateModal = true"
-          >
-            <i class="pi pi-plus mr-1 sm:mr-2"></i>
-            <span class="hidden sm:inline">Define a Magic Spell</span>
-            <span class="sm:hidden">Magic Spell</span>
-          </button>
+        <div class="flex gap-6 w-full sm:w-auto">
+          <div class="flex flex-col items-center">
+            <button
+              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 animate-pulse focus:outline-none magic-memory-btn"
+              @click="openMagicMemoryDialog"
+            >
+              <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
+              <span class="hidden sm:inline">Magic Memories Cards</span>
+              <span class="sm:hidden">Magic Cards</span>
+            </button>
+            <p class="text-sm text-gray-600 mt-1 text-center">Start Here</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <button
+              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
+              @click="showCreateModal = true"
+            >
+              <i class="pi pi-plus mr-1 sm:mr-2"></i>
+              <span class="hidden sm:inline">Magic Memory Books</span>
+              <span class="sm:hidden">Memory Books</span>
+            </button>
+            <p class="text-sm text-gray-600 mt-1 text-center">Advanced Users</p>
+          </div>
         </div>
       </div>
 
@@ -37,14 +43,20 @@
     <Dialog v-model:visible="showInfoDialog" modal header="About Savta's Magic Memories" class="w-full max-w-3xl sm:rounded-2xl">
       <div class="space-y-4">
         <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <h2 class="text-lg font-bold text-blue-700 mb-2">What is a Savta Magic Memory?</h2>
+          <h2 class="text-lg font-bold text-blue-700 mb-2">What are Magic Memory Cards?</h2>
           <p class="text-base text-gray-700">
-            A magic memory is a special collection of your favorite photos, thoughts, text messages, and more, all gathered together into
-            beautiful cards you can look at, print, or share with your family. It's like a photo album, but even more magical!
+            Magic Memory Cards are perfect for everyone! They create beautiful single cards for digital and physical distribution. 
+            Our AI selects the best photos from your collection and generates a heartwarming story based on those photos. 
+            It's like having a personal storyteller create a magical moment just for you!
           </p>
         </div>
         <div class="bg-purple-50 rounded-lg p-4 border border-purple-100">
-          <h2 class="text-lg font-bold text-purple-700 mb-2">Why Create a Magic Memory?</h2>
+          <h2 class="text-lg font-bold text-purple-700 mb-2">What are Magic Memory Books?</h2>
+          <p class="text-base text-gray-700 mb-3">
+            Magic Memory Books are for advanced users who want more control. They create multiple-page books with lots of layout options. 
+            You select exactly which photos to include and have full control over the design and layout of your memory book.
+          </p>
+          <h3 class="text-md font-bold text-purple-600 mb-2">Why Create Magic Memories?</h3>
           <ul class="list-disc pl-5 text-base text-gray-700 space-y-1">
             <li>To keep your precious memories safe and easy to find.</li>
             <li>To share your stories with children, grandchildren, and friends.</li>
@@ -64,27 +76,27 @@
           <ul class="space-y-3">
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-external-link text-lg text-green-600"></i></span>
-              <span class="text-gray-700"><b>View</b>: Open your Magic Memory to view or download it.</span>
+                              <span class="text-gray-700"><b>View</b>: Open your Magic Memory Card to view or download it.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-bolt text-lg text-purple-600"></i></span>
-              <span class="text-gray-700"><b>Compose</b>: Create your Magic Memory for the first time.</span>
+                              <span class="text-gray-700"><b>Compose</b>: Create your Magic Memory Card for the first time.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-refresh text-lg text-yellow-600"></i></span>
-              <span class="text-gray-700"><b>Recompose</b>: Make a new version of your Magic Memory with a fresh design.</span>
+                              <span class="text-gray-700"><b>Recompose</b>: Make a new version of your Magic Memory Card with a fresh design.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-check text-lg text-purple-600"></i></span>
-              <span class="text-gray-700"><b>Approve</b>: Mark your Magic Memory as finished and ready to share or print.</span>
+                              <span class="text-gray-700"><b>Approve</b>: Mark your Magic Memory Card as finished and ready to share or print.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-undo text-lg text-orange-600"></i></span>
-              <span class="text-gray-700"><b>Unapprove</b>: Move your Magic Memory back to editing if you want to make changes.</span>
+                              <span class="text-gray-700"><b>Unapprove</b>: Move your Magic Memory Card back to editing if you want to make changes.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-list text-lg text-gray-600"></i></span>
-              <span class="text-gray-700"><b>Details</b>: See more information about your Magic Memory.</span>
+                              <span class="text-gray-700"><b>Details</b>: See more information about your Magic Memory Card.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-cog text-lg text-blue-600"></i></span>
@@ -129,7 +141,7 @@
             : 'bg-gradient-to-br from-blue-200 via-cyan-200 to-blue-300'
         ]">
           <!-- Status Badge: absolute top-right, smaller -->
-          <div class="absolute top-2 right-2 z-10">
+          <div class="absolute top-2 right-2 z-1">
             <div :class="getStatusBadgeClass(book.status)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md backdrop-blur-sm min-w-[48px] min-h-[22px] justify-center">
               <i :class="getStatusIcon(book.status)" class="text-xs"></i>
               <span class="hidden sm:inline">{{ getStatusText(book.status) }}</span>
@@ -151,8 +163,10 @@
         <!-- Card Content -->
         <div class="flex-1 flex flex-col p-5 pb-3 min-h-[160px]">
           <div v-if="book.layout_type === 'magic' && book.magic_story" class="text-purple-900 text-xs magic-story animate-fade-in mb-3 relative leading-relaxed">
-            <Sparkle class="w-4 h-4 text-yellow-400 absolute left-0 top-0" />
-            <span class="ml-6">{{ book.magic_story.length > 115 ? book.magic_story.slice(0, 115) + '...' : book.magic_story }}</span>
+            <div class="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+              <Sparkle class="w-4 h-4 text-yellow-400 absolute left-0 top-0" />
+              <span class="ml-6">{{ book.magic_story.length > 115 ? book.magic_story.slice(0, 115) + '...' : book.magic_story }}</span>
+            </div>
           </div>
           <div class="space-y-2 text-sm text-gray-600 mb-3">
             <div class="flex justify-between items-center">
@@ -305,7 +319,7 @@
     <MemoryBookDialog
       :visible="showCreateModal"
       :isEditing="false"
-      :initialData="{ layoutType: 'magic' }"
+      :initialData="{ layoutType: 'grid' }"
       :loading="creatingBook"
       @close="showCreateModal = false"
       @submit="createMemoryBookFromDialog"
@@ -329,47 +343,82 @@
       modal
       :closable="false"
       class="success-dialog"
-      style="max-width: 500px; text-align: center;"
+      style="max-width: 95vw; width: 700px; text-align: center;"
     >
-      <div class="flex flex-col items-center justify-center py-8 px-6">
-        <!-- Sparkle animation -->
-        <div class="relative mb-6">
-          <div class="w-20 h-20 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-            <i class="pi pi-sparkles text-4xl text-yellow-500 animate-bounce"></i>
+      <div class="flex flex-col items-center justify-center py-4 sm:py-6 px-4 sm:px-6 relative overflow-hidden">
+        <!-- Background magic particles -->
+        <div class="absolute inset-0 pointer-events-none">
+          <div class="absolute top-4 left-4 w-2 h-2 bg-yellow-300 rounded-full animate-ping" style="animation-delay: 0s;"></div>
+          <div class="absolute top-8 right-8 w-1 h-1 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.3s;"></div>
+          <div class="absolute bottom-8 left-8 w-1 h-1 bg-blue-300 rounded-full animate-ping" style="animation-delay: 0.6s;"></div>
+          <div class="absolute bottom-4 right-4 w-2 h-2 bg-pink-300 rounded-full animate-ping" style="animation-delay: 0.9s;"></div>
+          <div class="absolute top-1/2 left-2 w-1 h-1 bg-yellow-400 rounded-full animate-ping" style="animation-delay: 1.2s;"></div>
+          <div class="absolute top-1/2 right-2 w-1 h-1 bg-purple-400 rounded-full animate-ping" style="animation-delay: 1.5s;"></div>
+        </div>
+
+        <!-- Main sparkle animation -->
+        <div class="relative mb-4 sm:mb-6">
+          <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-full flex items-center justify-center shadow-2xl animate-pulse relative">
+            <i class="pi pi-sparkles text-4xl sm:text-5xl text-yellow-500 animate-bounce"></i>
+            <!-- Glow effect -->
+            <div class="absolute inset-0 bg-gradient-to-br from-yellow-300 to-purple-300 rounded-full opacity-30 animate-pulse"></div>
           </div>
-          <!-- Floating sparkles -->
-          <div class="absolute -top-2 -right-2 w-6 h-6 bg-yellow-300 rounded-full animate-ping"></div>
-          <div class="absolute -bottom-2 -left-2 w-4 h-4 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
-          <div class="absolute top-1/2 -right-4 w-3 h-3 bg-blue-300 rounded-full animate-ping" style="animation-delay: 1s;"></div>
+          <!-- Enhanced floating sparkles -->
+          <div class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-6 h-6 sm:w-8 sm:h-8 bg-yellow-300 rounded-full animate-ping shadow-lg"></div>
+          <div class="absolute -bottom-2 -left-2 sm:-bottom-3 sm:-left-3 w-4 h-4 sm:w-6 sm:h-6 bg-purple-300 rounded-full animate-ping shadow-lg" style="animation-delay: 0.5s;"></div>
+          <div class="absolute top-1/2 -right-4 sm:-right-6 w-3 h-3 sm:w-4 sm:h-4 bg-blue-300 rounded-full animate-ping shadow-lg" style="animation-delay: 1s;"></div>
+          <div class="absolute top-1/2 -left-4 sm:-left-6 w-4 h-4 sm:w-5 sm:h-5 bg-pink-300 rounded-full animate-ping shadow-lg" style="animation-delay: 1.5s;"></div>
         </div>
         
-        <!-- Success message -->
-        <h2 class="text-2xl font-bold text-purple-700 mb-4 animate-fade-in">
-          ✨ Well Done! ✨
+        <!-- Enhanced success message -->
+        <h2 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-3 sm:mb-4 animate-fade-in">
+          ✨ Spell Cast Successfully! ✨
         </h2>
         
-        <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200 mb-6">
-          <p class="text-lg text-gray-800 leading-relaxed mb-4">
+        <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-2xl p-5 sm:p-6 border-2 border-purple-200 mb-4 sm:mb-6 shadow-xl relative overflow-hidden">
+          <!-- Inner sparkles -->
+          <div class="absolute top-2 right-2 w-3 h-3 bg-yellow-300 rounded-full animate-ping"></div>
+          <div class="absolute bottom-2 left-2 w-2 h-2 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.7s;"></div>
+          
+          <p class="text-lg sm:text-xl text-gray-800 leading-relaxed mb-3 sm:mb-4">
             You have just defined the <span class="font-bold text-purple-600">magical spell</span> we will use to generate your custom magic memory!
           </p>
           
-          <div class="flex items-center justify-center gap-3 bg-white rounded-lg p-3 border border-purple-200">
-            <Wand2 class="w-6 h-6 text-yellow-500 animate-pulse" />
-            <p class="text-base text-gray-700 font-medium">
-              Click on the <span class="text-yellow-600 font-bold">magic wand</span> on the Magic Memory card below
-              to make it happen!
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 sm:p-4 border border-blue-200 shadow-lg">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
+                <i class="pi pi-clock text-blue-600 text-xs sm:text-sm"></i>
+              </div>
+              <span class="text-sm sm:text-base font-semibold text-blue-800">⏱️ Estimated Time</span>
+            </div>
+            <p class="text-sm sm:text-base text-blue-700 leading-relaxed">
+              Compose this book will take about <span class="font-bold text-blue-800 text-base sm:text-lg">{{ calculateComposeTime() }} seconds</span>. 
+              <br><span class="text-xs sm:text-sm text-blue-600">Do you want to do it now or later?</span>
             </p>
           </div>
         </div>
         
-        <!-- Action button -->
-        <button
-          class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow-lg transition-all duration-200 transform hover:scale-105 animate-bounce"
-          @click="showSuccessDialog = false"
-        >
-          <i class="pi pi-check mr-2"></i>
-          Let's Make Some Magic! ✨
-        </button>
+        <!-- Enhanced action buttons -->
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
+          <button
+            class="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
+            @click="composeNewlyCreatedMemory"
+          >
+            <!-- Button sparkles -->
+            <div class="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full animate-ping"></div>
+            <div class="absolute bottom-2 left-2 w-1 h-1 bg-white/30 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+            
+            <i class="pi pi-magic mr-2 sm:mr-3 text-lg sm:text-xl group-hover:animate-spin"></i>
+            Compose the Memory Now
+          </button>
+          <button
+            class="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-bold rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
+            @click="showSuccessDialog = false"
+          >
+            <i class="pi pi-clock mr-2 sm:mr-3"></i>
+            Later
+          </button>
+        </div>
       </div>
     </Dialog>
 
@@ -618,7 +667,7 @@
           </div>
 
           <!-- Info Cards -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-4">
+          <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-3 mt-4">
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
                 <i class="pi pi-calendar text-blue-600 text-xs sm:text-sm"></i>
@@ -646,6 +695,52 @@
                 <span class="text-xs font-medium text-gray-600">Assets</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.created_from_assets.length }}</p>
+            </div>
+            <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-th-large text-purple-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Layout</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.layout_type || 'grid' }}</p>
+            </div>
+            <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-calendar-plus text-orange-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Event</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_event || 'N/A' }}</p>
+            </div>
+          </div>
+          
+          <!-- Additional Info Cards Row -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-2">
+            <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-palette text-indigo-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Theme</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme || 'classic' }}</p>
+            </div>
+            <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-circle text-teal-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Shape</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_shape || 'original' }}</p>
+            </div>
+            <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-table text-cyan-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Grid</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.grid_layout || '2x2' }}</p>
+            </div>
+            <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-file-edit text-violet-600 text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Title</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ selectedBook.title || 'Untitled' }}</p>
             </div>
           </div>
 
@@ -811,10 +906,10 @@
           </div>
           
           <h2 class="text-lg sm:text-xl font-bold text-purple-700 mb-2 animate-fade-in">
-            ✨ Casting a Spell to Create Your Magic Memory ✨
+            {{ isRegenerating ? '✨ Regenerating Your Memory Book ✨' : '✨ Creating Your Memory Book ✨' }}
           </h2>
           <p class="text-sm sm:text-base text-purple-600 font-medium">
-            The AI is weaving your memories into something magical...
+            {{ isRegenerating ? 'Processing your memory book with fresh settings...' : 'Processing your memory book...' }}
           </p>
         </div>
 
@@ -838,10 +933,10 @@
               </div>
             </div>
             
-            <!-- Magic status -->
+            <!-- Status indicator -->
             <div class="flex items-center justify-center gap-2 text-sm sm:text-base text-gray-700">
-              <i class="pi pi-magic text-purple-500 animate-pulse"></i>
-              <span class="font-medium">Magic in Progress...</span>
+              <i class="pi pi-cog text-purple-500 animate-spin"></i>
+              <span class="font-medium">{{ isRegenerating ? 'Regenerating...' : 'Processing...' }}</span>
             </div>
           </div>
         </div>
@@ -865,7 +960,7 @@
         <p class="text-sm sm:text-base">Compose this magic memory? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
           <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
-          <Button label="Generate" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmGenerate" />
+          <Button label="Compose" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmGenerate" />
         </div>
       </div>
     </Dialog>
@@ -875,15 +970,16 @@
         <p class="text-sm sm:text-base mb-2">
           Are you sure you want to recompose this memory book?
         </p>
-        <p v-if="pendingBook && pendingBook.layout_type === 'magic'" class="text-purple-700 font-semibold text-sm sm:text-base mb-2">
-          ✨ Your magic story will be <b>rewritten</b> with new AI magic!
-        </p>
-        <p v-else class="text-gray-600 text-xs sm:text-sm mb-2">
+        <p class="text-gray-600 text-xs sm:text-sm mb-2">
           This will regenerate the PDF with the latest settings and assets.
         </p>
         <div class="flex gap-3 justify-end mt-4">
           <Button label="Cancel" class="p-button-secondary" @click="cancelDialog" />
-          <Button label="Yes, Recompose" class="p-button-danger" @click="confirmRegenerate" />
+          <Button 
+            label="Yes, Recompose" 
+            class="p-button-danger" 
+            @click="confirmRegenerate" 
+          />
         </div>
       </div>
     </Dialog>
@@ -905,7 +1001,7 @@
       v-model:visible="showPdfModal"
       modal
       header="PDF Preview"
-      :style="{ width: '95vw', maxWidth: '900px', height: '85vh', maxHeight: '85vh', padding: 0, marginTop: '10px' }"
+      :style="{ width: '95vw', maxWidth: '900px', height: '85vh', maxHeight: '85vh', padding: 0, marginTop: '2rem' }"
       :contentStyle="{ height: '85vh', padding: 0 }"
       :closable="false"
       :auto-z-index="false"
@@ -914,7 +1010,7 @@
       <div class="pdf-preview-container flex flex-col w-full h-full" style="height: 85vh; width: 100%; padding: 0;">
         <!-- PDF Viewer -->
         <div class="flex-1 w-full flex items-center justify-center" style="min-height: 0;">
-          <div class="w-[95%] h-[95%]">
+          <div class="w-[98%] h-[98%]">
             <ClientOnly>
               <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" class="w-full h-full" />
               <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
@@ -1507,14 +1603,7 @@
     </Dialog>
     </div>
   </div>
-  <Dialog v-model:visible="magicStatusDialog" modal :closable="false" :showHeader="false" class="magic-status-dialog" style="max-width: 350px; text-align: center;">
-    <div class="flex flex-col items-center justify-center py-6">
-      <i class="pi pi-sparkles text-4xl text-yellow-400 animate-bounce mb-2"></i>
-      <div class="text-lg font-bold text-purple-700 mb-2">I'm working my magic...</div>
-      <div class="text-md text-gray-800 mb-2">{{ magicStatusMessage }}</div>
-      <div class="w-full h-2 bg-gradient-to-r from-yellow-200 via-purple-200 to-blue-200 rounded-full animate-pulse"></div>
-    </div>
-  </Dialog>
+
   <Dialog v-model:visible="showDeleteDialog" modal header="Delete Memory?" class="w-full max-w-xs rounded-2xl">
     <div class="text-center py-4">
       <i class="pi pi-exclamation-triangle text-3xl text-red-500 mb-2"></i>
@@ -1602,6 +1691,7 @@ const loadingMemoryBooks = ref(true)
 const showCreateModal = ref(false)
 
 const showSuccessDialog = ref(false)
+const newlyCreatedBook = ref(null)
 const showDetailsModal = ref(false)
 const selectedBook = ref(null)
 const creatingBook = ref(false)
@@ -1618,6 +1708,7 @@ const currentProgress = ref(0)
 const currentProgressMessage = ref('')
 const currentBookId = ref(null)
 const progressInterval = ref(null)
+const isRegenerating = ref(false)
 
 // New book form
 const newBook = ref({
@@ -1630,7 +1721,6 @@ const newBook = ref({
   gridLayout: '2x2',
   memoryShape: 'original',
   includeCaptions: true,
-  includeTags: true,
   backgroundType: 'white',
   memoryEvent: '',
   customMemoryEvent: ''
@@ -1667,7 +1757,6 @@ const resetCreateModal = () => {
     gridLayout: '2x2',
     memoryShape: 'original',
     includeCaptions: true,
-    includeTags: true,
     backgroundType: 'white',
     memoryEvent: '',
     customMemoryEvent: ''
@@ -1802,6 +1891,15 @@ const confirmRegenerate = async () => {
           Authorization: `Bearer ${accessToken}`
         }
       })
+      // Show toast notification for regeneration
+      if ($toast && $toast.add) {
+        $toast.add({
+          severity: 'info',
+          summary: 'Regenerating Memory Book',
+          detail: 'Your memory book is being regenerated with fresh settings.',
+          life: 3000
+        })
+      }
       // Now trigger the full magic pipeline
       await generatePDF(pendingBook.value)
     } catch (error) {
@@ -1946,7 +2044,6 @@ const createMemoryBook = async () => {
       grid_layout: newBook.value.gridLayout,
       memory_shape: newBook.value.memoryShape,
       include_captions: newBook.value.includeCaptions,
-      include_tags: newBook.value.includeTags,
       ai_background: newBook.value.aiBackground,
       memory_event: newBook.value.memoryEvent === 'custom' ? newBook.value.customMemoryEvent : newBook.value.memoryEvent,
       // For magic memories: selected assets go to photo_selection_pool, created_from_assets will be set by AI
@@ -1970,6 +2067,7 @@ const createMemoryBook = async () => {
         life: 3000
       })
     }
+    newlyCreatedBook.value = memoryBook
     showSuccessDialog.value = true
     resetCreateModal()
     await loadMemoryBooks()
@@ -2039,7 +2137,9 @@ const pollPdfStatus = async () => {
       if (status.pdf_url && status.book_status === 'ready') {
         console.log('✅ PDF URL found and book status is ready, closing dialog')
         currentProgress.value = 100
-        currentProgressMessage.value = 'Your Savta Magic Memory is ready!'
+        currentProgressMessage.value = isRegenerating.value 
+          ? 'Your magical memory is ready!' 
+          : 'Your memory book is ready!'
         setTimeout(() => {
           stopProgressPolling()
           showProgressDialog.value = false
@@ -2056,13 +2156,13 @@ const pollPdfStatus = async () => {
         return
       }
       
-      // Update progress based on status
+      // Update progress based on status - Enhanced for magic memory regeneration
       if (status.pdf_status === 'generating_background') {
         currentProgress.value = 10
         currentProgressMessage.value = 'Generating custom background image...'
       } else if (status.pdf_status === 'background_ready') {
         currentProgress.value = 20
-        currentProgressMessage.value = 'Background ready, casting the final spell...'
+        currentProgressMessage.value = 'Background ready, generating PDF...'
       } else if (status.pdf_status === 'generating_pdf') {
         currentProgress.value = 50
         currentProgressMessage.value = 'Weaving your memories into pages...'
@@ -2071,7 +2171,7 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = 'Adding the final magical touches...'
       } else if (status.pdf_status === 'completed') {
         currentProgress.value = 100
-        currentProgressMessage.value = 'Your magical memory is ready!'
+        currentProgressMessage.value = 'Your memory book is ready!'
         // Do NOT close the dialog here. Wait for the pdf_url and book_status === 'ready'.
         // Previously, the dialog was closed here, which could be too early for multi-page books.
       } else if (status.pdf_status === 'error') {
@@ -2085,22 +2185,49 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = 'Gathering magical ingredients...'
       } else if (status.pdf_status === 'Creating beautiful background design...') {
         currentProgress.value = 15
-        currentProgressMessage.value = 'Crafting a beautiful magical background...'
+        currentProgressMessage.value = 'Creating beautiful background design...'
       } else if (status.pdf_status === 'Downloading background design...') {
         currentProgress.value = 25
         currentProgressMessage.value = 'Summoning the background design...'
       } else if (status.pdf_status === 'Saving background to storage...') {
         currentProgress.value = 30
-        currentProgressMessage.value = 'Storing the magical background...'
+        currentProgressMessage.value = 'Saving background to storage...'
       } else if (status.pdf_status === 'Background ready for PDF generation') {
         currentProgress.value = 35
-        currentProgressMessage.value = 'Background ready for the memory spell'
+        currentProgressMessage.value = 'Background ready for PDF generation'
       } else if (status.pdf_status === 'Setting up PDF document...') {
         currentProgress.value = 40
-        currentProgressMessage.value = 'Preparing the magical document...'
+        currentProgressMessage.value = 'Setting up PDF document...'
       } else if (status.pdf_status === 'Background ready, creating pages...') {
         currentProgress.value = 45
-        currentProgressMessage.value = 'Background ready, crafting memory pages...'
+        currentProgressMessage.value = 'Background ready, creating pages...'
+      } else if (status.pdf_status === '✨ Crafting your magical story... ✨') {
+        currentProgress.value = 8
+        currentProgressMessage.value = 'Generating story and selecting photos...'
+      } else if (status.pdf_status === 'Gathering your magical memories...') {
+        currentProgress.value = 12
+        currentProgressMessage.value = 'Gathering memories...'
+      } else if (status.pdf_status === 'Retrieving magical background...') {
+        currentProgress.value = 18
+        currentProgressMessage.value = 'Retrieving background...'
+      } else if (status.pdf_status === 'Retrieving background image...') {
+        currentProgress.value = 18
+        currentProgressMessage.value = 'Retrieving background image...'
+      } else if (status.pdf_status === 'Creating magical background...') {
+        currentProgress.value = 22
+        currentProgressMessage.value = 'Creating background...'
+      } else if (status.pdf_status === 'Weaving your memories into pages...') {
+        currentProgress.value = 55
+        currentProgressMessage.value = 'Creating PDF pages...'
+      } else if (status.pdf_status === 'Adding the final magical touches...') {
+        currentProgress.value = 85
+        currentProgressMessage.value = 'Adding final touches...'
+      } else if (status.pdf_status === 'Finalizing magic memory status...') {
+        currentProgress.value = 95
+        currentProgressMessage.value = 'Finalizing memory book status...'
+      } else if (status.pdf_status === 'Processing...') {
+        currentProgress.value = Math.min(currentProgress.value + 2, 90)
+        currentProgressMessage.value = 'Processing your memory book...'
       } else {
         currentProgressMessage.value = status.pdf_status || 'Processing...'
       }
@@ -2109,7 +2236,7 @@ const pollPdfStatus = async () => {
       console.log('No status available, showing generic progress')
       if (currentProgress.value < 90) {
         currentProgress.value += 5
-        currentProgressMessage.value = 'Casting the memory spell...'
+        currentProgressMessage.value = 'Processing your memory book...'
       }
     }
   } catch (error) {
@@ -2117,17 +2244,20 @@ const pollPdfStatus = async () => {
     // Fallback: show generic progress on error
     if (currentProgress.value < 90) {
       currentProgress.value += 5
-      currentProgressMessage.value = 'Casting the memory spell...'
+      currentProgressMessage.value = 'Processing your memory book...'
     }
   }
 }
 
 // Start progress polling
-const startProgressPolling = (bookId) => {
-  console.log('startProgressPolling called with bookId:', bookId)
+const startProgressPolling = (bookId, regenerating = false) => {
+  console.log('startProgressPolling called with bookId:', bookId, 'regenerating:', regenerating)
   currentBookId.value = bookId
   currentProgress.value = 0
-  currentProgressMessage.value = 'Starting the magical memory creation...'
+  isRegenerating.value = regenerating
+  currentProgressMessage.value = regenerating 
+    ? 'Brewing up a spell...' 
+    : 'Starting memory book creation...'
   showProgressDialog.value = true
   console.log('showProgressDialog set to:', showProgressDialog.value)
   
@@ -2161,7 +2291,8 @@ const generatePDF = async (book) => {
   console.log('generatePDF called for book:', book.id)
   
   // Check if the book has assets
-  // For magic memories, check photo_selection_pool instead of created_from_assets
+  // For magic memories, check photo_selection_pool (user's original selection) for regeneration
+  // For regular memories, check created_from_assets (user's selected photos)
   const hasAssets = book.layout_type === 'magic' 
     ? (book.photo_selection_pool && book.photo_selection_pool.length > 0)
     : (book.created_from_assets && book.created_from_assets.length > 0)
@@ -2185,7 +2316,8 @@ const generatePDF = async (book) => {
   try {
     // Start progress polling
     console.log('Starting progress polling...')
-    startProgressPolling(book.id)
+    const isRegeneratingBook = book.status === 'ready' || book.status === 'background_ready'
+    startProgressPolling(book.id, isRegeneratingBook)
     console.log('Progress dialog should be visible:', showProgressDialog.value)
     
     // For regeneration, clear existing background and PDF URLs first
@@ -2264,6 +2396,49 @@ const generatePDF = async (book) => {
       })
     }
   }
+}
+
+// Calculate compose time for newly created book
+const calculateComposeTime = () => {
+  if (!newlyCreatedBook.value) return 0
+  
+  let totalTime = 0
+  
+  // Add base time for custom background only if magical background was selected
+  if (newlyCreatedBook.value.background_type === 'magical') {
+    totalTime += 20 // 20 seconds for custom background generation
+  }
+  
+  // Add 10 seconds per photo
+  const photoCount = newlyCreatedBook.value.photo_selection_pool?.length || 
+                    newlyCreatedBook.value.created_from_assets?.length || 0
+  totalTime += photoCount * 10
+  
+  return totalTime
+}
+
+// Compose newly created memory
+const composeNewlyCreatedMemory = async () => {
+  if (!newlyCreatedBook.value) {
+    console.error('No newly created book found')
+    return
+  }
+  
+  // Close the success dialog
+  showSuccessDialog.value = false
+  
+  // Find the book in the current memory books list
+  const book = memoryBooks.value.find(b => b.id === newlyCreatedBook.value.id)
+  if (!book) {
+    console.error('Could not find newly created book in memory books list')
+    return
+  }
+  
+  // Trigger PDF generation
+  await generatePDF(book)
+  
+  // Clear the reference
+  newlyCreatedBook.value = null
 }
 
 // Download PDF
@@ -2739,7 +2914,7 @@ const openEditSettings = async (book) => {
       gridLayout: book.grid_layout || '2x2',
       memoryShape: book.memory_shape || 'original',
       includeCaptions: book.include_captions ?? book.includeCaptions ?? true,
-      includeTags: book.include_tags ?? book.includeTags ?? true,
+
       aiBackground: book.ai_background ?? book.aiBackground ?? true,
       memoryEvent: book.memory_event || book.memoryEvent || '',
       customMemoryEvent: (book.memory_event && !['vacation','birthday','anniversary','graduation','family_trip'].includes((book.memory_event || '').toLowerCase())) ? book.memory_event : '',
@@ -2783,7 +2958,7 @@ const saveEditBook = async () => {
       grid_layout: editBook.value.gridLayout,
       memory_shape: editBook.value.memoryShape,
       include_captions: editBook.value.includeCaptions,
-      include_tags: editBook.value.includeTags,
+
       created_from_assets: selectedAssetIds
     })
     
@@ -3041,14 +3216,18 @@ function toggleMagicMemorySelection(id) {
 
 const magicLoading = ref(false)
 
-const magicStatusDialog = ref(false)
-const magicStatusMessage = ref('')
+
 
 async function onMagicMemoryContinue() {
   if (magicSelectedMemories.value.length < 1) return
   magicLoading.value = true
-  magicStatusDialog.value = true
-  magicStatusMessage.value = '🧙 Looking through your beautiful memories...'
+  
+  // Show initial status dialog for story generation
+  showProgressDialog.value = true
+  currentProgress.value = 5
+  currentProgressMessage.value = '🧙 Looking through your beautiful memories...'
+  isRegenerating.value = false
+  
   try {
     const selectedAssets = availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
     const photos = selectedAssets.map(a => ({
@@ -3073,7 +3252,11 @@ async function onMagicMemoryContinue() {
     if (photos.length <= magicPhotoCount.value) {
       aiBody.forceAll = true
     }
-    magicStatusMessage.value = '🔮 Crafting your special story...'
+    
+    // Update status for story generation
+    currentProgress.value = 15
+    currentProgressMessage.value = '🔮 Crafting your special story...'
+    
     const aiRes = await $fetch('/api/ai/magic-memory', {
       method: 'POST',
       body: aiBody
@@ -3084,44 +3267,58 @@ async function onMagicMemoryContinue() {
     if (!aiRes.story || typeof aiRes.story !== 'string' || aiRes.story.trim().length < 10) {
       throw new Error('I need to try again to create something special for you.')
     }
+    
+    // Update status for saving the magic memory
+    currentProgress.value = 25
+    currentProgressMessage.value = '📚 Saving your magic card...'
+    
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
-    magicStatusMessage.value = '📚 Saving your magic card...'
+    
     const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
       method: 'POST',
-              body: {
-          asset_ids: aiRes.selected_photo_ids,
-          story: aiRes.story,
-          title: magicMemoryTitle.value || 'Magic Memory',
-          memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
-          background_type: aiRes.background_type || magicBackgroundType.value
-        },
+      body: {
+        asset_ids: aiRes.selected_photo_ids,
+        photo_selection_pool: magicSelectedMemories.value,
+        story: aiRes.story,
+        title: magicMemoryTitle.value || 'Magic Memory',
+        memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+        background_type: aiRes.background_type || magicBackgroundType.value,
+        photo_count: magicPhotoCount.value
+      },
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
     })
     if (!dbRes.success) throw new Error('I need to try again to save your magic card.')
-    magicStatusMessage.value = '✨ Creating your magic card...'
-    // Trigger PDF generation
-    const pdfRes = await $fetch(`/api/memory-books/generate-pdf/${dbRes.book_id}`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      },
-      body: {
-        printSize: '6x4'
-      }
-    })
-    if (!pdfRes.success) throw new Error('I need to try again to create your magic card.')
-    magicStatusMessage.value = '🎉 Your magic card is ready!'
-    setTimeout(() => { magicStatusDialog.value = false }, 2000)
+    
+    // Update status for PDF generation
+    currentProgress.value = 30
+    currentProgressMessage.value = '✨ Creating your magic card...'
+    
+    // Create a book object for the progress dialog with proper asset references
+    const book = {
+      id: dbRes.book_id,
+      layout_type: 'magic',
+      status: 'draft',
+      photo_selection_pool: magicSelectedMemories.value,
+      created_from_assets: aiRes.selected_photo_ids || []
+    }
+    
+    // Close the magic memory dialog and clean up
     showMagicMemoryDialog.value = false
     magicSelectedMemories.value = []
     magicSelectedTagFilter.value = []
+    
+    // Use the unified progress dialog system for PDF generation
+    await generatePDF(book)
+    
     if (typeof loadMemoryBooks === 'function') await loadMemoryBooks()
-    toast.add({ severity: 'success', summary: '✨ Your magic card is ready!', detail: 'I\'ve created something special just for you!', life: 4000 })
+    
   } catch (err) {
-    magicStatusDialog.value = false
+    // Close progress dialog on error
+    showProgressDialog.value = false
+    stopProgressPolling()
     toast.add({ severity: 'error', summary: 'Let me try again', detail: err.message || 'I need to try again to create something special for you.', life: 5000 })
   } finally {
     magicLoading.value = false
@@ -3232,7 +3429,6 @@ async function createMemoryBookFromDialog(data) {
       gridLayout: data.gridLayout,
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,
-      includeTags: data.includeTags,
       backgroundType: data.backgroundType,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
@@ -3278,7 +3474,6 @@ async function saveEditBookFromDialog(data) {
       gridLayout: data.gridLayout,
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,
-      includeTags: data.includeTags,
       backgroundType: data.backgroundType,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,

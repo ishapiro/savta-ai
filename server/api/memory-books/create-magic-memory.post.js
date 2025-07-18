@@ -22,9 +22,23 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { asset_ids, story, title, background_type = 'white' } = body
+    const { asset_ids, photo_selection_pool, story, title, background_type = 'white', photo_count = 4 } = body
     if (!asset_ids || !Array.isArray(asset_ids) || asset_ids.length < 1 || asset_ids.length > 6 || !story) {
       throw createError({ statusCode: 400, statusMessage: '1-6 asset_ids and story are required' })
+    }
+
+    // Determine grid layout based on photo count
+    let gridLayout = '2x2' // default for 4 photos
+    if (photo_count === 2) {
+      gridLayout = '2x1'
+    } else if (photo_count === 3) {
+      gridLayout = '2x2' // 2x2 with one empty space
+    } else if (photo_count === 4) {
+      gridLayout = '2x2'
+    } else if (photo_count === 5) {
+      gridLayout = '3x2' // 3x2 with one empty space
+    } else if (photo_count === 6) {
+      gridLayout = '3x2'
     }
 
     // Insert new memory book
@@ -35,10 +49,11 @@ export default defineEventHandler(async (event) => {
         title: title || 'Magic Memory',
         layout_type: 'magic',
         created_from_assets: asset_ids,
+        photo_selection_pool: photo_selection_pool || asset_ids,
         magic_story: story,
         background_type: background_type,
         status: 'draft',
-        grid_layout: '2x2',
+        grid_layout: gridLayout,
         print_size: '7x5',
         include_captions: true,
         include_tags: true

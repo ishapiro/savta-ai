@@ -426,7 +426,7 @@
     </footer>
     
     <!-- Toast component for notifications -->
-    <Toast />
+    <Toast position="bottom-right" style="min-width: 180px; max-width: 500px; font-size: 0.5rem; border-radius: 0.5rem; padding: 0.5rem 1rem;" />
   </div>
 </template>
 
