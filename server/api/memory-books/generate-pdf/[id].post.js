@@ -1727,7 +1727,7 @@ async function createCaptionImage(captionText, maxWidth, maxHeight) {
         
         <!-- Text -->
         <text x="50%" y="${textStartY}" text-anchor="middle" 
-              font-size="${fontSize}" fill="#3a277a" font-family="Arial, sans-serif" 
+              font-size="${fontSize}" fill="#3a277a" font-family="sans-serif" 
               font-weight="500" dominant-baseline="hanging">
           ${svgLines}
         </text>
@@ -1752,7 +1752,7 @@ async function createCaptionImage(captionText, maxWidth, maxHeight) {
   } catch (error) {
     console.error('Error creating caption image:', error);
     console.error('Error details:', { maxWidth, maxHeight, captionText: captionText?.substring(0, 50) });
-    // Fallback to simple text
+    // Fallback to simple text - return null so the PDF generator can use its fallback
     return null;
   }
 } 
