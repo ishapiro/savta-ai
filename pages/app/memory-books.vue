@@ -1030,7 +1030,7 @@
     >
       <div class="flex flex-col h-full w-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
         <!-- PDF Viewer - Mobile (with overflow) -->
-        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto sm:hidden">
+        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto sm:hidden px-0">
           <ClientOnly>
             <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
@@ -3907,8 +3907,10 @@ const pdfViewerStyle = computed(() => {
   if (window.innerWidth < 640) { // Tailwind's sm breakpoint is 640px
     return {
       height: '68vh',
-      width: '100%',
-      maxWidth: '100%'
+      width: '100vw',
+      maxWidth: '100vw',
+      margin: '0',
+      padding: '0'
     };
   } else {
     return {
