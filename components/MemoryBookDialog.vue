@@ -161,11 +161,11 @@
         </div>
       </div>
 
-      <!-- AI & Captions Section -->
+      <!-- Background and Captions Section -->
       <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-4 border border-yellow-200">
         <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <i class="pi pi-magic text-yellow-600"></i>
-          AI & Captions
+          Background and Captions
         </h3>
         <div class="space-y-4">
           <!-- Background Type Selection -->
@@ -177,10 +177,10 @@
                 @click="form.backgroundType = 'white'"
               >
                 <div
-                  class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
+                  class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full bg-gray-50 shadow-md"
                   :class="form.backgroundType === 'white' 
-                    ? 'border-yellow-500 bg-yellow-50 shadow-lg scale-105' 
-                    : 'border-gray-200 hover:border-yellow-300 hover:bg-yellow-25'"
+                    ? 'border-green-500 bg-green-50 shadow-xl scale-105' 
+                    : 'border-gray-300 hover:border-yellow-400 hover:bg-yellow-50 hover:shadow-lg'"
                 >
                   <div class="w-8 h-8 bg-white border-2 border-gray-300 rounded-lg mx-auto mb-2 flex items-center justify-center">
                     <i class="pi pi-file text-gray-600 text-sm"></i>
@@ -188,7 +188,7 @@
                   <div class="text-sm font-bold text-gray-900 mb-1">Clean & Simple</div>
                   <div class="text-xs text-gray-600">Pure white background for a classic, elegant look</div>
                   <div v-if="form.backgroundType === 'white'" class="absolute top-2 right-2">
-                    <i class="pi pi-check text-yellow-500 text-sm"></i>
+                    <i class="pi pi-check text-green-500 text-sm"></i>
                   </div>
                 </div>
               </div>
@@ -198,10 +198,10 @@
                 @click="form.backgroundType = 'magical'"
               >
                 <div
-                  class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
+                  class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full bg-gray-50 shadow-md"
                   :class="form.backgroundType === 'magical' 
-                    ? 'border-yellow-500 bg-yellow-50 shadow-lg scale-105' 
-                    : 'border-gray-200 hover:border-yellow-300 hover:bg-yellow-25'"
+                    ? 'border-green-500 bg-green-50 shadow-xl scale-105' 
+                    : 'border-gray-300 hover:border-yellow-400 hover:bg-yellow-50 hover:shadow-lg'"
                 >
                   <div class="w-8 h-8 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-lg mx-auto mb-2 flex items-center justify-center">
                     <i class="pi pi-sparkles text-purple-600 text-sm"></i>
@@ -209,7 +209,7 @@
                   <div class="text-sm font-bold text-gray-900 mb-1">Magical Design</div>
                   <div class="text-xs text-gray-600">AI-generated background that matches your theme</div>
                   <div v-if="form.backgroundType === 'magical'" class="absolute top-2 right-2">
-                    <i class="pi pi-check text-yellow-500 text-sm"></i>
+                    <i class="pi pi-check text-green-500 text-sm"></i>
                   </div>
                 </div>
               </div>

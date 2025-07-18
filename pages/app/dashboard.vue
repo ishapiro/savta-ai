@@ -24,7 +24,7 @@
     </div>
 
     <div class="text-center mb-8 sm:mb-12">
-      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Memory Manor</h2>
+      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Magic Memory Home</h2>
       <p class="text-base sm:text-xl text-gray-600 max-w-4xl mx-auto">
         Using a bit of AI Magic dust, create beautiful Savta Magic Memories ready for sharing with family and friends.
       </p>

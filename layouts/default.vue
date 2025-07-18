@@ -6,9 +6,9 @@
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
           <div class="flex items-center">
-            <NuxtLink to="/" class="flex items-center space-x-4 no-underline">
-              <SavtaIcon class="h-10 w-auto" />
-              <span class="text-xl font-bold text-pink-500 no-underline">Savta</span>
+            <NuxtLink to="/" class="flex items-center space-x-3 no-underline">
+              <SavtaIcon class="h-14 w-auto" />
+              <span class="text-2xl font-bold text-pink-500 no-underline">Savta</span>
             </NuxtLink>
           </div>
 
@@ -228,7 +228,7 @@
                   <i class="pi pi-home text-lg"></i>
                 </div>
                 <div>
-                  <p class="font-semibold text-sm">Savta's Memory Manor</p>
+                  <p class="font-semibold text-sm">Magic Memory Home</p>
                   <p class="text-xs opacity-80">Cast a spell and share a memory.</p>
                 </div>
               </div>
