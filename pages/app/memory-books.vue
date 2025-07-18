@@ -1009,8 +1009,8 @@
     >
       <div class="flex flex-col h-full w-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
         <!-- PDF Viewer -->
-        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto max-h-[70vh] h-[70vh]">
-          <div class="w-full h-full">
+        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto">
+          <div class="h-40 w-40 bg-red-200 flex items-center justify-center">
             <ClientOnly>
               <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" class="w-full h-full" />
               <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
