@@ -1005,7 +1005,7 @@
       :contentStyle="{ height: '90vh', maxHeight: '90vh', padding: 0 }"
       :closable="false"
       :auto-z-index="false"
-      :z-index="1000"
+      :z-index="40"
     >
       <div class="pdf-preview-container flex flex-col w-full h-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
         <!-- PDF Viewer -->
