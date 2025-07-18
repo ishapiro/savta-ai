@@ -1010,15 +1010,13 @@
       <div class="flex flex-col h-full w-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
         <!-- PDF Viewer -->
         <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto">
-          <div class="h-40 w-40 bg-red-200 flex items-center justify-center">
-            <ClientOnly>
-              <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" class="w-full h-full" />
-              <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
-                <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
-                <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
-              </div>
-            </ClientOnly>
-          </div>
+          <ClientOnly>
+            <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" style="height: 200px; width: 200px; max-width: 100%;" />
+            <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
+              <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
+              <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
+            </div>
+          </ClientOnly>
         </div>
         <!-- Action Buttons -->
         <div class="z-50 flex justify-center items-center gap-3 sm:gap-4 py-4 sm:py-6 px-4 bg-gray-50 border-t border-gray-200 min-h-[60px] sm:min-h-[80px]">
