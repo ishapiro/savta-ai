@@ -259,7 +259,7 @@
                     {{ selectedAssets.length }} memories selected
                   </p>
                   <p class="text-xs text-gray-600">
-                    {{ selectedAssets.length === 0 ? 'No memories selected' : 'Ready to create your magic memory' }}
+                    {{ selectedAssets.length === 0 ? 'No memories selected' : `Will create approximately ${calculatedPageCount} pages` }}
                   </p>
                 </div>
               </div>
@@ -635,6 +635,21 @@ const computedAvailableTags = computed(() => {
     }
   })
   return Array.from(allTags).map(tag => ({ label: tag, value: tag }))
+})
+
+// Calculate page count based on grid layout and number of selected assets
+const calculatedPageCount = computed(() => {
+  if (selectedAssets.value.length === 0) return 0
+  
+  // Parse grid layout to get memories per page
+  const gridLayout = form.value.gridLayout || '2x2'
+  const [rows, cols] = gridLayout.split('x').map(Number)
+  const memoriesPerPage = rows * cols
+  
+  // Calculate total pages needed
+  const totalPages = Math.ceil(selectedAssets.value.length / memoriesPerPage)
+  
+  return totalPages
 })
 
 // Watch for initial data changes

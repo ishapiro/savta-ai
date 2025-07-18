@@ -84,7 +84,7 @@
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-refresh text-lg text-yellow-600"></i></span>
-                              <span class="text-gray-700"><b>Recompose</b>: Make a new version of your Magic Memory Card with a fresh design.</span>
+                              <span class="text-gray-700"><b>Recreate</b>: Make a new version of your Magic Memory Card with a fresh design.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"><i class="pi pi-check text-lg text-purple-600"></i></span>
@@ -135,7 +135,7 @@
       >
         <!-- Book Cover with Gradient -->
         <div :class="[
-          'relative h-32 flex items-center justify-center',
+          'relative h-32 flex items-center justify-center overflow-hidden',
           book.layout_type === 'magic'
             ? 'bg-gradient-to-br from-purple-200 via-pink-200 to-indigo-200'
             : 'bg-gradient-to-br from-blue-200 via-cyan-200 to-blue-300'
@@ -147,7 +147,7 @@
               <span class="hidden sm:inline">{{ getStatusText(book.status) }}</span>
             </div>
           </div>
-          <div class="flex flex-col items-center">
+          <div class="flex flex-col items-center relative z-1">
             <div :class="[
               'w-14 h-14 rounded-xl flex items-center justify-center shadow-lg mb-2 relative group-hover:scale-110 transition-transform duration-300',
               book.layout_type === 'magic'
@@ -157,7 +157,7 @@
               <Wand2 v-if="book.layout_type === 'magic'" class="w-8 h-8 text-white" />
               <i v-else class="pi pi-book text-2xl text-white"></i>
             </div>
-            <span class="text-xs font-semibold text-gray-700 text-center px-2 leading-tight">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Spell #' + book.id.slice(-6))) }}</span>
+            <span class="text-xs font-semibold text-gray-700 text-center px-2 leading-tight bg-white/80 rounded-lg py-1">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Spell #' + book.id.slice(-6))) }}</span>
           </div>
         </div>
         <!-- Card Content -->
@@ -168,6 +168,19 @@
               <span class="ml-6">{{ book.magic_story.length > 115 ? book.magic_story.slice(0, 115) + '...' : book.magic_story }}</span>
             </div>
           </div>
+          
+          <!-- Regular Memory Thumbnail -->
+          <div v-if="book.layout_type !== 'magic' && getFirstAssetThumbnail(book)" class="mb-3">
+            <div class="relative w-full h-24 rounded-lg overflow-hidden border border-gray-200">
+              <img 
+                :src="getFirstAssetThumbnail(book)" 
+                :alt="book.title || 'Memory Book'"
+                class="w-full h-full object-cover"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            </div>
+          </div>
+          
           <div class="space-y-2 text-sm text-gray-600 mb-3">
             <div class="flex justify-between items-center">
               <span class="font-semibold text-gray-700">Created:</span>
@@ -215,7 +228,7 @@
           <!-- Regenerate Button (for ready or background_ready, not magic) -->
           <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
             <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recompose' }}</span>
+            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
           </div>
           <!-- Magic Regenerate Button (for ready magic books) -->
           <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
@@ -862,8 +875,8 @@
                 :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
               >
                 <i class="pi pi-refresh text-xs sm:text-sm"></i>
-                <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing...' : 'Recompose' }}</span>
-                <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Recompose' }}</span>
+                <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing ...' : 'Recreating ...' }}</span>
+                <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Recreating ...' }}</span>
               </button>
               <button
                 v-if="selectedBook.status === 'ready'"
@@ -914,7 +927,7 @@
           </div>
           
           <h2 class="text-lg sm:text-xl font-bold text-purple-700 mb-2 animate-fade-in">
-            {{ isRegenerating ? '✨ Regenerating Your Memory Book ✨' : '✨ Creating Your Memory Book ✨' }}
+            {{ isRegenerating ? '✨ Recreating Your Memory Book ✨' : '✨ Creating Your Memory Book ✨' }}
           </h2>
           <p class="text-sm sm:text-base text-purple-600 font-medium">
             {{ isRegenerating ? 'Processing your memory book with fresh settings...' : 'Processing your memory book...' }}
@@ -944,7 +957,7 @@
             <!-- Status indicator -->
             <div class="flex items-center justify-center gap-2 text-sm sm:text-base text-gray-700">
               <i class="pi pi-cog text-purple-500 animate-spin"></i>
-              <span class="font-medium">{{ isRegenerating ? 'Regenerating...' : 'Processing...' }}</span>
+              <span class="font-medium">{{ isRegenerating ? 'Recreating...' : 'Processing...' }}</span>
             </div>
           </div>
         </div>
@@ -973,10 +986,10 @@
       </div>
     </Dialog>
     <!-- Regenerate Confirmation Dialog -->
-    <Dialog v-model:visible="showRegenerateDialog" modal header="Recompose Memory Book" class="w-[95vw] max-w-md">
+    <Dialog v-model:visible="showRegenerateDialog" modal header="Recreate Memory Book" class="w-[95vw] max-w-md">
       <div class="p-4">
         <p class="text-sm sm:text-base mb-2">
-          Are you sure you want to recompose this memory book?
+          Are you sure you want to recreate this memory book?
         </p>
         <p class="text-gray-600 text-xs sm:text-sm mb-2">
           This will regenerate the PDF with the latest settings and assets.
@@ -984,7 +997,7 @@
         <div class="flex gap-3 justify-end mt-4">
           <Button label="Cancel" class="p-button-secondary" @click="cancelDialog" />
           <Button 
-            label="Yes, Recompose" 
+            label="Yes, Recreate" 
             class="p-button-danger" 
             @click="confirmRegenerate" 
           />
@@ -1592,7 +1605,7 @@
             :icon="magicMemoryStep === 1 ? 'pi pi-times' : 'pi pi-arrow-left'"
             severity="secondary"
             @click="magicMemoryStep === 1 ? showMagicMemoryDialog = false : previousMagicMemoryStep()"
-            class="rounded-full px-4 py-2 text-xs font-bold shadow w-full sm:w-auto"
+            class="bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-800 font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border border-gray-300"
           />
           <Button
             v-if="magicMemoryStep === 1"
@@ -1600,29 +1613,28 @@
             icon="pi pi-arrow-right"
             :disabled="!magicMemoryTitle.trim()"
             @click="nextMagicMemoryStep"
-            class="bg-gradient-to-r from-yellow-400 to-purple-500 hover:from-yellow-500 hover:to-purple-600 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold"
+            class="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
           <Button
             v-if="magicMemoryStep === 2"
             label="Next: How many photos?"
             icon="pi pi-arrow-right"
-            :disabled="!magicMemoryEvent.trim()"
             @click="nextMagicMemoryStep"
-            class="bg-gradient-to-r from-yellow-400 to-purple-500 hover:from-yellow-500 hover:to-purple-600 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold"
+            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
           <Button
             v-if="magicMemoryStep === 3"
             label="Next: Choose your background"
             icon="pi pi-arrow-right"
             @click="nextMagicMemoryStep"
-            class="bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold"
+            class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
           <Button
             v-if="magicMemoryStep === 4"
             label="Next: Show me your photos"
             icon="pi pi-arrow-right"
             @click="nextMagicMemoryStep"
-            class="bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold"
+            class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
           <Button
             v-if="magicMemoryStep === 5"
@@ -1631,7 +1643,7 @@
             :disabled="magicSelectedMemories.length < 1 || magicLoading"
             :loading="magicLoading"
             @click="onMagicMemoryContinue"
-            class="bg-gradient-to-r from-yellow-400 to-purple-500 hover:from-yellow-500 hover:to-purple-600 border-0 w-full sm:w-auto text-xs px-4 py-2 font-bold animate-pulse"
+            class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0 animate-pulse"
           />
         </div>
       </template>
@@ -1885,8 +1897,8 @@ const onRegenerateClick = (book) => {
       $toast.add({
         severity: 'warn',
         summary: 'Book Still Processing',
-        detail: 'Please wait for the current generation to complete before regenerating',
-        life: 3000
+        detail: 'Please wait for the current generation to complete before recreating',
+        life: 6000
       })
     }
     return
@@ -1932,7 +1944,7 @@ const confirmRegenerate = async () => {
           severity: 'info',
           summary: 'Regenerating Memory Book',
           detail: 'Your memory book is being regenerated with fresh settings.',
-          life: 3000
+          life: 6000
         })
       }
       // Now trigger the full magic pipeline
@@ -1944,7 +1956,7 @@ const confirmRegenerate = async () => {
           severity: 'error',
           summary: 'Error',
           detail: 'Failed to reset magic book for regeneration',
-          life: 4000
+          life: 8000
         })
       }
     }
@@ -1991,6 +2003,17 @@ const loadMemoryBooks = async () => {
     const books = await db.memoryBooks.getMemoryBooks()
     console.log('✅ Magic memories loaded:', books?.length, 'books')
     memoryBooks.value = books
+    
+    // Load thumbnails for regular memory books
+    if (books && books.length > 0) {
+      console.log('📚 All books:', books.map(b => ({ id: b.id, layout_type: b.layout_type, created_from_assets: b.created_from_assets })))
+      const regularBooks = books.filter(book => book.layout_type !== 'magic' && book.created_from_assets && book.created_from_assets.length > 0)
+      console.log('🖼️ Loading thumbnails for', regularBooks.length, 'regular memory books')
+      
+      for (const book of regularBooks) {
+        await loadAssetThumbnails(book)
+      }
+    }
   } catch (error) {
     console.error('❌ Error loading memory books:', error)
     console.error('❌ Error stack:', error.stack)
@@ -1999,7 +2022,7 @@ const loadMemoryBooks = async () => {
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to load memory books',
-        life: 3000
+        life: 6000
       })
     }
   } finally {
@@ -2283,7 +2306,6 @@ const pollPdfStatus = async () => {
     }
   }
 }
-
 // Start progress polling
 const startProgressPolling = (bookId, regenerating = false) => {
   console.log('startProgressPolling called with bookId:', bookId, 'regenerating:', regenerating)
@@ -2875,21 +2897,39 @@ const getAssetThumbnail = (assetId) => {
   return assetThumbnails.value[assetId] || null
 }
 
+// Get first asset thumbnail for regular memory book
+const getFirstAssetThumbnail = (book) => {
+  if (book.layout_type !== 'magic' && book.created_from_assets && book.created_from_assets.length > 0) {
+    const firstAssetId = book.created_from_assets[0]
+    const thumbnail = getAssetThumbnail(firstAssetId)
+    console.log('🖼️ Getting thumbnail for book:', book.id, 'first asset:', firstAssetId, 'thumbnail:', thumbnail)
+    return thumbnail
+  }
+  console.log('🖼️ No thumbnail for book:', book.id, 'layout_type:', book.layout_type, 'created_from_assets:', book.created_from_assets)
+  return null
+}
+
 // Load asset thumbnails for a book
 const loadAssetThumbnails = async (book) => {
-  if (!book || !book.created_from_assets || book.created_from_assets.length === 0) return
+  if (!book || !book.created_from_assets || book.created_from_assets.length === 0) {
+    console.log('🖼️ No assets to load for book:', book?.id, 'created_from_assets:', book?.created_from_assets)
+    return
+  }
   
   try {
+    console.log('🖼️ Loading thumbnails for book:', book.id, 'assets:', book.created_from_assets)
     // Get assets for this book using the dedicated function
     const bookAssets = await db.assets.getAssetsByBook(book.created_from_assets, 12)
+    console.log('🖼️ Retrieved assets:', bookAssets)
     
     // Store thumbnails in reactive data
     if (bookAssets && Array.isArray(bookAssets)) {
-    bookAssets.forEach(asset => {
+      bookAssets.forEach(asset => {
         if (asset && asset.storage_url) {
-        assetThumbnails.value[asset.id] = asset.storage_url
-      }
-    })
+          console.log('🖼️ Storing thumbnail for asset:', asset.id, 'URL:', asset.storage_url)
+          assetThumbnails.value[asset.id] = asset.storage_url
+        }
+      })
     }
   } catch (error) {
     console.error('Error loading asset thumbnails:', error)
@@ -3354,7 +3394,7 @@ async function onMagicMemoryContinue() {
     // Close progress dialog on error
     showProgressDialog.value = false
     stopProgressPolling()
-    toast.add({ severity: 'error', summary: 'Let me try again', detail: err.message || 'I need to try again to create something special for you.', life: 5000 })
+    toast.add({ severity: 'error', summary: 'Let me try again', detail: err.message || 'I need to try again to create something special for you.', life: 10000 })
   } finally {
     magicLoading.value = false
   }
@@ -3440,10 +3480,10 @@ async function deleteBookConfirmed() {
         Authorization: `Bearer ${accessToken}`
       }
     })
-    toast.add({ severity: 'success', summary: 'Deleted', detail: 'Memory book deleted.', life: 3000 })
+    toast.add({ severity: 'success', summary: 'Deleted', detail: 'Memory book deleted.', life: 6000 })
     if (typeof loadMemoryBooks === 'function') await loadMemoryBooks()
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Delete Failed', detail: err.message || 'Could not delete book', life: 4000 })
+    toast.add({ severity: 'error', summary: 'Delete Failed', detail: err.message || 'Could not delete book', life: 8000 })
   } finally {
     showDeleteDialog.value = false
     bookToDelete.value = null

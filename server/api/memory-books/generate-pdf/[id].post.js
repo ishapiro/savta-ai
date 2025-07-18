@@ -1291,122 +1291,34 @@ export default defineEventHandler(async (event) => {
             }
             
             if (captionText) {
-              // Split caption into lines (up to 3 lines)
-              const maxCharsPerLine = Math.floor(drawWidth / 4.5) // Approximate characters per line based on image width
-              const lines = []
-              let currentLine = ''
+              // Create caption image using sharp and SVG
+              const maxCaptionHeight = Math.min(imgDisplayHeight * 0.4, 80); // Cap at 80px or 40% of photo height
+              const captionWidth = Math.round(imgDisplayWidth * 0.9); // Use 90% of photo width
+              console.log('Caption parameters:', { 
+                captionText: captionText.substring(0, 50) + '...', 
+                imgDisplayWidth, 
+                imgDisplayHeight, 
+                maxCaptionHeight,
+                captionWidth
+              });
+              const captionImage = await createCaptionImage(captionText, captionWidth, maxCaptionHeight);
               
-              const words = captionText.split(' ')
-              for (const word of words) {
-                if ((currentLine + ' ' + word).length <= maxCharsPerLine) {
-                  currentLine += (currentLine ? ' ' : '') + word
-                } else {
-                  if (currentLine) {
-                    lines.push(currentLine)
-                    currentLine = word
-                  } else {
-                    // Word is too long, split it
-                    lines.push(word.substring(0, maxCharsPerLine))
-                    currentLine = word.substring(maxCharsPerLine)
-                  }
-                }
-              }
-              if (currentLine) {
-                lines.push(currentLine)
-              }
-              
-              // Limit to 3 lines
-              const displayLines = lines.slice(0, 3)
-              const lineHeight = 10
-              const totalHeight = displayLines.length * lineHeight
-              
-              // Calculate text width (use the longest line)
-              const longestLine = displayLines.reduce((longest, line) => line.length > longest.length ? line : longest, '')
-              const textWidth = longestLine.length * 4.5 // Approximate width
-              
-              // Calculate caption box dimensions with extra padding for better appearance
-              const captionWidth = Math.min(textWidth + 20, drawWidth - 10)
-              const captionHeight = totalHeight + 12
-              const captionX = x + (drawWidth - captionWidth) / 2 // Center the caption box
-              const captionY = y + 15
-              const cornerRadius = 6
-              
-              // Draw rounded rectangle background for caption using circles and rectangles
-              const whiteColor = rgb(1, 1, 1)
-              
-              // Draw the main rectangle (background)
-              page.drawRectangle({
-                x: captionX + cornerRadius,
-                y: captionY,
-                width: captionWidth - 2 * cornerRadius,
-                height: captionHeight,
-                color: whiteColor
-              })
-              
-              // Draw left rectangle
-              page.drawRectangle({
-                x: captionX,
-                y: captionY + cornerRadius,
-                width: cornerRadius,
-                height: captionHeight - 2 * cornerRadius,
-                color: whiteColor
-              })
-              
-              // Draw right rectangle
-              page.drawRectangle({
-                x: captionX + captionWidth - cornerRadius,
-                y: captionY + cornerRadius,
-                width: cornerRadius,
-                height: captionHeight - 2 * cornerRadius,
-                color: whiteColor
-              })
-              
-              // Draw corner circles
-              // Top-left corner
-              page.drawCircle({
-                x: captionX + cornerRadius,
-                y: captionY + cornerRadius,
-                size: cornerRadius,
-                color: whiteColor
-              })
-              
-              // Top-right corner
-              page.drawCircle({
-                x: captionX + captionWidth - cornerRadius,
-                y: captionY + cornerRadius,
-                size: cornerRadius,
-                color: whiteColor
-              })
-              
-              // Bottom-left corner
-              page.drawCircle({
-                x: captionX + cornerRadius,
-                y: captionY + captionHeight - cornerRadius,
-                size: cornerRadius,
-                color: whiteColor
-              })
-              
-              // Bottom-right corner
-              page.drawCircle({
-                x: captionX + captionWidth - cornerRadius,
-                y: captionY + captionHeight - cornerRadius,
-                size: cornerRadius,
-                color: whiteColor
-              })
-              
-              // Draw black text line by line, centered
-              displayLines.forEach((line, index) => {
-                const lineTextWidth = line.length * 4.5 // Approximate width of this line
-                const textX = captionX + (captionWidth - lineTextWidth) / 2 // Center text horizontally
-                const textY = captionY + captionHeight - 8 - (displayLines.length - 1 - index) * lineHeight // Position from top
+              if (captionImage) {
+                // Embed the caption image into the PDF
+                const pdfCaptionImage = await pdfDoc.embedPng(captionImage.buffer);
                 
-                page.drawText(line, {
-                  x: textX,
-                  y: textY,
-                  size: 8,
-                  color: rgb(0, 0, 0)
-                })
-              })
+                // Position caption within the actual photo area, not the cell area
+                // For shaped photos, this ensures the caption appears within the visible photo area
+                const captionX = imgX + (imgDisplayWidth - captionImage.width) / 2;
+                const captionY = imgY + 5; // 5px margin from bottom of actual photo
+                
+                page.drawImage(pdfCaptionImage, {
+                  x: captionX,
+                  y: captionY,
+                  width: captionImage.width,
+                  height: captionImage.height
+                });
+              }
             }
           } catch (err) {
             console.error('❌ Failed to embed image for asset', asset.id, err)
@@ -1435,122 +1347,34 @@ export default defineEventHandler(async (event) => {
             }
             
             if (captionText) {
-              // Split caption into lines (up to 3 lines)
-              const maxCharsPerLine = Math.floor(drawWidth / 4.5) // Approximate characters per line based on image width
-              const lines = []
-              let currentLine = ''
+              // Create caption image using sharp and SVG
+              const maxCaptionHeight = Math.min(imgDisplayHeight * 0.4, 80); // Cap at 80px or 40% of photo height
+              const captionWidth = Math.round(imgDisplayWidth * 0.9); // Use 90% of photo width
+              console.log('Caption parameters (fallback):', { 
+                captionText: captionText.substring(0, 50) + '...', 
+                imgDisplayWidth, 
+                imgDisplayHeight, 
+                maxCaptionHeight,
+                captionWidth
+              });
+              const captionImage = await createCaptionImage(captionText, captionWidth, maxCaptionHeight);
               
-              const words = captionText.split(' ')
-              for (const word of words) {
-                if ((currentLine + ' ' + word).length <= maxCharsPerLine) {
-                  currentLine += (currentLine ? ' ' : '') + word
-                } else {
-                  if (currentLine) {
-                    lines.push(currentLine)
-                    currentLine = word
-                  } else {
-                    // Word is too long, split it
-                    lines.push(word.substring(0, maxCharsPerLine))
-                    currentLine = word.substring(maxCharsPerLine)
-                  }
-                }
-              }
-              if (currentLine) {
-                lines.push(currentLine)
-              }
-              
-              // Limit to 3 lines
-              const displayLines = lines.slice(0, 3)
-              const lineHeight = 10
-              const totalHeight = displayLines.length * lineHeight
-              
-              // Calculate text width (use the longest line)
-              const longestLine = displayLines.reduce((longest, line) => line.length > longest.length ? line : longest, '')
-              const textWidth = longestLine.length * 4.5 // Approximate width
-              
-              // Calculate caption box dimensions with extra padding for better appearance
-              const captionWidth = Math.min(textWidth + 20, drawWidth - 10)
-              const captionHeight = totalHeight + 12
-              const captionX = x + (drawWidth - captionWidth) / 2 // Center the caption box
-              const captionY = y + 15
-              const cornerRadius = 6
-              
-              // Draw rounded rectangle background for caption using circles and rectangles
-              const whiteColor = rgb(1, 1, 1)
-              
-              // Draw the main rectangle (background)
-              page.drawRectangle({
-                x: captionX + cornerRadius,
-                y: captionY,
-                width: captionWidth - 2 * cornerRadius,
-                height: captionHeight,
-                color: whiteColor
-              })
-              
-              // Draw left rectangle
-              page.drawRectangle({
-                x: captionX,
-                y: captionY + cornerRadius,
-                width: cornerRadius,
-                height: captionHeight - 2 * cornerRadius,
-                color: whiteColor
-              })
-              
-              // Draw right rectangle
-              page.drawRectangle({
-                x: captionX + captionWidth - cornerRadius,
-                y: captionY + cornerRadius,
-                width: cornerRadius,
-                height: captionHeight - 2 * cornerRadius,
-                color: whiteColor
-              })
-              
-              // Draw corner circles
-              // Top-left corner
-              page.drawCircle({
-                x: captionX + cornerRadius,
-                y: captionY + cornerRadius,
-                size: cornerRadius,
-                color: whiteColor
-              })
-              
-              // Top-right corner
-              page.drawCircle({
-                x: captionX + captionWidth - cornerRadius,
-                y: captionY + cornerRadius,
-                size: cornerRadius,
-                color: whiteColor
-              })
-              
-              // Bottom-left corner
-              page.drawCircle({
-                x: captionX + cornerRadius,
-                y: captionY + captionHeight - cornerRadius,
-                size: cornerRadius,
-                color: whiteColor
-              })
-              
-              // Bottom-right corner
-              page.drawCircle({
-                x: captionX + captionWidth - cornerRadius,
-                y: captionY + captionHeight - cornerRadius,
-                size: cornerRadius,
-                color: whiteColor
-              })
-              
-              // Draw black text line by line, centered
-              displayLines.forEach((line, index) => {
-                const lineTextWidth = line.length * 4.5 // Approximate width of this line
-                const textX = captionX + (captionWidth - lineTextWidth) / 2 // Center text horizontally
-                const textY = captionY + captionHeight - 8 - (displayLines.length - 1 - index) * lineHeight // Position from top
+              if (captionImage) {
+                // Embed the caption image into the PDF
+                const pdfCaptionImage = await pdfDoc.embedPng(captionImage.buffer);
                 
-                page.drawText(line, {
-                  x: textX,
-                  y: textY,
-                  size: 8,
-                  color: rgb(0, 0, 0)
-                })
-              })
+                // Position caption within the actual photo area, not the cell area
+                // For shaped photos, this ensures the caption appears within the visible photo area
+                const captionX = imgX + (imgDisplayWidth - captionImage.width) / 2;
+                const captionY = imgY + 5; // 5px margin from bottom of actual photo
+                
+                page.drawImage(pdfCaptionImage, {
+                  x: captionX,
+                  y: captionY,
+                  width: captionImage.width,
+                  height: captionImage.height
+                });
+              }
             }
           }
         } else if (asset.type === 'text') {
@@ -1731,5 +1555,184 @@ async function updatePdfStatus(supabase, bookId, userId, status) {
     }
   } catch (error) {
     console.log('⚠️ PDF status table might not exist yet, continuing without status updates:', error.message)
+  }
+} 
+
+// Helper function to create caption images using sharp and SVG
+async function createCaptionImage(captionText, maxWidth, maxHeight) {
+  try {
+    // Validate input parameters
+    if (!captionText || typeof captionText !== 'string') {
+      console.warn('Invalid caption text provided:', captionText);
+      return null;
+    }
+    
+    if (!maxWidth || !maxHeight || isNaN(maxWidth) || isNaN(maxHeight) || maxWidth <= 0 || maxHeight <= 0) {
+      console.warn('Invalid dimensions provided:', { maxWidth, maxHeight });
+      return null;
+    }
+    
+    console.log('Creating caption image with dimensions:', { maxWidth, maxHeight, captionText: captionText.substring(0, 50) + '...' });
+    
+    // Dynamic font sizing to fit text optimally
+    const minFontSize = 6;
+    const maxFontSize = 14;
+    const padding = 12;
+    let fontSize = maxFontSize;
+    let displayLines = [];
+    let captionHeight = 0;
+    let captionWidth = maxWidth;
+    
+    // Try different font sizes until text fits
+    while (fontSize >= minFontSize) {
+      const lineHeight = fontSize + 4; // Line height proportional to font size
+      const charWidth = fontSize * 0.6; // Approximate character width
+      const maxCharsPerLine = Math.floor((maxWidth - padding * 2) / charWidth);
+      
+      console.log(`Trying font size ${fontSize}px with maxCharsPerLine: ${maxCharsPerLine}`);
+      
+      // Wrap text for current font size
+      const words = captionText.split(' ');
+      const lines = [];
+      let currentLine = '';
+      
+      for (const word of words) {
+        const testLine = currentLine ? currentLine + ' ' + word : word;
+        if (testLine.length <= maxCharsPerLine) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) {
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            // Word is too long, split it
+            lines.push(word.substring(0, maxCharsPerLine));
+            currentLine = word.substring(maxCharsPerLine);
+          }
+        }
+      }
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+      
+      // Limit to 4 lines maximum
+      const testLines = lines.slice(0, 4);
+      const testHeight = testLines.length * lineHeight + padding * 2;
+      
+      // Check if this font size works
+      if (testHeight <= maxHeight) {
+        displayLines = testLines;
+        captionHeight = testHeight;
+        break;
+      }
+      
+      // Try smaller font size
+      fontSize -= 1;
+    }
+    
+    // If we couldn't fit the text even with minimum font size, use the smallest size
+    if (displayLines.length === 0) {
+      fontSize = minFontSize;
+      const lineHeight = fontSize + 4;
+      const charWidth = fontSize * 0.6;
+      const maxCharsPerLine = Math.floor((maxWidth - padding * 2) / charWidth);
+      
+      // Simple word wrapping for minimum font size
+      const words = captionText.split(' ');
+      const lines = [];
+      let currentLine = '';
+      
+      for (const word of words) {
+        const testLine = currentLine ? currentLine + ' ' + word : word;
+        if (testLine.length <= maxCharsPerLine) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) {
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            lines.push(word.substring(0, maxCharsPerLine));
+            currentLine = word.substring(maxCharsPerLine);
+          }
+        }
+      }
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+      
+      displayLines = lines.slice(0, 4);
+      captionHeight = displayLines.length * lineHeight + padding * 2;
+    }
+    
+    console.log('Final caption parameters:', { 
+      fontSize, 
+      displayLines: displayLines.length, 
+      captionHeight, 
+      maxHeight,
+      textPreview: displayLines.join(' | ')
+    });
+    
+    // Final validation of calculated dimensions
+    if (captionWidth <= 0 || captionHeight <= 0 || isNaN(captionWidth) || isNaN(captionHeight)) {
+      console.warn('Invalid calculated dimensions:', { captionWidth, captionHeight, maxWidth, maxHeight });
+      return null;
+    }
+    
+    console.log('Caption dimensions calculated:', { captionWidth, captionHeight, displayLines: displayLines.length });
+    
+    // Create SVG with gradient background and text
+    const lineHeight = fontSize + 4;
+    const totalTextHeight = displayLines.length * lineHeight;
+    const textStartY = (captionHeight - totalTextHeight) / 2 + lineHeight / 2 - 5; // Center the text block, moved up 5px
+    
+    const svgLines = displayLines.map((line, i) => 
+      `<tspan x="50%" dy="${i === 0 ? '0' : lineHeight + 'px'}">${line}</tspan>`
+    ).join('');
+    
+    const svg = `
+      <svg width="${captionWidth}" height="${captionHeight}">
+        <!-- Gradient background with soft edges -->
+        <defs>
+          <radialGradient id="captionGradient" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" style="stop-color:white;stop-opacity:0.85" />
+            <stop offset="70%" style="stop-color:white;stop-opacity:0.75" />
+            <stop offset="100%" style="stop-color:white;stop-opacity:0.3" />
+          </radialGradient>
+        </defs>
+        
+        <!-- Background with rounded corners and gradient -->
+        <rect x="4" y="4" width="${captionWidth - 8}" height="${captionHeight - 8}" 
+              rx="6" ry="6" fill="url(#captionGradient)" 
+              stroke="white" stroke-width="1" stroke-opacity="0.3"/>
+        
+        <!-- Text -->
+        <text x="50%" y="${textStartY}" text-anchor="middle" 
+              font-size="${fontSize}" fill="#3a277a" font-family="Arial, sans-serif" 
+              font-weight="500" dominant-baseline="hanging">
+          ${svgLines}
+        </text>
+      </svg>
+    `;
+    
+    // Create image using sharp with validated dimensions
+    const buffer = await sharp({
+      create: {
+        width: Math.round(captionWidth),
+        height: Math.round(captionHeight),
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 } // transparent background
+      }
+    })
+      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+      .png()
+      .toBuffer();
+    
+    console.log('Caption image created successfully:', { width: captionWidth, height: captionHeight, bufferSize: buffer.length });
+    return { buffer, width: captionWidth, height: captionHeight };
+  } catch (error) {
+    console.error('Error creating caption image:', error);
+    console.error('Error details:', { maxWidth, maxHeight, captionText: captionText?.substring(0, 50) });
+    // Fallback to simple text
+    return null;
   }
 } 

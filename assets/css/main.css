@@ -166,3 +166,26 @@ button.vpv-toolbar-btn.vp-h-8.vp-w-8[aria-label="Open local file"],
   left: -9999px !important;
   top: -9999px !important;
 } 
+
+/* Toast styling - increase font size by 20% and extend duration */
+.p-toast .p-toast-message {
+  font-size: 1.2em !important; /* 20% bigger font */
+}
+
+.p-toast .p-toast-message .p-toast-message-content {
+  font-size: 1.2em !important;
+}
+
+.p-toast .p-toast-message .p-toast-summary {
+  font-size: 1.2em !important;
+  font-weight: bold !important;
+}
+
+.p-toast .p-toast-message .p-toast-detail {
+  font-size: 1.2em !important;
+}
+
+/* Extend toast duration by making it stay longer */
+.p-toast .p-toast-message {
+  animation-duration: 10s !important; /* Double the default duration */
+}
