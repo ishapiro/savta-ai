@@ -997,11 +997,12 @@
     </Dialog>
 
     <!-- PDF Preview Modal -->
+    <!-- :style="{ width: '95vw', maxWidth: '900px', height: '85vh', maxHeight: '85vh', padding: 0, marginTop: '2rem' }" -->
     <Dialog
       v-model:visible="showPdfModal"
       modal
       header="PDF Preview"
-      :style="{ width: '95vw', maxWidth: '900px', height: '85vh', maxHeight: '85vh', padding: 0, marginTop: '2rem' }"
+      class="w-full max-w-6xl h-[85vh] mt-6"
       :contentStyle="{ height: '85vh', padding: 0 }"
       :closable="false"
       :auto-z-index="false"
@@ -1010,7 +1011,7 @@
       <div class="pdf-preview-container flex flex-col w-full h-full" style="height: 85vh; width: 100%; padding: 0;">
         <!-- PDF Viewer -->
         <div class="flex-1 w-full flex items-center justify-center" style="min-height: 0;">
-          <div class="w-[98%] h-[98%]">
+          <div class="w-full h-[85%]">
             <ClientOnly>
               <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" class="w-full h-full" />
               <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
