@@ -429,7 +429,15 @@
       :closable="!isUploading"
       :dismissableMask="!isUploading"
       header="✨ Photo Magic Workshop ✨"
-      class="w-[95vw] max-w-2xl mx-auto magic-upload-dialog"
+      class="w-full h-full sm:w-[95vw] sm:max-w-2xl sm:h-auto sm:mx-auto magic-upload-dialog"
+      :style="{ 
+        width: '100vw', 
+        height: '100vh', 
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        margin: '0',
+        borderRadius: '0'
+      }"
       @hide="resetUploadDialog"
     >
       <div class="space-y-6">
@@ -1294,7 +1302,20 @@
       v-model:visible="showMagicMemoryDialog"
       modal
       :header="magicMemoryStep === 1 ? '✨ What should we call this memory? ✨' : '✨ Let\'s create something magical together ✨'"
-      class="w-[95vw] max-w-3xl sm:rounded-2xl magic-memory-dialog"
+      :class="[
+        'magic-memory-dialog',
+        magicMemoryStep === 5 
+          ? 'w-full h-full sm:w-[95vw] sm:max-w-3xl sm:h-auto sm:rounded-2xl' 
+          : 'w-[95vw] max-w-3xl sm:rounded-2xl'
+      ]"
+      :style="magicMemoryStep === 5 ? {
+        width: '100vw',
+        height: '100vh',
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        margin: '0',
+        borderRadius: '0'
+      } : {}"
       :closable="true"
     >
       <!-- Step 1: Title Input -->
@@ -1538,6 +1559,23 @@
           <div class="mt-2 text-xs text-gray-600 text-center">
             <span>{{ magicSelectedMemories.length }} selected (I'll pick the best {{ magicPhotoCount }} from your choices)</span>
             <span v-if="magicSelectedTagFilter && magicSelectedTagFilter.length > 0"> • Filtered by: {{ magicSelectedTagFilter.join(', ') }}</span>
+          </div>
+          
+          <!-- Upload New Photos Section -->
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <div class="text-center">
+              <p class="text-sm text-gray-600 mb-3">Don't see the photos you want?</p>
+              <button
+                @click="selectFilesForMagicMemory"
+                class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg px-4 py-2 text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
+                :disabled="isUploading"
+              >
+                <i class="pi pi-upload"></i>
+                <span v-if="!isUploading">✨ Upload New Photos ✨</span>
+                <span v-else>✨ Uploading... ✨</span>
+              </button>
+              <p class="text-xs text-gray-500 mt-2">New photos will be automatically approved and available for selection</p>
+            </div>
           </div>
         </div>
       </div>
@@ -3342,6 +3380,22 @@ const openMagicMemoryDialog = async () => {
   }
 }
 
+// Reload assets for magic memory step 5
+const reloadAssetsForMagicMemory = async () => {
+  if (magicMemoryStep.value === 5) {
+    loadingAssets.value = true
+    try {
+      const allApprovedAssets = await db.assets.getAssets({ approved: true })
+      availableAssets.value = allApprovedAssets || []
+    } catch (error) {
+      console.error('❌ Error reloading assets:', error)
+      availableAssets.value = []
+    } finally {
+      loadingAssets.value = false
+    }
+  }
+}
+
 const nextMagicMemoryStep = () => {
   if (magicMemoryStep.value === 1 && magicMemoryTitle.value.trim()) {
     magicMemoryStep.value = 2
@@ -3541,6 +3595,97 @@ const selectFiles = () => {
   }
   
   fileInput.click()
+}
+
+// File selection function for magic memory step 5
+const selectFilesForMagicMemory = () => {
+  const fileInput = document.createElement('input')
+  fileInput.type = 'file'
+  fileInput.multiple = true
+  fileInput.accept = 'image/*'
+  
+  fileInput.onchange = async (event) => {
+    const files = Array.from(event.target.files)
+    if (files.length === 0) return
+    
+    await startUploadForMagicMemory(files)
+  }
+  
+  fileInput.click()
+}
+
+// Start upload process for magic memory step 5
+const startUploadForMagicMemory = async (files) => {
+  isUploading.value = true
+  
+  // Initialize file tracking
+  const tempUploadingFiles = files.map(file => ({
+    name: file.name,
+    file: file,
+    status: 'pending'
+  }))
+  
+  const db = useDatabase()
+  const totalFiles = files.length
+  let completedFiles = 0
+  
+  for (let i = 0; i < files.length; i++) {
+    const fileData = tempUploadingFiles[i]
+    const file = fileData.file
+    
+    try {
+      // Update status to uploading
+      fileData.status = 'uploading'
+      
+      // Upload asset with approved status
+      const asset = await db.assets.uploadAsset({
+        type: 'photo',
+        title: file.name,
+        user_caption: '',
+        approved: true // Set as approved since it's a direct upload
+      }, file)
+      
+      // Update status to processing
+      fileData.status = 'processing'
+      
+      // Process with AI
+      const aiResult = await $fetch('/api/ai/process-asset', {
+        method: 'POST',
+        body: {
+          assetId: asset.id,
+          assetType: 'photo',
+          storageUrl: asset.storage_url
+        }
+      })
+      if (aiResult && aiResult.caption && aiResult.caption.trim()) {
+        showMagicCaption(aiResult.caption)
+      }
+      
+      // Mark as completed
+      fileData.status = 'completed'
+      completedFiles++
+      
+    } catch (error) {
+      console.error(`❌ Failed to upload ${file.name}:`, error)
+      fileData.status = 'failed'
+      completedFiles++
+    }
+  }
+  
+  isUploading.value = false
+  
+  if (completedFiles > 0) {
+    // Show success message
+    toast.add({ 
+      severity: 'success', 
+      summary: '✨ Magic Complete! ✨', 
+      detail: `Successfully uploaded ${completedFiles} new photos! They're now available for selection.`, 
+      life: 4000 
+    })
+    
+    // Refresh the assets list to show new photos
+    await reloadAssetsForMagicMemory()
+  }
 }
 
 // Start upload process
