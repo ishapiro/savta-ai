@@ -1185,8 +1185,12 @@ export default defineEventHandler(async (event) => {
       // Draw title on first page, with extra space below
       if (pageIndex === 0) {
         const headingY = height - 60
-        page.drawText('Memory Book', {
-          x: 50,
+        const title = (book.title || 'Memory Book').trim() // Use user's title or fallback, trim whitespace
+        const titleWidth = title.length * 12 // Approximate width based on character count for font size 24
+        const titleX = (width - titleWidth) / 2 // Center the title
+        
+        page.drawText(title, {
+          x: titleX,
           y: headingY,
           size: 24,
           color: rgb(0.2, 0.2, 0.2)
@@ -1389,13 +1393,29 @@ export default defineEventHandler(async (event) => {
           })
         }
       }
-      // Draw page number in reserved bottom margin
-      page.drawText(`Page ${pageIndex + 1}`, {
-        x: width - 80,
+      // Draw footer text on left side
+      const currentDate = new Date()
+      const dateString = currentDate.toLocaleDateString('en-US', { 
+        month: 'long', 
+        day: 'numeric', 
+        year: 'numeric' 
+      })
+      page.drawText(`Crafted with magic and love on ${dateString}`, {
+        x: 20,
         y: bottomMargin / 2,
         size: 10,
         color: rgb(0.5, 0.5, 0.5)
       })
+      
+      // Draw page number in reserved bottom margin (only if multiple pages)
+      if (totalPages > 1) {
+        page.drawText(`Page ${pageIndex + 1}`, {
+          x: width - 80,
+          y: bottomMargin / 2,
+          size: 10,
+          color: rgb(0.5, 0.5, 0.5)
+        })
+      }
     }
     
     await updatePdfStatus(supabase, book.id, user.id, 'Finalizing PDF document...')
