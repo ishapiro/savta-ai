@@ -4,7 +4,7 @@
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Manage your Memory Moments</h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Manage your Moments (Photos and Posts)</h1>
           <button
             class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             v-tooltip.top="'How to use this page'"
@@ -443,19 +443,19 @@
                   <i class="pi pi-image text-blue-500"></i>
                   <span class="font-semibold text-gray-800">Total Special Moments</span>
                 </div>
-                <p class="text-sm text-gray-600">All your uploaded memories waiting to be organized</p>
+                <p class="text-sm text-gray-600">All your uploaded moments waiting to be organized</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-clock text-amber-500"></i>
-                  <span class="font-semibold text-gray-800">Awaiting Your Blessing</span>
+                  <span class="font-semibold text-gray-800">Awaiting Your Approval</span>
                 </div>
-                                  <p class="text-sm text-gray-600">Memories waiting for your special approval</p>
+                                  <p class="text-sm text-gray-600">Moments waiting for your special approval</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-check text-green-500"></i>
-                  <span class="font-semibold text-gray-800">Blessed & Approved</span>
+                  <span class="font-semibold text-gray-800">Approved</span>
                 </div>
                                   <p class="text-sm text-gray-600">Memories ready to join your special memory books</p>
               </div>
@@ -476,7 +476,7 @@
                 <i class="pi pi-magic text-green-600 text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Memory Moment Special Actions</h3>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Moment Special Actions</h3>
                 <p class="text-gray-600">Apply your special touch to each memory moment with these helpful actions!</p>
               </div>
             </div>
@@ -486,7 +486,7 @@
                   <i class="pi pi-check text-green-500 text-lg"></i>
                   <span class="font-semibold text-gray-800">Approve</span>
                 </div>
-                                  <p class="text-sm text-gray-600">Bless this memory moment to join your Savta Special Memory collection</p>
+                                  <p class="text-sm text-gray-600">Approve this memory moment to join your Savta Special Memory collection</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-green-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -500,7 +500,7 @@
                   <i class="pi pi-trash text-red-500 text-lg"></i>
                   <span class="font-semibold text-gray-800">Delete</span>
                 </div>
-                                  <p class="text-sm text-gray-600">Send to the memory vault (can be restored later)</p>
+                <p class="text-sm text-gray-600">Send to the trash (can be restored later)</p>
               </div>
             </div>
           </div>
@@ -512,8 +512,8 @@
                 <i class="pi pi-tags text-amber-600 text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">🔮 Memory Status Guide</h3>
-                <p class="text-gray-600">Each memory moment has its own special status - here's what they mean!</p>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">🔮 Moment Status Guide</h3>
+                <p class="text-gray-600">Each moment has its own special status - here's what they mean!</p>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -524,7 +524,7 @@
                   </div>
                   <span class="font-semibold text-gray-800">Pending</span>
                 </div>
-                                  <p class="text-sm text-gray-600">New memory moment awaiting your special review and blessing</p>
+                                  <p class="text-sm text-gray-600">New moment awaiting your special review and blessing</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-amber-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -533,7 +533,7 @@
                   </div>
                   <span class="font-semibold text-gray-800">Approved</span>
                 </div>
-                                  <p class="text-sm text-gray-600">Memory moment blessed and ready for special memory books</p>
+                                  <p class="text-sm text-gray-600">Moment approved and ready for special memory books</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-amber-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -542,7 +542,7 @@
                   </div>
                   <span class="font-semibold text-gray-800">Rejected</span>
                 </div>
-                <p class="text-sm text-gray-600">Memory excluded from books but kept in your collection</p>
+                <p class="text-sm text-gray-600">Moments excluded from books but kept in your collection</p>
               </div>
             </div>
           </div>

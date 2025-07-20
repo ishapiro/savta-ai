@@ -4,7 +4,7 @@
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Upload Memory Moments</h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Upload Moments (Photo and Posts)</h1>
           <button
             class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             v-tooltip.top="'How to use this page'"
@@ -20,7 +20,7 @@
             @click="navigateTo('/app/review')"
           >
             <i class="pi pi-list text-lg sm:text-2xl animate-bounce"></i>
-            <span class="hidden sm:inline">View All Memory Moments</span>
+            <span class="hidden sm:inline">View All Moments</span>
             <span class="sm:hidden">View All</span>
           </button>
         </div>
@@ -423,7 +423,7 @@
                   <i class="pi pi-star text-amber-600 text-sm"></i>
                 </div>
                 <div>
-                  <p class="text-sm font-medium text-gray-800">✨ Only approved memory moments can be included in your special memory books!</p>
+                  <p class="text-sm font-medium text-gray-800">✨ Only approved moments can be included in your special memory books!</p>
                 </div>
               </div>
             </div>
@@ -481,21 +481,21 @@
                   <i class="pi pi-list text-pink-500"></i>
                   <span class="font-semibold text-gray-800">Review & Manage</span>
                 </div>
-                <p class="text-sm text-gray-600">Click "View All Memory Moments" to access your complete collection and manage all your special memories!</p>
+                <p class="text-sm text-gray-600">Click "View All Moments" to access your complete collection and manage all your special memories!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-check-circle text-purple-500"></i>
                   <span class="font-semibold text-gray-800">Approval Process</span>
                 </div>
-                <p class="text-sm text-gray-600">Only approved memory moments can be included in your beautiful special memory books!</p>
+                <p class="text-sm text-gray-600">Only approved moments can be included in your beautiful special memory books!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-edit text-pink-500"></i>
                   <span class="font-semibold text-gray-800">Edit & Refine</span>
                 </div>
-                <p class="text-sm text-gray-600">Use the Review page to edit captions, approve, or delete memory moments with ease!</p>
+                <p class="text-sm text-gray-600">Use the Review page to edit captions, approve, or delete moments with ease!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -513,7 +513,7 @@
               <i class="pi pi-rocket text-blue-600 text-2xl"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">🚀 Ready to Start Your Special Journey?</h3>
-            <p class="text-gray-600 mb-4">Upload your first memory moment and watch the special moments unfold!</p>
+            <p class="text-gray-600 mb-4">Upload your first moment (photo or post) and watch the special moments unfold!</p>
             <button
               class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
               @click="showHelpModal = false"
@@ -556,13 +556,13 @@
             <h2 class="text-2xl font-bold text-orange-700 mb-2">✨ Partially Complete!</h2>
             <p class="text-lg text-orange-600 mb-2">
               We uploaded and created special moments from <span class="font-bold">{{ successfulUploads }} &nbsp;</span> 
-              <span v-if="successfulUploads === 1">&nbsp; memory moment</span>
-              <span v-else>&nbsp; memory moments</span>!
+              <span v-if="successfulUploads === 1">&nbsp; moment</span>
+              <span v-else>&nbsp; moments</span>!
             </p>
             <p class="text-sm text-orange-500">
               Unfortunately, we could not process <span class="font-bold">{{ failedUploads }} &nbsp;</span> 
-              <span v-if="failedUploads === 1">&nbsp; memory</span>
-              <span v-else>&nbsp; memories</span>.
+              <span v-if="failedUploads === 1">&nbsp; moments</span>
+              <span v-else>&nbsp; moments</span>.
             </p>
           </div>
 
@@ -574,8 +574,8 @@
             <h2 class="text-2xl font-bold text-red-700 mb-2">😔 Upload Issues</h2>
             <p class="text-lg text-red-600 mb-4">
               Unfortunately, we could not process <span class="font-bold">{{ failedUploads }} &nbsp;</span> 
-              <span v-if="failedUploads === 1">&nbsp;   memory moment</span>
-              <span v-else>&nbsp; memory moments</span>.
+              <span v-if="failedUploads === 1">&nbsp;   moment</span>
+              <span v-else>&nbsp; moments</span>.
             </p>
           </div>
 

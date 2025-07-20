@@ -58,7 +58,7 @@
               </div>
               <h3 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 tracking-tight leading-tight">Capture a Special Memory</h3>
               <p class="text-gray-700 text-lg sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
-                Our AI organizes memory moments into beautiful Memory Cards and Books with custom backgrounds perfect for sharing.
+                Our AI organizes your moments (photos and posts) into beautiful Memory Cards and Books with custom backgrounds perfect for sharing.
               </p>
             </div>
             
@@ -112,7 +112,7 @@
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-400 to-purple-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
             <Camera class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 tracking-tight">Upload Memory Moments</h3>
+          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 tracking-tight">Upload Moments</h3>
           <p class="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 font-medium">
             Upload your photos and memories. Our AI adds captions and smart tags automatically.
           </p>
@@ -127,7 +127,7 @@
             </div>
               <div class="flex items-center gap-3 text-sm sm:text-base text-purple-700">
                 <FileText class="w-4 h-4 text-purple-500" />
-                <span class="font-semibold">Add Text Based Memories</span>
+                <span class="font-semibold">Add Text Based Moments</span>
               </div>
           </div>
         </div>
