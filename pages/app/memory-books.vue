@@ -1369,14 +1369,14 @@
             <Sparkles class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Tell me about this special memory?</h3>
-          <p class="text-sm sm:text-base text-gray-600">Think of this as the title at the top of the card - I can't wait to see what we create together!</p>
+          <p class="text-sm sm:text-base text-gray-600">Tell me something that will help me select the best photos for your memory and create a special story for you.</p>
         </div>
         
         <div class="field">
           <label class="block text-sm font-medium text-gray-900 mb-2">Memory Name</label>
           <InputText
             v-model="magicMemoryTitle"
-            placeholder="e.g., 'Summer Vacation 2024', 'Grandma's Birthday', 'Family Reunion'"
+            placeholder=" 'Special Trip with Karen and Sam', 'Summer Vacation 2024', 'Grandma's Birthday', 'Family Reunion'"
             class="w-full text-base sm:text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
             @keyup.enter="nextMagicMemoryStep"
           />
@@ -1563,9 +1563,9 @@
               <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
                 <i class="pi pi-images text-green-600 text-lg"></i>
               </div>
-              <div class="text-base font-bold text-gray-900 mb-1">Use my last 100 photos</div>
-              <div class="text-xs text-gray-600 mb-2">I'll choose from your most recent 100 photos</div>
-              <div class="text-xs text-gray-500">Perfect for recent memories and variety</div>
+              <div class="text-base font-bold text-gray-900 mb-1">Let me (Savta) select</div>
+                  <div class="text-xs text-gray-600 mb-2">I'll choose from your most relevant photos 
+                  based on what you told us about the memory.</div>
               <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-3 right-3">
                 <i class="pi pi-check text-purple-500 text-lg"></i>
               </div>
@@ -1574,21 +1574,21 @@
           
           <div
             class="relative cursor-pointer"
-            @click="magicPhotoSelectionMethod = 'last_month'"
+            @click="magicPhotoSelectionMethod = 'geo_code'"
           >
             <div
               class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'last_month' 
+              :class="magicPhotoSelectionMethod === 'geo_code' 
                 ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
                 : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
             >
               <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                <i class="pi pi-calendar text-green-600 text-lg"></i>
+                <i class="pi pi-map-marker text-green-600 text-lg"></i>
               </div>
-              <div class="text-base font-bold text-gray-900 mb-1">Select best fit from last month</div>
-              <div class="text-xs text-gray-600 mb-2">I'll choose the best photos from your recent memories</div>
-              <div class="text-xs text-gray-500">Perfect for recent events and fresh memories</div>
-              <div v-if="magicPhotoSelectionMethod === 'last_month'" class="absolute top-3 right-3">
+              <div class="text-base font-bold text-gray-900 mb-1">Select by location</div>
+              <div class="text-xs text-gray-600 mb-2">I'll choose photos from specific countries, cities, or states</div>
+              <div class="text-xs text-gray-500">Perfect for travel memories and location-based themes</div>
+              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-3 right-3">
                 <i class="pi pi-check text-purple-500 text-lg"></i>
               </div>
             </div>
@@ -1692,6 +1692,50 @@
             :show-toggle-all="false"
           />
           <p class="text-xs sm:text-sm text-purple-700 mt-2">I'll find photos that have any of these tags</p>
+        </div>
+        
+        <!-- Location Selection (shown when geo_code is selected) -->
+        <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-200">
+          <h4 class="font-semibold text-green-900 mb-2 sm:mb-3">Select Location</h4>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-900 mb-2">Country</label>
+              <MultiSelect
+                v-model="magicSelectedCountries"
+                :options="computedAvailableCountries"
+                option-label="label"
+                option-value="value"
+                placeholder="Choose countries..."
+                class="w-full"
+                :show-toggle-all="false"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-900 mb-2">State/Province</label>
+              <MultiSelect
+                v-model="magicSelectedStates"
+                :options="computedAvailableStates"
+                option-label="label"
+                option-value="value"
+                placeholder="Choose states..."
+                class="w-full"
+                :show-toggle-all="false"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-900 mb-2">City</label>
+              <MultiSelect
+                v-model="magicSelectedCities"
+                :options="computedAvailableCities"
+                option-label="label"
+                option-value="value"
+                placeholder="Choose cities..."
+                class="w-full"
+                :show-toggle-all="false"
+              />
+            </div>
+          </div>
+          <p class="text-xs sm:text-sm text-green-700 mt-2">I'll find photos from any of these locations</p>
         </div>
         
         <!-- Note about Memory Book Creator -->
@@ -3311,6 +3355,37 @@ const computedAvailableTags = computed(() => {
   return Array.from(allTags).map(tag => ({ label: tag, value: tag }))
 })
 
+// Computed properties for available location options
+const computedAvailableCountries = computed(() => {
+  const allCountries = new Set()
+  availableAssets.value.forEach(asset => {
+    if (asset.country && asset.country.trim()) {
+      allCountries.add(asset.country.trim())
+    }
+  })
+  return Array.from(allCountries).sort().map(country => ({ label: country, value: country }))
+})
+
+const computedAvailableStates = computed(() => {
+  const allStates = new Set()
+  availableAssets.value.forEach(asset => {
+    if (asset.state && asset.state.trim()) {
+      allStates.add(asset.state.trim())
+    }
+  })
+  return Array.from(allStates).sort().map(state => ({ label: state, value: state }))
+})
+
+const computedAvailableCities = computed(() => {
+  const allCities = new Set()
+  availableAssets.value.forEach(asset => {
+    if (asset.city && asset.city.trim()) {
+      allCities.add(asset.city.trim())
+    }
+  })
+  return Array.from(allCities).sort().map(city => ({ label: city, value: city }))
+})
+
 // Filter memories based on selected tags
 const filterMemories = () => {
   if (!selectedTagFilter.value || selectedTagFilter.value.length === 0) {
@@ -3519,6 +3594,9 @@ const magicBackgroundType = ref('white') // 'white' or 'magical'
 const magicPhotoSelectionMethod = ref('')
 const magicDateRange = ref({ start: null, end: null })
 const magicSelectedTags = ref([])
+const magicSelectedCountries = ref([])
+const magicSelectedStates = ref([])
+const magicSelectedCities = ref([])
 
 const magicSelectedTagFilter = ref([])
 const magicSelectedMemories = ref([])
@@ -3939,16 +4017,37 @@ const populatePhotoSelectionPool = () => {
       console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
       break
       
-    case 'last_month':
-      // Get photos from the last month
-      const oneMonthAgo = new Date()
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
-      filteredAssets = filteredAssets.filter(asset => {
-        const assetDate = new Date(asset.created_at)
-        return assetDate >= oneMonthAgo
-      })
-      console.log('🔍 [populatePhotoSelectionPool] Last month method - filtered assets count:', filteredAssets.length)
-      console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
+    case 'geo_code':
+      // Filter by selected locations (country, state, city)
+      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected countries:', magicSelectedCountries.value)
+      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected states:', magicSelectedStates.value)
+      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected cities:', magicSelectedCities.value)
+      
+      const hasLocationSelection = (magicSelectedCountries.value && magicSelectedCountries.value.length > 0) ||
+                                  (magicSelectedStates.value && magicSelectedStates.value.length > 0) ||
+                                  (magicSelectedCities.value && magicSelectedCities.value.length > 0)
+      
+      if (hasLocationSelection) {
+        const beforeFilter = filteredAssets.length
+        filteredAssets = filteredAssets.filter(asset => {
+          const matchesCountry = !magicSelectedCountries.value.length || 
+                                (asset.country && magicSelectedCountries.value.includes(asset.country))
+          const matchesState = !magicSelectedStates.value.length || 
+                              (asset.state && magicSelectedStates.value.includes(asset.state))
+          const matchesCity = !magicSelectedCities.value.length || 
+                             (asset.city && magicSelectedCities.value.includes(asset.city))
+          
+          const hasMatch = matchesCountry || matchesState || matchesCity
+          if (hasMatch) {
+            console.log('🔍 [populatePhotoSelectionPool] Asset matches location:', asset.id, 'country:', asset.country, 'state:', asset.state, 'city:', asset.city)
+          }
+          return hasMatch
+        })
+        console.log('🔍 [populatePhotoSelectionPool] Geo code method - before filter:', beforeFilter, 'after filter:', filteredAssets.length)
+        console.log('🔍 [populatePhotoSelectionPool] Geo code method - matching assets:', filteredAssets.map(a => ({ id: a.id, country: a.country, state: a.state, city: a.city })))
+      } else {
+        console.log('🔍 [populatePhotoSelectionPool] Geo code method - no locations selected, returning all assets')
+      }
       break
       
     case 'date_range':

@@ -19,9 +19,11 @@ export default defineEventHandler(async (event) => {
     const validPhotoCounts = [1, 4, 6]
     const targetPhotoCount = validPhotoCounts.includes(photo_count) ? photo_count : 4
 
-    // Construct prompt for OpenAI
+    // Construct prompt for OpenAI with numbered photos (zero-padded for reliability)
     const photoSummaries = photos.map((p, i) => {
-      let summary = `Photo ${i+1}:\n- id: ${p.id}\n- orientation: ${p.orientation || 'unknown'}\n- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
+      const photoNumber = i + 1
+      const paddedNumber = photoNumber.toString().padStart(3, '0') // 001, 012, 123, etc.
+      let summary = `Photo ${paddedNumber}:\n- orientation: ${p.orientation || 'unknown'}\n- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
       
       // Add location information if available
       const locationParts = []
@@ -82,11 +84,14 @@ STYLE REQUIREMENTS:
 ${memoryBookContext}
 PHOTO SELECTION RULES:
 - You MUST select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool
+- Select photos that are related to the title, theme or event
 - Choose the most meaningful and emotionally connected photos that work well together
 - Consider relationships, themes, and storytelling potential when selecting
 - If dates are available, use them to create a chronological or thematic flow
 - ${targetPhotoCount === 1 ? 'For single photos, prioritize portrait orientation when available for better layout' : 'Arrange selected photos in the best storytelling order'}
 - CRITICAL: When selecting photos, use the exact UUID string from the "id:" field, not the photo number
+- CRITICAL: Copy the photo ID EXACTLY as shown - do not modify, change, or generate new IDs
+- CRITICAL: The photo ID must match character-for-character with the provided UUID
 
 STORY GUIDELINES:
 - Weave together the selected photos into a single cohesive story
@@ -107,23 +112,22 @@ ${forceAll ?
 RESPONSE FORMAT:
 Return ONLY a valid JSON object with these exact fields:
 {
-  "selected_photo_ids": ["photo_id_1"${targetPhotoCount > 1 ? ', "photo_id_2"' : ''}${targetPhotoCount > 2 ? ', "photo_id_3"' : ''}${targetPhotoCount > 3 ? ', "photo_id_4"' : ''}${targetPhotoCount > 4 ? ', "photo_id_5"' : ''}${targetPhotoCount > 5 ? ', "photo_id_6"' : ''}],
+  "selected_photo_numbers": [${targetPhotoCount > 1 ? '1' : ''}${targetPhotoCount > 2 ? ', 2' : ''}${targetPhotoCount > 3 ? ', 3' : ''}${targetPhotoCount > 4 ? ', 4' : ''}${targetPhotoCount > 5 ? ', 5' : ''}${targetPhotoCount > 6 ? ', 6' : ''}],
   "story": "Your 2-3 sentence story here..."
 }
 
 EXAMPLE:
-If you want to select the first and third photos from the pool, your response should look like:
+If you want to select photos 001 and 003 from the pool, your response should look like this EXACT format:
 {
-  "selected_photo_ids": ["3d19fc8e-48ef-4efd-bc48-e2e31c354055", "01dfc37f-b546-4b9c-b2f9-310f5fa81839"],
+  "selected_photo_numbers": [1, 3],
   "story": "Your story here..."
 }
 
 IMPORTANT: 
-- Only include photo IDs that exist in the provided pool
+- Only include photo numbers that exist in the provided pool (1 to ${photos.length})
 - Select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''}, no more, no less
-- Ensure all selected photo IDs match exactly with the IDs in the pool above
-- CRITICAL: Use the exact UUID strings (like "3d19fc8e-48ef-4efd-bc48-e2e31c354055") as photo IDs, NOT the photo numbers (like "1", "2", "3")
-- The photo ID is the long string after "id:" in each photo entry`
+- Use the photo numbers (1, 2, 3, etc.) NOT the photo IDs
+- Photo numbers correspond to the "Photo X:" entries above`
 
     const prompt = `${systemInstructions}
 
@@ -191,123 +195,66 @@ ${photoDataSection}`
       throw createError({ statusCode: 500, statusMessage: 'Failed to parse AI response: ' + err.message })
     }
 
-    if (!result.selected_photo_ids || !result.story) {
+    if (!result.selected_photo_numbers || !result.story) {
       throw createError({ statusCode: 500, statusMessage: 'AI response missing required fields' })
     }
 
-    // Validate that selected photo IDs exist in the provided pool
-    const availablePhotoIds = photos.map(p => p.id)
-    const invalidPhotoIds = result.selected_photo_ids.filter(id => !availablePhotoIds.includes(id))
+    // Validate that selected photo numbers exist in the provided pool
+    const availablePhotoNumbers = Array.from({ length: photos.length }, (_, i) => i + 1)
+    const invalidPhotoNumbers = result.selected_photo_numbers.filter(num => !availablePhotoNumbers.includes(num))
     
     console.log("****************************")
     console.log("Photo selection validation")
     console.log("****************************")
     console.log(`Target photo count: ${targetPhotoCount}`)
-    console.log(`AI selected count: ${result.selected_photo_ids.length}`)
-    console.log(`AI selected IDs: ${result.selected_photo_ids}`)
-    console.log(`Available IDs: ${availablePhotoIds}`)
-    console.log(`Invalid IDs: ${invalidPhotoIds}`)
-    
-    // Debug: Check if the AI is selecting the wrong photo from the pool
-    if (invalidPhotoIds.length > 0) {
-      console.log("🔍 Debugging invalid photo selection:")
-      invalidPhotoIds.forEach(invalidId => {
-        // Find similar IDs that might be what the AI intended
-        const similarIds = availablePhotoIds.filter(validId => {
-          // Check for common patterns
-          return validId.includes(invalidId.slice(1)) || // Missing first char
-                 invalidId.includes(validId.slice(1)) || // Extra first char
-                 validId.slice(1) === invalidId.slice(1) // Same except first char
-        })
-        console.log(`Invalid ID "${invalidId}" might be meant to be one of:`, similarIds)
-      })
-    }
+    console.log(`AI selected count: ${result.selected_photo_numbers.length}`)
+    console.log(`AI selected numbers: ${result.selected_photo_numbers}`)
+    console.log(`Available numbers: ${availablePhotoNumbers}`)
+    console.log(`Invalid numbers: ${invalidPhotoNumbers}`)
     console.log("****************************")
     
-    if (invalidPhotoIds.length > 0) {
-      console.error('AI selected invalid photo IDs:', invalidPhotoIds)
-      console.error('Available photo IDs:', availablePhotoIds)
+    if (invalidPhotoNumbers.length > 0) {
+      console.error('AI selected invalid photo numbers:', invalidPhotoNumbers)
+      console.error('Available photo numbers:', availablePhotoNumbers)
       
-      // Try to fix common UUID typos by finding similar IDs
-      const fixedPhotoIds = result.selected_photo_ids.map(id => {
-        if (availablePhotoIds.includes(id)) {
-          return id // Already valid
-        }
-        
-        // Try to find a similar UUID by checking if it's a typo
-        const similarId = availablePhotoIds.find(validId => {
-          // Check if it's a simple typo (missing or extra character)
-          if (validId.length === id.length + 1 && validId.includes(id)) {
-            return true // Missing character
-          }
-          if (id.length === validId.length + 1 && id.includes(validId)) {
-            return true // Extra character
-          }
-          
-          // Check for specific common typos
-          // Missing first character (like missing "9" at start)
-          if (validId.length === id.length + 1 && validId.slice(1) === id) {
-            console.log(`Found missing first character typo: "${id}" -> "${validId}"`)
-            return true
-          }
-          // Extra first character (like extra "0" at start)
-          if (id.length === validId.length + 1 && id.slice(1) === validId) {
-            console.log(`Found extra first character typo: "${id}" -> "${validId}"`)
-            return true
-          }
-          
-          // Check if it's a single character difference
-          let differences = 0
-          const maxLen = Math.max(validId.length, id.length)
-          for (let i = 0; i < maxLen; i++) {
-            if (validId[i] !== id[i]) differences++
-            if (differences > 1) break
-          }
-          return differences <= 1
-        })
-        
-        if (similarId) {
-          console.log(`Fixed invalid ID "${id}" to "${similarId}"`)
-          return similarId
-        }
-        
-        return null // Mark as invalid if no fix found
-      })
+      // Filter out invalid numbers and keep only valid ones
+      const validPhotoNumbers = result.selected_photo_numbers.filter(num => availablePhotoNumbers.includes(num))
       
-      // Filter out invalid IDs and keep only valid ones
-      const validPhotoIds = fixedPhotoIds.filter(id => id !== null)
-      const stillInvalidIds = fixedPhotoIds.filter(id => id === null)
+      console.log(`Valid photo numbers: ${validPhotoNumbers.length}/${targetPhotoCount}`)
+      console.log(`Invalid numbers: ${invalidPhotoNumbers.length}`)
       
-      console.log(`Valid photo IDs: ${validPhotoIds.length}/${targetPhotoCount}`)
-      console.log(`Still invalid IDs: ${stillInvalidIds.length}`)
-      
-      if (validPhotoIds.length === 0) {
-        throw createError({ statusCode: 500, statusMessage: `No valid photo IDs found. AI selected all invalid IDs: ${invalidPhotoIds.join(', ')}` })
+      if (validPhotoNumbers.length === 0) {
+        throw createError({ statusCode: 500, statusMessage: `No valid photo numbers found. AI selected all invalid numbers: ${invalidPhotoNumbers.join(', ')}` })
       }
       
-      if (validPhotoIds.length < targetPhotoCount) {
-        console.warn(`⚠️ Only ${validPhotoIds.length} valid photos found, proceeding with fewer photos than requested (${targetPhotoCount})`)
+      if (validPhotoNumbers.length < targetPhotoCount) {
+        console.warn(`⚠️ Only ${validPhotoNumbers.length} valid photos found, proceeding with fewer photos than requested (${targetPhotoCount})`)
       }
       
-      // Use the valid IDs
-      result.selected_photo_ids = validPhotoIds
-      console.log('Final valid photo IDs:', validPhotoIds)
+      // Use the valid numbers
+      result.selected_photo_numbers = validPhotoNumbers
+      console.log('Final valid photo numbers:', validPhotoNumbers)
     }
 
+    // Convert photo numbers to actual photo IDs
+    const selectedPhotoIds = result.selected_photo_numbers.map(num => photos[num - 1].id)
+    console.log('✨ Magic story and selected photos updated successfully')
+    console.log('Selected photo IDs:', selectedPhotoIds)
+
     // Validate that we have at least some photos selected
-    if (result.selected_photo_ids.length < 1) {
-      console.error(`AI selected ${result.selected_photo_ids.length} photos, need at least 1`)
-      throw createError({ statusCode: 500, statusMessage: `AI selected ${result.selected_photo_ids.length} photos, need at least 1` })
+    if (selectedPhotoIds.length < 1) {
+      console.error(`AI selected ${selectedPhotoIds.length} photos, need at least 1`)
+      throw createError({ statusCode: 500, statusMessage: `AI selected ${selectedPhotoIds.length} photos, need at least 1` })
     }
     
     // Warn if we have fewer photos than requested, but proceed
-    if (result.selected_photo_ids.length < targetPhotoCount) {
-      console.warn(`⚠️ AI selected ${result.selected_photo_ids.length} photos, requested ${targetPhotoCount}. Proceeding with available photos.`)
+    if (selectedPhotoIds.length < targetPhotoCount) {
+      console.warn(`⚠️ AI selected ${selectedPhotoIds.length} photos, requested ${targetPhotoCount}. Proceeding with available photos.`)
     }
 
     return {
       success: true,
-      selected_photo_ids: result.selected_photo_ids,
+      selected_photo_ids: selectedPhotoIds,
       story: result.story,
       background_type: background_type
     }
