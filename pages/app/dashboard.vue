@@ -140,9 +140,9 @@
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-pink-400 to-pink-300 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
             <Edit class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 tracking-tight">Review Memory Moments</h3>
+          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 tracking-tight">Review Moments</h3>
           <p class="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 font-medium">
-            Review and refine your memory moments. Approve or reject AI suggestions, edit captions, and add keywords.
+            Review and refine your moments. Approve or reject AI suggestions, edit captions, and add keywords.
           </p>
           <div class="space-y-2">
             <div class="flex items-center gap-3 text-sm sm:text-base text-pink-700">
