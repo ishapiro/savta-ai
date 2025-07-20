@@ -1008,13 +1008,15 @@
       </div>
     </Dialog>
     <!-- Regenerate Confirmation Dialog -->
-    <Dialog v-model:visible="showRegenerateDialog" modal header="Recreate Memory Book" class="w-[95vw] max-w-md">
+    <Dialog v-model:visible="showRegenerateDialog" modal header="Recreate Memory Book" class="w-full max-w-xl">
       <div class="p-4">
         <p class="text-sm sm:text-base mb-2">
           Are you sure you want to recreate this memory book?
         </p>
-        <p class="text-gray-600 text-xs sm:text-sm mb-2">
-          This will regenerate the PDF with the latest settings and assets.
+        <p class="text-gray-600 text-base sm:text-sm mb-2">
+          This will make a brand new memory book for you with fresh photos, stories, and beautiful backgrounds - just like baking a new batch of cookies with the same recipe! 
+          Every time you recreate it, you'll get something wonderfully different. When it's just perfect and makes your heart smile, 
+          that's when you'll want to approve it.
         </p>
         <div class="flex gap-3 justify-end mt-4">
           <Button label="Cancel" class="p-button-secondary" @click="cancelDialog" />

@@ -149,9 +149,9 @@ export default defineEventHandler(async (event) => {
       console.log('✅ Cleared existing URLs from database')
     }
     
-    // Step 1: Generate background if not already present and AI background is enabled
-    if (!book.background_url && book.ai_background !== false) {
-      console.log('🎨 Background not ready and AI background enabled, generating background...')
+    // Step 1: Generate background if not already present, AI background is enabled, and background type is not white
+    if (!book.background_url && book.ai_background !== false && book.background_type !== 'white') {
+      console.log('🎨 Background not ready, AI background enabled, and background type is not white, generating background...')
       
       try {
         // Update status to indicate background generation
@@ -307,6 +307,12 @@ export default defineEventHandler(async (event) => {
         console.error('❌ Background generation failed:', backgroundError)
         throw new Error('Failed to generate background: ' + backgroundError.message)
       }
+    } else if (book.background_type === 'white') {
+      console.log('ℹ️ Background type is white, skipping background generation')
+    } else if (book.ai_background === false) {
+      console.log('ℹ️ AI background is disabled, skipping background generation')
+    } else if (book.background_url) {
+      console.log('ℹ️ Background already exists, skipping background generation')
     }
     
     // Step 2: Generate the PDF
