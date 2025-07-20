@@ -84,15 +84,15 @@ STYLE REQUIREMENTS:
 ${memoryBookContext}
 PHOTO SELECTION RULES:
 - You MUST select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool
-- If there is a location named in the title match it against the location in the photo metadata
+- If there is a location named in the title match it against the city, state, country, or zip code in photo data
 - Select photos that are related to the title, theme or event
 - Choose the most meaningful and emotionally connected photos that work well together
 - Consider relationships, themes, and storytelling potential when selecting
 - If dates are available, use them to create a chronological or thematic flow
 - ${targetPhotoCount === 1 ? 'For single photos, prioritize portrait orientation when available for better layout' : 'Arrange selected photos in the best storytelling order'}
-- CRITICAL: When selecting photos, use the exact UUID string from the "id:" field, not the photo number
-- CRITICAL: Copy the photo ID EXACTLY as shown - do not modify, change, or generate new IDs
-- CRITICAL: The photo ID must match character-for-character with the provided UUID
+- CRITICAL: Use the photo numbers (1, 2, 3, etc.) exactly as shown in the "Photo X:" labels
+- CRITICAL: Copy the photo numbers EXACTLY - do not modify, change, or generate new numbers
+- CRITICAL: The photo numbers must match exactly with the provided pool
 
 STORY GUIDELINES:
 - Weave together the selected photos into a single cohesive story
@@ -127,8 +127,8 @@ If you want to select photos 001 and 003 from the pool, your response should loo
 IMPORTANT: 
 - Only include photo numbers that exist in the provided pool (1 to ${photos.length})
 - Select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''}, no more, no less
-- Use the photo numbers (1, 2, 3, etc.) NOT the photo IDs
-- Photo numbers correspond to the "Photo X:" entries above`
+- Use plain photo numbers (1, 2, 3, etc.) without leading zeros - NOT 001, 002, 003
+- Photo numbers correspond to the "Photo X:" entries above (ignore the zero-padding in labels)`
 
     const prompt = `${systemInstructions}
 
@@ -176,10 +176,35 @@ ${photoDataSection}`
     console.log(aiText)
     console.log("****************************")
 
+    // Clean up JSON response - remove leading zeros from photo numbers
+    let cleanedAiText = aiText
+    try {
+      // Replace leading zeros in photo numbers (e.g., 021 -> 21, 003 -> 3)
+      cleanedAiText = aiText.replace(/"selected_photo_numbers":\s*\[([^\]]+)\]/g, (match, numbers) => {
+        const cleanedNumbers = numbers.split(',').map(num => {
+          const trimmed = num.trim()
+          // Remove leading zeros but keep the number
+          return parseInt(trimmed, 10).toString()
+        }).join(', ')
+        return `"selected_photo_numbers": [${cleanedNumbers}]`
+      })
+      
+      if (cleanedAiText !== aiText) {
+        console.log("****************************")
+        console.log("Cleaned JSON (removed leading zeros)")
+        console.log("****************************")
+        console.log(cleanedAiText)
+        console.log("****************************")
+      }
+    } catch (cleanupErr) {
+      console.warn('⚠️ JSON cleanup failed, proceeding with original:', cleanupErr.message)
+      cleanedAiText = aiText
+    }
+
     // Parse JSON from AI response
     let result
     try {
-      const jsonMatch = aiText.match(/\{[\s\S]*\}/)
+      const jsonMatch = cleanedAiText.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         result = JSON.parse(jsonMatch[0])
         console.log("****************************")
@@ -193,6 +218,7 @@ ${photoDataSection}`
     } catch (err) {
       console.error('JSON parsing error:', err)
       console.error('Raw AI response:', aiText)
+      console.error('Cleaned AI response:', cleanedAiText)
       throw createError({ statusCode: 500, statusMessage: 'Failed to parse AI response: ' + err.message })
     }
 
