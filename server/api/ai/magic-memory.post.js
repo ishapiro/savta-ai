@@ -84,6 +84,7 @@ STYLE REQUIREMENTS:
 ${memoryBookContext}
 PHOTO SELECTION RULES:
 - You MUST select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool
+- If there is a location named in the title match it against the location in the photo metadata
 - Select photos that are related to the title, theme or event
 - Choose the most meaningful and emotionally connected photos that work well together
 - Consider relationships, themes, and storytelling potential when selecting
