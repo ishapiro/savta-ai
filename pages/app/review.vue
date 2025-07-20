@@ -62,7 +62,7 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Filter"
-                class="w-48 sm:w-32"
+                class="w-60"
               />
             </div>
             <div class="flex items-center space-x-2">
@@ -73,7 +73,7 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Type"
-                class="w-48 sm:w-32"
+                class="w-60"
               />
             </div>
             <div class="flex items-center space-x-2">
@@ -84,7 +84,7 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Sort"
-                class="w-48 sm:w-32"
+                class="w-60"
               />
             </div>
           </div>
@@ -115,15 +115,15 @@
           <!-- Content Section - Flexible Height -->
           <div class="flex-1 p-2 sm:p-3 overflow-y-auto" style="min-height: 0;">
             <!-- Title -->
-            <div class="mb-2">
+            <!-- <div class="mb-2">
               <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Title</label>
               <div class="text-xs sm:text-sm font-medium text-gray-900 bg-yellow-50 rounded p-1.5 sm:p-2 border border-yellow-200">
                 {{ asset.title || getImageName(asset.storage_url) || 'Untitled' }}
               </div>
-            </div>
+            </div> -->
 
             <!-- User Caption -->
-            <div class="mb-2">
+            <!-- <div class="mb-2">
               <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Your Caption</label>
               <div v-if="asset.user_caption && asset.user_caption !== getImageName(asset.storage_url)" class="text-xs sm:text-sm text-gray-900 bg-blue-50 rounded p-1.5 sm:p-2 border border-blue-200">
                 {{ asset.user_caption }}
@@ -131,7 +131,7 @@
               <div v-else class="text-xs sm:text-sm text-gray-400 italic bg-gray-50 rounded p-1.5 sm:p-2 border border-gray-200">
                 No caption added
               </div>
-            </div>
+            </div> -->
 
             <!-- AI Caption -->
             <div v-if="asset.ai_caption" class="mb-2">
@@ -399,7 +399,7 @@
         modal
         :closable="true"
         :dismissableMask="true"
-        header="✨ Your Magic Review Workshop ✨"
+        header="✨ Your Special Review Workshop ✨"
         class="w-full max-w-3xl"
       >
         <div class="space-y-6">
@@ -411,7 +411,7 @@
               </div>
               <div>
                 <h3 class="text-xl font-bold text-gray-800 mb-1">Welcome to Your Memory Review Workshop! ⭐</h3>
-                <p class="text-gray-600">This is where you become the curator of your magical memories - approve, edit, and organize your precious moments!</p>
+                <p class="text-gray-600">This is where you become the curator of your special memories - approve, edit, and organize your precious moments!</p>
               </div>
             </div>
           </div>
@@ -424,14 +424,14 @@
               </div>
               <div>
                 <h3 class="text-lg font-bold text-gray-800 mb-1">📊 Your Memory Collection Stats</h3>
-                <p class="text-gray-600">Track your magical memory collection with these enchanting statistics!</p>
+                <p class="text-gray-600">Track your special memory collection with these helpful statistics!</p>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-image text-blue-500"></i>
-                  <span class="font-semibold text-gray-800">Total Magic Moments</span>
+                  <span class="font-semibold text-gray-800">Total Special Moments</span>
                 </div>
                 <p class="text-sm text-gray-600">All your uploaded memories waiting to be organized</p>
               </div>
@@ -440,19 +440,19 @@
                   <i class="pi pi-clock text-amber-500"></i>
                   <span class="font-semibold text-gray-800">Awaiting Your Blessing</span>
                 </div>
-                <p class="text-sm text-gray-600">Memories waiting for your magical approval</p>
+                                  <p class="text-sm text-gray-600">Memories waiting for your special approval</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-check text-green-500"></i>
                   <span class="font-semibold text-gray-800">Blessed & Approved</span>
                 </div>
-                <p class="text-sm text-gray-600">Memories ready to join your magic memory books</p>
+                                  <p class="text-sm text-gray-600">Memories ready to join your special memory books</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-book text-purple-500"></i>
-                  <span class="font-semibold text-gray-800">Ready for Magic Books</span>
+                  <span class="font-semibold text-gray-800">Ready for Special Books</span>
                 </div>
                 <p class="text-sm text-gray-600">Can be included in your beautiful memory collections</p>
               </div>
@@ -466,8 +466,8 @@
                 <i class="pi pi-magic text-green-600 text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Memory Moment Magic Actions</h3>
-                <p class="text-gray-600">Cast your spells on each memory moment with these magical actions!</p>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Memory Moment Special Actions</h3>
+                <p class="text-gray-600">Apply your special touch to each memory moment with these helpful actions!</p>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -476,7 +476,7 @@
                   <i class="pi pi-check text-green-500 text-lg"></i>
                   <span class="font-semibold text-gray-800">Approve</span>
                 </div>
-                <p class="text-sm text-gray-600">Bless this memory moment to join your Savta Magic Memory collection</p>
+                                  <p class="text-sm text-gray-600">Bless this memory moment to join your Savta Special Memory collection</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-green-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -490,7 +490,7 @@
                   <i class="pi pi-trash text-red-500 text-lg"></i>
                   <span class="font-semibold text-gray-800">Delete</span>
                 </div>
-                <p class="text-sm text-gray-600">Send to the memory vault (can be restored with magic later)</p>
+                                  <p class="text-sm text-gray-600">Send to the memory vault (can be restored later)</p>
               </div>
             </div>
           </div>
@@ -502,8 +502,8 @@
                 <i class="pi pi-tags text-amber-600 text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">🔮 Memory Status Spells</h3>
-                <p class="text-gray-600">Each memory moment has its own magical status - here's what they mean!</p>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">🔮 Memory Status Guide</h3>
+                <p class="text-gray-600">Each memory moment has its own special status - here's what they mean!</p>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -514,7 +514,7 @@
                   </div>
                   <span class="font-semibold text-gray-800">Pending</span>
                 </div>
-                <p class="text-sm text-gray-600">New memory moment awaiting your magical review and blessing</p>
+                                  <p class="text-sm text-gray-600">New memory moment awaiting your special review and blessing</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-amber-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -523,7 +523,7 @@
                   </div>
                   <span class="font-semibold text-gray-800">Approved</span>
                 </div>
-                <p class="text-sm text-gray-600">Memory moment blessed and ready for magic memory books</p>
+                                  <p class="text-sm text-gray-600">Memory moment blessed and ready for special memory books</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-amber-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -545,23 +545,23 @@
               </div>
               <div>
                 <h3 class="text-lg font-bold text-gray-800 mb-1">🚀 Powerful Page Actions</h3>
-                <p class="text-gray-600">Unleash the full power of your memory workshop with these magical tools!</p>
+                <p class="text-gray-600">Unleash the full power of your memory workshop with these special tools!</p>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-book text-purple-500"></i>
-                  <span class="font-semibold text-gray-800">Compose Magic Memory</span>
+                  <span class="font-semibold text-gray-800">Compose Special Memory</span>
                 </div>
-                <p class="text-sm text-gray-600">Create a beautiful memory book from your approved magical moments</p>
+                <p class="text-sm text-gray-600">Create a beautiful memory book from your approved special moments</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-trash text-pink-500"></i>
                   <span class="font-semibold text-gray-800">View Deleted Memories</span>
                 </div>
-                <p class="text-sm text-gray-600">Visit the memory vault to restore forgotten magical moments</p>
+                                  <p class="text-sm text-gray-600">Visit the memory vault to restore forgotten special moments</p>
               </div>
             </div>
           </div>
@@ -573,27 +573,27 @@
                 <i class="pi pi-lightbulb text-indigo-600 text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">🌟 Magical Tips & Tricks</h3>
-                <p class="text-gray-600">Master the art of memory curation with these enchanting tips!</p>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">🌟 Special Tips & Tricks</h3>
+                <p class="text-gray-600">Master the art of memory curation with these helpful tips!</p>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="bg-white rounded-xl p-4 border border-indigo-100">
                 <h4 class="font-semibold text-gray-800 mb-2">🎯 Quick Actions:</h4>
                 <ul class="text-sm text-gray-600 space-y-1">
-                  <li>• Hover over icons to see magical tooltips</li>
+                                      <li>• Hover over icons to see helpful tooltips</li>
                   <li>• Use filters to find specific memories</li>
                   <li>• Edit captions by clicking on them</li>
-                  <li>• Deleted memories can be restored with magic</li>
+                                      <li>• Deleted memories can be restored</li>
                 </ul>
               </div>
               <div class="bg-white rounded-xl p-4 border border-indigo-100">
                 <h4 class="font-semibold text-gray-800 mb-2">✨ Pro Tips:</h4>
                 <ul class="text-sm text-gray-600 space-y-1">
-                  <li>• Only approved memories join magic books</li>
+                                      <li>• Only approved memories join special books</li>
                   <li>• Use tags to organize your collection</li>
                   <li>• Add people names for better organization</li>
-                  <li>• Review regularly to keep your magic flowing</li>
+                                      <li>• Review regularly to keep your memories flowing</li>
                 </ul>
               </div>
             </div>
@@ -604,7 +604,7 @@
             <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center shadow-lg mx-auto mb-4">
               <i class="pi pi-star text-green-600 text-2xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">⭐ Ready to Curate Your Magic?</h3>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">⭐ Ready to Curate Your Special Memories?</h3>
             <p class="text-gray-600 mb-4">Start reviewing and organizing your precious memory moments!</p>
             <button
               class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"

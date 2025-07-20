@@ -30,7 +30,7 @@
       </p>
     </div>
     
-    <!-- Primary Action: Cast a Magic Spell -->
+    <!-- Primary Action: Create Special Memories -->
     <div class="mb-8 sm:mb-12">
       <div class="text-center mb-6">
         <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 tracking-tight">✨ Get Started ✨</h3>
@@ -81,7 +81,7 @@
                   <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                     <Sparkles class="w-4 h-4 text-green-600" />
                   </div>
-                  <span class="font-semibold text-sm sm:text-base">AI-powered magic</span>
+                  <span class="font-semibold text-sm sm:text-base">AI-powered memories</span>
                 </div>
                 <div class="flex items-center gap-3 text-green-700">
                   <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">

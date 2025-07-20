@@ -44,7 +44,7 @@
                 <i class="pi pi-book text-primary text-sm"></i>
               </div>
               <div class="ml-3">
-                <p class="text-sm font-medium text-color-secondary">Savta's Magic Memories</p>
+                <p class="text-sm font-medium text-color-secondary">Savta's Special Memories</p>
                 <p class="text-lg font-semibold text-color">{{ stats.memoryBooks }}</p>
               </div>
             </div>

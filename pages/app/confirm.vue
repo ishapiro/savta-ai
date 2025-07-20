@@ -89,7 +89,7 @@
       <!-- Action Buttons -->
       <div class="flex flex-col sm:flex-row gap-2 justify-center w-full">
         <Button 
-          label="Start Casting Spells" 
+                      label="Start Creating Special Moments" 
           class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold text-sm"
           @click="goToDashboard"
         />

@@ -20,8 +20,8 @@
               @click="openMagicMemoryDialog"
             >
               <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
-              <span class="hidden sm:inline">Magic Memories Cards</span>
-              <span class="sm:hidden">Magic Cards</span>
+              <span class="hidden sm:inline">Savta Special Memory Cards</span>
+              <span class="sm:hidden">Savta Cards</span>
             </button>
             <p class="text-sm text-gray-600 mt-1 text-center">Start Here</p>
           </div>

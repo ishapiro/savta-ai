@@ -268,7 +268,7 @@
                 <i class="pi pi-heart text-pink-600 text-xl"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Manage Your Magic Moments</h3>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Manage Your Special Moments</h3>
                 <p class="text-sm text-gray-600">Use review to manage and edit your moments</p>
               </div>
             </div>
@@ -360,7 +360,7 @@
         modal
         :closable="true"
         :dismissableMask="true"
-        header="✨ Your Magic Upload Guide ✨"
+        header="✨ Your Special Upload Guide ✨"
         class="w-full max-w-3xl"
       >
         <div class="space-y-6">
@@ -372,7 +372,7 @@
               </div>
               <div>
                 <h3 class="text-xl font-bold text-gray-800 mb-1">Welcome to Your Memory Workshop! 🎨</h3>
-                <p class="text-gray-600">This is where the magic begins - upload your precious moments and watch them transform into magical memories!</p>
+                <p class="text-gray-600">This is where the special moments begin - upload your precious memories and watch them transform into beautiful family stories!</p>
               </div>
             </div>
           </div>
@@ -385,23 +385,23 @@
               </div>
               <div>
                 <h3 class="text-lg font-bold text-gray-800 mb-1">📸 Photos & 📝 Stories</h3>
-                <p class="text-gray-600">Choose your magical medium! Upload photos or share your family stories - both will be transformed into beautiful memory moments.</p>
+                <p class="text-gray-600">Choose your special medium! Upload photos or share your family stories - both will be transformed into beautiful memory moments.</p>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-image text-blue-500"></i>
-                  <span class="font-semibold text-gray-800">Photo Magic</span>
+                  <span class="font-semibold text-gray-800">Photo Memories</span>
                 </div>
                 <p class="text-sm text-gray-600">Drag & drop or click to upload your family photos. Our AI will add captions and detect people!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-file-edit text-indigo-500"></i>
-                  <span class="font-semibold text-gray-800">Story Spells</span>
+                  <span class="font-semibold text-gray-800">Family Stories</span>
                 </div>
-                <p class="text-sm text-gray-600">Share your family stories and memories. Add a title and let the magic happen!</p>
+                <p class="text-sm text-gray-600">Share your family stories and memories. Add a title and let the special moments happen!</p>
               </div>
             </div>
           </div>
@@ -414,7 +414,7 @@
               </div>
               <div>
                 <h3 class="text-lg font-bold text-gray-800 mb-1">🔮 What Does "Pending" Mean?</h3>
-                <p class="text-gray-600">Your memory moment is waiting for your magical approval! Think of it as a spell that needs your final blessing before it can join your memory books.</p>
+                <p class="text-gray-600">Your memory moment is waiting for your special approval! Think of it as a precious moment that needs your final blessing before it can join your memory books.</p>
               </div>
             </div>
             <div class="bg-white rounded-xl p-4 border border-amber-100">
@@ -423,7 +423,7 @@
                   <i class="pi pi-star text-amber-600 text-sm"></i>
                 </div>
                 <div>
-                  <p class="text-sm font-medium text-gray-800">✨ Only approved memory moments can be included in your magic memory books!</p>
+                  <p class="text-sm font-medium text-gray-800">✨ Only approved memory moments can be included in your special memory books!</p>
                 </div>
               </div>
             </div>
@@ -436,8 +436,8 @@
                 <i class="pi pi-heart text-green-600 text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">💫 Your Recent Magic Moments</h3>
-                <p class="text-gray-600">See your latest uploads displayed as beautiful cards! Each card shows your captions, AI-generated magic, tags, and detected people.</p>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">💫 Your Recent Special Moments</h3>
+                <p class="text-gray-600">See your latest uploads displayed as beautiful cards! Each card shows your captions, AI-generated memories, tags, and detected people.</p>
               </div>
             </div>
             <div class="bg-white rounded-xl p-4 border border-green-100">
@@ -446,7 +446,7 @@
                   <h4 class="font-semibold text-gray-800 mb-2">🎯 What You'll See:</h4>
                   <ul class="text-sm text-gray-600 space-y-1">
                     <li>• Your personal captions</li>
-                    <li>• AI-generated magical descriptions</li>
+                    <li>• AI-generated special descriptions</li>
                     <li>• Smart tags and people detection</li>
                     <li>• Approval status badges</li>
                   </ul>
@@ -471,8 +471,8 @@
                 <i class="pi pi-lightbulb text-pink-600 text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">🌟 Magical Tips & Tricks</h3>
-                <p class="text-gray-600">Unlock the full potential of your memory workshop with these enchanting tips!</p>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">🌟 Special Tips & Tricks</h3>
+                <p class="text-gray-600">Unlock the full potential of your memory workshop with these helpful tips!</p>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -481,14 +481,14 @@
                   <i class="pi pi-list text-pink-500"></i>
                   <span class="font-semibold text-gray-800">Review & Manage</span>
                 </div>
-                <p class="text-sm text-gray-600">Click "View All Memory Moments" to access your complete collection and manage all your magical memories!</p>
+                <p class="text-sm text-gray-600">Click "View All Memory Moments" to access your complete collection and manage all your special memories!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-check-circle text-purple-500"></i>
-                  <span class="font-semibold text-gray-800">Approval Magic</span>
+                  <span class="font-semibold text-gray-800">Approval Process</span>
                 </div>
-                <p class="text-sm text-gray-600">Only approved memory moments can be included in your beautiful magic memory books!</p>
+                <p class="text-sm text-gray-600">Only approved memory moments can be included in your beautiful special memory books!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -502,7 +502,7 @@
                   <i class="pi pi-book text-purple-500"></i>
                   <span class="font-semibold text-gray-800">Memory Books</span>
                 </div>
-                <p class="text-sm text-gray-600">Create beautiful memory books from your approved moments - the ultimate magical collection!</p>
+                <p class="text-sm text-gray-600">Create beautiful memory books from your approved moments - the ultimate special collection!</p>
               </div>
             </div>
           </div>
@@ -512,8 +512,8 @@
             <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg mx-auto mb-4">
               <i class="pi pi-rocket text-blue-600 text-2xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">🚀 Ready to Start Your Magic?</h3>
-            <p class="text-gray-600 mb-4">Upload your first memory moment and watch the magic unfold!</p>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">🚀 Ready to Start Your Special Journey?</h3>
+            <p class="text-gray-600 mb-4">Upload your first memory moment and watch the special moments unfold!</p>
             <button
               class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
               @click="showHelpModal = false"
@@ -540,9 +540,9 @@
             <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <i class="pi pi-check text-white text-3xl"></i>
             </div>
-            <h2 class="text-2xl font-bold text-green-700 mb-2">🎉 Magic Complete!</h2>
+            <h2 class="text-2xl font-bold text-green-700 mb-2">🎉 Special Moments Complete!</h2>
             <p class="text-lg text-green-600 mb-4">
-              We uploaded and worked our magic on <span class="font-bold">{{ successfulUploads }}</span> 
+              We uploaded and created special moments from <span class="font-bold">{{ successfulUploads }}</span> 
               <span v-if="successfulUploads === 1">&nbsp; memory</span>
               <span v-else>&nbsp; memories</span>!
             </p>
@@ -555,7 +555,7 @@
             </div>
             <h2 class="text-2xl font-bold text-orange-700 mb-2">✨ Partially Complete!</h2>
             <p class="text-lg text-orange-600 mb-2">
-              We uploaded and worked our magic on <span class="font-bold">{{ successfulUploads }} &nbsp;</span> 
+              We uploaded and created special moments from <span class="font-bold">{{ successfulUploads }} &nbsp;</span> 
               <span v-if="successfulUploads === 1">&nbsp; memory moment</span>
               <span v-else>&nbsp; memory moments</span>!
             </p>
