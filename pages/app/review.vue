@@ -16,6 +16,16 @@
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
           <button
+            v-if="stats.pending > 0"
+            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            @click="approveAllPending"
+            :disabled="approvingAll"
+          >
+            <i class="pi pi-check text-lg sm:text-2xl" :class="{ 'animate-spin': approvingAll }"></i>
+            <span class="hidden sm:inline">Approve All ({{ stats.pending }})</span>
+            <span class="sm:hidden">Approve All</span>
+          </button>
+          <button
             class="flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="navigateTo('/app/deleted-memories')"
           >
@@ -647,6 +657,7 @@ const newPerson = ref('')
 const tagSuggestions = ref([])
 const peopleSuggestions = ref([])
 const aiProcessing = ref(false)
+const approvingAll = ref(false)
 
 // Filters
 const activeFilter = ref('all')
@@ -795,6 +806,70 @@ const approveAsset = async (assetId) => {
         life: 3000
       })
     }
+  }
+}
+
+// Approve all pending assets
+const approveAllPending = async () => {
+  try {
+    approvingAll.value = true
+    
+    // Get all pending assets
+    const pendingAssets = assets.value.filter(a => !a.approved && !a.rejected)
+    
+    if (pendingAssets.length === 0) {
+      if ($toast && $toast.add) {
+        $toast.add({
+          severity: 'warn',
+          summary: 'No Pending Assets',
+          detail: 'No assets are pending approval',
+          life: 3000
+        })
+      }
+      return
+    }
+    
+    // Show confirmation dialog
+    const confirmed = confirm(`Are you sure you want to approve all ${pendingAssets.length} pending assets?`)
+    if (!confirmed) {
+      return
+    }
+    
+    // Approve all pending assets
+    const approvalPromises = pendingAssets.map(asset => 
+      db.assets.approveAsset(asset.id, true)
+    )
+    
+    await Promise.all(approvalPromises)
+    
+    // Update local state
+    pendingAssets.forEach(asset => {
+      asset.approved = true
+      asset.rejected = false
+    })
+    
+    calculateStats()
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'All Approved',
+        detail: `Successfully approved ${pendingAssets.length} assets`,
+        life: 3000
+      })
+    }
+  } catch (error) {
+    console.error('Error approving all assets:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to approve all assets',
+        life: 3000
+      })
+    }
+  } finally {
+    approvingAll.value = false
   }
 }
 

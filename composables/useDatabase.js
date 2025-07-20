@@ -373,6 +373,7 @@ export const useDatabase = () => {
       const assetRecord = {
         user_id: user.value.id,
         storage_url: storageUrl,
+        approved: true, // Set photos to approved by default when uploaded
         ...assetData
       }
       

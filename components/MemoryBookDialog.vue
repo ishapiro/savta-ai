@@ -216,6 +216,37 @@
             </div>
           </div>
           
+          <!-- Background Opacity (only show when magical background is selected) -->
+          <div v-if="form.backgroundType === 'magical'" class="bg-white rounded-lg p-4 border border-gray-200">
+            <div class="space-y-3">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-sliders-h text-yellow-600 text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <label class="text-sm font-semibold text-gray-900">Background Opacity</label>
+                  <p class="text-xs text-gray-600">Adjust how transparent the background appears</p>
+                </div>
+                <div class="text-sm font-bold text-gray-700 min-w-[3rem] text-center">
+                  {{ form.backgroundOpacity }}%
+                </div>
+              </div>
+              <div class="px-2">
+                <Slider
+                  v-model="form.backgroundOpacity"
+                  :min="10"
+                  :max="100"
+                  :step="5"
+                  class="w-full"
+                />
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>10%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <!-- AI Captions Option -->
           <div class="bg-white rounded-lg p-4 border border-gray-200">
             <div class="flex items-center justify-between">
@@ -531,6 +562,7 @@ const form = ref({
   memoryEvent: '',
   customMemoryEvent: '',
   backgroundType: 'white',
+  backgroundOpacity: 30,
   includeCaptions: true,
   gridLayout: '2x2',
   memoryShape: 'original'
@@ -666,6 +698,7 @@ watch(() => props.initialData, (val) => {
       memoryEvent: '',
       customMemoryEvent: '',
       backgroundType: 'white',
+      backgroundOpacity: 30,
       includeCaptions: true,
       gridLayout: '2x2',
       memoryShape: 'original',
@@ -744,6 +777,7 @@ function handleSubmit() {
     ...form.value,
     memoryEvent: form.value.memoryEvent === 'custom' ? form.value.customMemoryEvent : form.value.memoryEvent,
     backgroundType: form.value.backgroundType,
+    backgroundOpacity: form.value.backgroundOpacity,
     selectedAssets: selectedAssets.value
   })
 }

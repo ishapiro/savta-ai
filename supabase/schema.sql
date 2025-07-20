@@ -578,4 +578,13 @@ BEGIN
   ) THEN
     ALTER TABLE memory_books ADD COLUMN background_type text DEFAULT 'white' CHECK (background_type in ('white', 'magical'));
   END IF;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'background_opacity'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN background_opacity integer DEFAULT 30 CHECK (background_opacity >= 0 AND background_opacity <= 100);
+  END IF;
 END $$; 

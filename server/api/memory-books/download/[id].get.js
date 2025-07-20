@@ -193,11 +193,24 @@ export default defineEventHandler(async (event) => {
           throw new Error('No approved assets found for this book')
         }
 
-        // Gather all unique tags from the assets
+        // Gather all unique tags and captions from the assets
         const allTags = Array.from(new Set(
           assets.flatMap(asset => Array.isArray(asset.tags) ? asset.tags : [])
         ))
-        const tagsPrompt = allTags.length > 0 ? `, theme: ${allTags.join(', ')}` : ''
+        
+        // Gather all captions from the assets
+        const allCaptions = assets
+          .map(asset => asset.ai_caption || asset.user_caption)
+          .filter(caption => caption && caption.trim())
+        
+        // Create enhanced prompt with both tags and captions
+        let tagsPrompt = ''
+        if (allTags.length > 0) {
+          tagsPrompt += `, theme: ${allTags.join(', ')}`
+        }
+        if (allCaptions.length > 0) {
+          tagsPrompt += `, content: ${allCaptions.join('; ')}`
+        }
         
         // Generate a DALL-E 3 background image
         console.log('🎨 Generating DALL-E background image...')

@@ -13,28 +13,50 @@
             <i class="pi pi-info text-sm sm:text-lg text-blue-500"></i>
           </button>
         </div>
-        <div class="flex gap-6 w-full sm:w-auto">
-          <div class="flex flex-col items-center">
-            <button
-              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 animate-pulse focus:outline-none magic-memory-btn"
-              @click="openMagicMemoryDialog"
-            >
-              <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
-              <span class="hidden sm:inline">Savta Special Memory Cards</span>
-              <span class="sm:hidden">Savta Cards</span>
-            </button>
-            <p class="text-sm text-gray-600 mt-1 text-center">Start Here</p>
+        <div class="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
+          <!-- Memory Cards Card -->
+          <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
+            <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4 text-center">Memory Cards</h3>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <div class="flex flex-col items-center">
+                <button
+                  class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 animate-pulse focus:outline-none magic-memory-btn"
+                  @click="openMagicMemoryDialog('quick')"
+                >
+                  <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
+                  <span class="hidden sm:inline">Savta Create a Card</span>
+                  <span class="sm:hidden">Savta Create</span>
+                </button>
+                <p class="text-sm text-gray-600 mt-1 text-center">Start Here (Quick)</p>
+              </div>
+              <div class="flex flex-col items-center">
+                <button
+                  class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 animate-pulse focus:outline-none magic-memory-btn"
+                  @click="openMagicMemoryDialog('full')"
+                >
+                  <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
+                  <span class="hidden sm:inline">Savta Help me with a Card</span>
+                  <span class="sm:hidden">Help Me</span>
+                </button>
+                <p class="text-sm text-gray-600 mt-1 text-center">More Control</p>
+              </div>
+            </div>
           </div>
-          <div class="flex flex-col items-center">
-            <button
-              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
-              @click="showCreateModal = true"
-            >
-              <i class="pi pi-plus mr-1 sm:mr-2"></i>
-              <span class="hidden sm:inline">Special Memory Books</span>
-              <span class="sm:hidden">Memory Books</span>
-            </button>
-            <p class="text-sm text-gray-600 mt-1 text-center">Advanced Users</p>
+          
+          <!-- Memory Books Card -->
+          <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
+            <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-4 text-center">Memory Books</h3>
+            <div class="flex flex-col items-center">
+              <button
+                class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
+                @click="showCreateModal = true"
+              >
+                <i class="pi pi-plus mr-1 sm:mr-2"></i>
+                <span class="hidden sm:inline">Special Memory Books</span>
+                <span class="sm:hidden">Memory Books</span>
+              </button>
+              <p class="text-sm text-gray-600 mt-1 text-center">Full Control</p>
+            </div>
           </div>
         </div>
       </div>
@@ -321,7 +343,7 @@
         <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Great! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first special memory?</p>
         <button
           class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
-          @click="openMagicMemoryDialog"
+          @click="openMagicMemoryDialog('full')"
         >
           <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Special Memory
         </button>
@@ -1325,31 +1347,29 @@
     <Dialog
       v-model:visible="showMagicMemoryDialog"
       modal
-              :header="magicMemoryStep === 1 ? '✨ What should we call this memory? ✨' : '✨ Let\'s create something special together ✨'"
+              :header="magicMemoryStep === 1 ? '✨ What should we call this memory? ✨' : ''"
       :class="[
         'magic-memory-dialog',
-        magicMemoryStep === 5 
-          ? 'w-full h-full sm:w-[95vw] sm:max-w-3xl sm:h-auto sm:rounded-2xl' 
-          : 'w-[95vw] max-w-3xl sm:rounded-2xl'
+        'w-full h-full sm:w-[95vw] sm:max-w-3xl sm:h-auto sm:rounded-2xl'
       ]"
-      :style="magicMemoryStep === 5 ? {
+      :style="{
         width: '100vw',
         height: '100vh',
         maxWidth: '100vw',
         maxHeight: '100vh',
         margin: '0',
         borderRadius: '0'
-      } : {}"
+      }"
       :closable="true"
     >
       <!-- Step 1: Title Input -->
-      <div v-if="magicMemoryStep === 1" class="space-y-6">
-        <div class="text-center mb-6">
-          <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Sparkles class="w-8 h-8 text-white" />
+      <div v-if="magicMemoryStep === 1 && currentButtonConfig?.steps.includes(1)" class="space-y-4 sm:space-y-6">
+        <div class="text-center mb-4 sm:mb-6">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <Sparkles class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2">What should we call this special memory?</h3>
-          <p class="text-gray-600">Give your magic memory a special name that captures the moment - I can't wait to see what we create together!</p>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Tell me about this special memory?</h3>
+          <p class="text-sm sm:text-base text-gray-600">Think of this as the title at the top of the card - I can't wait to see what we create together!</p>
         </div>
         
         <div class="field">
@@ -1357,20 +1377,20 @@
           <InputText
             v-model="magicMemoryTitle"
             placeholder="e.g., 'Summer Vacation 2024', 'Grandma's Birthday', 'Family Reunion'"
-            class="w-full text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+            class="w-full text-base sm:text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
             @keyup.enter="nextMagicMemoryStep"
           />
         </div>
       </div>
 
       <!-- Step 2: Event Selection -->
-      <div v-if="magicMemoryStep === 2" class="space-y-6">
-        <div class="text-center mb-6">
-          <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="pi pi-calendar text-2xl text-white"></i>
+      <div v-if="magicMemoryStep === 2 && currentButtonConfig?.steps.includes(2)" class="space-y-4 sm:space-y-6">
+        <div class="text-center mb-4 sm:mb-6">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <i class="pi pi-calendar text-lg sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2">Tell me what kind of event this was</h3>
-          <p class="text-gray-600">You can leave this blank if you prefer, or select Other to tell me about a special event.</p>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Tell me what kind of event this was</h3>
+          <p class="text-sm sm:text-base text-gray-600">You can leave this blank if you prefer, or select Other to tell me about a special event.</p>
         </div>
         <div class="field">
           <label class="block text-sm font-medium text-gray-900 mb-2">Event Type</label>
@@ -1387,7 +1407,7 @@
             option-label="label"
             option-value="value"
             placeholder="Select an event type..."
-            class="w-full text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+            class="w-full text-base sm:text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
           />
         </div>
         <div v-if="magicMemoryEvent === 'custom'" class="field mt-4">
@@ -1395,22 +1415,22 @@
           <input
             v-model="magicCustomMemoryEvent"
             placeholder="Type your event (e.g., 'Bar Mitzvah', 'Retirement', 'First Day of School')"
-            class="w-full text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+            class="w-full text-base sm:text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
           />
         </div>
       </div>
 
       <!-- Step 3: Photo Count Selection -->
-      <div v-if="magicMemoryStep === 3" class="space-y-6">
-        <div class="text-center mb-6">
-          <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="pi pi-images text-2xl text-white"></i>
+      <div v-if="magicMemoryStep === 3 && currentButtonConfig?.steps.includes(3)" class="space-y-4 sm:space-y-6">
+        <div class="text-center mb-4 sm:mb-6">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2">How many photos should I choose for you?</h3>
-          <p class="text-gray-600">Select how many photos I should pick from your memory collection to create your magic story - trust me, this will be amazing!</p>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">How many photos should I choose for you?</h3>
+          <p class="text-sm sm:text-base text-gray-600">Select how many photos I should pick from your memory collection to create your magic story - trust me, this will be amazing!</p>
         </div>
         
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-3 gap-3 sm:gap-4">
           <div
             v-for="count in [1, 4, 6]"
             :key="count"
@@ -1418,28 +1438,28 @@
             @click="magicPhotoCount = count"
           >
             <div
-              class="border-2 rounded-lg p-4 text-center transition-all duration-200"
+              class="border-2 rounded-lg p-3 sm:p-4 text-center transition-all duration-200"
               :class="magicPhotoCount === count 
                 ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
                 : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
             >
-              <div class="text-2xl font-bold text-gray-900 mb-1">{{ count }}</div>
-              <div class="text-sm text-gray-600">
+              <div class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{{ count }}</div>
+              <div class="text-xs sm:text-sm text-gray-600">
                 {{ count === 1 ? 'Photo' : 'Photos' }}
               </div>
-              <div v-if="magicPhotoCount === count" class="absolute top-2 right-2">
-                <i class="pi pi-check text-purple-500 text-lg"></i>
+              <div v-if="magicPhotoCount === count" class="absolute top-1 right-1 sm:top-2 sm:right-2">
+                <i class="pi pi-check text-purple-500 text-sm sm:text-lg"></i>
               </div>
             </div>
           </div>
         </div>
         
-        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <div class="flex items-start gap-3">
+        <div class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200">
+          <div class="flex items-start gap-2 sm:gap-3">
             <i class="pi pi-info-circle text-blue-500 mt-1"></i>
             <div>
               <h4 class="font-semibold text-blue-900 mb-1">Selection Process</h4>
-              <p class="text-sm text-blue-800">
+              <p class="text-xs sm:text-sm text-blue-800">
                 You'll select up to 12 photos in the next step, then I'll choose the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your selection. 
                 Your magic card will be split 50% for photos and 50% for text.
               </p>
@@ -1449,34 +1469,34 @@
       </div>
 
       <!-- Step 4: Background Selection -->
-      <div v-if="magicMemoryStep === 4" class="space-y-6">
-        <div class="text-center mb-6">
-          <div class="w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="pi pi-palette text-2xl text-white"></i>
+      <div v-if="magicMemoryStep === 4 && currentButtonConfig?.steps.includes(4)" class="space-y-4 sm:space-y-6">
+        <div class="text-center mb-4 sm:mb-6">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <i class="pi pi-palette text-lg sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2">What kind of background would you like?</h3>
-          <p class="text-gray-600">Choose a clean white background or let me create a special design that matches your story's theme!</p>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">What kind of background would you like?</h3>
+          <p class="text-sm sm:text-base text-gray-600">Choose a clean white background or let me create a special design that matches your story's theme!</p>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div
             class="relative cursor-pointer"
             @click="magicBackgroundType = 'white'"
           >
             <div
-              class="border-2 rounded-lg p-6 text-center transition-all duration-200 h-full"
+              class="border-2 rounded-lg p-4 sm:p-6 text-center transition-all duration-200 h-full"
               :class="magicBackgroundType === 'white' 
                 ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
                 : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
             >
-              <div class="w-12 h-12 bg-white border-2 border-gray-300 rounded-lg mx-auto mb-3 flex items-center justify-center">
-                <i class="pi pi-file text-gray-600 text-xl"></i>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white border-2 border-gray-300 rounded-lg mx-auto mb-2 sm:mb-3 flex items-center justify-center">
+                <i class="pi pi-file text-gray-600 text-lg sm:text-xl"></i>
               </div>
-              <div class="text-lg font-bold text-gray-900 mb-2">Clean & Simple</div>
-              <div class="text-sm text-gray-600 mb-3">Pure white background for a classic, elegant look</div>
+              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Clean & Simple</div>
+              <div class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Pure white background for a classic, elegant look</div>
               <div class="text-xs text-gray-500">Perfect for formal events and timeless memories</div>
-              <div v-if="magicBackgroundType === 'white'" class="absolute top-3 right-3">
-                <i class="pi pi-check text-purple-500 text-lg"></i>
+              <div v-if="magicBackgroundType === 'white'" class="absolute top-2 right-2 sm:top-3 sm:right-3">
+                <i class="pi pi-check text-purple-500 text-sm sm:text-lg"></i>
               </div>
             </div>
           </div>
@@ -1486,30 +1506,30 @@
             @click="magicBackgroundType = 'magical'"
           >
             <div
-              class="border-2 rounded-lg p-6 text-center transition-all duration-200 h-full"
+              class="border-2 rounded-lg p-4 sm:p-6 text-center transition-all duration-200 h-full"
               :class="magicBackgroundType === 'magical' 
                 ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
                 : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
             >
-              <div class="w-12 h-12 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-lg mx-auto mb-3 flex items-center justify-center">
-                <i class="pi pi-sparkles text-purple-600 text-xl"></i>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-lg mx-auto mb-2 sm:mb-3 flex items-center justify-center">
+                <i class="pi pi-sparkles text-purple-600 text-lg sm:text-xl"></i>
               </div>
-              <div class="text-lg font-bold text-gray-900 mb-2">Special Design</div>
-              <div class="text-sm text-gray-600 mb-3">AI-generated background that matches your story's theme</div>
+              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Special Design</div>
+              <div class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">AI-generated background that matches your story's theme</div>
               <div class="text-xs text-gray-500">Adds a whimsical, personalized touch to your memory</div>
-              <div v-if="magicBackgroundType === 'magical'" class="absolute top-3 right-3">
-                <i class="pi pi-check text-purple-500 text-lg"></i>
+              <div v-if="magicBackgroundType === 'magical'" class="absolute top-2 right-2 sm:top-3 sm:right-3">
+                <i class="pi pi-check text-purple-500 text-sm sm:text-lg"></i>
               </div>
             </div>
           </div>
         </div>
         
-        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <div class="flex items-start gap-3">
+        <div class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200">
+          <div class="flex items-start gap-2 sm:gap-3">
             <i class="pi pi-info-circle text-blue-500 mt-1"></i>
             <div>
               <h4 class="font-semibold text-blue-900 mb-1">Background Details</h4>
-              <p class="text-sm text-blue-800">
+              <p class="text-xs sm:text-sm text-blue-800">
                 {{ magicBackgroundType === 'white' 
                   ? 'A clean white background will make your photos and story the star of the show.' 
                   : 'I\'ll create a beautiful background design that complements your story and makes your memory even more special.' }}
@@ -1519,16 +1539,192 @@
         </div>
       </div>
 
-      <!-- Step 5: Photo Selection -->
-      <div v-if="magicMemoryStep === 5 && !loadingAssets" class="space-y-4">
-        <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200 flex items-center gap-3 animate-pulse">
-          <i class="pi pi-sparkles text-2xl text-yellow-400 animate-bounce"></i>
-          <div>
-            <h3 class="text-lg font-bold text-purple-700 mb-1">Show me up to 12 Memory Moments for "{{ magicMemoryTitle }}"</h3>
-            <p class="text-sm text-gray-700">Choose up to 12 photos by tag to inspire your Magic Memory story. I'll select the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your choices - you have such beautiful memories to work with!</p>
+      <!-- Step 5: Photo Selection Method -->
+      <div v-if="magicMemoryStep === 5 && currentButtonConfig?.steps.includes(5)" class="space-y-4 sm:space-y-6">
+        <div class="text-center mb-4 sm:mb-6">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
+          </div>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">How should I select the photos?</h3>
+          <p class="text-sm sm:text-base text-gray-600">Choose how you'd like me to find the perfect photos for your magic memory!</p>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div
+            class="relative cursor-pointer"
+            @click="magicPhotoSelectionMethod = 'last_100'"
+          >
+            <div
+              class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
+              :class="magicPhotoSelectionMethod === 'last_100' 
+                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+            >
+              <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                <i class="pi pi-images text-green-600 text-lg"></i>
+              </div>
+              <div class="text-base font-bold text-gray-900 mb-1">Use my last 100 photos</div>
+              <div class="text-xs text-gray-600 mb-2">I'll choose from your most recent 100 photos</div>
+              <div class="text-xs text-gray-500">Perfect for recent memories and variety</div>
+              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-3 right-3">
+                <i class="pi pi-check text-purple-500 text-lg"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div
+            class="relative cursor-pointer"
+            @click="magicPhotoSelectionMethod = 'last_month'"
+          >
+            <div
+              class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
+              :class="magicPhotoSelectionMethod === 'last_month' 
+                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+            >
+              <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                <i class="pi pi-calendar text-green-600 text-lg"></i>
+              </div>
+              <div class="text-base font-bold text-gray-900 mb-1">Select best fit from last month</div>
+              <div class="text-xs text-gray-600 mb-2">I'll choose the best photos from your recent memories</div>
+              <div class="text-xs text-gray-500">Perfect for recent events and fresh memories</div>
+              <div v-if="magicPhotoSelectionMethod === 'last_month'" class="absolute top-3 right-3">
+                <i class="pi pi-check text-purple-500 text-lg"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div
+            class="relative cursor-pointer"
+            @click="magicPhotoSelectionMethod = 'date_range'"
+          >
+            <div
+              class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
+              :class="magicPhotoSelectionMethod === 'date_range' 
+                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+            >
+              <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                <i class="pi pi-calendar-plus text-blue-600 text-lg"></i>
+              </div>
+              <div class="text-base font-bold text-gray-900 mb-1">Date range</div>
+              <div class="text-xs text-gray-600 mb-2">Choose a specific time period for your memories</div>
+              <div class="text-xs text-gray-500">Great for vacations, holidays, or special periods</div>
+              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-3 right-3">
+                <i class="pi pi-check text-purple-500 text-lg"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div
+            class="relative cursor-pointer"
+            @click="magicPhotoSelectionMethod = 'tags'"
+          >
+            <div
+              class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
+              :class="magicPhotoSelectionMethod === 'tags' 
+                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+            >
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                <i class="pi pi-tags text-purple-600 text-lg"></i>
+              </div>
+              <div class="text-base font-bold text-gray-900 mb-1">Use photos with these tags</div>
+              <div class="text-xs text-gray-600 mb-2">Select specific tags to find related memories</div>
+              <div class="text-xs text-gray-500">Perfect for themed memories or specific people</div>
+              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-3 right-3">
+                <i class="pi pi-check text-purple-500 text-lg"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Manual selection option - temporarily removed from UI but code kept for future use -->
+          <!-- 
+          <div
+            class="relative cursor-pointer"
+            @click="magicPhotoSelectionMethod = 'manual'"
+          >
+            <div
+              class="border-2 rounded-lg p-6 text-center transition-all duration-200 h-full"
+              :class="magicPhotoSelectionMethod === 'manual' 
+                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+            >
+              <div class="w-12 h-12 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-lg mx-auto mb-3 flex items-center justify-center">
+                <i class="pi pi-hand-pointer text-yellow-600 text-xl"></i>
+              </div>
+              <div class="text-lg font-bold text-gray-900 mb-2">I will pick</div>
+              <div class="text-sm text-gray-600 mb-3">Choose exactly which photos to include</div>
+              <div class="text-xs text-gray-500">Full control over your photo selection</div>
+              <div v-if="magicPhotoSelectionMethod === 'manual'" class="absolute top-3 right-3">
+                <i class="pi pi-check text-purple-500 text-lg"></i>
+              </div>
+            </div>
+          </div>
+          -->
+        </div>
+        
+        <!-- Date Range Selection (shown when date_range is selected) -->
+        <div v-if="magicPhotoSelectionMethod === 'date_range'" class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200">
+          <h4 class="font-semibold text-blue-900 mb-2 sm:mb-3">Select Date Range</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-900 mb-2">Start Date</label>
+              <Calendar v-model="magicDateRange.start" dateFormat="mm/dd/yy" placeholder="Select start date" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-900 mb-2">End Date</label>
+              <Calendar v-model="magicDateRange.end" dateFormat="mm/dd/yy" placeholder="Select end date" class="w-full" />
+            </div>
           </div>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
+        
+        <!-- Tag Selection (shown when tags is selected) -->
+        <div v-if="magicPhotoSelectionMethod === 'tags'" class="bg-purple-50 rounded-lg p-3 sm:p-4 border border-purple-200">
+          <h4 class="font-semibold text-purple-900 mb-2 sm:mb-3">Select Tags</h4>
+          <MultiSelect
+            v-model="magicSelectedTags"
+            :options="computedAvailableTags"
+            option-label="label"
+            option-value="value"
+            placeholder="Choose tags..."
+            class="w-full"
+            :show-toggle-all="false"
+          />
+          <p class="text-xs sm:text-sm text-purple-700 mt-2">I'll find photos that have any of these tags</p>
+        </div>
+        
+        <!-- Note about Memory Book Creator -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 sm:p-4 border border-blue-200">
+          <div class="flex items-start gap-2 sm:gap-3">
+            <i class="pi pi-info-circle text-blue-500 mt-1"></i>
+            <div>
+              <h4 class="font-semibold text-blue-900 mb-1">Want full control over picture selection?</h4>
+              <p class="text-xs sm:text-sm text-blue-800 mb-3">
+                Try out the Memory Book Creator for complete control over which photos to include and how they're arranged.
+              </p>
+              <button
+                @click="showCreateModal = true; showMagicMemoryDialog = false"
+                class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 transform hover:scale-105"
+              >
+                <i class="pi pi-book mr-2"></i>
+                Open Memory Book Creator
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6: Photo Selection (only for manual selection) -->
+      <div v-if="magicMemoryStep === 6 && currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual' && !loadingAssets" class="space-y-3 sm:space-y-4">
+        <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-lg p-3 sm:p-4 border border-purple-200 flex items-center gap-2 sm:gap-3 animate-pulse">
+          <i class="pi pi-sparkles text-lg sm:text-2xl text-yellow-400 animate-bounce"></i>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-purple-700 mb-1">Choose your photos for "{{ magicMemoryTitle }}"</h3>
+            <p class="text-xs sm:text-sm text-gray-700">Select up to 12 photos that you'd like me to consider for your Magic Memory story. I'll select the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your choices!</p>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
           <label class="block text-sm font-medium text-gray-900 mb-2">Filter by Tags</label>
           <div class="flex gap-2 mb-3">
             <MultiSelect
@@ -1550,7 +1746,7 @@
               v-tooltip.top="'Clear filter'"
             />
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto">
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 max-h-48 sm:max-h-64 overflow-y-auto">
             <div
               v-for="asset in magicFilteredAssets"
               :key="asset.id"
@@ -1603,58 +1799,37 @@
           </div>
         </div>
       </div>
-      <div v-else-if="loadingAssets" class="flex items-center justify-center py-8">
+      <div v-else-if="loadingAssets && currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual'" class="flex items-center justify-center py-8">
         <div class="text-center">
           <i class="pi pi-spin pi-spinner text-3xl text-purple-400 mb-3"></i>
           <p class="text-sm text-gray-600">Looking through your beautiful memories...</p>
         </div>
       </div>
       <template #footer>
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-3 mt-3 sm:mt-4">
           <Button
-            :label="magicMemoryStep === 1 ? 'Cancel' : 'Back'"
-            :icon="magicMemoryStep === 1 ? 'pi pi-times' : 'pi pi-arrow-left'"
+            :label="isFirstStep() ? 'Cancel' : 'Back'"
+            :icon="isFirstStep() ? 'pi pi-times' : 'pi pi-arrow-left'"
             severity="secondary"
-            @click="magicMemoryStep === 1 ? showMagicMemoryDialog = false : previousMagicMemoryStep()"
-            class="bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-800 font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border border-gray-300"
+            @click="isFirstStep() ? showMagicMemoryDialog = false : previousMagicMemoryStep()"
+            class="bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-800 font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border border-gray-300"
           />
           <Button
-            v-if="magicMemoryStep === 1"
-            label="Next: Tell me about the event"
+            v-if="!isLastStep()"
+            :label="`Next: ${getNextStepName()}`"
             icon="pi pi-arrow-right"
-            :disabled="!magicMemoryTitle.trim()"
+            :disabled="(magicMemoryStep === 1 && !magicMemoryTitle.trim()) || (magicMemoryStep === 5 && !magicPhotoSelectionMethod.value)"
             @click="nextMagicMemoryStep"
-            class="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
+            class="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
           <Button
-            v-if="magicMemoryStep === 2"
-            label="Next: How many photos?"
-            icon="pi pi-arrow-right"
-            @click="nextMagicMemoryStep"
-            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
-          />
-          <Button
-            v-if="magicMemoryStep === 3"
-            label="Next: Choose your background"
-            icon="pi pi-arrow-right"
-            @click="nextMagicMemoryStep"
-            class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
-          />
-          <Button
-            v-if="magicMemoryStep === 4"
-            label="Next: Show me your photos"
-            icon="pi pi-arrow-right"
-            @click="nextMagicMemoryStep"
-            class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
-          />
-          <Button
-            v-if="magicMemoryStep === 5"
+            v-if="isLastStep()"
             label="Let's make some magic!"
             icon="pi pi-bolt"
-            :disabled="magicSelectedMemories.length < 1 || magicLoading"
+            :disabled="(currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual' && magicSelectedMemories.length < 1) || magicLoading"
             :loading="magicLoading"
             @click="onMagicMemoryContinue"
-            class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0 animate-pulse"
+            class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0 animate-pulse"
           />
         </div>
       </template>
@@ -1681,6 +1856,33 @@
       <i class="pi pi-sparkles text-yellow-400 text-xl sm:text-2xl animate-bounce flex-shrink-0"></i>
     </div>
   </div>
+
+  <!-- Error Dialog -->
+  <Dialog v-model:visible="showErrorDialog" modal :closable="true" :dismissableMask="true" class="w-full max-w-md rounded-2xl">
+    <div class="text-center py-6">
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-exclamation-triangle text-2xl text-red-500"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Oops, Savta got confused!</h3>
+      <p class="text-gray-600 mb-6">
+        {{ errorDialogMessage || "Something went wrong while creating your magic memory. Let's try again!" }}
+      </p>
+      <div class="flex justify-center gap-3">
+        <Button
+          label="Try Again"
+          icon="pi pi-refresh"
+          @click="retryMagicMemory"
+          class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200"
+        />
+        <Button
+          label="Close"
+          severity="secondary"
+          @click="showErrorDialog = false"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200"
+        />
+      </div>
+    </div>
+  </Dialog>
 </template>
 
 <script setup>
@@ -1779,7 +1981,8 @@ const newBook = ref({
   gridLayout: '2x2',
   memoryShape: 'original',
   includeCaptions: true,
-  backgroundType: 'white',
+  aiBackground: true,
+  backgroundOpacity: 30,
   memoryEvent: '',
   customMemoryEvent: ''
 })
@@ -1815,7 +2018,8 @@ const resetCreateModal = () => {
     gridLayout: '2x2',
     memoryShape: 'original',
     includeCaptions: true,
-    backgroundType: 'white',
+    aiBackground: true,
+    backgroundOpacity: 30,
     memoryEvent: '',
     customMemoryEvent: ''
   }
@@ -1893,6 +2097,11 @@ const memoryEventOptions = ref([
 // Dialog state
 const showGenerateDialog = ref(false)
 const showRegenerateDialog = ref(false)
+
+// Error dialog state
+const showErrorDialog = ref(false)
+const errorDialogMessage = ref('')
+const lastMagicMemoryConfig = ref(null)
 const showDownloadDraftDialog = ref(false)
 const pendingBook = ref(null)
 
@@ -2114,6 +2323,8 @@ const createMemoryBook = async () => {
       memory_shape: newBook.value.memoryShape,
       include_captions: newBook.value.includeCaptions,
       ai_background: newBook.value.aiBackground,
+      background_type: newBook.value.aiBackground ? 'magical' : 'white', // Set background_type based on ai_background
+      background_opacity: newBook.value.backgroundOpacity || 30, // Set background opacity with default
       memory_event: newBook.value.memoryEvent === 'custom' ? newBook.value.customMemoryEvent : newBook.value.memoryEvent,
       // For magic memories: selected assets go to photo_selection_pool, created_from_assets will be set by AI
       // For regular memories: selected assets go to created_from_assets
@@ -3002,6 +3213,7 @@ const openEditSettings = async (book) => {
       includeCaptions: book.include_captions ?? book.includeCaptions ?? true,
 
       aiBackground: book.ai_background ?? book.aiBackground ?? true,
+      backgroundOpacity: book.background_opacity ?? 30,
       memoryEvent: book.memory_event || book.memoryEvent || '',
       customMemoryEvent: (book.memory_event && !['vacation','birthday','anniversary','graduation','family_trip'].includes((book.memory_event || '').toLowerCase())) ? book.memory_event : '',
       created_from_assets: book.created_from_assets || [],
@@ -3044,6 +3256,9 @@ const saveEditBook = async () => {
       grid_layout: editBook.value.gridLayout,
       memory_shape: editBook.value.memoryShape,
       include_captions: editBook.value.includeCaptions,
+      ai_background: editBook.value.aiBackground,
+      background_opacity: editBook.value.backgroundOpacity,
+      background_type: editBook.value.aiBackground ? 'magical' : 'white',
 
       created_from_assets: selectedAssetIds
     })
@@ -3274,11 +3489,36 @@ import { defineAsyncComponent } from 'vue'
 const PdfViewer = defineAsyncComponent(() => import('~/components/PdfViewer.vue'))
 
 const showMagicMemoryDialog = ref(false)
-const magicMemoryStep = ref(1) // 1 = title input, 2 = event selection, 3 = photo count, 4 = background selection, 5 = photo selection
+// Step definitions with required/optional flags
+const stepDefinitions = {
+  1: { name: "Title Input", required: true },
+  2: { name: "Event Selection", required: false },
+  3: { name: "Photo Count Selection", required: true },
+  4: { name: "Background Selection", required: true },
+  5: { name: "Photo Selection Method", required: true },
+  6: { name: "Photo Selection", required: true }
+}
+
+// Button configurations defining which steps to include
+const buttonConfigs = {
+  full: { steps: [1, 2, 3, 4, 5], name: "Full Magic Memory" },
+  basic: { steps: [1, 3, 4, 5], name: "Basic Magic Memory" },
+  quick: { steps: [1, 4, 5], name: "Quick Magic Memory" }
+}
+
+// Current magic memory dialog state
+const magicMemoryStep = ref(1) // Current step within the button's sequence
+const currentButtonConfig = ref(null) // Current button configuration being used
+const currentStepIndex = ref(0) // Index within the button's steps array
 const magicMemoryTitle = ref('')
 const magicMemoryEvent = ref('')
 const magicPhotoCount = ref(4) // Default to 4 photos
 const magicBackgroundType = ref('white') // 'white' or 'magical'
+
+// Photo selection method variables
+const magicPhotoSelectionMethod = ref('')
+const magicDateRange = ref({ start: null, end: null })
+const magicSelectedTags = ref([])
 
 const magicSelectedTagFilter = ref([])
 const magicSelectedMemories = ref([])
@@ -3305,7 +3545,10 @@ const magicLoading = ref(false)
 
 
 async function onMagicMemoryContinue() {
-  if (magicSelectedMemories.value.length < 1) return
+  // If step 6 (photo selection) is included and manual selection is chosen, validate selection
+  if (currentButtonConfig.value.steps.includes(6) && magicPhotoSelectionMethod.value === 'manual' && magicSelectedMemories.value.length < 1) {
+    return
+  }
   magicLoading.value = true
   
   // Show initial status dialog for story generation
@@ -3315,7 +3558,23 @@ async function onMagicMemoryContinue() {
   isRegenerating.value = false
   
   try {
-    const selectedAssets = availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
+    // Get photo selection pool based on user's choice
+    const photoSelectionPool = populatePhotoSelectionPool()
+    console.log('🔍 [onMagicMemoryContinue] Photo selection pool count:', photoSelectionPool.length)
+    console.log('🔍 [onMagicMemoryContinue] Photo selection pool IDs:', photoSelectionPool)
+    
+    let selectedAssets
+    
+    if (currentButtonConfig.value.steps.includes(6) && magicPhotoSelectionMethod.value === 'manual') {
+      // For manual selection, use the selected memories
+      selectedAssets = availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
+      console.log('🔍 [onMagicMemoryContinue] Manual selection - selected assets count:', selectedAssets.length)
+    } else {
+      // For automatic selection, use the photo selection pool
+      selectedAssets = availableAssets.value.filter(a => photoSelectionPool.includes(a.id))
+      console.log('🔍 [onMagicMemoryContinue] Automatic selection - selected assets count:', selectedAssets.length)
+      console.log('🔍 [onMagicMemoryContinue] Automatic selection - selected asset IDs:', selectedAssets.map(a => a.id))
+    }
     const photos = selectedAssets.map(a => ({
       id: a.id,
       ai_caption: a.ai_caption || '',
@@ -3325,7 +3584,11 @@ async function onMagicMemoryContinue() {
       city: a.city || null,
       state: a.state || null,
       country: a.country || null,
-      zip_code: a.zip_code || null
+      zip_code: a.zip_code || null,
+      width: a.width || null,
+      height: a.height || null,
+      orientation: a.orientation || 'unknown',
+      asset_date: a.asset_date || null
     }))
     let aiBody = { 
       photos,
@@ -3365,7 +3628,7 @@ async function onMagicMemoryContinue() {
       method: 'POST',
       body: {
         asset_ids: aiRes.selected_photo_ids,
-        photo_selection_pool: magicSelectedMemories.value,
+        photo_selection_pool: photoSelectionPool,
         story: aiRes.story,
         title: magicMemoryTitle.value || 'Magic Memory',
         memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
@@ -3387,7 +3650,7 @@ async function onMagicMemoryContinue() {
       id: dbRes.book_id,
       layout_type: 'magic',
       status: 'draft',
-      photo_selection_pool: magicSelectedMemories.value,
+      photo_selection_pool: photoSelectionPool,
       created_from_assets: aiRes.selected_photo_ids || []
     }
     
@@ -3405,20 +3668,176 @@ async function onMagicMemoryContinue() {
     // Close progress dialog on error
     showProgressDialog.value = false
     stopProgressPolling()
+    
+    // Store the configuration for retry
+    lastMagicMemoryConfig.value = {
+      photoSelectionPool: populatePhotoSelectionPool(),
+      selectedAssets: currentButtonConfig.value.steps.includes(6) && magicPhotoSelectionMethod.value === 'manual' 
+        ? availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
+        : availableAssets.value.filter(a => populatePhotoSelectionPool().includes(a.id)),
+      title: magicMemoryTitle.value,
+      memoryEvent: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+      photoCount: magicPhotoCount.value,
+      backgroundType: magicBackgroundType.value,
+      buttonType: currentButtonConfig.value
+    }
+    
+    // Show user-friendly error dialog
+    errorDialogMessage.value = err.message || 'Something went wrong while creating your magic memory. Let\'s try again!'
+    showErrorDialog.value = true
+    
+    // Also show toast for immediate feedback
     toast.add({ severity: 'error', summary: 'Let me try again', detail: err.message || 'I need to try again to create something special for you.', life: 10000 })
   } finally {
     magicLoading.value = false
   }
 }
 
-const openMagicMemoryDialog = async () => {
-  magicMemoryStep.value = 1
+// Retry function for magic memory creation
+const retryMagicMemory = async () => {
+  if (!lastMagicMemoryConfig.value) {
+    showErrorDialog.value = false
+    return
+  }
+  
+  showErrorDialog.value = false
+  magicLoading.value = true
+  
+  // Show progress dialog
+  showProgressDialog.value = true
+  currentProgress.value = 5
+  currentProgressMessage.value = '🧙 Looking through your beautiful memories...'
+  isRegenerating.value = false
+  
+  try {
+    const config = lastMagicMemoryConfig.value
+    const photos = config.selectedAssets.map(a => ({
+      id: a.id,
+      ai_caption: a.ai_caption || '',
+      people_detected: a.people_detected || [],
+      tags: a.tags || [],
+      user_tags: a.user_tags || [],
+      city: a.city || null,
+      state: a.state || null,
+      country: a.country || null,
+      zip_code: a.zip_code || null,
+      width: a.width || null,
+      height: a.height || null,
+      orientation: a.orientation || 'unknown',
+      asset_date: a.asset_date || null
+    }))
+    
+    let aiBody = { 
+      photos,
+      title: config.title,
+      memory_event: config.memoryEvent,
+      photo_count: config.photoCount,
+      background_type: config.backgroundType,
+      theme: 'classic'
+    }
+    
+    if (photos.length <= config.photoCount) {
+      aiBody.forceAll = true
+    }
+    
+    // Update status for story generation
+    currentProgress.value = 15
+    currentProgressMessage.value = '🔮 Crafting your special story...'
+    
+    const aiRes = await $fetch('/api/ai/magic-memory', {
+      method: 'POST',
+      body: aiBody
+    })
+    
+    if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1 || aiRes.selected_photo_ids.length > config.photoCount) {
+      throw new Error(`I need a bit more to work with. Let me try again with different photos.`)
+    }
+    
+    if (!aiRes.story || typeof aiRes.story !== 'string' || aiRes.story.trim().length < 10) {
+      throw new Error('I need to try again to create something special for you.')
+    }
+    
+    // Update status for saving the magic memory
+    currentProgress.value = 25
+    currentProgressMessage.value = '📚 Saving your magic card...'
+    
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+    
+    const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
+      method: 'POST',
+      body: {
+        asset_ids: aiRes.selected_photo_ids,
+        photo_selection_pool: config.photoSelectionPool,
+        story: aiRes.story,
+        title: config.title || 'Magic Memory',
+        memory_event: config.memoryEvent,
+        background_type: aiRes.background_type || config.backgroundType,
+        photo_count: config.photoCount
+      },
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+    
+    if (!dbRes.success) throw new Error('I need to try again to save your magic card.')
+    
+    // Update status for PDF generation
+    currentProgress.value = 30
+    currentProgressMessage.value = '✨ Creating your magic card...'
+    
+    // Create a book object for the progress dialog with proper asset references
+    const book = {
+      id: dbRes.book_id,
+      layout_type: 'magic',
+      status: 'draft',
+      photo_selection_pool: config.photoSelectionPool,
+      created_from_assets: aiRes.selected_photo_ids || []
+    }
+    
+    // Use the unified progress dialog system for PDF generation
+    await generatePDF(book)
+    
+    if (typeof loadMemoryBooks === 'function') await loadMemoryBooks()
+    
+    // Clear the stored configuration
+    lastMagicMemoryConfig.value = null
+    
+  } catch (err) {
+    // Close progress dialog on error
+    showProgressDialog.value = false
+    stopProgressPolling()
+    
+    // Show user-friendly error dialog again
+    errorDialogMessage.value = err.message || 'Something went wrong while creating your magic memory. Let\'s try again!'
+    showErrorDialog.value = true
+    
+    // Also show toast for immediate feedback
+    toast.add({ severity: 'error', summary: 'Let me try again', detail: err.message || 'I need to try again to create something special for you.', life: 10000 })
+  } finally {
+    magicLoading.value = false
+  }
+}
+
+const openMagicMemoryDialog = async (buttonType = 'full') => {
+  // Set up the button configuration
+  currentButtonConfig.value = buttonConfigs[buttonType] || buttonConfigs.full
+  currentStepIndex.value = 0
+  magicMemoryStep.value = currentButtonConfig.value.steps[0]
+  
+  // Reset form values
   magicMemoryTitle.value = ''
   magicMemoryEvent.value = ''
+  magicCustomMemoryEvent.value = ''
   magicPhotoCount.value = 4
   magicBackgroundType.value = 'white'
+  // Set default photo selection method based on button configuration
+  magicPhotoSelectionMethod.value = currentButtonConfig.value.steps.includes(5) ? '' : 'last_100'
+  magicDateRange.value = { start: null, end: null }
+  magicSelectedTags.value = []
   magicSelectedMemories.value = []
   magicSelectedTagFilter.value = []
+  
   loadingAssets.value = true
   try {
     const allApprovedAssets = await db.assets.getAssets({ approved: true })
@@ -3431,9 +3850,9 @@ const openMagicMemoryDialog = async () => {
   }
 }
 
-// Reload assets for magic memory step 5
+// Reload assets for magic memory step 6
 const reloadAssetsForMagicMemory = async () => {
-  if (magicMemoryStep.value === 5) {
+  if (magicMemoryStep.value === 6) {
     loadingAssets.value = true
     try {
       const allApprovedAssets = await db.assets.getAssets({ approved: true })
@@ -3448,28 +3867,143 @@ const reloadAssetsForMagicMemory = async () => {
 }
 
 const nextMagicMemoryStep = () => {
-  if (magicMemoryStep.value === 1 && magicMemoryTitle.value.trim()) {
-    magicMemoryStep.value = 2
-  } else if (magicMemoryStep.value === 2) {
-    magicMemoryStep.value = 3
-  } else if (magicMemoryStep.value === 3) {
-    magicMemoryStep.value = 4
-  } else if (magicMemoryStep.value === 4) {
-    magicMemoryStep.value = 5
+  // Validate current step before proceeding
+  if (magicMemoryStep.value === 1 && !magicMemoryTitle.value.trim()) {
+    return // Don't proceed if title is empty
+  }
+  
+  if (magicMemoryStep.value === 5 && !magicPhotoSelectionMethod.value) {
+    return // Don't proceed if photo selection method is not chosen
+  }
+  
+  // Find next step in the button's sequence
+  const nextIndex = currentStepIndex.value + 1
+  if (nextIndex < currentButtonConfig.value.steps.length) {
+    currentStepIndex.value = nextIndex
+    magicMemoryStep.value = currentButtonConfig.value.steps[nextIndex]
   }
 }
 
 const previousMagicMemoryStep = () => {
-  if (magicMemoryStep.value === 5) {
-    magicMemoryStep.value = 4
-  } else if (magicMemoryStep.value === 4) {
-    magicMemoryStep.value = 3
-  } else if (magicMemoryStep.value === 3) {
-    magicMemoryStep.value = 2
-  } else if (magicMemoryStep.value === 2) {
-    magicMemoryStep.value = 1
-    magicCustomMemoryEvent.value = ''
+  // Find previous step in the button's sequence
+  const prevIndex = currentStepIndex.value - 1
+  if (prevIndex >= 0) {
+    currentStepIndex.value = prevIndex
+    magicMemoryStep.value = currentButtonConfig.value.steps[prevIndex]
+    
+    // Clear custom event if going back to step 2
+    if (magicMemoryStep.value === 2) {
+      magicCustomMemoryEvent.value = ''
+    }
   }
+}
+
+// Helper functions for navigation
+const getNextStepName = () => {
+  const nextIndex = currentStepIndex.value + 1
+  if (nextIndex < currentButtonConfig.value.steps.length) {
+    const nextStepNumber = currentButtonConfig.value.steps[nextIndex]
+    return stepDefinitions[nextStepNumber].name
+  }
+  return null
+}
+
+const isLastStep = () => {
+  return currentStepIndex.value === currentButtonConfig.value.steps.length - 1
+}
+
+const isFirstStep = () => {
+  return currentStepIndex.value === 0
+}
+
+// Function to populate photo selection pool based on user's choice
+const populatePhotoSelectionPool = () => {
+  console.log('🔍 [populatePhotoSelectionPool] Starting with method:', magicPhotoSelectionMethod.value)
+  console.log('🔍 [populatePhotoSelectionPool] Available assets count:', availableAssets.value?.length || 0)
+  
+  if (!availableAssets.value || availableAssets.value.length === 0) {
+    console.log('🔍 [populatePhotoSelectionPool] No available assets, returning empty array')
+    return []
+  }
+  
+  let filteredAssets = [...availableAssets.value]
+  console.log('🔍 [populatePhotoSelectionPool] Initial filtered assets count:', filteredAssets.length)
+  
+  switch (magicPhotoSelectionMethod.value) {
+    case 'last_100':
+      // Get the last 100 photos (most recent by created_at)
+      filteredAssets = filteredAssets
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 100)
+      console.log('🔍 [populatePhotoSelectionPool] Last 100 method - filtered assets count:', filteredAssets.length)
+      console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
+      break
+      
+    case 'last_month':
+      // Get photos from the last month
+      const oneMonthAgo = new Date()
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+      filteredAssets = filteredAssets.filter(asset => {
+        const assetDate = new Date(asset.created_at)
+        return assetDate >= oneMonthAgo
+      })
+      console.log('🔍 [populatePhotoSelectionPool] Last month method - filtered assets count:', filteredAssets.length)
+      console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
+      break
+      
+    case 'date_range':
+      // Filter by date range
+      if (magicDateRange.value.start && magicDateRange.value.end) {
+        filteredAssets = filteredAssets.filter(asset => {
+          const assetDate = new Date(asset.created_at)
+          const startDate = new Date(magicDateRange.value.start)
+          const endDate = new Date(magicDateRange.value.end)
+          return assetDate >= startDate && assetDate <= endDate
+        })
+        console.log('🔍 [populatePhotoSelectionPool] Date range method - filtered assets count:', filteredAssets.length)
+        console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
+      }
+      break
+      
+    case 'tags':
+      // Filter by selected tags
+      console.log('🔍 [populatePhotoSelectionPool] Tags method - selected tags:', magicSelectedTags.value)
+      if (magicSelectedTags.value && magicSelectedTags.value.length > 0) {
+        const beforeFilter = filteredAssets.length
+        filteredAssets = filteredAssets.filter(asset => {
+          const hasMatchingTag = asset.tags && asset.tags.some(tag => magicSelectedTags.value.includes(tag))
+          if (hasMatchingTag) {
+            console.log('🔍 [populatePhotoSelectionPool] Asset matches tags:', asset.id, 'tags:', asset.tags)
+          }
+          return hasMatchingTag
+        })
+        console.log('🔍 [populatePhotoSelectionPool] Tags method - before filter:', beforeFilter, 'after filter:', filteredAssets.length)
+        console.log('🔍 [populatePhotoSelectionPool] Tags method - matching assets:', filteredAssets.map(a => ({ id: a.id, tags: a.tags })))
+      } else {
+        console.log('🔍 [populatePhotoSelectionPool] Tags method - no tags selected, returning all assets')
+      }
+      break
+      
+    case 'manual':
+      // For manual selection, we'll use the existing magicSelectedMemories
+      // This will be handled in the photo selection step
+      console.log('🔍 [populatePhotoSelectionPool] Manual method - selected memories count:', magicSelectedMemories.value.length)
+      return magicSelectedMemories.value
+      
+    default:
+      // Default to last 100 photos if no method is selected
+      filteredAssets = filteredAssets
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 100)
+      console.log('🔍 [populatePhotoSelectionPool] Default method - filtered assets count:', filteredAssets.length)
+      break
+  }
+  
+  const result = filteredAssets.map(asset => asset.id)
+  console.log('🔍 [populatePhotoSelectionPool] Final result - asset IDs count:', result.length)
+  console.log('🔍 [populatePhotoSelectionPool] Final result - asset IDs:', result)
+  
+  return result
 }
 
 const showDeleteDialog = ref(false)
@@ -3531,7 +4065,8 @@ async function createMemoryBookFromDialog(data) {
       gridLayout: data.gridLayout,
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,
-      backgroundType: data.backgroundType,
+      aiBackground: data.backgroundType === 'magical',
+      backgroundOpacity: data.backgroundOpacity || 30,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
       // Store selected asset IDs for the book
@@ -3576,7 +4111,8 @@ async function saveEditBookFromDialog(data) {
       gridLayout: data.gridLayout,
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,
-      backgroundType: data.backgroundType,
+      aiBackground: data.backgroundType === 'magical',
+      backgroundOpacity: data.backgroundOpacity || 30,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
       // Update asset references based on layout type

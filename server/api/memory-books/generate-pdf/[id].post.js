@@ -783,15 +783,18 @@ export default defineEventHandler(async (event) => {
       
       // Use the same background handling as standard books, but respect background type
       if (pdfBgImage && book.background_type !== 'white') {
-        // Draw background image to fill the page with appropriate opacity
+        // Draw background image to fill the page with opacity from database
+        // Safety feature: if opacity is 0, use 30% instead
+        const backgroundOpacity = book.background_opacity || 30
+        const opacity = (backgroundOpacity === 0 ? 30 : backgroundOpacity) / 100 // Convert percentage to decimal
         page.drawImage(pdfBgImage, {
           x: 0,
           y: 0,
           width: pageWidth,
           height: pageHeight,
-          opacity: book.background_type === 'magical' ? 0.3 : 0.5
+          opacity: opacity
         })
-        console.log(`✅ Magic memory background image applied with ${book.background_type === 'magical' ? '30%' : '50%'} opacity`)
+        console.log(`✅ Magic memory background image applied with ${backgroundOpacity}% opacity`)
       } else {
         // Use white background (either no background image or white background type)
         page.drawRectangle({
@@ -854,8 +857,8 @@ export default defineEventHandler(async (event) => {
           for (let col = 0; col < photoLayout.gridCols; col++) {
             if (photoLayout.positions.length < photoAssets.length) {
               photoLayout.positions.push({
-                x: photoLayout.photoGridLeft + col * (photoLayout.photoCellWidth + margin / (photoLayout.gridCols - 1)),
-                y: pageHeight - margin - (row + 1) * photoLayout.photoCellHeight - row * (margin / (photoLayout.gridRows - 1))
+                x: photoLayout.photoGridLeft + col * (photoLayout.photoCellWidth + (photoLayout.gridCols > 1 ? margin / (photoLayout.gridCols - 1) : 0)),
+                y: pageHeight - margin - (row + 1) * photoLayout.photoCellHeight - row * (photoLayout.gridRows > 1 ? margin / (photoLayout.gridRows - 1) : 0)
               })
             }
           }
@@ -1166,19 +1169,22 @@ export default defineEventHandler(async (event) => {
       const gridYOffset = (pageIndex === 0) ? topMargin : 0
       const availableHeight = height - gridYOffset - bottomMargin
       
-      // Draw background image, scaled to fill page, at 50% opacity (only if present and not white background)
+      // Draw background image, scaled to fill page, with opacity from database (only if present and not white background)
       if (pdfBgImage && book.background_type !== 'white') {
         const bgScale = Math.max(width / pdfBgImage.width, height / pdfBgImage.height)
         const bgW = pdfBgImage.width * bgScale
         const bgH = pdfBgImage.height * bgScale
         const bgX = (width - bgW) / 2
         const bgY = (height - bgH) / 2
+        // Safety feature: if opacity is 0, use 30% instead
+        const backgroundOpacity = book.background_opacity || 30
+        const opacity = (backgroundOpacity === 0 ? 30 : backgroundOpacity) / 100 // Convert percentage to decimal
         page.drawImage(pdfBgImage, {
           x: bgX,
           y: bgY,
           width: bgW,
           height: bgH,
-          opacity: 0.5
+          opacity: opacity
         })
       }
       

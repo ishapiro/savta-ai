@@ -133,17 +133,34 @@ export default defineEventHandler(async (event) => {
       throw new Error('No approved assets found for this book')
     }
 
-    // Gather all unique tags from the assets
+    // Gather all unique tags and captions from the assets
     const allTags = Array.from(new Set(
       assets.flatMap(asset => Array.isArray(asset.tags) ? asset.tags : [])
     ))
-    const tagsPrompt = allTags.length > 0 ? `, theme: ${allTags.join(', ')}` : ''
+    
+    // Gather all captions from the assets
+    const allCaptions = assets
+      .map(asset => asset.ai_caption || asset.user_caption)
+      .filter(caption => caption && caption.trim())
+    
+    // Create enhanced prompt with both tags and captions
+    let tagsPrompt = ''
+    if (allTags.length > 0) {
+      tagsPrompt += `, theme: ${allTags.join(', ')}`
+    }
+    if (allCaptions.length > 0) {
+      tagsPrompt += `, content: ${allCaptions.join('; ')}`
+    }
     
     // 2. Generate a DALL-E 3 background image
     console.log('🎨 Generating DALL-E background image...')
     const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
     if (!openaiApiKey) throw new Error('Missing OpenAI API key')
-    const dallePrompt = `scrapbook page background, soft colors, subtle texture, no text, no people, no objects, DO NOT INCLUDE ANY IMAGES OF PEOPLE OR ANIMALS${tagsPrompt}`
+    const dallePrompt = `Abstract background with soft, neutral colors and smooth gradients. Subtle texture for depth. 
+        No letters, no numbers, no words, no symbols, no text of any kind. No people, no animals. 
+        Pure ambient design. Do not include any written language, signage, characters, glyphs, or typographic elements. 
+        The image must be entirely free of any writing or visual text-like shapes.
+        The photos include these subjects which are the main focus of the page: ${tagsPrompt}`
     
     const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
