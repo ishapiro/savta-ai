@@ -11,3 +11,8 @@ onMounted(() => {
   initializeLicense()
 })
 </script>
+
+<script>
+// Global script - no longer needed for OAuth cleanup
+// localStorage approach eliminates the need for URL cleanup
+</script>

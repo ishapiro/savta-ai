@@ -1,5 +1,8 @@
 <template>
   <div class="h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
+    <!-- Backdrop overlay -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-0"></div>
+    
     <!-- Animated background elements -->
     <div class="fixed inset-0 pointer-events-none z-0">
       <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/20 rounded-full blur-xl animate-pulse-slow"></div>
@@ -9,7 +12,7 @@
     </div>
 
     <!-- Signup Dialog -->
-    <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '500px', maxHeight: '100vh' }" class="z-10" @hide="onDialogHide">
+    <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '500px', maxHeight: '100vh' }" class="z-20" @hide="onDialogHide">
       <div class="flex flex-col items-center w-full px-2 sm:px-4 py-3 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
         <!-- Header -->
         <div class="flex flex-col items-center mb-2 w-full">
@@ -135,7 +138,7 @@
         <div class="mt-4 w-full text-center">
           <p class="text-gray-600 text-sm">
             Already have an account?
-            <a href="/app/login" class="text-purple-600 hover:text-purple-500 font-medium">Sign in</a>
+            <NuxtLink :to="`/app/login?origin=${origin || 'dashboard'}`" class="text-purple-600 hover:text-purple-500 font-medium">Sign in</NuxtLink>
           </p>
         </div>
       </div>
@@ -168,10 +171,21 @@ const visible = ref(true)
 const supabase = useNuxtApp().$supabase
 const user = useSupabaseUser()
 
+// Get origin from localStorage
+const origin = process.client ? localStorage.getItem('auth_origin') || 'dashboard' : 'dashboard'
+console.log('[SIGNUP] Origin from localStorage:', origin)
+
 // Redirect if already logged in
 watchEffect(() => {
   if (user.value) {
-          navigateTo('/app/dashboard')
+    console.log('[SIGNUP] User authenticated, redirecting based on origin:', origin)
+    if (origin === 'home') {
+      console.log('[SIGNUP] Redirecting to memory books with dialog')
+      navigateTo('/app/memory-books?openDialog=quick')
+    } else {
+      console.log('[SIGNUP] Redirecting to dashboard')
+      navigateTo('/app/dashboard')
+    }
   }
 })
 
@@ -222,11 +236,14 @@ const handleEmailSignup = async () => {
   console.log("SITE URL:", siteUrl)
 
   try {
+    const redirectUrl = `${config.public.siteUrl}/app/confirm`
+    console.log('[SIGNUP] Email redirect URL:', redirectUrl)
+    
     const { error: authError } = await supabase.auth.signUp({
       email: email.value,
       password: password.value,
       options: {
-        emailRedirectTo: `${config.public.siteUrl}/app/confirm`
+        emailRedirectTo: redirectUrl
       }
     })
 
@@ -252,10 +269,13 @@ const handleGoogleSignup = async () => {
   console.log("SITE URL:", siteUrl)
 
   try {
+    const redirectUrl = `${config.public.siteUrl}/app/confirm`
+    console.log('[SIGNUP] OAuth redirect URL:', redirectUrl)
+    
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${config.public.siteUrl}/app/confirm`
+        redirectTo: redirectUrl
       }
     })
 
@@ -271,8 +291,12 @@ const handleGoogleSignup = async () => {
 }
 
 const onDialogHide = () => {
-  // When dialog is closed, navigate away (e.g., to /app/dashboard or /)
-  navigateTo('/app/dashboard')
+  // When dialog is closed, navigate based on origin
+  if (origin === 'home') {
+    navigateTo('/app/memory-books?openDialog=quick')
+  } else {
+    navigateTo('/app/dashboard')
+  }
 }
 </script>
 

@@ -185,7 +185,7 @@ const checkPassword = () => {
     // Set insiders access using the composable
     const { setInsidersAccess } = useInsidersAccess()
     setInsidersAccess()
-    navigateTo('/app/dashboard')
+    navigateTo('/app/home')
   } else {
     passwordError.value = 'Incorrect password. Please try again.'
     password.value = ''

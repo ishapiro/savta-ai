@@ -14,30 +14,36 @@
 
           <!-- Desktop Navigation -->
           <div class="hidden lg:flex items-center space-x-4">
-            <NuxtLink to="/app/dashboard" class="no-underline">
-              <button class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
-                <i class="pi pi-home text-xl"></i>
+            <NuxtLink to="/app/home" class="no-underline">
+              <button class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200 no-underline">
+                <i class="pi pi-home text-lg"></i>
                 <span>Home</span>
+              </button>
+            </NuxtLink>
+            <NuxtLink to="/app/dashboard" class="no-underline">
+              <button class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200 no-underline">
+                <i class="pi pi-th-large text-lg"></i>
+                <span>Dashboard</span>
               </button>
             </NuxtLink>
             <template v-if="user">
               <!-- App Navigation -->
               <div class="flex items-center space-x-2">
                 <NuxtLink to="/app/upload" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
-                    <i class="pi pi-upload text-xl"></i>
+                  <button class="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200 no-underline">
+                    <i class="pi pi-upload text-lg"></i>
                     <span>Upload</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink to="/app/review" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
-                    <i class="pi pi-check-circle text-xl"></i>
+                  <button class="flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200 no-underline">
+                    <i class="pi pi-check-circle text-lg"></i>
                     <span>Review</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink to="/app/memory-books" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
-                    <i class="pi pi-book text-xl"></i>
+                  <button class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200 no-underline">
+                    <i class="pi pi-book text-lg"></i>
                     <span>Memories</span>
                   </button>
                 </NuxtLink>
@@ -45,8 +51,8 @@
                 <!-- Admin/Editor Navigation - Only for authenticated users -->
                 <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
                   <NuxtLink to="/app/editor" class="no-underline">
-                    <button class="flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
-                      <i class="pi pi-palette text-xl"></i>
+                    <button class="flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200 no-underline">
+                      <i class="pi pi-palette text-lg"></i>
                       <span>Editor</span>
                     </button>
                   </NuxtLink>
@@ -54,29 +60,29 @@
                 
                 <template v-if="userProfile && userProfile.role === 'admin'">
                   <NuxtLink to="/app/admin" class="no-underline">
-                    <button class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
-                      <i class="pi pi-cog text-xl"></i>
+                    <button class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200 no-underline">
+                      <i class="pi pi-cog text-lg"></i>
                       <span>Admin</span>
                     </button>
                   </NuxtLink>
                 </template>
               </div>
               
-              <button @click="handleSignOut" class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200">
-                <i class="pi pi-sign-out text-xl"></i>
+              <button @click="handleSignOut" class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200">
+                <i class="pi pi-sign-out text-lg"></i>
                 <span>Sign out</span>
               </button>
             </template>
             <template v-else>
-              <NuxtLink to="/app/login" class="no-underline">
-                <button class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
-                  <i class="pi pi-sign-in text-xl"></i>
+              <NuxtLink :to="`/app/login?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
+                <button class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200 no-underline">
+                  <i class="pi pi-sign-in text-lg"></i>
                   <span>Sign in</span>
                 </button>
               </NuxtLink>
-              <NuxtLink to="/app/signup" class="no-underline">
-                <button class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-2 text-base shadow transition-all duration-200 no-underline">
-                  <i class="pi pi-user-plus text-xl"></i>
+              <NuxtLink :to="`/app/signup?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
+                <button class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-4 py-1.5 text-sm shadow transition-all duration-200 no-underline">
+                  <i class="pi pi-user-plus text-lg"></i>
                   <span>Sign up</span>
                 </button>
               </NuxtLink>
@@ -85,10 +91,16 @@
 
           <!-- Tablet Navigation (Compact) -->
           <div class="hidden md:flex lg:hidden items-center space-x-2">
-            <NuxtLink to="/app/dashboard" class="no-underline">
+            <NuxtLink to="/app/home" class="no-underline">
               <button class="flex items-center justify-center gap-1 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
                 <i class="pi pi-home text-lg"></i>
                 <span class="hidden sm:inline">Home</span>
+              </button>
+            </NuxtLink>
+            <NuxtLink to="/app/dashboard" class="no-underline">
+              <button class="flex items-center justify-center gap-1 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
+                <i class="pi pi-th-large text-lg"></i>
+                <span class="hidden sm:inline">Dashboard</span>
               </button>
             </NuxtLink>
             <template v-if="user">
@@ -136,13 +148,13 @@
               </button>
             </template>
             <template v-else>
-              <NuxtLink to="/app/login" class="no-underline">
+              <NuxtLink :to="`/app/login?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
                 <button class="flex items-center justify-center gap-1 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
                   <i class="pi pi-sign-in text-lg"></i>
                   <span class="hidden sm:inline">Sign in</span>
                 </button>
               </NuxtLink>
-              <NuxtLink to="/app/signup" class="no-underline">
+              <NuxtLink :to="`/app/signup?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
                 <button class="flex items-center justify-center gap-1 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-3 py-2 text-sm shadow transition-all duration-200 no-underline">
                   <i class="pi pi-user-plus text-lg"></i>
                   <span class="hidden sm:inline">Sign up</span>
@@ -492,15 +504,20 @@ watch(hasInsidersAccess, (newValue) => {
 const breadcrumbItems = computed(() => {
   const crumbs = []
   
-  // Always start with Dashboard as Home
+  // Always start with Home
   if (route.path.startsWith('/app/')) {
-    crumbs.push({ label: 'Home', to: '/app/dashboard' })
+    crumbs.push({ label: 'Home', to: '/app/home' })
+    
+    // Add Dashboard if not on home page
+    if (route.path !== '/app/home') {
+      crumbs.push({ label: 'Dashboard', to: '/app/dashboard' })
+    }
   } else {
     crumbs.push({ label: 'Home', to: '/' })
   }
   
-  // Add current page if not dashboard
-  if (route.path !== '/app/dashboard' && route.name && route.name !== 'index') {
+  // Add current page if not home or dashboard
+  if (route.path !== '/app/home' && route.path !== '/app/dashboard' && route.name && route.name !== 'index') {
     // Convert route name to readable label
     let label = route.name.toString()
     if (label.includes('-')) {

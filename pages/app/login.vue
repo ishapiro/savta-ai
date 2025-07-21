@@ -1,5 +1,8 @@
 <template>
   <div class="h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
+    <!-- Backdrop overlay -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-0"></div>
+    
     <!-- Animated background elements -->
     <div class="fixed inset-0 pointer-events-none z-0">
       <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/20 rounded-full blur-xl animate-pulse-slow"></div>
@@ -9,7 +12,7 @@
     </div>
 
     <!-- Login Dialog -->
-    <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '500px', maxHeight: '100vh' }" class="z-10" @hide="onDialogHide">
+    <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '500px', maxHeight: '100vh' }" class="z-20" @hide="onDialogHide">
       <div class="flex flex-col items-center w-full px-2 sm:px-4 py-3 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
         <!-- Header -->
         <div class="flex flex-col items-center mb-2 w-full">
@@ -133,10 +136,18 @@ const visible = ref(true)
 const supabase = useNuxtApp().$supabase
 const user = useSupabaseUser()
 
+// Get origin from localStorage
+const origin = process.client ? localStorage.getItem('auth_origin') || 'dashboard' : 'dashboard'
+console.log('[LOGIN] Origin from localStorage:', origin)
+
 // Redirect if already logged in
 watchEffect(() => {
   if (user.value) {
-    navigateTo('/app/dashboard')
+    if (origin === 'home') {
+      navigateTo('/app/memory-books?openDialog=quick')
+    } else {
+      navigateTo('/app/dashboard')
+    }
   }
 })
 
@@ -183,8 +194,12 @@ const handleEmailLogin = async () => {
       if (process.client) {
         sessionStorage.removeItem('guestMode')
       }
-      // Success - user will be redirected by the watchEffect
-      navigateTo('/app/dashboard')
+      // Success - redirect based on origin
+      if (origin === 'home') {
+        navigateTo('/app/memory-books?openDialog=quick')
+      } else {
+        navigateTo('/app/dashboard')
+      }
     }
   } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
@@ -201,10 +216,13 @@ const handleGoogleLogin = async () => {
   console.log("Debug:config.public.siteUrl", config.public.siteUrl)
 
   try {
+    const redirectUrl = `${config.public.siteUrl}/app/confirm`
+    console.log('[LOGIN] OAuth redirect URL:', redirectUrl)
+    
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${config.public.siteUrl}/app/confirm`
+        redirectTo: redirectUrl
       }
     })
 
@@ -225,8 +243,12 @@ const handleGoogleLogin = async () => {
 }
 
 const onDialogHide = () => {
-  // When dialog is closed, navigate away (e.g., to /app/dashboard or /)
-  navigateTo('/app/dashboard')
+  // When dialog is closed, navigate based on origin
+  if (origin === 'home') {
+    navigateTo('/app/memory-books?openDialog=quick')
+  } else {
+    navigateTo('/app/dashboard')
+  }
 }
 
 // Clear guest mode flag when page loads

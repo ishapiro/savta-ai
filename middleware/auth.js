@@ -75,7 +75,13 @@ export default defineNuxtRouteMiddleware((to) => {
   }
   
   // If user is authenticated and trying to access auth pages, redirect to app dashboard
+  // EXCEPT if they're coming from home page with origin in localStorage
   if (user.value && (to.path === '/app/login' || to.path === '/app/signup' || to.path === '/app/confirm')) {
+    // Allow authenticated users to access signup or confirm if they have origin=home in localStorage
+    if ((to.path === '/app/signup' || to.path === '/app/confirm') && 
+        process.client && localStorage.getItem('auth_origin') === 'home') {
+      return
+    }
     return navigateTo('/app/dashboard')
   }
 }) 

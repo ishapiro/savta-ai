@@ -1,6 +1,17 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 p-4">
-    <div class="max-w-7xl mx-auto">
+    <!-- Backdrop overlay when magic memory dialog is open -->
+    <div 
+      v-if="showMagicMemoryDialog" 
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-all duration-300"
+    ></div>
+    
+    <div 
+      :class="[
+        'max-w-7xl mx-auto transition-all duration-300',
+        showMagicMemoryDialog ? 'opacity-50 blur-sm pointer-events-none' : ''
+      ]"
+    >
       <!-- Header -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
@@ -1352,7 +1363,8 @@
               :header="magicMemoryStep === 1 ? '✨ What should we call this memory? ✨' : ''"
       :class="[
         'magic-memory-dialog',
-        'w-full h-full sm:w-[95vw] sm:max-w-3xl sm:h-auto sm:rounded-2xl'
+        'w-full h-full sm:w-[95vw] sm:max-w-3xl sm:h-auto sm:rounded-2xl',
+        'z-50'
       ]"
       :style="{
         width: '100vw',
@@ -2315,6 +2327,14 @@ onMounted(async () => {
   
   // Check for assets to determine empty state
   await checkAssets()
+  
+  // Check for query parameter to auto-open magic memory dialog
+  if (route.query.openDialog === 'quick') {
+    // Small delay to ensure everything is loaded
+    setTimeout(() => {
+      openMagicMemoryDialog('quick')
+    }, 500)
+  }
 })
 
 // Cleanup on unmount

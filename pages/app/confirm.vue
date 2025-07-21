@@ -111,6 +111,21 @@ import { useSupabaseUser } from '~/composables/useSupabase'
 const supabase = useNuxtApp().$supabase
 const user = useSupabaseUser()
 
+// Get origin from localStorage
+const origin = process.client ? localStorage.getItem('auth_origin') || 'dashboard' : 'dashboard'
+console.log('[CONFIRM] Origin from localStorage:', origin)
+console.log('[CONFIRM] Full URL:', process.client ? window.location.href : 'SSR')
+
+// Watch for user state changes
+watchEffect(() => {
+  console.log('[CONFIRM] User state changed:', { user: !!user.value, origin })
+  
+  // If user becomes available and we have an origin, we can proceed
+  if (user.value && origin) {
+    console.log('[CONFIRM] User authenticated with origin, ready to proceed')
+  }
+})
+
 
 // Dialog state
 const visible = ref(true)
@@ -150,7 +165,20 @@ const formatDate = (dateString) => {
 // Navigation functions
 const goToDashboard = () => {
   visible.value = false
-  navigateTo('/app/dashboard')
+  console.log('[CONFIRM] goToDashboard called, origin:', origin)
+  
+  // Clean up localStorage
+  if (process.client) {
+    localStorage.removeItem('auth_origin')
+  }
+  
+  if (origin === 'home') {
+    console.log('[CONFIRM] Redirecting to memory books with dialog')
+    navigateTo('/app/memory-books?openDialog=quick')
+  } else {
+    console.log('[CONFIRM] Redirecting to dashboard')
+    navigateTo('/app/dashboard')
+  }
 }
 
 const goToAbout = () => {
@@ -159,34 +187,68 @@ const goToAbout = () => {
 }
 
 const onDialogHide = () => {
-  // When dialog is closed, navigate to dashboard
-  navigateTo('/app/dashboard')
+  // When dialog is closed, navigate based on origin
+  console.log('[CONFIRM] onDialogHide called, origin:', origin)
+  
+  // Clean up localStorage
+  if (process.client) {
+    localStorage.removeItem('auth_origin')
+  }
+  
+  if (origin === 'home') {
+    console.log('[CONFIRM] Dialog hide - redirecting to memory books with dialog')
+    navigateTo('/app/memory-books?openDialog=quick')
+  } else {
+    console.log('[CONFIRM] Dialog hide - redirecting to dashboard')
+    navigateTo('/app/dashboard')
+  }
 }
 
 // Handle OAuth callback and user state
 onMounted(async () => {
-  // Clean up URL fragments from OAuth callback
-  if (window.location.hash) {
-    // Remove the hash fragment to clean up the URL
-    window.history.replaceState(null, '', window.location.pathname + window.location.search)
-  }
+  console.log('[CONFIRM] onMounted - checking OAuth callback')
   
-  // Check if this is an OAuth callback
-  const { data: { session }, error } = await supabase.auth.getSession()
-  
-  if (error) {
-    console.error('Error getting session:', error)
-    navigateTo('/app/login')
-    return
-  }
-  
-  // If no session after a short delay, redirect to login
-  if (!session) {
-    setTimeout(() => {
-      if (!user.value) {
-        navigateTo('/app/login')
-      }
-    }, 2000)
+  try {
+    // Wait for session to be established
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Check if this is an OAuth callback
+    const { data: { session }, error } = await supabase.auth.getSession()
+    
+    if (error) {
+      console.error('Error getting session:', error)
+      // Don't redirect immediately on error, give it more time
+      setTimeout(() => {
+        if (!user.value) {
+          console.log('[CONFIRM] No user after error, redirecting to login')
+          // Clean up localStorage before redirecting
+          if (process.client) {
+            localStorage.removeItem('auth_origin')
+          }
+          navigateTo('/app/login')
+        }
+      }, 3000)
+      return
+    }
+    
+    console.log('[CONFIRM] Session check result:', { session: !!session, user: !!user.value })
+    
+    // If no session after a longer delay, redirect to login
+    if (!session && !user.value) {
+      setTimeout(() => {
+        if (!user.value) {
+          console.log('[CONFIRM] No session or user after delay, redirecting to login')
+          // Clean up localStorage before redirecting
+          if (process.client) {
+            localStorage.removeItem('auth_origin')
+          }
+          navigateTo('/app/login')
+        }
+      }, 3000)
+    }
+  } catch (error) {
+    console.error('[CONFIRM] Error in onMounted:', error)
+    // Don't redirect on error, let the page handle it gracefully
   }
 })
 </script>

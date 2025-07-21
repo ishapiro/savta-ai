@@ -932,10 +932,15 @@ export default defineEventHandler(async (event) => {
             imgY = photoLayout.positions[i].y + (photoCellHeight - finalHeight) / 2
           }
           
+          // Process image orientation first, then shape
+          const isPng = asset.storage_url.endsWith('.png')
+          const processedImageBuffer = await processImageOrientation(imageBuffer, isPng ? 'png' : 'jpeg')
+          console.log(`🔄 After orientation processing, size:`, processedImageBuffer.length, 'bytes')
+          
           // Process image at higher resolution for quality
           const targetWidth = Math.round(finalWidth * 2)
           const targetHeight = Math.round(finalHeight * 2)
-          const processedImage = await processImageShape(imageBuffer, 'original', targetWidth, targetHeight, asset.storage_url)
+          const processedImage = await processImageShape(processedImageBuffer, 'original', targetWidth, targetHeight, asset.storage_url)
           const pdfImage = await pdfDoc.embedPng(processedImage)
           page.drawImage(pdfImage, {
             x: imgX,
