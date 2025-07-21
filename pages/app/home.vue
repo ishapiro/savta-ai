@@ -1,20 +1,22 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
     <!-- Hero Section - Mobile Optimized -->
-    <div class="text-center lg:text-left mb-8 lg:mb-12">
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-4">
-        Your Family's 
-        <span class="text-pink-500">Memory Assistant</span>
-      </h1>
-      
-      <!-- Social Proof - Above the fold on mobile -->
-      <div class="flex items-center justify-center lg:justify-start gap-2 mb-6 text-sm text-gray-600">
-        <span class="flex items-center gap-1">
-          <span class="text-yellow-500">⭐</span>
-          <span>Join 1,000+ families</span>
-        </span>
-        <span class="hidden sm:inline">•</span>
-        <span class="hidden sm:inline">Free to start</span>
+    <div class="w-full px-4 sm:px-6 lg:px-8 pt-8 pb-10 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100">
+      <div class="max-w-2xl mx-auto text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight mb-4 tracking-tight">
+          Memories Don’t Keep Themselves
+        </h1>
+        <h2 class="italic text-xl sm:text-2xl lg:text-3xl text-purple-700 font-medium mb-4">
+          That’s What Savta’s For
+        </h2>
+        <div class="flex items-center justify-center gap-2 mb-2 text-sm text-gray-600">
+          <span class="flex items-center gap-1">
+            <span class="text-yellow-500">⭐</span>
+            <span>Join 1,000+ families</span>
+          </span>
+          <span>•</span>
+          <span>Free to start</span>
+        </div>
       </div>
     </div>
 
