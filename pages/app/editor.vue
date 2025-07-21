@@ -95,7 +95,8 @@
                           optionLabel="email"
                           :optionDisabled="option => !option.user_id"
                           placeholder="Type to search users..."
-                          class="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
+                          class="w-full"
+                          inputClass="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
                           :dropdown="true"
                           :forceSelection="true"
                           field="email"
@@ -111,7 +112,8 @@
                           optionLabel="label"
                           optionValue="value"
                           placeholder="All Status"
-                          class="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
+                          class="w-full"
+                          inputClass="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
                         />
                       </div>
                     </div>
