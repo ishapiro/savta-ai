@@ -82,6 +82,10 @@ export default defineNuxtRouteMiddleware((to) => {
         process.client && localStorage.getItem('auth_origin') === 'home') {
       return
     }
+    // For login page, always redirect to dashboard
+    if (to.path === '/app/login') {
+      return navigateTo('/app/dashboard')
+    }
     return navigateTo('/app/dashboard')
   }
 }) 

@@ -113,14 +113,14 @@ ${forceAll ?
 RESPONSE FORMAT:
 Return ONLY a valid JSON object with these exact fields:
 {
-  "selected_photo_numbers": [${targetPhotoCount > 1 ? '1' : ''}${targetPhotoCount > 2 ? ', 2' : ''}${targetPhotoCount > 3 ? ', 3' : ''}${targetPhotoCount > 4 ? ', 4' : ''}${targetPhotoCount > 5 ? ', 5' : ''}${targetPhotoCount > 6 ? ', 6' : ''}],
+  "selected_photo_numbers": [1, 2, 3, 4],
   "story": "Your 2-3 sentence story here..."
 }
 
 EXAMPLE:
-If you want to select photos 001 and 003 from the pool, your response should look like this EXACT format:
+If you want to select photos 1, 2, 3, and 4 from the pool, your response should look like this EXACT format:
 {
-  "selected_photo_numbers": [1, 3],
+  "selected_photo_numbers": [1, 2, 3, 4],
   "story": "Your story here..."
 }
 
@@ -219,7 +219,15 @@ ${photoDataSection}`
       console.error('JSON parsing error:', err)
       console.error('Raw AI response:', aiText)
       console.error('Cleaned AI response:', cleanedAiText)
-      throw createError({ statusCode: 500, statusMessage: 'Failed to parse AI response: ' + err.message })
+      
+      // Fallback: use all photos in order with a simple story
+      console.log('⚠️ AI failed to generate story, using fallback')
+      const fallbackResult = {
+        selected_photo_numbers: Array.from({ length: Math.min(targetPhotoCount, photos.length) }, (_, i) => i + 1),
+        story: `A beautiful collection of family moments captured with love. Each photo tells its own story, and together they create a tapestry of memories that will be cherished for years to come.`
+      }
+      result = fallbackResult
+      console.log('Fallback result:', result)
     }
 
     if (!result.selected_photo_numbers || !result.story) {

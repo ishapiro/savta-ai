@@ -657,7 +657,7 @@
               @click="selectFiles"
             >
               <i class="pi pi-sparkles mr-2"></i>
-              ✨ Start Preparing ✨
+              ✨ Start Uploading Photos ✨
             </button>
             <button
               v-if="!isUploading && (uploadedFiles.length > 0 || failedFiles.length > 0)"
@@ -2328,12 +2328,23 @@ onMounted(async () => {
   // Check for assets to determine empty state
   await checkAssets()
   
-  // Check for query parameter to auto-open magic memory dialog
+  // Check for query parameters to auto-open dialogs
+  console.log('[MEMORY-BOOKS] onMounted - route query params:', route.query)
+  
   if (route.query.openDialog === 'quick') {
+    console.log('[MEMORY-BOOKS] onMounted - opening magic memory dialog')
     // Small delay to ensure everything is loaded
     setTimeout(() => {
       openMagicMemoryDialog('quick')
     }, 500)
+  } else if (route.query.openUploadDialog === 'true') {
+    console.log('[MEMORY-BOOKS] onMounted - opening upload dialog')
+    // Small delay to ensure everything is loaded
+    setTimeout(() => {
+      showUploadDialog.value = true
+    }, 500)
+  } else {
+    console.log('[MEMORY-BOOKS] onMounted - no dialog parameters found')
   }
 })
 
@@ -4489,7 +4500,7 @@ const startUpload = async (files) => {
 }
 
 // Finish upload and close dialog
-const finishUpload = () => {
+const finishUpload = async () => {
   showUploadDialog.value = false
   // Reset state
   uploadingFiles.value = []
@@ -4498,6 +4509,19 @@ const finishUpload = () => {
   uploadProgress.value = 0
   uploadStatus.value = ''
   isUploading.value = false
+  
+  // Check if user came from home page flow and now has approved photos
+  if (route.query.openUploadDialog === 'true') {
+    // Small delay to ensure assets are updated
+    setTimeout(async () => {
+      await checkAssets()
+      if (hasAssets.value && approvedAssetsCount.value > 0) {
+        // User now has approved photos, open magic memory dialog
+        console.log('[MEMORY-BOOKS] User now has approved photos, opening magic memory dialog')
+        openMagicMemoryDialog('quick')
+      }
+    }, 1000)
+  }
 }
 
 // Legacy function for backward compatibility
@@ -4535,12 +4559,22 @@ const getMagicStatusText = (status) => {
 }
 
 const skipUpload = () => {
+  // Close upload dialog
+  showUploadDialog.value = false
+  
   toast.add({ 
     severity: 'info', 
     summary: 'No Problem', 
     detail: 'You can upload photos anytime from the Upload page', 
     life: 3000 
   })
+  
+  // If user came from home page flow, redirect them back to home
+  if (route.query.openUploadDialog === 'true') {
+    setTimeout(() => {
+      navigateTo('/app/home')
+    }, 1500)
+  }
 }
 
 // Add after other refs

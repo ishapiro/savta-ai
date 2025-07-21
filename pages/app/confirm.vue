@@ -167,14 +167,9 @@ const goToDashboard = () => {
   visible.value = false
   console.log('[CONFIRM] goToDashboard called, origin:', origin)
   
-  // Clean up localStorage
-  if (process.client) {
-    localStorage.removeItem('auth_origin')
-  }
-  
   if (origin === 'home') {
-    console.log('[CONFIRM] Redirecting to memory books with dialog')
-    navigateTo('/app/memory-books?openDialog=quick')
+    console.log('[CONFIRM] Redirecting to home page for enhanced flow')
+    navigateTo('/app/home')
   } else {
     console.log('[CONFIRM] Redirecting to dashboard')
     navigateTo('/app/dashboard')
@@ -190,14 +185,9 @@ const onDialogHide = () => {
   // When dialog is closed, navigate based on origin
   console.log('[CONFIRM] onDialogHide called, origin:', origin)
   
-  // Clean up localStorage
-  if (process.client) {
-    localStorage.removeItem('auth_origin')
-  }
-  
   if (origin === 'home') {
-    console.log('[CONFIRM] Dialog hide - redirecting to memory books with dialog')
-    navigateTo('/app/memory-books?openDialog=quick')
+    console.log('[CONFIRM] Dialog hide - redirecting to home page for enhanced flow')
+    navigateTo('/app/home')
   } else {
     console.log('[CONFIRM] Dialog hide - redirecting to dashboard')
     navigateTo('/app/dashboard')
@@ -221,10 +211,6 @@ onMounted(async () => {
       setTimeout(() => {
         if (!user.value) {
           console.log('[CONFIRM] No user after error, redirecting to login')
-          // Clean up localStorage before redirecting
-          if (process.client) {
-            localStorage.removeItem('auth_origin')
-          }
           navigateTo('/app/login')
         }
       }, 3000)
@@ -238,10 +224,6 @@ onMounted(async () => {
       setTimeout(() => {
         if (!user.value) {
           console.log('[CONFIRM] No session or user after delay, redirecting to login')
-          // Clean up localStorage before redirecting
-          if (process.client) {
-            localStorage.removeItem('auth_origin')
-          }
           navigateTo('/app/login')
         }
       }, 3000)

@@ -196,7 +196,7 @@ const handleEmailLogin = async () => {
       }
       // Success - redirect based on origin
       if (origin === 'home') {
-        navigateTo('/app/memory-books?openDialog=quick')
+        navigateTo('/app/confirm')
       } else {
         navigateTo('/app/dashboard')
       }
@@ -245,7 +245,7 @@ const handleGoogleLogin = async () => {
 const onDialogHide = () => {
   // When dialog is closed, navigate based on origin
   if (origin === 'home') {
-    navigateTo('/app/memory-books?openDialog=quick')
+    navigateTo('/app/confirm')
   } else {
     navigateTo('/app/dashboard')
   }

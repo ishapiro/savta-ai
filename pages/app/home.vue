@@ -144,11 +144,13 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
+
 definePageMeta({
   layout: 'home-page'
 })
 
-// Check if user is authenticated, if not redirect to signup, then open magic memory dialog
+// Enhanced flow: Check if user is authenticated, then check for approved photos
 const openMagicMemoryDialog = async (buttonType = 'quick') => {
   const { useSupabaseUser } = await import('~/composables/useSupabase')
   const user = useSupabaseUser()
@@ -161,9 +163,79 @@ const openMagicMemoryDialog = async (buttonType = 'quick') => {
     localStorage.setItem('auth_origin', 'home')
     await navigateTo('/app/signup')
   } else {
-    // User is signed up, go directly to memory books with dialog
-    console.log('[HOME] User authenticated, going to memory books with dialog')
-    await navigateTo('/app/memory-books?openDialog=quick')
+    // User is signed up, check if they have approved photos
+    console.log('[HOME] User authenticated, checking for approved photos')
+    try {
+      const { useDatabase } = await import('~/composables/useDatabase')
+      const db = useDatabase()
+      const assets = await db.assets.getAssets({ approved: true })
+      const hasApprovedPhotos = assets && assets.length > 0
+      
+      console.log('[HOME] Found approved photos:', hasApprovedPhotos, 'count:', assets?.length || 0)
+      
+      if (hasApprovedPhotos) {
+        // User has approved photos, go directly to magic memory dialog
+        console.log('[HOME] User has approved photos, going to memory books with dialog')
+        await navigateTo('/app/memory-books?openDialog=quick')
+      } else {
+        // User has no approved photos, go to upload dialog first
+        console.log('[HOME] User has no approved photos, going to memory books with upload dialog')
+        await navigateTo('/app/memory-books?openUploadDialog=true')
+      }
+    } catch (error) {
+      console.error('[HOME] Error checking assets:', error)
+      // Fallback: go to memory books page and let it handle the flow
+      await navigateTo('/app/memory-books')
+    }
   }
 }
+
+// Auto-check flow when page loads (for users coming from signup/login)
+onMounted(async () => {
+  const { useSupabaseUser } = await import('~/composables/useSupabase')
+  const user = useSupabaseUser()
+  
+  console.log('[HOME] onMounted - checking flow, user authenticated:', !!user.value)
+  
+  // Only auto-check if user is authenticated
+  if (user.value) {
+    console.log('[HOME] onMounted - user authenticated, checking flow')
+    
+    // Check if user came from signup/login (has auth_origin in localStorage)
+    const authOrigin = localStorage.getItem('auth_origin')
+    console.log('[HOME] onMounted - auth_origin from localStorage:', authOrigin)
+    
+    if (authOrigin === 'home') {
+      console.log('[HOME] onMounted - user came from signup/login, checking for approved photos')
+      
+      try {
+        const { useDatabase } = await import('~/composables/useDatabase')
+        const db = useDatabase()
+        const assets = await db.assets.getAssets({ approved: true })
+        const hasApprovedPhotos = assets && assets.length > 0
+        
+        console.log('[HOME] onMounted - Found approved photos:', hasApprovedPhotos, 'count:', assets?.length || 0)
+        
+        // Clear the auth_origin since we're handling it now
+        localStorage.removeItem('auth_origin')
+        
+        if (hasApprovedPhotos) {
+          // User has approved photos, go directly to magic memory dialog
+          console.log('[HOME] onMounted - User has approved photos, redirecting to memory books with dialog')
+          await navigateTo('/app/memory-books?openDialog=quick')
+        } else {
+          // User has no approved photos, go to upload dialog first
+          console.log('[HOME] onMounted - User has no approved photos, redirecting to memory books with upload dialog')
+          await navigateTo('/app/memory-books?openUploadDialog=true')
+        }
+      } catch (error) {
+        console.error('[HOME] onMounted - Error checking assets:', error)
+        // Clear auth_origin and stay on home page
+        localStorage.removeItem('auth_origin')
+      }
+    } else {
+      console.log('[HOME] onMounted - no auth_origin found, staying on home page')
+    }
+  }
+})
 </script> 

@@ -180,8 +180,8 @@ watchEffect(() => {
   if (user.value) {
     console.log('[SIGNUP] User authenticated, redirecting based on origin:', origin)
     if (origin === 'home') {
-      console.log('[SIGNUP] Redirecting to memory books with dialog')
-      navigateTo('/app/memory-books?openDialog=quick')
+      console.log('[SIGNUP] Redirecting to confirm page')
+      navigateTo('/app/confirm')
     } else {
       console.log('[SIGNUP] Redirecting to dashboard')
       navigateTo('/app/dashboard')
@@ -293,7 +293,7 @@ const handleGoogleSignup = async () => {
 const onDialogHide = () => {
   // When dialog is closed, navigate based on origin
   if (origin === 'home') {
-    navigateTo('/app/memory-books?openDialog=quick')
+    navigateTo('/app/confirm')
   } else {
     navigateTo('/app/dashboard')
   }
