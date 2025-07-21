@@ -13,9 +13,9 @@
       ]"
     >
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
+      <div class="flex flex-col items-center justify-between mb-6 sm:mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900">Create Magic Memories</h1>
+          <h1 class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900">Create Special Memories</h1>
           <button
             class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             @click="showInfoDialog = true"
@@ -474,7 +474,7 @@
       modal
       :closable="!isUploading"
       :dismissableMask="!isUploading"
-      header="✨ Photo Magic Workshop ✨"
+      header="✨ Moment (photo) Processing Workshop ✨"
       class="w-full h-full sm:w-[95vw] sm:max-w-2xl sm:h-auto sm:mx-auto magic-upload-dialog"
       :style="{ 
         width: '100vw', 
@@ -502,16 +502,17 @@
             </div>
             <div>
               <h3 class="text-xl font-bold text-purple-800 mb-1">✨ Ready for Some Magic? ✨</h3>
-              <p class="text-sm text-purple-600">Let's turn your photos into magical memories!</p>
+              <p class="text-sm text-purple-600">Let's turn your photos into beautiful memories!</p>
             </div>
           </div>
           <div class="bg-white/80 rounded-lg p-4 border border-purple-200">
             <p class="text-sm text-gray-700 leading-relaxed">
-              <span class="font-semibold text-purple-700">🌟 What happens next:</span><br>
-              • Your photos will be automatically approved<br>
-              • Our AI crystal ball will analyze each image<br>
-              • We'll detect people, add captions, and create tags<br>
-              • Your photos will be ready for magic memory creation!
+              <span class="font-semibold text-purple-700">🌟 What happens next:</span><br><br>
+              • Photos will be uploaded to Savta's workshop<br>
+              • Securely stored in your personal account<br>
+              • Our AI will analyze each image<br>
+              • We'll detect people, locations,add captions, and create tags<br>
+              • Your photos will be ready for Savta!
             </p>
           </div>
         </div>
@@ -530,7 +531,7 @@
               </div>
               <div class="flex-1">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-lg font-bold text-purple-800">✨ Magic in Progress ✨</span>
+                  <span class="text-lg font-bold text-purple-800">✨ Upload and AI Processing in Progress ✨</span>
                   <span class="text-lg font-bold text-purple-600">{{ uploadProgress }}%</span>
                 </div>
                 <div class="w-full bg-white/60 rounded-full h-4 border border-purple-200">
@@ -548,7 +549,7 @@
           <div v-if="uploadingFiles.length > 0" class="bg-white/90 rounded-xl p-6 border-2 border-purple-200 shadow-lg">
             <h4 class="text-lg font-bold text-purple-800 mb-4 flex items-center gap-2">
               <i class="pi pi-sparkles text-purple-600"></i>
-              🔮 Crystal Ball Readings 🔮
+              🔮 Savta is working on your photos 🔮
             </h4>
             <div class="space-y-3">
               <div 
@@ -591,7 +592,7 @@
                 <i class="pi pi-sparkles text-green-600 text-xl animate-bounce"></i>
               </div>
               <div>
-                <h4 class="text-xl font-bold text-green-800">✨ Magic Complete! ✨</h4>
+                <h4 class="text-xl font-bold text-green-800">✨ Upload and AI Processing Complete! ✨</h4>
                 <p class="text-sm text-green-600">Your photos are now enchanted!</p>
               </div>
             </div>
@@ -1056,7 +1057,7 @@
     <Dialog
       v-model:visible="showPdfModal"
       modal
-      header="PDF Preview"
+      header="Special Memory Preview"
       class="w-full max-w-6xl h-[90vh] sm:h-[85vh] mt-2 sm:mt-6"
       :contentStyle="{ height: '90vh', maxHeight: '90vh', padding: 0 }"
       :closable="false"
