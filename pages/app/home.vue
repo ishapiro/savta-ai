@@ -21,11 +21,9 @@
       />
       <div class="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-gray-600 mb-2">
         <span class="flex items-center gap-1">
-          <span class="text-yellow-500">⭐</span>
-          <span>Join 1,000+ families</span>
+          <span>Takes under 3 minutes. Pinky promise</span>
+          <span class="text-yellow-500 pl-1">🤞</span>
         </span>
-        <span class="hidden sm:inline">•</span>
-        <span>Free to start</span>
       </div>
     </div>
 

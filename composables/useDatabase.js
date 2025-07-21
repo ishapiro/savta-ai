@@ -900,6 +900,71 @@ export const useDatabase = () => {
         return []
       }
       return data || []
+    },
+
+    // Get all memory books (editor only)
+    getBooks: async () => {
+      if (!user.value) return []
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
+        throw new Error('Editor access required')
+      }
+      const { data, error } = await supabase
+        .from('memory_books')
+        .select(`
+          *,
+          profiles!inner(email, first_name, last_name)
+        `)
+        .eq('deleted', false)
+        .order('created_at', { ascending: false })
+      if (error) {
+        console.error('Error fetching memory books:', error)
+        return []
+      }
+      return data || []
+    },
+
+    // Get all themes (editor only)
+    getThemes: async () => {
+      if (!user.value) return []
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
+        throw new Error('Editor access required')
+      }
+      const { data, error } = await supabase
+        .from('themes')
+        .select('*')
+        .eq('deleted', false)
+        .order('created_at', { ascending: false })
+      if (error) {
+        console.error('Error fetching themes:', error)
+        return []
+      }
+      return data || []
+    },
+
+    // Get stats for editor dashboard (efficient count only)
+    getStats: async () => {
+      if (!user.value) return {}
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
+        throw new Error('Editor access required')
+      }
+      // Efficiently count assets, memory books, and themes (not fetching rows)
+      const [
+        { count: totalAssets },
+        { count: totalBooks },
+        { count: totalThemes }
+      ] = await Promise.all([
+        supabase.from('assets').select('*', { count: 'exact', head: true }).eq('deleted', false),
+        supabase.from('memory_books').select('*', { count: 'exact', head: true }).eq('deleted', false),
+        supabase.from('themes').select('*', { count: 'exact', head: true }).eq('deleted', false)
+      ])
+      return {
+        totalAssets: totalAssets || 0,
+        totalBooks: totalBooks || 0,
+        totalThemes: totalThemes || 0
+      }
     }
   }
 

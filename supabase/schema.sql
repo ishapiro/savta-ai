@@ -119,6 +119,42 @@ create table if not exists memory_books (
   memory_event text
 );
 
+-- Add foreign key from memory_books.user_id to profiles.user_id (safe for rerun)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'fk_memory_books_user_id'
+      AND table_name = 'memory_books'
+      AND constraint_type = 'FOREIGN KEY'
+  ) THEN
+    ALTER TABLE memory_books
+      ADD CONSTRAINT fk_memory_books_user_id
+      FOREIGN KEY (user_id) REFERENCES profiles(user_id);
+  END IF;
+END $$;
+
+-- Themes table
+create table if not exists themes (
+  id uuid primary key default gen_random_uuid(),
+  name text unique not null,
+  description text,
+  preview_image_url text,
+  is_active boolean default true,
+  background_color text,
+  background_opacity integer,
+  header_font text,
+  body_font text,
+  signature_font text,
+  header_font_color text,
+  body_font_color text,
+  signature_font_color text,
+  layout_config jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()),
+  updated_at timestamp with time zone default timezone('utc'::text, now()),
+  deleted boolean default false
+);
+
 -- PDF status tracking table
 create table if not exists pdf_status (
   id uuid primary key default gen_random_uuid(),
@@ -161,6 +197,8 @@ create index if not exists idx_pdf_status_user_id on pdf_status(user_id);
 create index if not exists idx_activity_log_user_id on activity_log(user_id);
 create index if not exists idx_activity_log_action on activity_log(action);
 create index if not exists idx_activity_log_timestamp on activity_log(timestamp);
+create index if not exists idx_themes_name on themes(name);
+create index if not exists idx_themes_is_active on themes(is_active);
 
 -- Create updated_at trigger function
 create or replace function update_updated_at_column()
@@ -189,6 +227,9 @@ create trigger update_memory_books_updated_at before update on memory_books for 
 
 drop trigger if exists update_pdf_status_updated_at on pdf_status;
 create trigger update_pdf_status_updated_at before update on pdf_status for each row execute function update_updated_at_column();
+
+drop trigger if exists update_themes_updated_at on themes;
+create trigger update_themes_updated_at before update on themes for each row execute function update_updated_at_column();
 
 -- Row Level Security (RLS) Policies
 
