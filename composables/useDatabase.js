@@ -890,9 +890,10 @@ export const useDatabase = () => {
       if (profile?.role !== 'editor' && profile?.role !== 'admin') {
         throw new Error('Editor access required')
       }
+      // Join profiles to get email, first_name, last_name for each asset
       const { data, error } = await supabase
         .from('assets')
-        .select('*')
+        .select(`*, profile:profiles!inner(user_id, email, first_name, last_name)`)
         .eq('deleted', false)
         .order('created_at', { ascending: false })
       if (error) {
@@ -904,24 +905,51 @@ export const useDatabase = () => {
 
     // Get all memory books (editor only)
     getBooks: async () => {
-      if (!user.value) return []
-      const profile = await getCurrentProfile()
-      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
-        throw new Error('Editor access required')
-      }
-      const { data, error } = await supabase
-        .from('memory_books')
-        .select(`
-          *,
-          profiles!inner(email, first_name, last_name)
-        `)
-        .eq('deleted', false)
-        .order('created_at', { ascending: false })
-      if (error) {
-        console.error('Error fetching memory books:', error)
+      console.log('[getBooks] called')
+      if (!user.value) {
+        console.log('[getBooks] no user')
         return []
       }
-      return data || []
+      const profile = await getCurrentProfile()
+      console.log('[getBooks] profile:', profile)
+      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
+        console.log('[getBooks] not editor or admin')
+        throw new Error('Editor access required')
+      }
+      console.log('[getBooks] running supabase query (no join)')
+      try {
+        const { data: books, error } = await supabase
+          .from('memory_books')
+          .select('*')
+          .eq('deleted', false)
+          .order('created_at', { ascending: false })
+        if (error) {
+          console.error('[getBooks] error:', error)
+          return []
+        }
+        console.debug('[getBooks] memory_books data:', books)
+        if (!books || books.length === 0) return []
+        // Fetch profiles for all unique user_ids
+        const userIds = [...new Set(books.map(b => b.user_id).filter(Boolean))]
+        if (userIds.length === 0) return books
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('user_id, email, first_name, last_name')
+          .in('user_id', userIds)
+        if (profileError) {
+          console.error('[getBooks] profile fetch error:', profileError)
+          return books
+        }
+        // Map user_id to profile
+        const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, p]))
+        // Attach profile to each book
+        const booksWithProfiles = books.map(book => ({ ...book, profile: profileMap[book.user_id] || null }))
+        console.debug('[getBooks] booksWithProfiles:', booksWithProfiles)
+        return booksWithProfiles
+      } catch (error) {
+        console.error('[getBooks] exception:', error)
+        return []
+      }
     },
 
     // Get all themes (editor only)
@@ -943,6 +971,38 @@ export const useDatabase = () => {
       return data || []
     },
 
+    // Create a new theme (editor only)
+    createTheme: async (theme) => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
+        throw new Error('Editor access required')
+      }
+      // Only insert allowed fields
+      const insertData = {
+        name: theme.name,
+        description: theme.description,
+        preview_image_url: theme.preview_image_url || null,
+        is_active: theme.is_active !== undefined ? theme.is_active : true,
+        background_color: theme.background_color || '#fffbe9',
+        background_opacity: theme.background_opacity || 100,
+        header_font: theme.header_font || null,
+        body_font: theme.body_font || null,
+        signature_font: theme.signature_font || null,
+        header_font_color: theme.header_font_color || null,
+        body_font_color: theme.body_font_color || null,
+        signature_font_color: theme.signature_font_color || null,
+        layout_config: theme.layout_config || null
+      }
+      const { data, error } = await supabase
+        .from('themes')
+        .insert([insertData])
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+
     // Get stats for editor dashboard (efficient count only)
     getStats: async () => {
       if (!user.value) return {}
@@ -952,18 +1012,21 @@ export const useDatabase = () => {
       }
       // Efficiently count assets, memory books, and themes (not fetching rows)
       const [
-        { count: totalAssets },
-        { count: totalBooks },
-        { count: totalThemes }
+        { count: pendingAssets },
+        { count: reviewedAssets },
+        { count: memoryBooks },
+        { count: activeThemes }
       ] = await Promise.all([
-        supabase.from('assets').select('*', { count: 'exact', head: true }).eq('deleted', false),
+        supabase.from('assets').select('*', { count: 'exact', head: true }).eq('deleted', false).eq('approved', false),
+        supabase.from('assets').select('*', { count: 'exact', head: true }).eq('deleted', false).eq('approved', true),
         supabase.from('memory_books').select('*', { count: 'exact', head: true }).eq('deleted', false),
-        supabase.from('themes').select('*', { count: 'exact', head: true }).eq('deleted', false)
+        supabase.from('themes').select('*', { count: 'exact', head: true }).eq('deleted', false).eq('is_active', true)
       ])
       return {
-        totalAssets: totalAssets || 0,
-        totalBooks: totalBooks || 0,
-        totalThemes: totalThemes || 0
+        pendingAssets: pendingAssets || 0,
+        reviewedAssets: reviewedAssets || 0,
+        memoryBooks: memoryBooks || 0,
+        activeThemes: activeThemes || 0
       }
     }
   }
