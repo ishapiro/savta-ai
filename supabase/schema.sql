@@ -48,21 +48,6 @@ create table if not exists families (
   deleted boolean default false
 );
 
--- Memory preferences table
-create table if not exists memory_preferences (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null,
-  layout_type text default 'standard' check (layout_type in ('standard', 'modern', 'vintage', 'minimal', 'magic')),
-  page_count integer default 20 check (page_count between 10 and 100),
-  print_size text default 'a4' check (print_size in ('a4', 'a5', 'letter', 'square')),
-  quality text default 'standard' check (quality in ('standard', 'premium', 'ultra')),
-  medium text default 'digital' check (medium in ('digital', 'print', 'both')),
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false,
-  unique(user_id)
-);
-
 -- Assets table
 create table if not exists assets (
   id uuid primary key default gen_random_uuid(),
@@ -162,7 +147,6 @@ create index if not exists idx_profiles_user_id on profiles(user_id);
 create index if not exists idx_profiles_email on profiles(email);
 create index if not exists idx_profiles_role on profiles(role);
 create index if not exists idx_families_user_id on families(user_id);
-create index if not exists idx_memory_preferences_user_id on memory_preferences(user_id);
 create index if not exists idx_assets_user_id on assets(user_id);
 create index if not exists idx_assets_type on assets(type);
 create index if not exists idx_assets_approved on assets(approved);
@@ -194,9 +178,6 @@ create trigger update_profiles_updated_at before update on profiles for each row
 drop trigger if exists update_families_updated_at on families;
 create trigger update_families_updated_at before update on families for each row execute function update_updated_at_column();
 
-drop trigger if exists update_memory_preferences_updated_at on memory_preferences;
-create trigger update_memory_preferences_updated_at before update on memory_preferences for each row execute function update_updated_at_column();
-
 drop trigger if exists update_tags_updated_at on tags;
 create trigger update_tags_updated_at before update on tags for each row execute function update_updated_at_column();
 
@@ -214,7 +195,6 @@ create trigger update_pdf_status_updated_at before update on pdf_status for each
 -- Enable RLS on all tables
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE families ENABLE ROW LEVEL SECURITY;
-ALTER TABLE memory_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE memory_books ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pdf_status ENABLE ROW LEVEL SECURITY;
@@ -242,10 +222,6 @@ CREATE POLICY "Users can create own profile"
 -- Families policies
 DROP POLICY IF EXISTS "Users can manage own families" ON families;
 CREATE POLICY "Users can manage own families" ON families FOR ALL USING ((SELECT auth.uid()) = user_id);
-
--- Memory preferences policies
-DROP POLICY IF EXISTS "Users can manage own preferences" ON memory_preferences;
-CREATE POLICY "Users can manage own preferences" ON memory_preferences FOR ALL USING ((SELECT auth.uid()) = user_id);
 
 -- Assets policies
 DROP POLICY IF EXISTS "Users can manage own assets" ON assets;

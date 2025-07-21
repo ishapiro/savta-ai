@@ -184,46 +184,6 @@ export const useDatabase = () => {
     }
   }
 
-  // Memory preferences operations
-  const preferencesOperations = {
-    // Get user's memory preferences
-    getPreferences: async () => {
-      if (!user.value) return null
-      
-      const { data, error } = await supabase
-        .from('memory_preferences')
-        .select('*')
-        .eq('user_id', user.value.id)
-        .single()
-      
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching preferences:', error)
-        return null
-      }
-      
-      return data
-    },
-
-    // Create or update preferences
-    upsertPreferences: async (preferences) => {
-      if (!user.value) throw new Error('User not authenticated')
-      
-      const { data, error } = await supabase
-        .from('memory_preferences')
-        .upsert({
-          user_id: user.value.id,
-          ...preferences
-        })
-        .select()
-        .single()
-      
-      if (error) throw error
-      
-      await logActivity('preferences_updated', preferences)
-      return data
-    }
-  }
-
   // Asset operations
   const assetOperations = {
     // Get user's assets
@@ -951,7 +911,6 @@ export const useDatabase = () => {
     // Feature-specific operations
     profile: profileOperations,
     family: familyOperations,
-    preferences: preferencesOperations,
     assets: assetOperations,
     memoryBooks: memoryBookOperations,
     admin: adminOperations,

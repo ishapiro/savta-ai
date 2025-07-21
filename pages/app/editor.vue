@@ -75,24 +75,46 @@
                 <div class="flex items-center justify-between">
                   <h2 class="text-xl font-semibold text-color">Asset Review</h2>
                   <div class="flex items-center space-x-4">
-                    <InputText
-                      v-model="assetSearch"
-                      placeholder="Search assets..."
-                      class="w-40 text-xs"
-                    />
-                    <InputText
-                      v-model="userSearch"
-                      placeholder="Search by user..."
-                      class="w-40 text-xs"
-                    />
-                    <Dropdown
-                      v-model="assetStatusFilter"
-                      :options="statusOptions"
-                      optionLabel="label"
-                      optionValue="value"
-                      placeholder="All Status"
-                      class="w-24 text-xs"
-                    />
+                    <div class="flex items-end gap-6">
+                      <div class="flex flex-col w-72">
+                        <label for="asset-search" class="text-xs font-medium text-gray-600 mb-1">Search Caption/AI/Tags</label>
+                        <InputText
+                          id="asset-search"
+                          v-model="assetSearch"
+                          placeholder="Search captions, AI, tags..."
+                          class="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                      <div class="flex flex-col w-72">
+                        <label for="user-search" class="text-xs font-medium text-gray-600 mb-1">User (autocomplete)</label>
+                        <AutoComplete
+                          id="user-search"
+                          v-model="selectedUser"
+                          :suggestions="userSuggestions"
+                          @complete="searchUsers"
+                          optionLabel="email"
+                          :optionDisabled="option => !option.user_id"
+                          placeholder="Type to search users..."
+                          class="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
+                          :dropdown="true"
+                          :forceSelection="true"
+                          field="email"
+                          :itemTemplate="user => `${user.email?.split('@')[0] || ''} (${user.first_name || ''} ${user.last_name || ''})`"
+                        />
+                      </div>
+                      <div class="flex flex-col w-72">
+                        <label for="status-filter" class="text-xs font-medium text-gray-600 mb-1">Status</label>
+                        <Dropdown
+                          id="status-filter"
+                          v-model="assetStatusFilter"
+                          :options="statusOptions"
+                          optionLabel="label"
+                          optionValue="value"
+                          placeholder="All Status"
+                          class="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -129,7 +151,9 @@
                               <p class="font-medium text-color truncate max-w-[60px]">
                                 {{ asset.profiles?.first_name }} {{ asset.profiles?.last_name }}
                               </p>
-                              <p class="text-color-secondary truncate max-w-[80px]">{{ asset.profiles?.email }}</p>
+                              <p class="text-color-secondary truncate max-w-[80px]">
+                                {{ asset.profiles?.email ? asset.profiles.email.split('@')[0] : '' }}
+                              </p>
                             </div>
                           </div>
                           <!-- Caption -->
@@ -196,7 +220,9 @@
                               <p class="font-medium text-color truncate max-w-[60px]">
                                 {{ asset.profiles?.first_name }} {{ asset.profiles?.last_name }}
                               </p>
-                              <p class="text-color-secondary truncate max-w-[80px]">{{ asset.profiles?.email }}</p>
+                              <p class="text-color-secondary truncate max-w-[80px]">
+                                {{ asset.profiles?.email ? asset.profiles.email.split('@')[0] : '' }}
+                              </p>
                             </div>
                           </div>
                           <!-- Caption -->
@@ -541,6 +567,25 @@ const newTheme = ref({
 // Add userSearch to script
 const userSearch = ref('')
 
+// Add to script
+import { ref } from 'vue'
+const selectedUser = ref(null)
+const userSuggestions = ref([])
+
+async function searchUsers(event) {
+  const q = event.query?.trim()
+  if (!q) {
+    userSuggestions.value = []
+    return
+  }
+  try {
+    const res = await fetch(`/api/users/search?q=${encodeURIComponent(q)}`)
+    userSuggestions.value = await res.json()
+  } catch (e) {
+    userSuggestions.value = []
+  }
+}
+
 // Options
 const statusOptions = ref([
   { label: 'All Status', value: 'all' },
@@ -570,13 +615,8 @@ const filteredAssets = computed(() => {
       asset.profiles?.last_name?.toLowerCase().includes(search)
     )
   }
-  if (userSearch.value) {
-    const user = userSearch.value.toLowerCase()
-    filtered = filtered.filter(asset =>
-      asset.profiles?.email?.toLowerCase().includes(user) ||
-      asset.profiles?.first_name?.toLowerCase().includes(user) ||
-      asset.profiles?.last_name?.toLowerCase().includes(user)
-    )
+  if (selectedUser.value && selectedUser.value.user_id) {
+    filtered = filtered.filter(asset => asset.profiles?.user_id === selectedUser.value.user_id)
   }
 
   // Apply status filter
