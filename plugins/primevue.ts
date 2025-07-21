@@ -37,6 +37,9 @@ import Checkbox from 'primevue/checkbox'
 import AutoComplete from 'primevue/autocomplete'
 import Calendar from 'primevue/calendar'
 import Slider from 'primevue/slider'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import ColorPicker from 'primevue/colorpicker'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // Install PrimeVue with configuration
@@ -72,7 +75,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     Checkbox,
     AutoComplete,
     Calendar,
-    Slider
+    Slider,
+    DataTable,
+    Column,
+    ColorPicker,
   }
   
   // Register all components

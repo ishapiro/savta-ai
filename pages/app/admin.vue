@@ -433,7 +433,7 @@ onMounted(async () => {
 // Load users
 const loadUsers = async () => {
   try {
-    const allUsers = await db.admin.getUsers()
+    const allUsers = await db.admin.getAllUsers()
     users.value = allUsers
   } catch (error) {
     console.error('Error loading users:', error)

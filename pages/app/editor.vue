@@ -78,7 +78,12 @@
                     <InputText
                       v-model="assetSearch"
                       placeholder="Search assets..."
-                      class="w-64"
+                      class="w-40 text-xs"
+                    />
+                    <InputText
+                      v-model="userSearch"
+                      placeholder="Search by user..."
+                      class="w-40 text-xs"
                     />
                     <Dropdown
                       v-model="assetStatusFilter"
@@ -86,22 +91,22 @@
                       optionLabel="label"
                       optionValue="value"
                       placeholder="All Status"
-                      class="w-32"
+                      class="w-24 text-xs"
                     />
                   </div>
                 </div>
 
                 <!-- Assets Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   <Card
                     v-for="asset in filteredAssets"
                     :key="asset.id"
-                    class="hover:shadow-md transition-shadow"
+                    class="hover:shadow-md transition-shadow p-2"
                   >
                     <template #content>
                       <!-- Photo Asset -->
-                      <div v-if="asset.type === 'photo'" class="space-y-4">
-                        <div class="aspect-w-16 aspect-h-12 surface-100 rounded-t-lg overflow-hidden">
+                      <div v-if="asset.type === 'photo'" class="space-y-2">
+                        <div class="aspect-w-1 aspect-h-1 surface-100 rounded-t-lg overflow-hidden w-20 h-20 mx-auto">
                           <img
                             v-if="asset.storage_url"
                             :src="asset.storage_url"
@@ -109,61 +114,52 @@
                             class="w-full h-full object-cover"
                           />
                           <div v-else class="w-full h-full flex items-center justify-center text-color-secondary">
-                            <i class="pi pi-image text-3xl"></i>
+                            <i class="pi pi-image text-lg"></i>
                           </div>
                         </div>
-
-                        <div class="space-y-3">
+                        <div class="space-y-1">
                           <!-- User Info -->
-                          <div class="flex items-center space-x-2">
-                            <div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center">
-                              <span class="text-primary text-xs font-medium">
+                          <div class="flex items-center space-x-1">
+                            <div class="w-4 h-4 bg-primary-100 rounded-full flex items-center justify-center">
+                              <span class="text-primary text-[10px] font-medium">
                                 {{ asset.profiles?.first_name?.charAt(0) || asset.profiles?.email?.charAt(0).toUpperCase() }}
                               </span>
                             </div>
-                            <div class="text-sm">
-                              <p class="font-medium text-color">
+                            <div class="text-xs">
+                              <p class="font-medium text-color truncate max-w-[60px]">
                                 {{ asset.profiles?.first_name }} {{ asset.profiles?.last_name }}
                               </p>
-                              <p class="text-color-secondary">{{ asset.profiles?.email }}</p>
+                              <p class="text-color-secondary truncate max-w-[80px]">{{ asset.profiles?.email }}</p>
                             </div>
                           </div>
-
                           <!-- Caption -->
-                          <div>
-                            <label class="block text-sm font-medium text-color mb-1">User Caption</label>
-                            <p class="text-sm text-color">{{ asset.user_caption || 'No caption' }}</p>
-                          </div>
-
+                          <p class="text-xs text-color truncate max-w-[100px]">{{ asset.user_caption || 'No caption' }}</p>
                           <!-- AI Caption -->
                           <div v-if="asset.ai_caption">
-                            <label class="block text-sm font-medium text-color mb-1">AI Caption</label>
-                            <div class="surface-100 rounded p-2 text-sm text-color-secondary italic">
+                            <div class="surface-100 rounded p-1 text-xs text-color-secondary italic truncate max-w-[100px]">
                               "{{ asset.ai_caption }}"
                             </div>
                           </div>
-
                           <!-- Tags -->
                           <div v-if="asset.tags && asset.tags.length > 0">
-                            <label class="block text-sm font-medium text-color mb-1">Tags</label>
-                            <div class="flex flex-wrap gap-1">
+                            <div class="flex flex-wrap gap-0.5">
                               <Chip
                                 v-for="tag in asset.tags"
                                 :key="tag"
                                 :label="tag"
-                                class="text-xs"
+                                class="text-[10px]"
                               />
                             </div>
                           </div>
-
                           <!-- Actions -->
-                          <div class="flex items-center justify-between pt-3 border-t border-surface-border">
-                            <div class="flex items-center space-x-2">
+                          <div class="flex items-center justify-between pt-1 border-t border-surface-border mt-1">
+                            <div class="flex items-center space-x-1">
                               <Button
                                 v-if="!asset.approved"
                                 label="Approve"
                                 severity="success"
                                 size="small"
+                                class="text-xs px-2 py-1"
                                 @click="approveAsset(asset.id)"
                               />
                               <Button
@@ -171,74 +167,66 @@
                                 label="Reject"
                                 severity="danger"
                                 size="small"
+                                class="text-xs px-2 py-1"
                                 @click="rejectAsset(asset.id)"
                               />
                             </div>
                             <Tag
                               :value="asset.approved ? 'Approved' : 'Pending'"
                               :severity="asset.approved ? 'success' : 'warning'"
+                              class="text-[10px] px-1"
                             />
                           </div>
                         </div>
                       </div>
-
-                      <!-- Text Asset -->
-                      <div v-else class="space-y-4">
-                        <div class="w-full h-32 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg flex items-center justify-center">
-                          <i class="pi pi-file-edit text-4xl text-primary"></i>
+                      <!-- Text Asset (same changes for size) -->
+                      <div v-else class="space-y-2">
+                        <div class="w-full h-10 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg flex items-center justify-center">
+                          <i class="pi pi-file-edit text-lg text-primary"></i>
                         </div>
-
-                        <div class="space-y-3">
+                        <div class="space-y-1">
                           <!-- User Info -->
-                          <div class="flex items-center space-x-2">
-                            <div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center">
-                              <span class="text-primary text-xs font-medium">
+                          <div class="flex items-center space-x-1">
+                            <div class="w-4 h-4 bg-primary-100 rounded-full flex items-center justify-center">
+                              <span class="text-primary text-[10px] font-medium">
                                 {{ asset.profiles?.first_name?.charAt(0) || asset.profiles?.email?.charAt(0).toUpperCase() }}
                               </span>
                             </div>
-                            <div class="text-sm">
-                              <p class="font-medium text-color">
+                            <div class="text-xs">
+                              <p class="font-medium text-color truncate max-w-[60px]">
                                 {{ asset.profiles?.first_name }} {{ asset.profiles?.last_name }}
                               </p>
-                              <p class="text-color-secondary">{{ asset.profiles?.email }}</p>
+                              <p class="text-color-secondary truncate max-w-[80px]">{{ asset.profiles?.email }}</p>
                             </div>
                           </div>
-
                           <!-- Caption -->
-                          <div>
-                            <label class="block text-sm font-medium text-color mb-1">User Caption</label>
-                            <p class="text-sm text-color">{{ asset.user_caption || 'No caption' }}</p>
-                          </div>
-
+                          <p class="text-xs text-color truncate max-w-[100px]">{{ asset.user_caption || 'No caption' }}</p>
                           <!-- AI Caption -->
                           <div v-if="asset.ai_caption">
-                            <label class="block text-sm font-medium text-color mb-1">AI Caption</label>
-                            <div class="surface-100 rounded p-2 text-sm text-color-secondary italic">
+                            <div class="surface-100 rounded p-1 text-xs text-color-secondary italic truncate max-w-[100px]">
                               "{{ asset.ai_caption }}"
                             </div>
                           </div>
-
                           <!-- Tags -->
                           <div v-if="asset.tags && asset.tags.length > 0">
-                            <label class="block text-sm font-medium text-color mb-1">Tags</label>
-                            <div class="flex flex-wrap gap-1">
+                            <div class="flex flex-wrap gap-0.5">
                               <Chip
                                 v-for="tag in asset.tags"
                                 :key="tag"
                                 :label="tag"
-                                class="text-xs"
+                                class="text-[10px]"
                               />
                             </div>
                           </div>
-
                           <!-- Actions -->
-                          <div class="flex items-center justify-between pt-3 border-t border-surface-border">
-                            <div class="flex items-center space-x-2">
+                          <div class="flex items-center justify-between pt-1 border-t border-surface-border mt-1">
+                            <div class="flex items-center space-x-1">
                               <Button
                                 v-if="!asset.approved"
                                 label="Approve"
                                 severity="success"
                                 size="small"
+                                class="text-xs px-2 py-1"
                                 @click="approveAsset(asset.id)"
                               />
                               <Button
@@ -246,12 +234,14 @@
                                 label="Reject"
                                 severity="danger"
                                 size="small"
+                                class="text-xs px-2 py-1"
                                 @click="rejectAsset(asset.id)"
                               />
                             </div>
                             <Tag
                               :value="asset.approved ? 'Approved' : 'Pending'"
                               :severity="asset.approved ? 'success' : 'warning'"
+                              class="text-[10px] px-1"
                             />
                           </div>
                         </div>
@@ -548,6 +538,9 @@ const newTheme = ref({
   accent_color: '#ec4899'
 })
 
+// Add userSearch to script
+const userSearch = ref('')
+
 // Options
 const statusOptions = ref([
   { label: 'All Status', value: 'all' },
@@ -575,6 +568,14 @@ const filteredAssets = computed(() => {
       asset.ai_caption?.toLowerCase().includes(search) ||
       asset.profiles?.first_name?.toLowerCase().includes(search) ||
       asset.profiles?.last_name?.toLowerCase().includes(search)
+    )
+  }
+  if (userSearch.value) {
+    const user = userSearch.value.toLowerCase()
+    filtered = filtered.filter(asset =>
+      asset.profiles?.email?.toLowerCase().includes(user) ||
+      asset.profiles?.first_name?.toLowerCase().includes(user) ||
+      asset.profiles?.last_name?.toLowerCase().includes(user)
     )
   }
 

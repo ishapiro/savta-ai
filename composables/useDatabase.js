@@ -795,6 +795,77 @@ export const useDatabase = () => {
       if (error) throw error
       
       await logActivity('user_deleted', { targetUserId: userId })
+    },
+
+    // Get system stats (admin only)
+    getStats: async () => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') throw new Error('Admin access required')
+      // Example: count users, books, assets
+      const [{ count: totalUsers }, { count: totalBooks }, { count: totalAssets }] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('memory_books').select('*', { count: 'exact', head: true }),
+        supabase.from('assets').select('*', { count: 'exact', head: true })
+      ])
+      return {
+        totalUsers: totalUsers || 0,
+        totalBooks: totalBooks || 0,
+        totalAssets: totalAssets || 0
+      }
+    },
+
+    // Get activity log (admin only)
+    getActivityLog: async () => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') throw new Error('Admin access required')
+      const { data, error } = await supabase
+        .from('activity_log')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data || []
+    },
+
+    // Restore user (admin only)
+    restoreUser: async (userId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') throw new Error('Admin access required')
+      const { error } = await supabase
+        .from('profiles')
+        .update({ deleted: false })
+        .eq('user_id', userId)
+      if (error) throw error
+      await logActivity('user_restored', { targetUserId: userId })
+    },
+
+    // Clear cache (stub)
+    clearCache: async () => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') throw new Error('Admin access required')
+      // No-op: implement cache clearing if needed
+      return true
+    },
+
+    // Backup database (stub)
+    backupDatabase: async () => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') throw new Error('Admin access required')
+      // No-op: implement backup logic if needed
+      return true
+    },
+
+    // Generate report (stub)
+    generateReport: async () => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') throw new Error('Admin access required')
+      // No-op: implement report generation if needed
+      return true
     }
   }
 
@@ -849,6 +920,25 @@ export const useDatabase = () => {
         return []
       }
       
+      return data || []
+    },
+
+    // Get all assets (editor only)
+    getAssets: async () => {
+      if (!user.value) return []
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
+        throw new Error('Editor access required')
+      }
+      const { data, error } = await supabase
+        .from('assets')
+        .select('*')
+        .eq('deleted', false)
+        .order('created_at', { ascending: false })
+      if (error) {
+        console.error('Error fetching assets:', error)
+        return []
+      }
       return data || []
     }
   }
