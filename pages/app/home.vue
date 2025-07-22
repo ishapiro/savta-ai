@@ -4,14 +4,14 @@
     <div class="w-full px-4 sm:px-6 lg:px-8 pt-10 pb-8 text-center">
       <div class="max-w-3xl mx-auto">
         <h1 class="font-extrabold text-gray-900 mb-4 tracking-tight leading-tight text-center">
-          <span class="block text-2xl sm:text-4xl lg:text-5xl mb-2">Your best moments.</span>
-          <span class="block text-2xl sm:text-4xl lg:text-5xl text-pink-600 mb-2">Sharable, printable,</span>
-          <span class="block text-2xl sm:text-4xl lg:text-5xl text-purple-700">fridge-worthy.</span>
+          <span class="block text-2xl sm:text-4xl lg:text-7xl mb-2">Your best moments.</span>
+          <span class="block text-2xl sm:text-4xl lg:text-5xl text-purple-700 mb-2">Sharable, printable,</span>
+          <span class="block text-2xl sm:text-4xl lg:text-5xl text-pink-600">fridge-worthy.</span>
         </h1>
       </div>
       <h2 class="italic text-base sm:text-lg lg:text-xl text-purple-700 font-medium mb-6 leading-snug">
-        Savta helps you turn your favorite photos and memories<br />
-        into something you can hold,<br />
+        Savta helps you turn your favorite photos<br />
+        photos and memories into something you can hold,<br />
         display, or share. All in minutes.
       </h2>
       <Button

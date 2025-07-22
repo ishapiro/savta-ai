@@ -1555,7 +1555,8 @@
       </div>
 
       <!-- Step 5: Photo Selection Method -->
-      <div v-if="magicMemoryStep === 5 && currentButtonConfig?.steps.includes(5)" class="space-y-4 sm:space-y-6">
+      <div v-if="magicMemoryStep === 5 && currentButtonConfig?.steps.includes(5)"
+        class="flex flex-col justify-center items-center h-screen min-h-screen px-4 py-6 sm:h-auto sm:min-h-0 sm:px-0 sm:py-0 overflow-y-auto">
         <div class="text-center mb-4 sm:mb-6">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
             <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
@@ -1563,8 +1564,7 @@
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">How should I select the photos?</h3>
           <p class="text-sm sm:text-base text-gray-600">Choose how you'd like me to find the perfect photos for your magic memory!</p>
         </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3 w-full max-w-xs sm:grid-cols-2 sm:gap-6 sm:max-w-lg">
           <div
             class="relative cursor-pointer"
             @click="magicPhotoSelectionMethod = 'last_100'"
@@ -1579,14 +1579,12 @@
                 <i class="pi pi-images text-green-600 text-lg"></i>
               </div>
               <div class="text-base font-bold text-gray-900 mb-1">Let me (Savta) select</div>
-                  <div class="text-xs text-gray-600 mb-2">I'll choose from your most relevant photos 
-                  based on what you told us about the memory.</div>
+              <div class="text-xs text-gray-600 mb-2">I'll choose from your most relevant photos based on what you told us about the memory.</div>
               <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-3 right-3">
                 <i class="pi pi-check text-purple-500 text-lg"></i>
               </div>
             </div>
           </div>
-          
           <div
             class="relative cursor-pointer"
             @click="magicPhotoSelectionMethod = 'geo_code'"
@@ -1608,7 +1606,6 @@
               </div>
             </div>
           </div>
-          
           <div
             class="relative cursor-pointer"
             @click="magicPhotoSelectionMethod = 'date_range'"
@@ -1630,7 +1627,6 @@
               </div>
             </div>
           </div>
-          
           <div
             class="relative cursor-pointer"
             @click="magicPhotoSelectionMethod = 'tags'"
@@ -1652,33 +1648,7 @@
               </div>
             </div>
           </div>
-          
-          <!-- Manual selection option - temporarily removed from UI but code kept for future use -->
-          <!-- 
-          <div
-            class="relative cursor-pointer"
-            @click="magicPhotoSelectionMethod = 'manual'"
-          >
-            <div
-              class="border-2 rounded-lg p-6 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'manual' 
-                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
-            >
-              <div class="w-12 h-12 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-lg mx-auto mb-3 flex items-center justify-center">
-                <i class="pi pi-hand-pointer text-yellow-600 text-xl"></i>
-              </div>
-              <div class="text-lg font-bold text-gray-900 mb-2">I will pick</div>
-              <div class="text-sm text-gray-600 mb-3">Choose exactly which photos to include</div>
-              <div class="text-xs text-gray-500">Full control over your photo selection</div>
-              <div v-if="magicPhotoSelectionMethod === 'manual'" class="absolute top-3 right-3">
-                <i class="pi pi-check text-purple-500 text-lg"></i>
-              </div>
-            </div>
-          </div>
-          -->
         </div>
-        
         <!-- Date Range Selection (shown when date_range is selected) -->
         <div v-if="magicPhotoSelectionMethod === 'date_range'" class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200">
           <h4 class="font-semibold text-blue-900 mb-2 sm:mb-3">Select Date Range</h4>
@@ -1693,7 +1663,6 @@
             </div>
           </div>
         </div>
-        
         <!-- Tag Selection (shown when tags is selected) -->
         <div v-if="magicPhotoSelectionMethod === 'tags'" class="bg-purple-50 rounded-lg p-3 sm:p-4 border border-purple-200">
           <h4 class="font-semibold text-purple-900 mb-2 sm:mb-3">Select Tags</h4>
@@ -1708,7 +1677,6 @@
           />
           <p class="text-xs sm:text-sm text-purple-700 mt-2">I'll find photos that have any of these tags</p>
         </div>
-        
         <!-- Location Selection (shown when geo_code is selected) -->
         <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-200">
           <h4 class="font-semibold text-green-900 mb-2 sm:mb-3">Select Location</h4>
@@ -1752,7 +1720,6 @@
           </div>
           <p class="text-xs sm:text-sm text-green-700 mt-2">I'll find photos from any of these locations</p>
         </div>
-        
         <!-- Note about Memory Book Creator -->
         <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 sm:p-4 border border-blue-200">
           <div class="flex items-start gap-2 sm:gap-3">
