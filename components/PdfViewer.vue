@@ -1,222 +1,113 @@
 <template>
-  <client-only>
-    <div class="pdf-viewer-container w-full" :style="{ height }">
-      <VPdfViewer
-        v-if="isLicenseReady"
-        :src="src"
-        class="w-full h-full"
-        :options="viewerOptions"
-      />
-      <div v-else class="flex items-center justify-center h-full">
-        <div class="text-gray-500">Loading PDF viewer...</div>
+  <ClientOnly>
+    <div class="relative w-full h-full bg-white">
+      <!-- PDF Document -->
+      <div class="w-full h-full overflow-auto pb-16">
+        <div class="w-full flex items-center justify-center p-4">
+          <div class="w-full max-w-4xl border-4 border-gray-800 rounded-lg shadow-2xl bg-white">
+            <VuePdfEmbed
+              ref="pdfRef"
+              :source="props.src"
+              :page="currentPage"
+              :scale="1.0"
+              annotation-layer
+              text-layer
+              @loaded="onLoaded"
+            />
+          </div>
+        </div>
+      </div>
+      <!-- Navigation Bar -->
+      <div class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-gray-200">
+        <div class="flex items-center gap-2 sm:gap-4">
+          <button
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            :disabled="currentPage <= 1"
+            @click="prevPage"
+            aria-label="Previous page"
+          >
+            <i class="pi pi-angle-left text-xl sm:text-2xl text-gray-700" :class="{ 'opacity-50': currentPage <= 1 }"></i>
+          </button>
+          <span class="text-xs sm:text-base font-medium text-gray-700 select-none">
+            Page {{ currentPage }} / {{ pageCount }}
+          </span>
+          <button
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            :disabled="currentPage >= pageCount"
+            @click="nextPage"
+            aria-label="Next page"
+          >
+            <i class="pi pi-angle-right text-xl sm:text-2xl text-gray-700" :class="{ 'opacity-50': currentPage >= pageCount }"></i>
+          </button>
+          <button
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+            @click="downloadPdf"
+            aria-label="Download PDF"
+          >
+            <i class="pi pi-download text-xl sm:text-2xl text-blue-600"></i>
+          </button>
+        </div>
       </div>
     </div>
-  </client-only>
+  </ClientOnly>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { watchOnce } from '@vueuse/core'
-import { VPdfViewer, useLicense } from '@vue-pdf-viewer/viewer'
+import { ref, defineProps, watch } from 'vue'
+import VuePdfEmbed from 'vue-pdf-embed'
+import 'vue-pdf-embed/dist/styles/annotationLayer.css'
+import 'vue-pdf-embed/dist/styles/textLayer.css'
 
-// Props
 const props = defineProps({
   src: {
     type: String,
     required: true
-  },
-  height: {
-    type: String,
-    default: '100%'
   }
 })
 
-// License logic
-const licenseRegistered = globalThis.__vue_pdf_license_registered ??= ref(false)
-const { licenseKey } = useVuePdfViewerLicense()
-const isLicenseReady = ref(false)
+const pdfRef = ref(null)
+const currentPage = ref(1)
+const pageCount = ref(1)
+const isLoaded = ref(false)
+const scale = ref(1.0)
 
-onMounted(() => {
-  if (licenseRegistered.value) {
-    isLicenseReady.value = true
-    return
+function onLoaded(pdf) {
+  pageCount.value = pdf.numPages
+  isLoaded.value = true
+  if (currentPage.value > pdf.numPages) {
+    currentPage.value = 1
   }
+}
 
-  if (licenseKey.value) {
-    useLicense(licenseKey.value)
-    licenseRegistered.value = true
-    isLicenseReady.value = true
+function prevPage() {
+  if (currentPage.value > 1) currentPage.value--
+}
+function nextPage() {
+  if (currentPage.value < pageCount.value) currentPage.value++
+}
+function downloadPdf() {
+  if (pdfRef.value && pdfRef.value.download) {
+    pdfRef.value.download()
   } else {
-    watchOnce(licenseKey, (key) => {
-      if (key) {
-        useLicense(key)
-        licenseRegistered.value = true
-        isLicenseReady.value = true
-      }
-    })
+    // fallback: open in new tab
+    window.open(props.src, '_blank')
   }
+}
+function zoomIn() {
+  if (scale.value < 3.0) {
+    scale.value = Math.min(3.0, scale.value + 0.25)
+  }
+}
+function zoomOut() {
+  if (scale.value > 0.25) {
+    scale.value = Math.max(0.25, scale.value - 0.25)
+  }
+}
+
+// Reset page on src change
+watch(() => props.src, () => {
+  currentPage.value = 1
+  isLoaded.value = false
+  scale.value = 1.0
 })
-
-// Viewer config
-const viewerOptions = {
-  defaultZoom: 0.9,
-  enableDownload: true,
-  enablePrint: false,
-  enableSearch: true,
-  enableThumbnail: false,
-  enableToolbar: true,
-  enableSidebar: false, // Disable sidebar
-  sidebarTabs: [],      // No sidebar tabs
-  toolbarPlugin: {
-    fullScreenPlugin: {
-      onEnterFullScreen: (zoom) => console.log('Entered full screen with zoom:', zoom),
-      onExitFullScreen: (zoom) => console.log('Exited full screen with zoom:', zoom),
-    }
-  },
-  enableFileDrop: false,
-  enableDragAndDrop: false,
-  enableOpenFile: false,
-  enablePaging: true,
-  enableScrolling: true,
-  enableZooming: true,
-  enableSearching: true,
-  enableThumbnails: true,
-  enableBookmarks: true,
-  enableAttachments: true,
-  enableAnnotations: false,
-  enableForms: false,
-  enableHandTool: true,
-  enableSelectionTool: true,
-  enableTextSelection: true,
-  enableDownloading: true,
-  enableRotating: true,
-  enableFlipping: true,
-  enableScaling: true,
-  enablePanning: true,
-  enableKeyboardNavigation: true,
-  enableMouseWheelZoom: true,
-  enableTouchGestures: true,
-  enablePinchZoom: true,
-  enableDoubleClickZoom: true,
-  enableRightClickMenu: true,
-  enableContextMenu: true,
-  enableAutoSave: false,
-  enableAutoLoad: false,
-  enableAutoPrint: false,
-  enableAutoDownload: false,
-  enableAutoRotate: false,
-  enableAutoFlip: false,
-  enableAutoScale: false,
-  enableAutoPan: false,
-  enableAutoZoom: false,
-  enableAutoSearch: false,
-  enableAutoThumbnails: false,
-  enableAutoBookmarks: false,
-  enableAutoAttachments: false,
-  enableAutoAnnotations: false,
-  enableAutoForms: false,
-  enableAutoHandTool: false,
-  enableAutoSelectionTool: false,
-  enableAutoTextSelection: false,
-  enableAutoPrinting: false,
-  enableAutoDownloading: false,
-  enableAutoRotating: false,
-  enableAutoFlipping: false,
-  enableAutoScaling: false,
-  enableAutoPanning: false,
-  enableAutoZooming: false,
-  enableAutoKeyboardNavigation: false,
-  enableAutoMouseWheelZoom: false,
-  enableAutoTouchGestures: false,
-  enableAutoPinchZoom: false,
-  enableAutoDoubleClickZoom: false,
-  enableAutoRightClickMenu: false,
-  enableAutoContextMenu: false,
-  enableAutoDragAndDrop: false,
-  enableAutoFileDrop: false
-}
 </script>
-
-<style scoped>
-.pdf-viewer-container {
-  min-height: 400px;
-}
-
-/* Hide print button */
-:deep([data-testid="print__button"]),
-:deep(.rpv-toolbar__item[aria-label*="Print"]),
-:deep(.vpv-toolbar-btn[aria-label="Print"]),
-:deep(button[aria-label="Print"]),
-:deep(.vpv-toolbar-btn[aria-label*="print"]) {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-}
-
-/* Hide open local file button */
-:deep(.vpv-toolbar-btn[aria-label="Open local file"]),
-:deep(button[aria-label="Open local file"]) {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  position: absolute !important;
-  left: -9999px !important;
-  top: -9999px !important;
-}
-
-/* Forcibly hide sidebar and sidebar toggle in @vue-pdf-viewer */
-:deep(.vpv-sidebar),
-:deep(.vpv-sidebar-container),
-:deep(.vpv-sidebar-features),
-:deep(.vpv-sidebar-tabs),
-:deep(.vpv-sidebar-content-container),
-:deep(.vpv-toolbar-btn[aria-label="Toggle sidebar"]),
-:deep(.vpv-toolbar-btn[aria-label="Show sidebar"]),
-:deep(.vpv-sidebar-tab),
-:deep(.vpv-sidebar-tab[role="tab"]),
-:deep(.vpv-sidebar-tab[aria-selected]),
-:deep(.vpv-sidebar-tab[aria-controls]),
-:deep(.vpv-sidebar-tabpanel),
-:deep(.vpv-sidebar-content) {
-  display: none !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: none !important;
-}
-
-/* Force main viewer to use full width */
-:deep(.vpv-body-wrapper) {
-  margin-left: 0 !important;
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-  .pdf-viewer-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 9999;
-    background: white;
-    overflow: hidden;
-  }
-
-  :deep(.rpv-core__viewer) {
-    height: 100vh !important;
-    width: 100vw !important;
-  }
-}
-</style>

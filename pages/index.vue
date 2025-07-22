@@ -11,8 +11,8 @@
     <!-- Main content -->
     <div class="relative z-10 w-full max-w-lg sm:max-w-2xl mx-auto flex-1 flex items-center justify-center px-4 sm:px-0">
       <div class="text-center w-full">
-        <div class="mb-4 animate-fade-in-down">
-          <div class="relative w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-2">
+        <div class="mb-1 animate-fade-in-down">
+          <div class="relative w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-1">
             <div class="absolute inset-0 rounded-full bg-gray-300 blur-md"></div>
             <SavtaIcon :iconClass="'relative max-w-[85%] max-h-[85%] object-contain z-10 block w-16 h-16 sm:w-24 sm:h-24 mx-auto'" />
           </div>
@@ -20,7 +20,7 @@
             <h1 class="text-xl sm:text-4xl font-extrabold text-pink-500 font-sans tracking-tight">Savta</h1>
             <span class="inline-block bg-pink-100 text-pink-600 text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full border border-pink-200 align-middle shadow-sm">beta: no warranty, no support</span>
           </div>
-          <div class="max-w-xl mx-auto mt-2 px-3 py-2 bg-white/10 backdrop-blur-md rounded-xl shadow-lg text-center text-white">
+          <div class="max-w-xl mx-auto mt-1 px-3 py-1 bg-white/10 backdrop-blur-md rounded-xl shadow-lg text-center text-white">
             <h2 class="text-xs sm:text-base font-semibold mb-1 text-white/90">
               Keep the memories that matter most, beautifully.
             </h2>
@@ -32,10 +32,10 @@
             </p>
           </div>
         </div>
-        <div class="mb-2 animate-fade-in-up" style="animation-delay: 0.3s;">
+        <div class="mb-1 animate-fade-in-up" style="animation-delay: 0.3s;">
           <h2 class="text-lg sm:text-3xl text-white">Coming Soon</h2>
         </div>
-        <div class="flex flex-col items-center mt-2 animate-fade-in-up" style="animation-delay: 0.6s;">
+        <div class="flex flex-col items-center mt-1 animate-fade-in-up" style="animation-delay: 0.6s;">
           <div class="w-full flex flex-col items-center">
             <div class="text-gray-300 text-[10px] sm:text-sm mb-1 text-center">
               Be the first to bring Savta&apos;s magic to your family
@@ -44,14 +44,14 @@
               v-model="email"
               type="email"
               placeholder="Enter your email"
-              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-xs sm:text-sm py-1.5 px-3 sm:px-4 bg-gray-300 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-xs sm:text-sm py-1 px-3 sm:px-4 bg-gray-300 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
               :class="{ 'border-red-500': messageType === 'error' }"
             />
           </div>
           <Button
             type="button"
             label="Notify Me When It's Ready"
-            class="mt-2 w-full max-w-xs sm:max-w-md bg-purple-600 hover:bg-purple-700 text-white rounded-full py-1.5 text-xs sm:text-base font-semibold"
+            class="mt-1 w-full max-w-xs sm:max-w-md bg-purple-600 hover:bg-purple-700 text-white rounded-full py-1 text-xs sm:text-base font-semibold"
             :loading="loading"
             @click="handleSubscribe"
           />
@@ -60,7 +60,7 @@
           </div>
         </div>
         <!-- Insiders Button -->
-        <div class="mt-2 pt-2 border-t border-white/20">
+        <div class="mt-1 pt-2 border-t border-white/20">
           <Button
             type="button"
             label="Insiders"
@@ -71,8 +71,8 @@
         <!-- Password Dialog -->
         <div v-if="showPasswordDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div class="bg-white rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-md mx-2 sm:mx-4">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Insiders Access</h3>
-            <p class="text-gray-600 mb-4">Enter the password to access the insider area:</p>
+            <h3 class="text-lg font-semibold text-gray-900 mb-1">Insiders Access</h3>
+            <p class="text-gray-600 mb-1">Enter the password to access the insider area:</p>
             <form @submit.prevent="checkPassword" role="form" aria-label="Password verification form">
               <!-- Hidden username field for accessibility -->
               <input type="text" name="username" autocomplete="username" style="display: none;" />
@@ -80,7 +80,7 @@
                 v-model="password"
                 type="password"
                 placeholder="Enter password"
-                class="w-full mb-4"
+                class="w-full mb-1"
                 autocomplete="current-password"
                 aria-label="Password"
                 @keyup.enter="checkPassword"
@@ -98,7 +98,7 @@
                   class="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
                 />
               </div>
-              <div v-if="passwordError" class="text-red-500 text-sm mt-2">
+              <div v-if="passwordError" class="text-red-500 text-sm mt-1">
                 {{ passwordError }}
               </div>
             </form>
