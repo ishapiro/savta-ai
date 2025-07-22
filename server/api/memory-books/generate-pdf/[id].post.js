@@ -205,7 +205,7 @@ export default defineEventHandler(async (event) => {
 
     // If pdf_url exists, return it directly (fast download)
     if (book.pdf_url && book.pdf_url.startsWith('https://')) {
-      console.log('✅ PDF URL already exists, returning:', book.pdf_url)
+      console.log('✅ PDF URL available for download, returning:', book.pdf_url)
       return {
         success: true,
         downloadUrl: book.pdf_url

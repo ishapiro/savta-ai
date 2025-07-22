@@ -474,7 +474,6 @@
       modal
       :closable="!isUploading"
       :dismissableMask="!isUploading"
-      header="✨ Moment (photo) Processing Workshop ✨"
       class="w-full h-full sm:w-[95vw] sm:max-w-2xl sm:h-auto sm:mx-auto magic-upload-dialog"
       :style="{ 
         width: '100vw', 
@@ -482,11 +481,15 @@
         maxWidth: '100vw',
         maxHeight: '100vh',
         margin: '0',
-        borderRadius: '0'
+        borderRadius: '0',
+        overflow: 'hidden'
       }"
       @hide="resetUploadDialog"
     >
-      <div class="space-y-6">
+      <template #header>
+        <div class="text-center">✨ Moment (photo) Processing Workshop ✨</div>
+      </template>
+      <div class="space-y-6 max-w-xs w-full mx-auto sm:max-w-2xl sm:mx-auto">
         <!-- Upload Instructions -->
         <div v-if="!isUploading && uploadedFiles.length === 0" class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200 relative overflow-hidden">
           <!-- Magical sparkles -->
@@ -501,19 +504,18 @@
               <div class="absolute inset-0 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full opacity-50 animate-pulse"></div>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-purple-800 mb-1">✨ Ready for Some Magic? ✨</h3>
-              <p class="text-sm text-purple-600">Let's turn your photos into beautiful memories!</p>
+              <h3 class="text-xl font-bold text-purple-800 mb-1">✨ Let Savta help you with your precious memories ✨</h3>
             </div>
           </div>
           <div class="bg-white/80 rounded-lg p-4 border border-purple-200">
-            <p class="text-sm text-gray-700 leading-relaxed">
-              <span class="font-semibold text-purple-700">🌟 What happens next:</span><br><br>
-              • Photos will be uploaded to Savta's workshop<br>
-              • Securely stored in your personal account<br>
-              • Our AI will analyze each image<br>
-              • We'll detect people, locations,add captions, and create tags<br>
-              • Your photos will be ready for Savta!
-            </p>
+            <div class="text-sm text-gray-700 leading-relaxed">
+              <ul class="list-disc pl-4">
+                <li>Share your special photos with Savta - I'll keep them safe in my workshop</li>
+                <li>Your memories will be stored securely in your own private collection</li>
+                <li>I'll recognize the faces, places and write sweet notes about each one</li>
+                <li>Then you can tell me which photos you'd like me to use for your beautiful card or book</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -531,7 +533,7 @@
               </div>
               <div class="flex-1">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-lg font-bold text-purple-800">✨ Upload and AI Processing in Progress ✨</span>
+                  <span class="text-lg font-bold text-purple-800 text-center">✨ Upload and AI Processing in Progress ✨</span>
                   <span class="text-lg font-bold text-purple-600">{{ uploadProgress }}%</span>
                 </div>
                 <div class="w-full bg-white/60 rounded-full h-4 border border-purple-200">
@@ -547,7 +549,7 @@
 
           <!-- Current File Progress -->
           <div v-if="uploadingFiles.length > 0" class="bg-white/90 rounded-xl p-6 border-2 border-purple-200 shadow-lg">
-            <h4 class="text-lg font-bold text-purple-800 mb-4 flex items-center gap-2">
+            <h4 class="text-lg font-bold text-purple-800 mb-4 flex items-center text-center gap-2">
               <i class="pi pi-sparkles text-purple-600"></i>
               🔮 Savta is working on your photos 🔮
             </h4>
@@ -640,21 +642,21 @@
       </div>
 
       <template #footer>
-        <div class="flex justify-between items-center w-full">
-          <div class="text-sm text-gray-500">
+        <div class="flex flex-col sm:flex-row justify-between items-center w-full gap-2 sm:gap-4 px-2">
+          <div class="text-xs text-gray-500 w-full sm:w-auto text-center sm:text-left">
             {{ uploadedFiles.length }} uploaded, {{ failedFiles.length }} failed
           </div>
-          <div class="flex gap-2">
+          <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button
               v-if="!isUploading"
-              class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-4 py-2 text-sm shadow transition-all duration-200"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto"
               @click="showUploadDialog = false"
             >
               Close
             </button>
             <button
               v-if="!isUploading && uploadedFiles.length === 0"
-              class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-6 py-3 text-sm shadow-lg transition-all duration-200 transform hover:scale-105"
+              class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="selectFiles"
             >
               <i class="pi pi-sparkles mr-2"></i>
@@ -662,7 +664,7 @@
             </button>
             <button
               v-if="!isUploading && (uploadedFiles.length > 0 || failedFiles.length > 0)"
-              class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-full px-6 py-3 text-sm shadow-lg transition-all duration-200 transform hover:scale-105"
+              class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="finishUpload"
             >
               <i class="pi pi-sparkles mr-2"></i>
@@ -945,6 +947,9 @@
       :z-index="9999"
       :showHeader="false"
     >
+      <!-- Semi-transparent overlay -->
+      <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm -z-10"></div>
+      
       <div class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 rounded-2xl p-6 sm:p-8">
         <!-- Magic Header -->
         <div class="text-center mb-6">
@@ -1361,54 +1366,46 @@
     <Dialog
       v-model:visible="showMagicMemoryDialog"
       modal
-              :header="magicMemoryStep === 1 ? '✨ What should we call this memory? ✨' : ''"
-      :class="[
-        'magic-memory-dialog',
-        'w-full h-full sm:w-[95vw] sm:max-w-3xl sm:h-auto sm:rounded-2xl',
-        'z-50'
-      ]"
-      :style="{
-        width: '100vw',
-        height: '100vh',
-        maxWidth: '100vw',
-        maxHeight: '100vh',
-        margin: '0',
-        borderRadius: '0'
-      }"
       :closable="true"
+      :dismissableMask="true"
+      :style="{ maxWidth: '700px', maxHeight: '100vh', '--p-dialog-header-justify-content': 'center' }"
+      :class="['z-50', 'w-full', 'sm:w-[700px]', 'sm:max-w-[700px]', 'h-full', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl']"
     >
       <!-- Step 1: Title Input -->
-      <div v-if="magicMemoryStep === 1 && currentButtonConfig?.steps.includes(1)" class="space-y-4 sm:space-y-6">
-        <div class="text-center mb-4 sm:mb-6">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-            <Sparkles class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+      <div v-if="magicMemoryStep === 1 && currentButtonConfig?.steps.includes(1)"
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
+        <div class="text-center mb-2 sm:mb-6 mt-6 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
+            <i class="pi pi-star text-2xl sm:text-3xl text-purple-500"></i>
           </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Tell me about this special memory?</h3>
+          <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1">✨ What should we call this memory? ✨</h3>
           <p class="text-sm sm:text-base text-gray-600">Tell me something that will help me select the best photos for your memory and create a special story for you.</p>
         </div>
-        
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-2">Memory Name</label>
+        <div class="field w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
+          <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Memory Subject</label>
           <InputText
             v-model="magicMemoryTitle"
-            placeholder=" 'Special Trip with Karen and Sam', 'Summer Vacation 2024', 'Grandma's Birthday', 'Family Reunion'"
-            class="w-full text-base sm:text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-            @keyup.enter="nextMagicMemoryStep"
+            :placeholder="'e.g. Special Trip with Karen and Sam, Summer 2023'"
+            class="w-full text-base px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition mt-2"
+            maxlength="80"
+            show-clear
+            aria-label="Memory Subject"
           />
         </div>
       </div>
 
       <!-- Step 2: Event Selection -->
-      <div v-if="magicMemoryStep === 2 && currentButtonConfig?.steps.includes(2)" class="space-y-4 sm:space-y-6">
-        <div class="text-center mb-4 sm:mb-6">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+      <div v-if="magicMemoryStep === 2 && currentButtonConfig?.steps.includes(2)"
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
+        <div class="text-center mb-2 sm:mb-6 mt-6 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-calendar text-lg sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Tell me what kind of event this was</h3>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Tell me what kind of event this was</h3>
           <p class="text-sm sm:text-base text-gray-600">You can leave this blank if you prefer, or select Other to tell me about a special event.</p>
         </div>
-        <div class="field">
-          <label class="block text-sm font-medium text-gray-900 mb-2">Event Type</label>
+        <div class="field w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
+          <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Event Type</label>
           <Dropdown
             v-model="magicMemoryEvent"
             :options="[
@@ -1422,30 +1419,30 @@
             option-label="label"
             option-value="value"
             placeholder="Select an event type..."
-            class="w-full text-base sm:text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+            class="w-full text-base p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 mt-2"
           />
         </div>
-        <div v-if="magicMemoryEvent === 'custom'" class="field mt-4">
-          <label class="block text-sm font-medium text-gray-900 mb-2">Custom Event</label>
+        <div v-if="magicMemoryEvent === 'custom'" class="field mt-2 w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
+          <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Custom Event</label>
           <input
             v-model="magicCustomMemoryEvent"
             placeholder="Type your event (e.g., 'Bar Mitzvah', 'Retirement', 'First Day of School')"
-            class="w-full text-base sm:text-lg p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+            class="w-full text-base p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 mt-2"
           />
         </div>
       </div>
 
       <!-- Step 3: Photo Count Selection -->
-      <div v-if="magicMemoryStep === 3 && currentButtonConfig?.steps.includes(3)" class="space-y-4 sm:space-y-6">
-        <div class="text-center mb-4 sm:mb-6">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+      <div v-if="magicMemoryStep === 3 && currentButtonConfig?.steps.includes(3)"
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
+        <div class="text-center mb-2 sm:mb-6 mt-6 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">How many photos should I choose for you?</h3>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How many photos should I choose for you?</h3>
           <p class="text-sm sm:text-base text-gray-600">Select how many photos I should pick from your memory collection to create your magic story - trust me, this will be amazing!</p>
         </div>
-        
-        <div class="grid grid-cols-3 gap-3 sm:gap-4">
+        <div class="grid grid-cols-3 gap-3 mt-2 w-full max-w-xs mx-auto sm:gap-4 sm:max-w-[520px] sm:mx-auto">
           <div
             v-for="count in [1, 4, 6]"
             :key="count"
@@ -1468,8 +1465,7 @@
             </div>
           </div>
         </div>
-        
-        <div class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200">
+        <div class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200 w-full max-w-xs mx-auto mt-2 sm:max-w-[520px] sm:mx-auto">
           <div class="flex items-start gap-2 sm:gap-3">
             <i class="pi pi-info-circle text-blue-500 mt-1"></i>
             <div>
@@ -1484,16 +1480,16 @@
       </div>
 
       <!-- Step 4: Background Selection -->
-      <div v-if="magicMemoryStep === 4 && currentButtonConfig?.steps.includes(4)" class="space-y-4 sm:space-y-6">
-        <div class="text-center mb-4 sm:mb-6">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+      <div v-if="magicMemoryStep === 4 && currentButtonConfig?.steps.includes(4)"
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
+        <div class="text-center mb-2 sm:mb-6 mt-6 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-palette text-lg sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">What kind of background would you like?</h3>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">What kind of background would you like?</h3>
           <p class="text-sm sm:text-base text-gray-600">Choose a clean white background or let me create a special design that matches your story's theme!</p>
         </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 w-full max-w-xs mx-auto sm:gap-6 sm:max-w-[520px] sm:mx-auto">
           <div
             class="relative cursor-pointer"
             @click="magicBackgroundType = 'white'"
@@ -1538,8 +1534,7 @@
             </div>
           </div>
         </div>
-        
-        <div class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200">
+        <div class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200 w-full max-w-xs mx-auto mt-2 sm:max-w-[520px] sm:mx-auto">
           <div class="flex items-start gap-2 sm:gap-3">
             <i class="pi pi-info-circle text-blue-500 mt-1"></i>
             <div>
@@ -1556,95 +1551,64 @@
 
       <!-- Step 5: Photo Selection Method -->
       <div v-if="magicMemoryStep === 5 && currentButtonConfig?.steps.includes(5)"
-        class="flex flex-col justify-center items-center h-screen min-h-screen px-4 py-6 sm:h-auto sm:min-h-0 sm:px-0 sm:py-0 overflow-y-auto">
-        <div class="text-center mb-4 sm:mb-6">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-            <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-8 px-4 py-6 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
+        <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-10 h-10 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
+            <i class="pi pi-images text-base sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">How should I select the photos?</h3>
-          <p class="text-sm sm:text-base text-gray-600">Choose how you'd like me to find the perfect photos for your magic memory!</p>
+          <h3 class="text-base sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
+          <p class="text-xs sm:text-base text-gray-600">Savta will lovingly choose the best photos for this card from the pictures you've already uploaded. If you want to add more, you can upload them now before continuing.</p>
         </div>
-        <div class="grid grid-cols-2 gap-3 w-full max-w-xs sm:grid-cols-2 sm:gap-6 sm:max-w-lg">
-          <div
-            class="relative cursor-pointer"
-            @click="magicPhotoSelectionMethod = 'last_100'"
-          >
-            <div
-              class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'last_100' 
-                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
-            >
-              <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                <i class="pi pi-images text-green-600 text-lg"></i>
+        <div class="grid grid-cols-2 gap-2 w-full max-w-xs mx-auto sm:grid-cols-2 sm:gap-6 sm:max-w-lg">
+          <div class="relative cursor-pointer" @click="magicPhotoSelectionMethod = 'last_100'">
+            <div class="border-2 rounded-lg p-3 text-center transition-all duration-200 h-full"
+              :class="magicPhotoSelectionMethod === 'last_100' ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'">
+              <div class="w-8 h-8 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-1 flex items-center justify-center">
+                <i class="pi pi-images text-green-600 text-base"></i>
               </div>
-              <div class="text-base font-bold text-gray-900 mb-1">Let me (Savta) select</div>
-              <div class="text-xs text-gray-600 mb-2">I'll choose from your most relevant photos based on what you told us about the memory.</div>
-              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-3 right-3">
-                <i class="pi pi-check text-purple-500 text-lg"></i>
+              <div class="text-sm font-bold text-gray-900 mb-1">Savta selects</div>
+              <div class="text-xs text-gray-600 mb-1">I'll pick the best photos for you.</div>
+              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-2 right-2">
+                <i class="pi pi-check text-purple-500 text-base"></i>
               </div>
             </div>
           </div>
-          <div
-            class="relative cursor-pointer"
-            @click="magicPhotoSelectionMethod = 'geo_code'"
-          >
-            <div
-              class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'geo_code' 
-                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
-            >
-              <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                <i class="pi pi-map-marker text-green-600 text-lg"></i>
+          <div class="relative cursor-pointer" @click="magicPhotoSelectionMethod = 'geo_code'">
+            <div class="border-2 rounded-lg p-3 text-center transition-all duration-200 h-full"
+              :class="magicPhotoSelectionMethod === 'geo_code' ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'">
+              <div class="w-8 h-8 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-1 flex items-center justify-center">
+                <i class="pi pi-map-marker text-green-600 text-base"></i>
               </div>
-              <div class="text-base font-bold text-gray-900 mb-1">Select by location</div>
-              <div class="text-xs text-gray-600 mb-2">I'll choose photos from specific countries, cities, or states</div>
-              <div class="text-xs text-gray-500">Perfect for travel memories and location-based themes</div>
-              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-3 right-3">
-                <i class="pi pi-check text-purple-500 text-lg"></i>
+              <div class="text-sm font-bold text-gray-900 mb-1">By location</div>
+              <div class="text-xs text-gray-600 mb-1">Pick by country, city, or state.</div>
+              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-2 right-2">
+                <i class="pi pi-check text-purple-500 text-base"></i>
               </div>
             </div>
           </div>
-          <div
-            class="relative cursor-pointer"
-            @click="magicPhotoSelectionMethod = 'date_range'"
-          >
-            <div
-              class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'date_range' 
-                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
-            >
-              <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                <i class="pi pi-calendar-plus text-blue-600 text-lg"></i>
+          <div class="relative cursor-pointer" @click="magicPhotoSelectionMethod = 'date_range'">
+            <div class="border-2 rounded-lg p-3 text-center transition-all duration-200 h-full"
+              :class="magicPhotoSelectionMethod === 'date_range' ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'">
+              <div class="w-8 h-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg mx-auto mb-1 flex items-center justify-center">
+                <i class="pi pi-calendar-plus text-blue-600 text-base"></i>
               </div>
-              <div class="text-base font-bold text-gray-900 mb-1">Date range</div>
-              <div class="text-xs text-gray-600 mb-2">Choose a specific time period for your memories</div>
-              <div class="text-xs text-gray-500">Great for vacations, holidays, or special periods</div>
-              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-3 right-3">
-                <i class="pi pi-check text-purple-500 text-lg"></i>
+              <div class="text-sm font-bold text-gray-900 mb-1">By date</div>
+              <div class="text-xs text-gray-600 mb-1">Pick a time period.</div>
+              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-2 right-2">
+                <i class="pi pi-check text-purple-500 text-base"></i>
               </div>
             </div>
           </div>
-          <div
-            class="relative cursor-pointer"
-            @click="magicPhotoSelectionMethod = 'tags'"
-          >
-            <div
-              class="border-2 rounded-lg p-4 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'tags' 
-                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
-            >
-              <div class="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                <i class="pi pi-tags text-purple-600 text-lg"></i>
+          <div class="relative cursor-pointer" @click="magicPhotoSelectionMethod = 'tags'">
+            <div class="border-2 rounded-lg p-3 text-center transition-all duration-200 h-full"
+              :class="magicPhotoSelectionMethod === 'tags' ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'">
+              <div class="w-8 h-8 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mx-auto mb-1 flex items-center justify-center">
+                <i class="pi pi-tags text-purple-600 text-base"></i>
               </div>
-              <div class="text-base font-bold text-gray-900 mb-1">Use photos with these tags</div>
-              <div class="text-xs text-gray-600 mb-2">Select specific tags to find related memories</div>
-              <div class="text-xs text-gray-500">Perfect for themed memories or specific people</div>
-              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-3 right-3">
-                <i class="pi pi-check text-purple-500 text-lg"></i>
+              <div class="text-sm font-bold text-gray-900 mb-1">By tags</div>
+              <div class="text-xs text-gray-600 mb-1">Pick by tag or person.</div>
+              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-2 right-2">
+                <i class="pi pi-check text-purple-500 text-base"></i>
               </div>
             </div>
           </div>
@@ -1721,36 +1685,30 @@
           <p class="text-xs sm:text-sm text-green-700 mt-2">I'll find photos from any of these locations</p>
         </div>
         <!-- Note about Memory Book Creator -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 sm:p-4 border border-blue-200">
-          <div class="flex items-start gap-2 sm:gap-3">
-            <i class="pi pi-info-circle text-blue-500 mt-1"></i>
-            <div>
-              <h4 class="font-semibold text-blue-900 mb-1">Want full control over picture selection?</h4>
-              <p class="text-xs sm:text-sm text-blue-800 mb-3">
-                Try out the Memory Book Creator for complete control over which photos to include and how they're arranged.
-              </p>
-              <button
-                @click="showCreateModal = true; showMagicMemoryDialog = false"
-                class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 transform hover:scale-105"
-              >
-                <i class="pi pi-book mr-2"></i>
-                Open Memory Book Creator
-              </button>
-            </div>
-          </div>
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 sm:p-4 border border-blue-200 flex flex-col items-center">
+          <i class="pi pi-upload text-blue-500 mb-2 text-xl"></i>
+          <h4 class="font-semibold text-blue-900 mb-1">Need to add more photos?</h4>
+          <p class="text-xs sm:text-sm text-blue-800 mb-3 text-center">You can upload new photos now and use them in your card.</p>
+          <button
+            @click="openUploadAndReturnToMagicStep5"
+            class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-lg px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
+          >
+            <i class="pi pi-upload"></i>
+            Upload Photos Now
+          </button>
         </div>
       </div>
 
       <!-- Step 6: Photo Selection (only for manual selection) -->
-      <div v-if="magicMemoryStep === 6 && currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual' && !loadingAssets" class="space-y-3 sm:space-y-4">
-        <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-lg p-3 sm:p-4 border border-purple-200 flex items-center gap-2 sm:gap-3 animate-pulse">
+      <div v-if="magicMemoryStep === 6 && currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual' && !loadingAssets" class="space-y-3 sm:space-y-4 px-4 overflow-x-hidden">
+        <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-lg p-3 sm:p-4 border border-purple-200 flex items-center gap-2 sm:gap-3 animate-pulse max-w-xs w-full mx-auto">
           <i class="pi pi-sparkles text-lg sm:text-2xl text-yellow-400 animate-bounce"></i>
           <div>
             <h3 class="text-base sm:text-lg font-bold text-purple-700 mb-1">Choose your photos for "{{ magicMemoryTitle }}"</h3>
             <p class="text-xs sm:text-sm text-gray-700">Select up to 12 photos that you'd like me to consider for your Magic Memory story. I'll select the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your choices!</p>
           </div>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+        <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 max-w-xs w-full mx-auto">
           <label class="block text-sm font-medium text-gray-900 mb-2">Filter by Tags</label>
           <div class="flex gap-2 mb-3">
             <MultiSelect
@@ -4580,6 +4538,23 @@ const pdfViewerStyle = computed(() => {
   }
 });
 
+// Helper to open upload dialog and return to Magic Memory step 5
+function openUploadAndReturnToMagicStep5() {
+  showMagicMemoryDialog.value = false;
+  showUploadDialog.value = true;
+  // When upload dialog closes, return to Magic Memory step 5
+  const unwatch = watch(
+    () => showUploadDialog.value,
+    (val) => {
+      if (!val) {
+        showMagicMemoryDialog.value = true;
+        magicMemoryStep.value = 5;
+        unwatch();
+      }
+    }
+  );
+}
+
 </script> 
 
 <style scoped>
@@ -4691,24 +4666,29 @@ const pdfViewerStyle = computed(() => {
 
 /* Mobile full-screen dialog and step adjustments for Magic Memory Dialog */
 @media (max-width: 640px) {
-  /* Ensure the dialog overlay and content fill the screen and center vertically */
+  /* Make Magic Memory Dialog full screen on mobile */
   ::v-deep(.p-dialog-mask) {
     display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
     min-height: 100vh !important;
+    min-width: 100vw !important;
+    padding: 0 !important;
   }
   ::v-deep(.p-dialog) {
     margin: 0 !important;
     width: 100vw !important;
     max-width: 100vw !important;
-    min-height: auto !important;
-    height: auto !important;
+    min-width: 100vw !important;
+    min-height: 100vh !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     display: flex !important;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 1.5rem !important;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0 !important;
   }
   ::v-deep(.p-dialog-content) {
     display: flex !important;
@@ -4716,17 +4696,41 @@ const pdfViewerStyle = computed(() => {
     align-items: center;
     justify-content: center;
     min-height: 0;
-    padding: 1.5rem 1rem !important;
+    height: 100%;
+    padding: 0 !important;
   }
   .magic-memory-step {
     width: 100vw !important;
-    min-height: 0;
+    min-height: 100vh !important;
     max-height: 100vh !important;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 1rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem !important;
+    margin: 0 !important;
+  }
+  .magic-memory-step .text-center {
+    text-align: center !important;
+    width: 100%;
+    word-break: break-word;
+    white-space: normal;
+  }
+  .magic-memory-step h3 {
+    font-size: 1.05rem !important;
+    margin-bottom: 0.5rem !important;
+    text-align: center !important;
+    width: 100%;
+    word-break: break-word;
+    white-space: normal;
+  }
+  /* Remove extra margin/padding from dialog header/footer if present */
+  ::v-deep(.p-dialog-header),
+  ::v-deep(.p-dialog-footer) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 }
 </style>

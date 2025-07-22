@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
     <!-- Animated background elements -->
     <div class="fixed inset-0 pointer-events-none z-0">
       <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/20 rounded-full blur-xl animate-pulse-slow"></div>
@@ -9,55 +9,53 @@
     </div>
 
     <!-- Main content -->
-    <div class="relative z-10 w-full max-w-lg sm:max-w-2xl mx-auto flex-1 flex items-center justify-center px-2 sm:px-0">
-      <div class="text-center w-full px-2 py-2 sm:p-4 rounded-2xl">
-        <div class="mb-2 animate-fade-in-down">
-          <div class="relative w-28 h-28 mx-auto mb-1 flex items-center justify-center">
+    <div class="relative z-10 w-full max-w-lg sm:max-w-2xl mx-auto flex-1 flex items-center justify-center px-4 sm:px-0">
+      <div class="text-center w-full">
+        <div class="mb-4 animate-fade-in-down">
+          <div class="relative w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-2">
             <div class="absolute inset-0 rounded-full bg-gray-300 blur-md"></div>
-            <SavtaIcon :iconClass="'relative max-w-[85%] max-h-[85%] object-contain z-10 block w-24 h-24 mx-auto'" />
+            <SavtaIcon :iconClass="'relative max-w-[85%] max-h-[85%] object-contain z-10 block w-16 h-16 sm:w-24 sm:h-24 mx-auto'" />
           </div>
-          <div class="flex flex-col items-center gap-0.5">
-            <h1 class="text-2xl md:text-4xl font-extrabold text-pink-500 font-sans tracking-tight mb-0">Savta</h1>
-            <span class="inline-block bg-pink-100 text-pink-600 text-xs font-semibold px-2 py-0.5 rounded-full border border-pink-200 align-middle shadow-sm">beta: no warranty, no support</span>
+          <div class="flex flex-col items-center gap-1">
+            <h1 class="text-xl sm:text-4xl font-extrabold text-pink-500 font-sans tracking-tight">Savta</h1>
+            <span class="inline-block bg-pink-100 text-pink-600 text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full border border-pink-200 align-middle shadow-sm">beta: no warranty, no support</span>
           </div>
-          <div class="max-w-xl mx-auto px-3 py-2 bg-white/10 backdrop-blur-md rounded-xl shadow-lg text-center text-white">
-            <h2 class="text-sm md:text-base font-semibold mb-1 text-white/90">
+          <div class="max-w-xl mx-auto mt-2 px-3 py-2 bg-white/10 backdrop-blur-md rounded-xl shadow-lg text-center text-white">
+            <h2 class="text-xs sm:text-base font-semibold mb-1 text-white/90">
               Keep the memories that matter most, beautifully.
             </h2>
-
-            <p class="text-xs md:text-sm text-white/80 leading-relaxed mb-0.5">
+            <p class="text-[10px] sm:text-sm text-white/80 leading-relaxed mb-0.5">
               Each month, we turn your family's best photos, stories, and milestones into a themed, shareable booklet — curated with a gentle touch of AI magic.
             </p>
-
-            <p class="text-xs md:text-sm text-white/70 leading-relaxed">
+            <p class="text-[10px] sm:text-sm text-white/70 leading-relaxed">
               No more scrolling through endless chats. Just one meaningful snapshot of your family's life, preserved with love.
             </p>
           </div>
         </div>
         <div class="mb-2 animate-fade-in-up" style="animation-delay: 0.3s;">
-          <h2 class="mb-1 text-xl sm:text-2xl md:text-3xl text-white">Coming Soon</h2>
+          <h2 class="text-lg sm:text-3xl text-white">Coming Soon</h2>
         </div>
         <div class="flex flex-col items-center mt-2 animate-fade-in-up" style="animation-delay: 0.6s;">
           <div class="w-full flex flex-col items-center">
-            <div class="text-gray-300 text-xs sm:text-sm mb-1 text-center">
+            <div class="text-gray-300 text-[10px] sm:text-sm mb-1 text-center">
               Be the first to bring Savta&apos;s magic to your family
             </div>
             <InputText
               v-model="email"
               type="email"
               placeholder="Enter your email"
-              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-sm py-1.5 px-3 sm:px-4 bg-gray-300 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-xs sm:text-sm py-1.5 px-3 sm:px-4 bg-gray-300 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
               :class="{ 'border-red-500': messageType === 'error' }"
             />
           </div>
           <Button
             type="button"
             label="Notify Me When It's Ready"
-            class="mt-2 w-full max-w-xs sm:max-w-md bg-purple-600 hover:bg-purple-700 text-white rounded-full py-1.5 text-sm sm:text-base font-semibold"
+            class="mt-2 w-full max-w-xs sm:max-w-md bg-purple-600 hover:bg-purple-700 text-white rounded-full py-1.5 text-xs sm:text-base font-semibold"
             :loading="loading"
             @click="handleSubscribe"
           />
-          <div v-if="message" :class="messageType === 'success' ? 'text-green-500' : 'text-white'" class="text-xs">
+          <div v-if="message" :class="messageType === 'success' ? 'text-green-500' : 'text-white'" class="text-[10px] sm:text-xs">
             {{ message }}
           </div>
         </div>
@@ -66,7 +64,7 @@
           <Button
             type="button"
             label="Insiders"
-            class="w-full max-w-xs sm:max-w-fit bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-full py-1.5 px-6 font-medium text-sm"
+            class="w-full max-w-xs sm:max-w-fit bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-full py-1.5 px-6 font-medium text-xs"
             @click="showPasswordDialog = true"
           />
         </div>

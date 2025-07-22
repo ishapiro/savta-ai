@@ -46,6 +46,14 @@ export default defineEventHandler(async (event) => {
         })
         summary += `\n- date: ${formattedDate}`
       }
+      // Add upload_date (created_at) in MM-DD-YYYY format if available
+      if (p.created_at) {
+        const uploadDate = new Date(p.created_at)
+        const mm = String(uploadDate.getMonth() + 1).padStart(2, '0')
+        const dd = String(uploadDate.getDate()).padStart(2, '0')
+        const yyyy = uploadDate.getFullYear()
+        summary += `\n- upload_date: ${mm}-${dd}-${yyyy}`
+      }
       
       return summary
     }).join('\n\n')
@@ -85,6 +93,7 @@ ${memoryBookContext}
 PHOTO SELECTION RULES:
 - You MUST select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool
 - If there is a location named in the title match it against the city, state, country, or zip code in photo data
+- Prioritize photos with a recent upload_date
 - Select photos that are related to the title, theme or event
 - Choose the most meaningful and emotionally connected photos that work well together
 - Consider relationships, themes, and storytelling potential when selecting

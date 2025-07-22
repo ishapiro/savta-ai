@@ -63,10 +63,10 @@ const viewerOptions = {
   enableDownload: true,
   enablePrint: false,
   enableSearch: true,
-  enableThumbnail: true,
+  enableThumbnail: false,
   enableToolbar: true,
-  enableSidebar: true,
-  sidebarTabs: ['thumbnails', 'bookmarks', 'attachments'],
+  enableSidebar: false, // Disable sidebar
+  sidebarTabs: [],      // No sidebar tabs
   toolbarPlugin: {
     fullScreenPlugin: {
       onEnterFullScreen: (zoom) => console.log('Entered full screen with zoom:', zoom),
@@ -167,6 +167,38 @@ const viewerOptions = {
   position: absolute !important;
   left: -9999px !important;
   top: -9999px !important;
+}
+
+/* Forcibly hide sidebar and sidebar toggle in @vue-pdf-viewer */
+:deep(.vpv-sidebar),
+:deep(.vpv-sidebar-container),
+:deep(.vpv-sidebar-features),
+:deep(.vpv-sidebar-tabs),
+:deep(.vpv-sidebar-content-container),
+:deep(.vpv-toolbar-btn[aria-label="Toggle sidebar"]),
+:deep(.vpv-toolbar-btn[aria-label="Show sidebar"]),
+:deep(.vpv-sidebar-tab),
+:deep(.vpv-sidebar-tab[role="tab"]),
+:deep(.vpv-sidebar-tab[aria-selected]),
+:deep(.vpv-sidebar-tab[aria-controls]),
+:deep(.vpv-sidebar-tabpanel),
+:deep(.vpv-sidebar-content) {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+/* Force main viewer to use full width */
+:deep(.vpv-body-wrapper) {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 /* Mobile adjustments */
