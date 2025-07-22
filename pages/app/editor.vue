@@ -501,7 +501,10 @@ definePageMeta({
   middleware: ['auth', 'editor']
 })
 
-const { $toast } = useNuxtApp()
+// const { $toast } = useNuxtApp()
+
+import { useToast } from 'primevue/usetoast'
+
 const db = useDatabase()
 
 // Reactive data
@@ -545,7 +548,7 @@ const newTheme = ref({
 const userSearch = ref('')
 
 // Add to script
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 const router = useRouter()
 const selectedUser = ref(null)
 const userSuggestions = ref([])
@@ -729,6 +732,15 @@ const filteredBooks = computed(() => {
 
 // Load data
 onMounted(async () => {
+
+  const toast = useToast()
+  toast.add({
+    severity: 'success',
+    summary: 'Hello',
+    detail: 'You are in editor mode',
+    life: 3000
+  })
+
   // Check for tab query parameter and set active tab
   const route = useRoute()
   if (route.query.tab) {
