@@ -501,11 +501,10 @@ definePageMeta({
   middleware: ['auth', 'editor']
 })
 
-// const { $toast } = useNuxtApp()
-
 import { useToast } from 'primevue/usetoast'
 
 const db = useDatabase()
+const toast = useToast()
 
 // Reactive data
 const activeTabIndex = ref(0)
@@ -603,7 +602,7 @@ const loadUserAssets = async (userId) => {
     assets.value = userAssets
   } catch (error) {
     console.error('Error loading user assets:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to load user assets',
@@ -624,7 +623,7 @@ const loadUserBooks = async (userId) => {
     books.value = userBooks
   } catch (error) {
     console.error('Error loading user memory books:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to load user memory books',
@@ -777,7 +776,7 @@ const loadThemes = async () => {
     themes.value = allThemes
   } catch (error) {
     console.error('Error loading themes:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to load themes',
@@ -793,7 +792,7 @@ const loadStats = async () => {
     stats.value = editorStats
   } catch (error) {
     console.error('Error loading stats:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to load statistics',
@@ -807,7 +806,7 @@ const approveAsset = async (assetId) => {
   try {
     await db.editor.approveAsset(assetId)
     
-    $toast.add({
+    toast.add({
       severity: 'success',
       summary: 'Approved',
       detail: 'Asset approved successfully',
@@ -821,7 +820,7 @@ const approveAsset = async (assetId) => {
     await loadStats()
   } catch (error) {
     console.error('Error approving asset:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to approve asset',
@@ -834,7 +833,7 @@ const rejectAsset = async (assetId) => {
   try {
     await db.editor.rejectAsset(assetId)
     
-    $toast.add({
+    toast.add({
       severity: 'success',
       summary: 'Rejected',
       detail: 'Asset rejected',
@@ -848,7 +847,7 @@ const rejectAsset = async (assetId) => {
     await loadStats()
   } catch (error) {
     console.error('Error rejecting asset:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to reject asset',
@@ -870,7 +869,7 @@ const downloadBook = async (book) => {
     link.click()
     document.body.removeChild(link)
 
-    $toast.add({
+    toast.add({
       severity: 'success',
       summary: 'Downloaded',
       detail: 'Book downloaded successfully',
@@ -878,7 +877,7 @@ const downloadBook = async (book) => {
     })
   } catch (error) {
     console.error('Error downloading book:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to download book',
@@ -891,7 +890,7 @@ const generateBook = async (book) => {
   try {
     await db.editor.generateBook(book.id)
     
-    $toast.add({
+    toast.add({
       severity: 'success',
       summary: 'Generated',
       detail: 'Book generated successfully',
@@ -904,7 +903,7 @@ const generateBook = async (book) => {
     }
   } catch (error) {
     console.error('Error generating book:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to generate book',
@@ -930,7 +929,7 @@ const createTheme = async () => {
       try {
         themeToSave.layout_config = JSON.parse(themeToSave.layout_config)
       } catch (e) {
-        $toast.add({
+        toast.add({
           severity: 'error',
           summary: 'Error',
           detail: 'Layout config must be valid JSON',
@@ -941,7 +940,7 @@ const createTheme = async () => {
       }
     }
     await db.editor.createTheme(themeToSave)
-    $toast.add({
+    toast.add({
       severity: 'success',
       summary: 'Created',
       detail: 'Theme created successfully',
@@ -968,7 +967,7 @@ const createTheme = async () => {
     await loadThemes()
   } catch (error) {
     console.error('Error creating theme:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to create theme',
@@ -983,7 +982,7 @@ const activateTheme = async (themeId) => {
   try {
     await db.editor.activateTheme(themeId)
     
-    $toast.add({
+    toast.add({
       severity: 'success',
       summary: 'Activated',
       detail: 'Theme activated successfully',
@@ -994,7 +993,7 @@ const activateTheme = async (themeId) => {
     await loadThemes()
   } catch (error) {
     console.error('Error activating theme:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to activate theme',
@@ -1007,7 +1006,7 @@ const deactivateTheme = async (themeId) => {
   try {
     await db.editor.deactivateTheme(themeId)
     
-    $toast.add({
+    toast.add({
       severity: 'success',
       summary: 'Deactivated',
       detail: 'Theme deactivated successfully',
@@ -1018,7 +1017,7 @@ const deactivateTheme = async (themeId) => {
     await loadThemes()
   } catch (error) {
     console.error('Error deactivating theme:', error)
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to deactivate theme',
