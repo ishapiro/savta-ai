@@ -546,6 +546,7 @@ const userSearch = ref('')
 
 // Add to script
 import { ref } from 'vue'
+const router = useRouter()
 const selectedUser = ref(null)
 const userSuggestions = ref([])
 
@@ -728,6 +729,31 @@ const filteredBooks = computed(() => {
 
 // Load data
 onMounted(async () => {
+  // Check for tab query parameter and set active tab
+  const route = useRoute()
+  if (route.query.tab) {
+    const tabIndex = parseInt(route.query.tab)
+    if (tabIndex >= 0 && tabIndex <= 2) {
+      activeTabIndex.value = tabIndex
+    }
+  }
+  
+  // Check for userId query parameter and restore selected user
+  if (route.query.userId) {
+    const userId = route.query.userId
+    try {
+      // Fetch user info by ID to restore the selected user
+      const res = await fetch(`/api/users/${userId}/info`)
+      if (res.ok) {
+        const userInfo = await res.json()
+        selectedUser.value = userInfo
+        console.log('Restored selected user:', userInfo.email)
+      }
+    } catch (error) {
+      console.error('Error restoring user:', error)
+    }
+  }
+  
   await loadThemes()
   await loadStats()
 })
@@ -876,8 +902,8 @@ const generateBook = async (book) => {
 }
 
 const viewBookDetails = (book) => {
-  // Navigate to book details page
-  navigateTo(`/app/memory-books/${book.id}`)
+  const queryParams = { userId: selectedUser.value?.user_id }
+  router.push({ path: `/app/memory-books/${book.id}`, query: queryParams })
 }
 
 // Theme actions

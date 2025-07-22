@@ -48,14 +48,36 @@ export default defineEventHandler(async (event) => {
     }
     console.log('✅ User authenticated:', user.id)
     
-    // Verify the memory book exists and belongs to the user
+    // Verify the memory book exists and belongs to the user (or user is editor)
     console.log('📚 Fetching memory book from database...')
-    const { data: book, error: bookError } = await supabase
+    
+    // First, get the user's profile to check their role
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single()
+    
+    if (profileError) {
+      console.error('❌ Profile error:', profileError)
+      throw createError({
+        statusCode: 401,
+        statusMessage: 'User profile not found'
+      })
+    }
+    
+    // Build the query based on user role
+    let bookQuery = supabase
       .from('memory_books')
       .select('*')
       .eq('id', bookId)
-      .eq('user_id', user.id)
-      .single()
+    
+    // If user is not an editor, only allow access to their own books
+    if (profile.role !== 'editor' && profile.role !== 'admin') {
+      bookQuery = bookQuery.eq('user_id', user.id)
+    }
+    
+    const { data: book, error: bookError } = await bookQuery.single()
     
     if (bookError || !book) {
       console.error('❌ Book error:', bookError)
@@ -64,11 +86,18 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Memory book not found'
       })
     }
-    console.log('✅ Memory book found:', book.id, 'Status:', book.status)
+    console.log('✅ Memory book found:', book.id, 'Status:', book.status, 'User role:', profile.role)
     
     // Check if the book is ready for download
-    if (book.status !== 'ready' && book.status !== 'draft') {
+    console.log('📋 Checking book status for download...')
+    console.log('📋 Book status:', book.status)
+    console.log('📋 Book pdf_url:', book.pdf_url)
+    console.log('📋 Book background_url:', book.background_url)
+    
+    if (book.status !== 'ready' && book.status !== 'draft' && book.status !== 'approved') {
       console.log('❌ Book not ready for download, status:', book.status)
+      console.log('❌ Allowed statuses: ready, draft, approved')
+      console.log('❌ Current status:', book.status)
       throw createError({
         statusCode: 400,
         statusMessage: 'Memory book is not ready for download'
