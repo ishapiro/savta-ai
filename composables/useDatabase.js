@@ -1003,6 +1003,40 @@ export const useDatabase = () => {
       return data
     },
 
+    // Deactivate a theme (editor only)
+    deactivateTheme: async (themeId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
+        throw new Error('Editor access required')
+      }
+      const { data, error } = await supabase
+        .from('themes')
+        .update({ is_active: false })
+        .eq('id', themeId)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+
+    // Delete a theme (admin only)
+    deleteTheme: async (themeId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') {
+        throw new Error('Admin access required')
+      }
+      const { data, error } = await supabase
+        .from('themes')
+        .update({ deleted: true })
+        .eq('id', themeId)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+
     // Get stats for editor dashboard (efficient count only)
     getStats: async () => {
       if (!user.value) return {}
