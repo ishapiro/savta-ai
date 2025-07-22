@@ -4721,4 +4721,45 @@ const pdfViewerStyle = computed(() => {
 .font-caveat {
   font-family: 'Caveat', cursive, sans-serif;
 }
+
+/* Mobile full-screen dialog and step adjustments for Magic Memory Dialog */
+@media (max-width: 640px) {
+  /* Ensure the dialog overlay and content fill the screen and center vertically */
+  ::v-deep(.p-dialog-mask) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+  }
+  ::v-deep(.p-dialog) {
+    margin: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-height: auto !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.5rem !important;
+  }
+  ::v-deep(.p-dialog-content) {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: 1.5rem 1rem !important;
+  }
+  .magic-memory-step {
+    width: 100vw !important;
+    min-height: 0;
+    max-height: 100vh !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+  }
+}
 </style>
