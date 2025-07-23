@@ -13,6 +13,21 @@ export default defineEventHandler(async (event) => {
     config.supabaseServiceRoleKey || config.public.supabaseKey
   )
 
+  // If ?count=1, return only the count
+  const query = getQuery(event)
+  if (query.count === '1') {
+    const { count, error: countError } = await supabase
+      .from('memory_books')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('deleted', false)
+    if (countError) {
+      event.res.statusCode = 500
+      return { error: countError.message }
+    }
+    return { count }
+  }
+
   // Get memory books for the specific user
   const { data, error } = await supabase
     .from('memory_books')

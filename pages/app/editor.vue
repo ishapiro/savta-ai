@@ -770,40 +770,61 @@
       <div v-if="selectedUserForDetails" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Name</label>
-            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.first_name }} {{ selectedUserForDetails.last_name }}</p>
+            <label class="block text-sm font-medium text-color mb-1">User ID</label>
+            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.user_id }}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-color mb-1">Email</label>
             <p class="text-sm text-color-secondary">{{ selectedUserForDetails.email }}</p>
           </div>
           <div>
+            <label class="block text-sm font-medium text-color mb-1">First Name</label>
+            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.first_name }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Last Name</label>
+            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.last_name }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Phone</label>
+            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.phone || '—' }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Address</label>
+            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.address || '—' }}</p>
+          </div>
+          <div>
             <label class="block text-sm font-medium text-color mb-1">Role</label>
-            <Tag
-              :value="selectedUserForDetails.role"
-              :severity="getRoleSeverity(selectedUserForDetails.role)"
-            />
+            <Tag :value="selectedUserForDetails.role" :severity="getRoleSeverity(selectedUserForDetails.role)" />
           </div>
           <div>
             <label class="block text-sm font-medium text-color mb-1">Subscription</label>
-            <Tag
-              :value="selectedUserForDetails.subscription_type"
-              :severity="selectedUserForDetails.subscription_type === 'premium' ? 'primary' : 'secondary'"
-            />
+            <Tag :value="selectedUserForDetails.subscription_type" :severity="selectedUserForDetails.subscription_type === 'premium' ? 'primary' : 'secondary'" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Created At</label>
+            <p class="text-sm text-color-secondary">{{ formatDate(selectedUserForDetails.created_at) }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Updated At</label>
+            <p class="text-sm text-color-secondary">{{ formatDate(selectedUserForDetails.updated_at) }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Disabled</label>
+            <Tag :value="selectedUserForDetails.deleted ? 'Disabled' : 'Active'" :severity="selectedUserForDetails.deleted ? 'danger' : 'success'" />
           </div>
         </div>
-
-        <div v-if="selectedUserForDetails.family">
-          <label class="block text-sm font-medium text-color mb-1">Family</label>
-          <p class="text-sm text-color-secondary">{{ selectedUserForDetails.family.name }}</p>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-color mb-1">Created</label>
-          <p class="text-sm text-color-secondary">{{ formatDate(selectedUserForDetails.created_at) }}</p>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Total Assets</label>
+            <p class="text-sm text-color-secondary">{{ userAssetsCount }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Total Memory Books</label>
+            <p class="text-sm text-color-secondary">{{ userBooksCount }}</p>
+          </div>
         </div>
       </div>
-
       <template #footer>
         <div class="flex justify-end">
           <Button
@@ -1372,9 +1393,34 @@ const restoreUser = async (userId) => {
 }
 
 // View user details
-const viewUserDetails = (user) => {
+const userAssetsCount = ref(0)
+const userBooksCount = ref(0)
+
+const viewUserDetails = async (user) => {
   selectedUserForDetails.value = user
   showUserModal.value = true
+  // Fetch asset and memory book counts for this user from the server
+  if (user && user.user_id) {
+    try {
+      // Fetch asset count from server
+      const assetRes = await fetch(`/api/users/${user.user_id}/assets?count=1`)
+      const assetData = await assetRes.json()
+      userAssetsCount.value = assetData?.count ?? 0
+    } catch (e) {
+      userAssetsCount.value = 0
+    }
+    try {
+      // Fetch memory book count from server
+      const bookRes = await fetch(`/api/users/${user.user_id}/memory-books?count=1`)
+      const bookData = await bookRes.json()
+      userBooksCount.value = bookData?.count ?? 0
+    } catch (e) {
+      userBooksCount.value = 0
+    }
+  } else {
+    userAssetsCount.value = 0
+    userBooksCount.value = 0
+  }
 }
 
 // Asset actions
