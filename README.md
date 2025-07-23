@@ -432,3 +432,13 @@ This project uses [`@vue-pdf-viewer/viewer`](https://www.npmjs.com/package/@vue-
 - `composables/useVuePdfViewerLicense.js` — Handles license fetching and initialization
 - `server/api/vpv-license-key.get.js` — Securely provides the license key from environment variables
 - `nuxt.config.ts` — Ensures the viewer is transpiled and compatible with SSR
+
+## Admin Access and Supabase JWT Authentication Hooks
+
+**Important:**
+
+- Enabling a Supabase JWT authentication hook causes Supabase to append additional information to the authentication callback URL. This extra data breaks Nuxt/Vue routing, resulting in navigation errors and failed logins.
+- Because of this, you cannot use JWT claims (such as a custom 'role' claim) to control admin access to tables like `profiles`.
+- **Instead, all admin features (such as managing users, roles, and themes) are implemented using server-side API endpoints that run with the Supabase service role key.** These endpoints perform privileged operations securely and are not affected by the routing issue.
+
+If Supabase changes their routing or hook behavior in the future, this project can be updated to use JWT claims for RLS and admin access. For now, all admin logic is handled server-side.
