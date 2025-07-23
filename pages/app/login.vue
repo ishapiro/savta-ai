@@ -11,9 +11,23 @@
       <div class="absolute top-1/2 right-8 sm:right-20 w-12 sm:w-20 h-12 sm:h-20 bg-cyan-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
     </div>
 
-    <!-- Login Dialog -->
+    <!-- Provider Selection Dialog -->
+    <Dialog v-model:visible="providerSelectVisible" modal :closable="false" :dismissableMask="false" :style="{ width: '100vw', maxWidth: '400px', maxHeight: '100vh' }" class="z-30">
+      <div class="flex flex-col items-center w-full px-2 sm:px-4 py-6 bg-white rounded-2xl shadow-2xl gap-4">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Sign in to Savta AI</h2>
+        <Button class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold py-3 rounded-lg shadow-sm flex items-center justify-center gap-2 transition text-lg" :loading="googleLoading" @click="handleGoogleLogin">
+          <svg class="h-6 w-6 mr-2" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_17_40)"><path d="M47.532 24.552c0-1.636-.146-3.2-.418-4.684H24.48v9.02h12.98c-.56 3.02-2.24 5.58-4.78 7.3v6.06h7.74c4.54-4.18 7.11-10.34 7.11-17.696z" fill="#4285F4"/><path d="M24.48 48c6.48 0 11.92-2.14 15.89-5.82l-7.74-6.06c-2.15 1.44-4.9 2.3-8.15 2.3-6.26 0-11.56-4.22-13.46-9.9H2.5v6.22C6.46 43.98 14.7 48 24.48 48z" fill="#34A853"/><path d="M11.02 28.52c-.5-1.44-.78-2.98-.78-4.52s.28-3.08.78-4.52v-6.22H2.5A23.98 23.98 0 000 24c0 3.98.96 7.74 2.5 11.02l8.52-6.5z" fill="#FBBC05"/><path d="M24.48 9.48c3.52 0 6.64 1.22 9.12 3.62l6.84-6.84C36.4 2.14 30.96 0 24.48 0 14.7 0 6.46 4.02 2.5 10.98l8.52 6.22c1.9-5.68 7.2-9.9 13.46-9.9z" fill="#EA4335"/></g><defs><clipPath id="clip0_17_40"><path fill="#fff" d="M0 0h48v48H0z"/></clipPath></defs></svg>
+          <span class="text-purple-600">Continue with Google</span>
+        </Button>
+        <Button class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold py-3 rounded-lg shadow-sm flex items-center justify-center gap-2 transition text-lg" @click="showEmailForm">
+          <svg class="h-6 w-6 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+          <span class="text-purple-600">Continue with Email</span>
+        </Button>
+      </div>
+    </Dialog>
+    <!-- Login Dialog (email form) -->
     <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '500px', maxHeight: '100vh' }" class="z-20" @hide="onDialogHide">
-      <div class="flex flex-col items-center w-full px-2 sm:px-4 py-3 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
+      <div v-if="!providerSelectVisible" class="flex flex-col items-center w-full px-2 sm:px-4 py-3 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
         <!-- Header -->
         <div class="flex flex-col items-center mb-2 w-full">
           <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center shadow mb-1">
@@ -147,6 +161,7 @@ const error = ref('')
 const emailError = ref('')
 const passwordError = ref('')
 const visible = ref(true)
+const providerSelectVisible = ref(true)
 
 // Get Supabase client
 const supabase = useNuxtApp().$supabase
@@ -260,6 +275,11 @@ const handleGoogleLogin = async () => {
   }
 }
 
+const showEmailForm = () => {
+  providerSelectVisible.value = false
+  visible.value = true
+}
+
 const onDialogHide = () => {
   // When dialog is closed, navigate based on origin
   if (origin === 'home') {
@@ -271,6 +291,8 @@ const onDialogHide = () => {
 
 // Clear guest mode flag when page loads
 onMounted(() => {
+  providerSelectVisible.value = true
+  visible.value = false
   if (process.client) {
     sessionStorage.removeItem('guestMode')
   }
