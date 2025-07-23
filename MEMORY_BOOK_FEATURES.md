@@ -299,7 +299,7 @@ All user actions are logged in the `activity_log` table:
 - `pages/app/upload.vue` - Asset upload interface
 - `pages/app/review.vue` - Review and approval
 - `pages/app/memory-books.vue` - Memory book management
-- `pages/app/admin.vue` - Admin interface
+- `pages/app/editor.vue` - Editor dashboard with admin features
 - `pages/app/editor.vue` - Editor interface
 - `middleware/auth.js` - Authentication middleware
 - `middleware/admin.js` - Admin access control

@@ -65,7 +65,7 @@ savta-ai/
 │   │   ├── review.vue      # Asset review and approval
 │   │   ├── memory-books.vue # Memory book management
 │   │   ├── editor.vue      # Content editor (admin/editor only)
-│   │   ├── admin.vue       # Admin panel (admin only)
+│   │   ├── editor.vue      # Editor dashboard (editor/admin only)
 │   │   ├── login.vue       # Authentication
 │   │   └── signup.vue      # Registration
 ├── server/api/             # Backend API endpoints

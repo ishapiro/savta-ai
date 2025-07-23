@@ -260,6 +260,12 @@ CREATE POLICY "Users can create own profile"
   FOR INSERT
   WITH CHECK ((SELECT auth.uid()) = user_id);
 
+-- Optionally, if you enrich JWTs with the user's role, you can enable this:
+-- DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
+-- CREATE POLICY "Admins can view all profiles" ON profiles
+--   FOR SELECT
+--   USING (auth.jwt() ->> 'role' = 'admin');
+
 -- Families policies
 DROP POLICY IF EXISTS "Users can manage own families" ON families;
 CREATE POLICY "Users can manage own families" ON families FOR ALL USING ((SELECT auth.uid()) = user_id);

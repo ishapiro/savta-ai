@@ -106,193 +106,165 @@
               responsiveLayout="scroll"
               class="p-datatable-sm"
             >
-              <Column header="Photo" style="width: 48px; min-width: 48px; max-width: 48px;">
-                <template #body="{ data }">
-                  <div class="w-12 h-12 flex items-center justify-center overflow-hidden rounded bg-surface-100 border border-gray-200">
-                    <img
-                      v-if="data.storage_url"
-                      :src="data.storage_url"
-                      alt="Asset thumbnail"
-                      class="object-cover w-full h-full"
-                      style="max-width: 40px; max-height: 40px; min-width: 40px; min-height: 40px;"
-                    />
-                    <div v-else class="w-full h-full flex items-center justify-center text-color-secondary">
-                      <i class="pi pi-image text-lg"></i>
-                    </div>
-                  </div>
-                </template>
-              </Column>
-              <Column field="user_caption" header="Caption" sortable>
-                <template #body="{ data }">
-                  <div class="text-sm text-color">{{ data.user_caption || 'No caption' }}</div>
-                  <div v-if="data.ai_caption" class="text-xs text-color-secondary italic mt-1">{{ data.ai_caption }}</div>
-                </template>
-              </Column>
-              <Column field="tags" header="Tags">
-                <template #body="{ data }">
-                  <div class="flex flex-wrap gap-1">
-                    <Chip
-                      v-for="tag in data.tags"
-                      :key="tag"
-                      :label="tag"
-                      class="text-[10px]"
-                    />
-                  </div>
-                </template>
-              </Column>
-              <Column field="status" header="Status" sortable>
+              <Column field="type" header="Type" sortable>
                 <template #body="{ data }">
                   <Tag
-                    :value="data.approved ? 'Approved' : (data.rejected ? 'Rejected' : 'Pending')"
-                    :severity="data.approved ? 'success' : (data.rejected ? 'danger' : 'warning')"
+                    :value="data.type"
+                    :severity="data.type === 'photo' ? 'primary' : 'secondary'"
                   />
                 </template>
               </Column>
+
+              <Column field="title" header="Title" sortable>
+                <template #body="{ data }">
+                  <div class="max-w-xs truncate" :title="data.title">
+                    {{ data.title || 'Untitled' }}
+                  </div>
+                </template>
+              </Column>
+
+              <Column field="ai_caption" header="AI Caption">
+                <template #body="{ data }">
+                  <div class="max-w-xs truncate" :title="data.ai_caption">
+                    {{ data.ai_caption || 'No caption' }}
+                  </div>
+                </template>
+              </Column>
+
+              <Column field="approved" header="Status" sortable>
+                <template #body="{ data }">
+                  <Tag
+                    :value="data.approved ? 'Approved' : 'Pending'"
+                    :severity="data.approved ? 'success' : 'warning'"
+                  />
+                </template>
+              </Column>
+
+              <Column field="created_at" header="Created" sortable>
+                <template #body="{ data }">
+                  <span class="text-sm text-color-secondary">{{ formatDate(data.created_at) }}</span>
+                </template>
+              </Column>
+
               <Column header="Actions">
                 <template #body="{ data }">
                   <div class="flex items-center space-x-2">
                     <Button
                       v-if="!data.approved"
-                      label="Approve"
+                      icon="pi pi-check"
                       severity="success"
                       size="small"
-                      class="text-xs px-2 py-1"
                       @click="approveAsset(data.id)"
                     />
                     <Button
-                      v-else
-                      label="Reject"
+                      v-if="!data.approved"
+                      icon="pi pi-times"
                       severity="danger"
                       size="small"
-                      class="text-xs px-2 py-1"
                       @click="rejectAsset(data.id)"
+                    />
+                    <Button
+                      icon="pi pi-eye"
+                      severity="info"
+                      size="small"
+                      @click="viewAsset(data)"
                     />
                   </div>
                 </template>
               </Column>
             </DataTable>
           </div>
+
+          <!-- No User Selected Message -->
+          <div v-else class="text-center py-8">
+            <i class="pi pi-users text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-600">Select a user above to review their assets.</p>
+          </div>
         </TabPanel>
 
         <!-- Memory Books Tab -->
         <TabPanel header="Memory Books">
           <div class="space-y-4">
-            <!-- Memory Books Instructions and Filter -->
-            <div class="mb-4">
-              <div class="mb-2 text-sm text-gray-700 font-medium">
-                To review memory books, you must select a user by their email address below.
-              </div>
-              <div class="flex items-center gap-4">
-                <AutoComplete
-                  v-model="selectedUser"
-                  :suggestions="userSuggestions"
-                  @complete="searchUsers"
-                  optionLabel="email"
-                  :optionDisabled="option => !option.user_id"
-                  placeholder="Type to search users..."
-                  class="w-80"
-                  inputClass="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
-                  :dropdown="true"
-                  :forceSelection="true"
-                  field="email"
-                  :itemTemplate="user => `${user.email?.split('@')[0] || ''} (${user.first_name || ''} ${user.last_name || ''})`"
-                />
-                <div class="flex items-center gap-2">
-                  <input type="checkbox" v-model="showOnlyUnapprovedUsers" id="showOnlyUnapprovedUsers" />
-                  <label for="showOnlyUnapprovedUsers" class="text-sm text-gray-700">Show only users with unapproved memory books</label>
-                </div>
-              </div>
-            </div>
-
-            <!-- User Summary Header -->
-            <div v-if="selectedUser && selectedUser.user_id" class="mb-4 p-4 bg-surface-100 rounded-lg flex flex-col sm:flex-row sm:items-center gap-2">
-              <div class="font-semibold text-color">User: <span class="text-primary">{{ selectedUser.email }}</span></div>
-              <div class="text-sm text-gray-700">Total Memory Books: <span class="font-bold">{{ userBookStats.total }}</span></div>
-              <div class="text-sm text-gray-700">Approved Memory Books: <span class="font-bold">{{ userBookStats.approved }}</span></div>
-            </div>
-
-            <!-- Books Table (only if user selected) -->
-            <div v-if="selectedUser && selectedUser.user_id">
-              <!-- Filters -->
-              <div class="flex flex-wrap gap-4 mb-4">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-semibold text-color">Memory Books</h3>
+              <div class="flex items-center space-x-4">
                 <InputText
                   v-model="bookSearch"
                   placeholder="Search books..."
                   class="w-64"
-                  inputClass="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                 <Dropdown
                   v-model="bookStatusFilter"
                   :options="bookStatusOptions"
                   optionLabel="label"
                   optionValue="value"
-                  placeholder="Filter by status"
-                  class="w-48"
-                  inputClass="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
+                  placeholder="All Status"
+                  class="w-32"
                 />
               </div>
-
-              <!-- Books Table -->
-              <DataTable
-                :value="filteredBooks"
-                :paginator="true"
-                :rows="10"
-                :rowsPerPageOptions="[5, 10, 20, 50]"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} books"
-                responsiveLayout="scroll"
-                class="p-datatable-sm"
-              >
-                <Column field="title" header="Title" sortable>
-                  <template #body="{ data }">
-                    <div class="font-medium text-color">{{ data.title || 'Untitled' }}</div>
-                    <div class="text-sm text-color-secondary">by {{ data.profile?.email || 'Unknown' }}</div>
-                  </template>
-                </Column>
-                <Column field="status" header="Status" sortable>
-                  <template #body="{ data }">
-                    <Tag
-                      :value="getBookStatusText(data.status)"
-                      :severity="getBookStatusSeverity(data.status)"
-                    />
-                  </template>
-                </Column>
-                <Column field="created_at" header="Created" sortable>
-                  <template #body="{ data }">
-                    {{ formatDate(data.created_at) }}
-                  </template>
-                </Column>
-                <Column header="Actions">
-                  <template #body="{ data }">
-                    <div class="flex items-center space-x-2">
-                      <Button
-                        v-if="data.status === 'draft'"
-                        label="Generate"
-                        severity="info"
-                        size="small"
-                        class="text-xs px-2 py-1"
-                        @click="generateBook(data)"
-                      />
-                      <Button
-                        v-if="data.pdf_url"
-                        label="Download"
-                        severity="success"
-                        size="small"
-                        class="text-xs px-2 py-1"
-                        @click="downloadBook(data)"
-                      />
-                      <Button
-                        label="View"
-                        severity="secondary"
-                        size="small"
-                        class="text-xs px-2 py-1"
-                        @click="viewBookDetails(data)"
-                      />
-                    </div>
-                  </template>
-                </Column>
-              </DataTable>
             </div>
+
+            <!-- Memory Books Data Table -->
+            <DataTable
+              :value="filteredBooks"
+              :paginator="true"
+              :rows="10"
+              :rowsPerPageOptions="[5, 10, 20, 50]"
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} books"
+              responsiveLayout="scroll"
+              class="p-datatable-sm"
+            >
+              <Column field="title" header="Title" sortable>
+                <template #body="{ data }">
+                  <div class="max-w-xs truncate" :title="data.title">
+                    {{ data.title || 'Untitled' }}
+                  </div>
+                </template>
+              </Column>
+
+              <Column field="status" header="Status" sortable>
+                <template #body="{ data }">
+                  <Tag
+                    :value="getBookStatusText(data.status)"
+                    :severity="getBookStatusSeverity(data.status)"
+                  />
+                </template>
+              </Column>
+
+              <Column field="created_at" header="Created" sortable>
+                <template #body="{ data }">
+                  <span class="text-sm text-color-secondary">{{ formatDate(data.created_at) }}</span>
+                </template>
+              </Column>
+
+              <Column header="Actions">
+                <template #body="{ data }">
+                  <div class="flex items-center space-x-2">
+                    <Button
+                      v-if="data.status === 'ready'"
+                      icon="pi pi-download"
+                      severity="info"
+                      size="small"
+                      @click="downloadBook(data)"
+                    />
+                    <Button
+                      v-if="data.status === 'draft'"
+                      icon="pi pi-play"
+                      severity="success"
+                      size="small"
+                      @click="generateBook(data)"
+                    />
+                    <Button
+                      icon="pi pi-eye"
+                      severity="info"
+                      size="small"
+                      @click="viewBook(data)"
+                    />
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
           </div>
         </TabPanel>
 
@@ -406,6 +378,224 @@
             </div>
           </div>
         </TabPanel>
+
+        <!-- Users Tab (Admin Only) -->
+        <TabPanel 
+          header="👥 Users" 
+          :disabled="!(userProfile && userProfile.role === 'admin')"
+        >
+          <div v-if="userProfile && userProfile.role === 'admin'" class="space-y-6">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold text-color">User Management</h2>
+              <div class="flex items-center space-x-4">
+                <InputText
+                  v-model="userSearch"
+                  placeholder="Search users..."
+                  class="w-64"
+                />
+                <Dropdown
+                  v-model="roleFilter"
+                  :options="roleOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="All Roles"
+                  class="w-32"
+                />
+                <!-- Show Deleted Users Toggle -->
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="checkbox" 
+                    id="showDeletedUsers" 
+                    v-model="showDeletedUsers"
+                    @change="loadDeletedUsers"
+                    class="w-4 h-4 text-green-600 bg-white border-2 border-gray-300 rounded ring-2 ring-gray-500 focus:ring-green-500 focus:ring-2 checked:bg-green-50 checked:border-green-500"
+                  />
+                  <label for="showDeletedUsers" class="text-sm text-gray-700 cursor-pointer">Show deleted users</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Users Table -->
+            <DataTable
+              :value="filteredUsers"
+              :paginator="true"
+              :rows="10"
+              :rowsPerPageOptions="[5, 10, 20, 50]"
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
+              responsiveLayout="scroll"
+              class="p-datatable-sm"
+            >
+              <Column field="name" header="User" sortable>
+                <template #body="{ data }">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">
+                          {{ data.first_name ? data.first_name.charAt(0) : data.email.charAt(0).toUpperCase() }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-color">
+                        {{ data.first_name }} {{ data.last_name }}
+                      </div>
+                      <div class="text-sm text-color-secondary">{{ data.email }}</div>
+                    </div>
+                  </div>
+                </template>
+              </Column>
+
+              <Column field="role" header="Role" sortable>
+                <template #body="{ data }">
+                  <Dropdown
+                    v-model="data.role"
+                    :options="userRoleOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    @change="updateUserRole(data.user_id, data.role)"
+                    class="w-40"
+                  />
+                </template>
+              </Column>
+
+              <Column field="subscription_type" header="Subscription" sortable>
+                <template #body="{ data }">
+                  <Tag
+                    :value="data.subscription_type"
+                    :severity="data.subscription_type === 'premium' ? 'primary' : 'secondary'"
+                  />
+                </template>
+              </Column>
+
+              <Column field="deleted" header="Status" sortable>
+                <template #body="{ data }">
+                  <Tag
+                    :value="data.deleted ? 'Deleted' : 'Active'"
+                    :severity="data.deleted ? 'danger' : 'success'"
+                  />
+                </template>
+              </Column>
+
+              <Column field="created_at" header="Created" sortable>
+                <template #body="{ data }">
+                  <span class="text-sm text-color-secondary">{{ formatDate(data.created_at) }}</span>
+                </template>
+              </Column>
+
+              <Column header="Actions">
+                <template #body="{ data }">
+                  <div class="flex items-center space-x-2">
+                    <Button
+                      v-if="!data.deleted"
+                      icon="pi pi-trash"
+                      severity="danger"
+                      size="small"
+                      @click="deleteUser(data.user_id)"
+                    />
+                    <Button
+                      v-else
+                      icon="pi pi-refresh"
+                      severity="success"
+                      size="small"
+                      @click="restoreUser(data.user_id)"
+                    />
+                    <Button
+                      icon="pi pi-eye"
+                      severity="info"
+                      size="small"
+                      @click="viewUserDetails(data)"
+                    />
+                  </div>
+                </template>
+              </Column>
+                          </DataTable>
+
+              <!-- Deleted Users Section -->
+              <div v-if="showDeletedUsers && deletedUsers.length > 0" class="mt-8 space-y-4">
+                <h3 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Deleted Users</h3>
+                <DataTable
+                  :value="deletedUsers"
+                  :paginator="true"
+                  :rows="10"
+                  :rowsPerPageOptions="[5, 10, 20, 50]"
+                  paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} deleted users"
+                  responsiveLayout="scroll"
+                  class="p-datatable-sm"
+                >
+                  <Column field="name" header="User" sortable>
+                    <template #body="{ data }">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                          <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                            <span class="text-gray-500 font-medium">
+                              {{ data.first_name ? data.first_name.charAt(0) : data.email.charAt(0).toUpperCase() }}
+                            </span>
+                          </div>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-600">
+                            {{ data.first_name }} {{ data.last_name }}
+                          </div>
+                          <div class="text-sm text-gray-500">{{ data.email }}</div>
+                        </div>
+                      </div>
+                    </template>
+                  </Column>
+
+                  <Column field="role" header="Role" sortable>
+                    <template #body="{ data }">
+                      <Tag
+                        :value="data.role"
+                        :severity="getRoleSeverity(data.role)"
+                      />
+                    </template>
+                  </Column>
+
+                  <Column field="subscription_type" header="Subscription" sortable>
+                    <template #body="{ data }">
+                      <Tag
+                        :value="data.subscription_type"
+                        :severity="data.subscription_type === 'premium' ? 'primary' : 'secondary'"
+                      />
+                    </template>
+                  </Column>
+
+                  <Column field="created_at" header="Created" sortable>
+                    <template #body="{ data }">
+                      <span class="text-sm text-color-secondary">{{ formatDate(data.created_at) }}</span>
+                    </template>
+                  </Column>
+
+                  <Column header="Actions">
+                    <template #body="{ data }">
+                      <div class="flex items-center space-x-2">
+                        <Button
+                          icon="pi pi-refresh"
+                          severity="success"
+                          size="small"
+                          @click="restoreUser(data.user_id)"
+                        />
+                        <Button
+                          icon="pi pi-eye"
+                          severity="info"
+                          size="small"
+                          @click="viewUserDetails(data)"
+                        />
+                      </div>
+                    </template>
+                  </Column>
+                </DataTable>
+              </div>
+            </div>
+
+            <!-- Access Denied Message -->
+            <div v-else class="text-center py-8">
+              <i class="pi pi-lock text-4xl text-gray-400 mb-4"></i>
+              <p class="text-gray-600">Admin access required to view user management.</p>
+            </div>
+          </TabPanel>
       </TabView>
     </div>
 
@@ -459,19 +649,20 @@
             <InputText
               v-model.number="newTheme.background_opacity"
               type="number"
-              min="0" max="100"
+              min="0"
+              max="100"
               placeholder="100"
               class="w-full"
             />
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 gap-4">
           <div class="field">
             <label class="block text-sm font-medium text-color mb-1">Header Font</label>
             <InputText
               v-model="newTheme.header_font"
-              placeholder="e.g. Dancing Script"
+              placeholder="e.g., 'Times New Roman'"
               class="w-full"
             />
           </div>
@@ -479,26 +670,27 @@
             <label class="block text-sm font-medium text-color mb-1">Body Font</label>
             <InputText
               v-model="newTheme.body_font"
-              placeholder="e.g. Georgia"
-              class="w-full"
-            />
-          </div>
-          <div class="field">
-            <label class="block text-sm font-medium text-color mb-1">Signature Font</label>
-            <InputText
-              v-model="newTheme.signature_font"
-              placeholder="e.g. Dancing Script"
+              placeholder="e.g., Arial"
               class="w-full"
             />
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4">
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Signature Font</label>
+          <InputText
+            v-model="newTheme.signature_font"
+            placeholder="e.g., 'Brush Script MT'"
+            class="w-full"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
           <div class="field">
             <label class="block text-sm font-medium text-color mb-1">Header Font Color</label>
             <InputText
               v-model="newTheme.header_font_color"
-              placeholder="#222"
+              placeholder="#000000"
               class="w-full"
             />
           </div>
@@ -506,38 +698,34 @@
             <label class="block text-sm font-medium text-color mb-1">Body Font Color</label>
             <InputText
               v-model="newTheme.body_font_color"
-              placeholder="#222"
-              class="w-full"
-            />
-          </div>
-          <div class="field">
-            <label class="block text-sm font-medium text-color mb-1">Signature Font Color</label>
-            <InputText
-              v-model="newTheme.signature_font_color"
-              placeholder="#222"
+              placeholder="#333333"
               class="w-full"
             />
           </div>
         </div>
 
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Layout Config (JSON)</label>
-          <Textarea
-            v-model="newTheme.layout_config"
-            placeholder='{"type":"horizontal","areas":[{"type":"image","x":0.05,"y":0.05,"width":0.4,"height":0.4}]}'
-            rows="4"
-            class="w-full font-mono text-xs"
+          <label class="block text-sm font-medium text-color mb-1">Signature Font Color</label>
+          <InputText
+            v-model="newTheme.signature_font_color"
+            placeholder="#666666"
+            class="w-full"
           />
         </div>
 
-        <div class="flex items-center space-x-2">
-          <input type="checkbox" v-model="newTheme.is_active" id="is_active" />
-          <label for="is_active" class="text-sm text-color">Active</label>
+        <div class="field">
+          <label class="block text-sm font-medium text-color mb-1">Layout Config (JSON)</label>
+          <Textarea
+            v-model="newTheme.layout_config"
+            placeholder='{"example": "JSON configuration"}'
+            rows="3"
+            class="w-full"
+          />
         </div>
       </div>
 
       <template #footer>
-        <div class="flex justify-end space-x-2">
+        <div class="flex justify-end gap-2">
           <Button
             label="Cancel"
             severity="secondary"
@@ -546,8 +734,62 @@
           <Button
             label="Create Theme"
             :loading="creatingTheme"
-            :disabled="!newTheme.name"
             @click="createTheme"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- User Details Modal -->
+    <Dialog
+      v-model:visible="showUserModal"
+      modal
+      header="User Details"
+      :style="{ width: '600px' }"
+    >
+      <div v-if="selectedUserForDetails" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Name</label>
+            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.first_name }} {{ selectedUserForDetails.last_name }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Email</label>
+            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.email }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Role</label>
+            <Tag
+              :value="selectedUserForDetails.role"
+              :severity="getRoleSeverity(selectedUserForDetails.role)"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-color mb-1">Subscription</label>
+            <Tag
+              :value="selectedUserForDetails.subscription_type"
+              :severity="selectedUserForDetails.subscription_type === 'premium' ? 'primary' : 'secondary'"
+            />
+          </div>
+        </div>
+
+        <div v-if="selectedUserForDetails.family">
+          <label class="block text-sm font-medium text-color mb-1">Family</label>
+          <p class="text-sm text-color-secondary">{{ selectedUserForDetails.family.name }}</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-color mb-1">Created</label>
+          <p class="text-sm text-color-secondary">{{ formatDate(selectedUserForDetails.created_at) }}</p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end">
+          <Button
+            label="Close"
+            severity="secondary"
+            @click="showUserModal = false"
           />
         </div>
       </template>
@@ -569,6 +811,12 @@ const toast = useToast()
 
 // User profile for admin checks
 const userProfile = ref(null)
+
+// Router and user selection
+const router = useRouter()
+const selectedUser = ref(null)
+const userSuggestions = ref([])
+const showOnlyUnapprovedUsers = ref(true)
 
 // Reactive data
 const activeTabIndex = ref(0)
@@ -609,16 +857,50 @@ const newTheme = ref({
   layout_config: ''
 })
 
-// Add userSearch to script
+// User management variables
+const users = ref([])
 const userSearch = ref('')
+const roleFilter = ref('all')
+const showUserModal = ref(false)
+const selectedUserForDetails = ref(null)
+const showDeletedUsers = ref(false)
+const deletedUsers = ref([])
 
-// Add to script
-import { ref, onMounted, watch } from 'vue'
-const router = useRouter()
-const selectedUser = ref(null)
-const userSuggestions = ref([])
+// User management options
+const roleOptions = ref([
+  { label: 'All Roles', value: 'all' },
+  { label: 'Users', value: 'user' },
+  { label: 'Editors', value: 'editor' },
+  { label: 'Admins', value: 'admin' }
+])
 
-const showOnlyUnapprovedUsers = ref(true)
+const userRoleOptions = ref([
+  { label: 'User', value: 'user' },
+  { label: 'Editor', value: 'editor' },
+  { label: 'Admin', value: 'admin' }
+])
+
+// Computed properties for user management
+const filteredUsers = computed(() => {
+  let filtered = [...users.value]
+
+  // Apply search filter
+  if (userSearch.value) {
+    const search = userSearch.value.toLowerCase()
+    filtered = filtered.filter(user => 
+      user.first_name?.toLowerCase().includes(search) ||
+      user.last_name?.toLowerCase().includes(search) ||
+      user.email.toLowerCase().includes(search)
+    )
+  }
+
+  // Apply role filter
+  if (roleFilter.value !== 'all') {
+    filtered = filtered.filter(user => user.role === roleFilter.value)
+  }
+
+  return filtered
+})
 
 const userAssetStats = computed(() => {
   if (!selectedUser.value || !selectedUser.value.user_id) return { total: 0, approved: 0 }
@@ -798,20 +1080,31 @@ const filteredBooks = computed(() => {
 // Load data
 onMounted(async () => {
 
-  if (toast && toast.add) {
-    toast.add({
-      severity: 'success',
-      summary: 'Hello',
-      detail: 'You are in editor mode',
-      life: 3000
-    })
+  await loadThemes()
+  await loadStats()
+  await loadUserProfile() // Load user profile for admin checks
+  
+  // Display role-based toast after profile is loaded
+  if (userProfile.value) {
+    const role = userProfile.value.role
+    if (role === 'admin' || role === 'editor') {
+      const roleText = role === 'admin' ? 'Administrator' : 'Editor'
+      const severity = role === 'admin' ? 'danger' : 'warning'
+      
+      toast.add({
+        severity: severity,
+        summary: `Welcome, ${roleText}!`,
+        detail: `You have ${role} privileges and can manage themes, review assets, and ${role === 'admin' ? 'manage users' : 'approve content'}.`,
+        life: 10000 // 10 seconds
+      })
+    }
   }
 
   // Check for tab query parameter and set active tab
   const route = useRoute()
   if (route.query.tab) {
     const tabIndex = parseInt(route.query.tab)
-    if (tabIndex >= 0 && tabIndex <= 2) {
+    if (tabIndex >= 0 && tabIndex <= 3) { // Updated to include Users tab (index 3)
       activeTabIndex.value = tabIndex
     }
   }
@@ -832,9 +1125,21 @@ onMounted(async () => {
     }
   }
   
-  await loadThemes()
-  await loadStats()
-  await loadUserProfile() // Load user profile for admin checks
+  // Load users if admin
+  if (userProfile.value && userProfile.value.role === 'admin') {
+    await loadUsers()
+  }
+})
+
+// Watch for tab changes to load users when Users tab is selected
+watch(activeTabIndex, async (newIndex) => {
+  console.log('[Tab Change] activeTabIndex:', newIndex)
+  
+  // If Users tab is selected (index 3) and user is admin, load users
+  if (newIndex === 3 && userProfile.value && userProfile.value.role === 'admin') {
+    console.log('[Tab Change] Loading users for admin user')
+    await loadUsers()
+  }
 })
 
 // Load themes
@@ -889,6 +1194,8 @@ const loadStats = async () => {
 const loadUserProfile = async () => {
   try {
     userProfile.value = await db.getCurrentProfile()
+    console.log('[loadUserProfile] User profile loaded:', userProfile.value)
+    console.log('[loadUserProfile] User role:', userProfile.value?.role)
   } catch (error) {
     console.error('Error loading user profile:', error)
     toast.add({
@@ -898,6 +1205,135 @@ const loadUserProfile = async () => {
       life: 3000
     })
   }
+}
+
+// Load users
+const loadUsers = async () => {
+  console.log('[loadUsers] Starting to load users...')
+  try {
+    const allUsers = await db.admin.getAllUsers()
+    console.log('[loadUsers] Received users:', allUsers)
+    users.value = allUsers
+    console.log('[loadUsers] Users loaded successfully, count:', allUsers.length)
+  } catch (error) {
+    console.error('Error loading users:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load users',
+      life: 3000
+    })
+  }
+}
+
+// Load deleted users
+const loadDeletedUsers = async () => {
+  if (!showDeletedUsers.value) {
+    deletedUsers.value = []
+    return
+  }
+  
+  try {
+    const deletedUsersData = await db.admin.getDeletedUsers()
+    deletedUsers.value = deletedUsersData
+  } catch (error) {
+    console.error('Error loading deleted users:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load deleted users',
+      life: 3000
+    })
+  }
+}
+
+// Update user role
+const updateUserRole = async (userId, newRole) => {
+  try {
+    await db.admin.updateUserRole(userId, newRole)
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Updated',
+      detail: 'User role updated successfully',
+      life: 2000
+    })
+
+    // Reload users
+    await loadUsers()
+  } catch (error) {
+    console.error('Error updating user role:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to update user role',
+      life: 3000
+    })
+  }
+}
+
+// Delete user
+const deleteUser = async (userId) => {
+  if (!confirm('Are you sure you want to delete this user?')) {
+    return
+  }
+  try {
+    await db.admin.deleteUser(userId)
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Deleted',
+      detail: 'User deleted successfully',
+      life: 2000
+    })
+
+    // Reload users and deleted users
+    await loadUsers()
+    await loadDeletedUsers()
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to delete user',
+      life: 3000
+    })
+  }
+}
+
+// Restore user
+const restoreUser = async (userId) => {
+  if (!confirm('Are you sure you want to restore this user?')) {
+    return
+  }
+  try {
+    await db.admin.restoreUser(userId)
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Restored',
+      detail: 'User restored successfully',
+      life: 2000
+    })
+
+    // Reload users and deleted users
+    await loadUsers()
+    await loadDeletedUsers()
+  } catch (error) {
+    console.error('Error restoring user:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to restore user',
+      life: 3000
+    })
+  }
+}
+
+// View user details
+const viewUserDetails = (user) => {
+  selectedUserForDetails.value = user
+  showUserModal.value = true
 }
 
 // Asset actions
@@ -1011,7 +1447,7 @@ const generateBook = async (book) => {
   }
 }
 
-const viewBookDetails = (book) => {
+const viewBook = (book) => {
   const queryParams = { userId: selectedUser.value?.user_id }
   router.push({ path: `/app/memory-books/${book.id}`, query: queryParams })
 }
@@ -1250,5 +1686,14 @@ const formatDate = (dateString) => {
   } catch (error) {
     return 'Unknown date'
   }
+}
+
+const getRoleSeverity = (role) => {
+  const severityMap = {
+    'user': 'secondary',
+    'editor': 'info',
+    'admin': 'danger'
+  }
+  return severityMap[role] || 'secondary'
 }
 </script> 

@@ -58,14 +58,7 @@
                   </NuxtLink>
                 </template>
                 
-                <template v-if="userProfile && userProfile.role === 'admin'">
-                  <NuxtLink to="/app/admin" class="no-underline">
-                    <button class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
-                      <i class="pi pi-cog text-lg"></i>
-                      <span>Admin</span>
-                    </button>
-                  </NuxtLink>
-                </template>
+
               </div>
               
               <button @click="handleSignOut" class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200">
@@ -164,12 +157,7 @@
               <span class="font-medium text-gray-900">Editor</span>
             </NuxtLink>
           </template>
-          <template v-if="userProfile && userProfile.role === 'admin'">
-            <NuxtLink to="/app/admin" class="flex items-center gap-3 px-6 py-3 hover:bg-gray-100 transition rounded-xl" @click="closeMobileMenu">
-              <i class="pi pi-cog text-xl text-red-600"></i>
-              <span class="font-medium text-gray-900">Admin</span>
-            </NuxtLink>
-          </template>
+
           <div class="my-2 border-t border-gray-200"></div>
           <template v-if="user">
             <button @click="handleSignOut" class="flex items-center gap-3 px-6 py-3 w-full hover:bg-gray-100 transition rounded-xl">

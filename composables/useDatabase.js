@@ -702,18 +702,24 @@ export const useDatabase = () => {
         throw new Error('Admin access required')
       }
       
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('deleted', false)
-        .order('created_at', { ascending: false })
-      
-      if (error) {
-        console.error('Error fetching users:', error)
+      try {
+        const supabase = useNuxtApp().$supabase
+        const session = supabase.auth.session ? supabase.auth.session() : supabase.auth.getSession && (await supabase.auth.getSession()).data.session
+        const token = session?.access_token
+        const res = await fetch('/api/users/all', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
+        const users = await res.json()
+        if (!Array.isArray(users)) {
+          console.error('[getAllUsers] Backend returned error or non-array:', users)
+          return []
+        }
+        console.log('[getAllUsers] Received users from backend:', users)
+        return users
+      } catch (err) {
+        console.error('[getAllUsers] Error fetching users from backend:', err)
         return []
       }
-      
-      return data || []
     },
 
     // Update user role (admin only)
@@ -755,6 +761,57 @@ export const useDatabase = () => {
       if (error) throw error
       
       await logActivity('user_deleted', { targetUserId: userId })
+    },
+
+    // Get deleted users (admin only)
+    getDeletedUsers: async () => {
+      if (!user.value) return []
+      
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') {
+        throw new Error('Admin access required')
+      }
+      
+      try {
+        const supabase = useNuxtApp().$supabase
+        const session = supabase.auth.session ? supabase.auth.session() : supabase.auth.getSession && (await supabase.auth.getSession()).data.session
+        const token = session?.access_token
+        const res = await fetch('/api/users/deleted', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
+        const users = await res.json()
+        if (!Array.isArray(users)) {
+          console.error('[getDeletedUsers] Backend returned error or non-array:', users)
+          return []
+        }
+        console.log('[getDeletedUsers] Received deleted users from backend:', users)
+        return users
+      } catch (err) {
+        console.error('[getDeletedUsers] Error fetching deleted users from backend:', err)
+        return []
+      }
+    },
+
+    // Restore user (admin only)
+    restoreUser: async (userId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') {
+        throw new Error('Admin access required')
+      }
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ deleted: false })
+        .eq('user_id', userId)
+        .select()
+        .single()
+      
+      if (error) throw error
+      
+      await logActivity('user_restored', { targetUserId: userId })
+      return data
     },
 
     // Get system stats (admin only)
