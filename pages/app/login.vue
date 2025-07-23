@@ -23,6 +23,10 @@
           <p class="text-gray-500 text-sm">Sign in to your account</p>
         </div>
 
+        <div v-if="disabledMessage" class="mb-4 p-4 bg-red-100 border border-red-300 rounded text-red-700 text-center font-bold text-lg">
+          {{ disabledMessage }}
+        </div>
+
         <!-- Login Form -->
         <form @submit.prevent="handleEmailLogin" class="flex flex-col gap-2 w-full max-w-xs sm:max-w-sm mx-auto">
           <div>
@@ -121,7 +125,19 @@ definePageMeta({
   ssr: false
 })
 
+import { useRoute } from 'vue-router'
 import { useSupabaseUser } from '~/composables/useSupabase'
+
+const route = useRoute()
+const user = useSupabaseUser()
+
+const disabledMessage = computed(() => {
+  if (route.query.disabled === '1') {
+    const email = user.value?.email || ''
+    return `Your account${email ? ' (' + email + ')' : ''} has been disabled. Please contact customer support for more information.`
+  }
+  return ''
+})
 
 const email = ref('')
 const password = ref('')
@@ -134,7 +150,6 @@ const visible = ref(true)
 
 // Get Supabase client
 const supabase = useNuxtApp().$supabase
-const user = useSupabaseUser()
 
 // Get origin from localStorage
 const origin = process.client ? localStorage.getItem('auth_origin') || 'dashboard' : 'dashboard'

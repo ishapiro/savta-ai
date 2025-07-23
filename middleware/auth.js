@@ -1,5 +1,8 @@
-export default defineNuxtRouteMiddleware(async (to) => {
+import { useSupabaseUser } from '~/composables/useSupabase'
+
+export default defineNuxtRouteMiddleware(async (to, from) => {
   const user = useSupabaseUser()
+  const supabase = useNuxtApp().$supabase
   const { hasInsidersAccess } = useInsidersAccess()
   
   // Loop detection logic
@@ -28,7 +31,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
         console.warn('Login loop detected, forcing logout')
         
         // Force logout
-        const supabase = useNuxtApp().$supabase
         supabase.auth.signOut()
         
         // Clear user state
@@ -58,13 +60,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
     const res = await fetch(`/api/users/${user.value.id}/info`)
     const profile = await res.json()
     if (profile.deleted) {
-      // Log out and redirect
-      const supabase = useNuxtApp().$supabase
       await supabase.auth.signOut()
-      if (process.client) {
-        alert('Your account has been disabled. Please contact customer support for more information.')
-      }
-      return navigateTo('/app/login')
+      return navigateTo('/app/login?disabled=1')
     }
   }
   

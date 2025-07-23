@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
     const { data, error } = await supabase
       .from('profiles')
-      .select('user_id, email, first_name, last_name')
+      .select('*')  // ims was user_id, email, first_name, last_name
       .eq('user_id', userId)
       .single()
 

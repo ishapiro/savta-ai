@@ -44,10 +44,16 @@
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
               <span class="text-gray-600 font-medium text-xs">Account Status:</span>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                <span class="w-2 h-2 bg-green-400 rounded-full mr-1"></span>
-                {{ isNewUser ? 'New Account' : 'Active' }}
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                    :class="isUserDisabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'">
+                <span class="w-2 h-2 rounded-full mr-1"
+                      :class="isUserDisabled ? 'bg-red-400' : 'bg-green-400'"></span>
+                {{ isUserDisabled ? 'Disabled' : (isNewUser ? 'New Account' : 'Active') }}
               </span>
+            </div>
+            <div v-if="isUserDisabled" class="text-center my-4">
+              <span class="block font-bold text-2xl text-red-600">Your account has been disabled.</span>
+              <span class="block font-semibold text-lg text-gray-700 mt-2">Please contact customer support for more information.</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
               <span class="text-gray-600 font-medium text-xs">Signup Date:</span>
@@ -64,8 +70,8 @@
           </div>
         </div>
 
-      <!-- Next Steps -->
-      <div class="bg-blue-50 rounded-lg p-2 sm:p-3 mb-2 w-full">
+      <!-- Hide Next Steps if user is disabled -->
+      <div v-if="!isUserDisabled" class="bg-blue-50 rounded-lg p-2 sm:p-3 mb-2 w-full">
         <h3 class="text-sm font-semibold text-blue-900 mb-1 flex items-center">
             <span class="text-blue-600 mr-2">🚀</span>
             What's Next?
@@ -88,10 +94,17 @@
 
       <!-- Action Buttons -->
       <div class="flex flex-col sm:flex-row gap-2 justify-center w-full">
-        <Button 
-                      label="Start Creating Special Moments" 
+        <Button
+          v-if="!isUserDisabled"
+          label="Start Creating Special Moments"
           class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold text-sm"
           @click="goToDashboard"
+        />
+        <Button
+          v-else
+          label="Continue"
+          class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold text-sm"
+          @click="logoutAndRedirect"
         />
       </div>
     </Dialog>
@@ -194,19 +207,23 @@ const onDialogHide = () => {
   }
 }
 
+const isUserDisabled = ref(false)
+
 const checkUserDisabled = async () => {
   if (user.value) {
     // Fetch the user profile from the backend
     const res = await fetch(`/api/users/${user.value.id}/info`)
     const profile = await res.json()
+    console.log('[CONFIRM] Profile:', profile)
     if (profile.deleted) {
-      // Show disabled message and log out
-      alert('Your account has been disabled. Please contact customer support for more information.')
-      await supabase.auth.signOut()
-      // Optionally redirect to login or home
-      navigateTo('/app/login')
+      isUserDisabled.value = true
     }
   }
+}
+
+const logoutAndRedirect = async () => {
+  await supabase.auth.signOut()
+  navigateTo('/app/login')
 }
 
 // Handle OAuth callback and user state
