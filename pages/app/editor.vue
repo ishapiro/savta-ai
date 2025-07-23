@@ -301,20 +301,44 @@
           <div class="space-y-4">
             <div class="flex justify-between items-center">
               <h3 class="text-lg font-semibold text-color">Manage Themes</h3>
-              <Button
-                label="Create New Theme"
-                icon="pi pi-plus"
-                @click="showCreateThemeModal = true"
-              />
+              <div class="flex items-center gap-4">
+                <!-- Show Deleted Themes Toggle -->
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="checkbox" 
+                    id="showDeletedThemes" 
+                    v-model="showDeletedThemes"
+                    @change="loadDeletedThemes"
+                    class="w-4 h-4 text-green-600 bg-white border-2 border-gray-300 rounded ring-2 ring-gray-500 focus:ring-green-500 focus:ring-2 checked:bg-green-50 checked:border-green-500"
+                  />
+                  <label for="showDeletedThemes" class="text-sm text-gray-700 cursor-pointer">Show deleted themes</label>
+                </div>
+                <Button
+                  label="Create New Theme"
+                  icon="pi pi-plus"
+                  @click="showCreateThemeModal = true"
+                />
+              </div>
             </div>
 
-            <!-- Themes Grid -->
+            <!-- Active/Inactive Themes Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
                 v-for="theme in themes"
                 :key="theme.id"
-                class="bg-white p-4 rounded-lg shadow border"
+                class="bg-white p-4 rounded-lg shadow border relative"
+                :class="{ 'opacity-75 border-gray-300': !theme.is_active, 'border-green-200': theme.is_active }"
               >
+                <!-- Delete Icon for Admin Users -->
+                <button
+                  v-if="userProfile && userProfile.role === 'admin'"
+                  @click="deleteTheme(theme.id)"
+                  class="absolute top-2 right-2 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                  title="Delete Theme"
+                >
+                  <i class="pi pi-trash text-sm"></i>
+                </button>
+                
                 <div class="flex items-center justify-between mb-3">
                   <h4 class="font-semibold text-color">{{ theme.name }}</h4>
                   <Tag
@@ -342,6 +366,43 @@
                   />
                 </div>
               </div>
+            </div>
+
+            <!-- Deleted Themes Grid -->
+            <div v-if="showDeletedThemes && deletedThemes.length > 0" class="space-y-4">
+              <h4 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Deleted Themes</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div
+                  v-for="theme in deletedThemes"
+                  :key="theme.id"
+                  class="bg-gray-50 p-4 rounded-lg shadow border border-red-200 relative opacity-75"
+                >
+                  <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-semibold text-gray-600">{{ theme.name }}</h4>
+                    <Tag
+                      value="Deleted"
+                      severity="danger"
+                    />
+                  </div>
+                  <p class="text-sm text-gray-500 mb-3">{{ theme.description || 'No description' }}</p>
+                  <div class="flex items-center space-x-2">
+                    <Button
+                      v-if="userProfile && userProfile.role === 'admin'"
+                      label="Restore"
+                      severity="success"
+                      size="small"
+                      class="text-xs px-2 py-1"
+                      @click="restoreTheme(theme.id)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- No Themes Message -->
+            <div v-if="themes.length === 0 && (!showDeletedThemes || deletedThemes.length === 0)" class="text-center py-8">
+              <i class="pi pi-palette text-4xl text-gray-400 mb-4"></i>
+              <p class="text-gray-600">No themes found. Create your first theme to get started.</p>
             </div>
           </div>
         </TabPanel>
@@ -506,6 +567,9 @@ import { useToast } from 'primevue/usetoast'
 const db = useDatabase()
 const toast = useToast()
 
+// User profile for admin checks
+const userProfile = ref(null)
+
 // Reactive data
 const activeTabIndex = ref(0)
 const assets = ref([])
@@ -527,6 +591,8 @@ const bookStatusFilter = ref('all')
 // Theme management
 const showCreateThemeModal = ref(false)
 const creatingTheme = ref(false)
+const showDeletedThemes = ref(false)
+const deletedThemes = ref([])
 const newTheme = ref({
   name: '',
   description: '',
@@ -547,7 +613,7 @@ const newTheme = ref({
 const userSearch = ref('')
 
 // Add to script
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 const router = useRouter()
 const selectedUser = ref(null)
 const userSuggestions = ref([])
@@ -732,13 +798,14 @@ const filteredBooks = computed(() => {
 // Load data
 onMounted(async () => {
 
-  const toast = useToast()
-  toast.add({
-    severity: 'success',
-    summary: 'Hello',
-    detail: 'You are in editor mode',
-    life: 3000
-  })
+  if (toast && toast.add) {
+    toast.add({
+      severity: 'success',
+      summary: 'Hello',
+      detail: 'You are in editor mode',
+      life: 3000
+    })
+  }
 
   // Check for tab query parameter and set active tab
   const route = useRoute()
@@ -767,6 +834,7 @@ onMounted(async () => {
   
   await loadThemes()
   await loadStats()
+  await loadUserProfile() // Load user profile for admin checks
 })
 
 // Load themes
@@ -785,6 +853,22 @@ const loadThemes = async () => {
   }
 }
 
+// Load deleted themes
+const loadDeletedThemes = async () => {
+  try {
+    const deleted = await db.editor.getDeletedThemes()
+    deletedThemes.value = deleted
+  } catch (error) {
+    console.error('Error loading deleted themes:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load deleted themes',
+      life: 3000
+    })
+  }
+}
+
 // Load stats
 const loadStats = async () => {
   try {
@@ -796,6 +880,21 @@ const loadStats = async () => {
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to load statistics',
+      life: 3000
+    })
+  }
+}
+
+// Load user profile
+const loadUserProfile = async () => {
+  try {
+    userProfile.value = await db.getCurrentProfile()
+  } catch (error) {
+    console.error('Error loading user profile:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load user profile',
       life: 3000
     })
   }
@@ -919,12 +1018,31 @@ const viewBookDetails = (book) => {
 
 // Theme actions
 const createTheme = async () => {
-  if (!newTheme.value.name) return
+  
+  if (!newTheme.value.name) {
+    return
+  }
+
+  // Check if theme name already exists
+  const existingTheme = themes.value.find(theme => 
+    theme.name.toLowerCase() === newTheme.value.name.toLowerCase()
+  )
+  
+  if (existingTheme) {
+    toast.add({
+      severity: 'error',
+      summary: 'Duplicate Name',
+      detail: 'A theme with this name already exists. Please choose a different name.',
+      life: 5000
+    })
+    return
+  }
 
   creatingTheme.value = true
 
   try {
     const themeToSave = { ...newTheme.value }
+    
     if (themeToSave.layout_config && typeof themeToSave.layout_config === 'string') {
       try {
         themeToSave.layout_config = JSON.parse(themeToSave.layout_config)
@@ -939,13 +1057,16 @@ const createTheme = async () => {
         return
       }
     }
-    await db.editor.createTheme(themeToSave)
+    
+    const createdTheme = await db.editor.createTheme(themeToSave)
+    
     toast.add({
       severity: 'success',
       summary: 'Created',
       detail: 'Theme created successfully',
       life: 3000
     })
+    
     // Reset form and close modal
     newTheme.value = {
       name: '',
@@ -963,15 +1084,26 @@ const createTheme = async () => {
       layout_config: ''
     }
     showCreateThemeModal.value = false
+    
     // Reload themes
     await loadThemes()
   } catch (error) {
     console.error('Error creating theme:', error)
+    
+    // Handle specific error types
+    let errorMessage = 'Failed to create theme'
+    
+    if (error.code === '23505' && error.message.includes('themes_name_key')) {
+      errorMessage = 'A theme with this name already exists. Please choose a different name.'
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+    
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'Failed to create theme',
-      life: 3000
+      detail: errorMessage,
+      life: 5000
     })
   } finally {
     creatingTheme.value = false
@@ -1021,6 +1153,62 @@ const deactivateTheme = async (themeId) => {
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to deactivate theme',
+      life: 3000
+    })
+  }
+}
+
+const deleteTheme = async (themeId) => {
+  if (!confirm('Are you sure you want to delete this theme?')) {
+    return
+  }
+  try {
+    await db.editor.deleteTheme(themeId)
+    if (toast && toast.add) {
+      toast.add({
+        severity: 'success',
+        summary: 'Deleted',
+        detail: 'Theme deleted successfully',
+        life: 3000
+      })
+    }
+    await loadThemes()
+    if (showDeletedThemes.value) {
+      await loadDeletedThemes()
+    }
+  } catch (error) {
+    console.error('Error deleting theme:', error)
+    if (toast && toast.add) {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to delete theme',
+        life: 3000
+      })
+    }
+  }
+}
+
+const restoreTheme = async (themeId) => {
+  if (!confirm('Are you sure you want to restore this theme?')) {
+    return
+  }
+  try {
+    await db.editor.restoreTheme(themeId)
+    toast.add({
+      severity: 'success',
+      summary: 'Restored',
+      detail: 'Theme restored successfully',
+      life: 3000
+    })
+    await loadThemes()
+    await loadDeletedThemes()
+  } catch (error) {
+    console.error('Error restoring theme:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to restore theme',
       life: 3000
     })
   }

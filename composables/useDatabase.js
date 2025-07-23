@@ -955,19 +955,46 @@ export const useDatabase = () => {
     // Get all themes (editor only)
     getThemes: async () => {
       if (!user.value) return []
+      
       const profile = await getCurrentProfile()
       if (profile?.role !== 'editor' && profile?.role !== 'admin') {
         throw new Error('Editor access required')
       }
+      
       const { data, error } = await supabase
         .from('themes')
         .select('*')
         .eq('deleted', false)
         .order('created_at', { ascending: false })
+      
       if (error) {
-        console.error('Error fetching themes:', error)
+        console.error('[getThemes] Error fetching themes:', error)
         return []
       }
+      
+      return data || []
+    },
+
+    // Get deleted themes (for admin cleanup)
+    getDeletedThemes: async () => {
+      if (!user.value) return []
+      
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') {
+        throw new Error('Admin access required')
+      }
+      
+      const { data, error } = await supabase
+        .from('themes')
+        .select('*')
+        .eq('deleted', true)
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('[getDeletedThemes] Error fetching deleted themes:', error)
+        return []
+      }
+      
       return data || []
     },
 
@@ -1030,6 +1057,23 @@ export const useDatabase = () => {
       const { data, error } = await supabase
         .from('themes')
         .update({ deleted: true })
+        .eq('id', themeId)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+
+    // Restore a deleted theme (admin only)
+    restoreTheme: async (themeId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') {
+        throw new Error('Admin access required')
+      }
+      const { data, error } = await supabase
+        .from('themes')
+        .update({ deleted: false })
         .eq('id', themeId)
         .select()
         .single()
