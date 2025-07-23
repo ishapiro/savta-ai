@@ -194,6 +194,21 @@ const onDialogHide = () => {
   }
 }
 
+const checkUserDisabled = async () => {
+  if (user.value) {
+    // Fetch the user profile from the backend
+    const res = await fetch(`/api/users/${user.value.id}/info`)
+    const profile = await res.json()
+    if (profile.deleted) {
+      // Show disabled message and log out
+      alert('Your account has been disabled. Please contact customer support for more information.')
+      await supabase.auth.signOut()
+      // Optionally redirect to login or home
+      navigateTo('/app/login')
+    }
+  }
+}
+
 // Handle OAuth callback and user state
 onMounted(async () => {
   console.log('[CONFIRM] onMounted - checking OAuth callback')
@@ -228,6 +243,7 @@ onMounted(async () => {
         }
       }, 3000)
     }
+    await checkUserDisabled()
   } catch (error) {
     console.error('[CONFIRM] Error in onMounted:', error)
     // Don't redirect on error, let the page handle it gracefully

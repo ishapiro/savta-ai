@@ -417,16 +417,22 @@
 
             <!-- Users Table -->
             <DataTable
-              :value="filteredUsers"
+              :value="users"
               :paginator="true"
-              :rows="10"
+              :rows="userRows"
               :rowsPerPageOptions="[5, 10, 20, 50]"
+              :totalRecords="totalUsers"
+              :loading="loadingUsers"
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
               responsiveLayout="scroll"
               class="p-datatable-sm"
+              :rowKey="row => row.user_id"
+              :lazy="true"
+              @sort="onUserSort"
+              @page="onUserPage"
             >
-              <Column field="name" header="User" sortable>
+              <Column field="email" header="Email" sortable>
                 <template #body="{ data }">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
@@ -446,6 +452,18 @@
                 </template>
               </Column>
 
+              <Column field="first_name" header="First Name" sortable>
+                <template #body="{ data }">
+                  {{ data.first_name }}
+                </template>
+              </Column>
+
+              <Column field="last_name" header="Last Name" sortable>
+                <template #body="{ data }">
+                  {{ data.last_name }}
+                </template>
+              </Column>
+
               <Column field="role" header="Role" sortable>
                 <template #body="{ data }">
                   <Dropdown
@@ -459,7 +477,7 @@
                 </template>
               </Column>
 
-              <Column field="subscription_type" header="Subscription" sortable>
+              <Column field="subscription_type" header="Subscription Type" sortable>
                 <template #body="{ data }">
                   <Tag
                     :value="data.subscription_type"
@@ -468,18 +486,18 @@
                 </template>
               </Column>
 
-              <Column field="deleted" header="Status" sortable>
+              <Column field="deleted" header="Disabled" sortable>
                 <template #body="{ data }">
                   <Tag
-                    :value="data.deleted ? 'Deleted' : 'Active'"
+                    :value="data.deleted ? 'Disabled' : 'Active'"
                     :severity="data.deleted ? 'danger' : 'success'"
                   />
                 </template>
               </Column>
 
-              <Column field="created_at" header="Created" sortable>
+              <Column field="created_at" header="Created At" sortable>
                 <template #body="{ data }">
-                  <span class="text-sm text-color-secondary">{{ formatDate(data.created_at) }}</span>
+                  <span class="text-sm text-color-secondary">{{ formatDateOnlyDate(data.created_at) }}</span>
                 </template>
               </Column>
 
@@ -488,10 +506,11 @@
                   <div class="flex items-center space-x-2">
                     <Button
                       v-if="!data.deleted"
-                      icon="pi pi-trash"
-                      severity="danger"
+                      icon="pi pi-ban"
+                      severity="warning"
                       size="small"
-                      @click="deleteUser(data.user_id)"
+                      @click="disableUser(data.user_id)"
+                      title="Disable User"
                     />
                     <Button
                       v-else
@@ -499,6 +518,7 @@
                       severity="success"
                       size="small"
                       @click="restoreUser(data.user_id)"
+                      title="Restore User"
                     />
                     <Button
                       icon="pi pi-eye"
@@ -509,93 +529,93 @@
                   </div>
                 </template>
               </Column>
-                          </DataTable>
+            </DataTable>
 
-              <!-- Deleted Users Section -->
-              <div v-if="showDeletedUsers && deletedUsers.length > 0" class="mt-8 space-y-4">
-                <h3 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Deleted Users</h3>
-                <DataTable
-                  :value="deletedUsers"
-                  :paginator="true"
-                  :rows="10"
-                  :rowsPerPageOptions="[5, 10, 20, 50]"
-                  paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} deleted users"
-                  responsiveLayout="scroll"
-                  class="p-datatable-sm"
-                >
-                  <Column field="name" header="User" sortable>
-                    <template #body="{ data }">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10">
-                          <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                            <span class="text-gray-500 font-medium">
-                              {{ data.first_name ? data.first_name.charAt(0) : data.email.charAt(0).toUpperCase() }}
-                            </span>
-                          </div>
-                        </div>
-                        <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-600">
-                            {{ data.first_name }} {{ data.last_name }}
-                          </div>
-                          <div class="text-sm text-gray-500">{{ data.email }}</div>
+            <!-- Deleted Users Section -->
+            <div v-if="showDeletedUsers && deletedUsers.length > 0" class="mt-8 space-y-4">
+              <h3 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Deleted Users</h3>
+              <DataTable
+                :value="deletedUsers"
+                :paginator="true"
+                :rows="10"
+                :rowsPerPageOptions="[5, 10, 20, 50]"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} deleted users"
+                responsiveLayout="scroll"
+                class="p-datatable-sm"
+              >
+                <Column field="name" header="User" sortable>
+                  <template #body="{ data }">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                          <span class="text-gray-500 font-medium">
+                            {{ data.first_name ? data.first_name.charAt(0) : data.email.charAt(0).toUpperCase() }}
+                          </span>
                         </div>
                       </div>
-                    </template>
-                  </Column>
-
-                  <Column field="role" header="Role" sortable>
-                    <template #body="{ data }">
-                      <Tag
-                        :value="data.role"
-                        :severity="getRoleSeverity(data.role)"
-                      />
-                    </template>
-                  </Column>
-
-                  <Column field="subscription_type" header="Subscription" sortable>
-                    <template #body="{ data }">
-                      <Tag
-                        :value="data.subscription_type"
-                        :severity="data.subscription_type === 'premium' ? 'primary' : 'secondary'"
-                      />
-                    </template>
-                  </Column>
-
-                  <Column field="created_at" header="Created" sortable>
-                    <template #body="{ data }">
-                      <span class="text-sm text-color-secondary">{{ formatDate(data.created_at) }}</span>
-                    </template>
-                  </Column>
-
-                  <Column header="Actions">
-                    <template #body="{ data }">
-                      <div class="flex items-center space-x-2">
-                        <Button
-                          icon="pi pi-refresh"
-                          severity="success"
-                          size="small"
-                          @click="restoreUser(data.user_id)"
-                        />
-                        <Button
-                          icon="pi pi-eye"
-                          severity="info"
-                          size="small"
-                          @click="viewUserDetails(data)"
-                        />
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-600">
+                          {{ data.first_name }} {{ data.last_name }}
+                        </div>
+                        <div class="text-sm text-gray-500">{{ data.email }}</div>
                       </div>
-                    </template>
-                  </Column>
-                </DataTable>
-              </div>
-            </div>
+                    </div>
+                  </template>
+                </Column>
 
-            <!-- Access Denied Message -->
-            <div v-else class="text-center py-8">
-              <i class="pi pi-lock text-4xl text-gray-400 mb-4"></i>
-              <p class="text-gray-600">Admin access required to view user management.</p>
+                <Column field="role" header="Role" sortable>
+                  <template #body="{ data }">
+                    <Tag
+                      :value="data.role"
+                      :severity="getRoleSeverity(data.role)"
+                    />
+                  </template>
+                </Column>
+
+                <Column field="subscription_type" header="Subscription" sortable>
+                  <template #body="{ data }">
+                    <Tag
+                      :value="data.subscription_type"
+                      :severity="data.subscription_type === 'premium' ? 'primary' : 'secondary'"
+                    />
+                  </template>
+                </Column>
+
+                <Column field="created_at" header="Created" sortable>
+                  <template #body="{ data }">
+                    <span class="text-sm text-color-secondary">{{ formatDateOnlyDate(data.created_at) }}</span>
+                  </template>
+                </Column>
+
+                <Column header="Actions">
+                  <template #body="{ data }">
+                    <div class="flex items-center space-x-2">
+                      <Button
+                        icon="pi pi-refresh"
+                        severity="success"
+                        size="small"
+                        @click="restoreUser(data.user_id)"
+                      />
+                      <Button
+                        icon="pi pi-eye"
+                        severity="info"
+                        size="small"
+                        @click="viewUserDetails(data)"
+                      />
+                    </div>
+                  </template>
+                </Column>
+              </DataTable>
             </div>
-          </TabPanel>
+          </div>
+
+          <!-- Access Denied Message -->
+          <div v-else class="text-center py-8">
+            <i class="pi pi-lock text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-600">Admin access required to view user management.</p>
+          </div>
+        </TabPanel>
       </TabView>
     </div>
 
@@ -1208,21 +1228,47 @@ const loadUserProfile = async () => {
 }
 
 // Load users
+const userSortField = ref('created_at')
+const userSortOrder = ref(-1) // -1 for desc, 1 for asc
+const userPage = ref(1)
+const userRows = ref(10)
+const totalUsers = ref(0)
+const loadingUsers = ref(false)
+
+const onUserSort = async (event) => {
+  userSortField.value = event.sortField
+  userSortOrder.value = event.sortOrder
+  await loadUsers()
+}
+
+const onUserPage = async (event) => {
+  userPage.value = event.page + 1 // PrimeVue pages are 0-based
+  userRows.value = event.rows
+  await loadUsers()
+}
+
 const loadUsers = async () => {
-  console.log('[loadUsers] Starting to load users...')
+  loadingUsers.value = true
   try {
-    const allUsers = await db.admin.getAllUsers()
-    console.log('[loadUsers] Received users:', allUsers)
-    users.value = allUsers
-    console.log('[loadUsers] Users loaded successfully, count:', allUsers.length)
+    const sortOrderParam = userSortOrder.value === 1 ? 'asc' : 'desc'
+    const supabase = useNuxtApp().$supabase
+    const { data: { session } } = await supabase.auth.getSession()
+    const accessToken = session?.access_token
+    const res = await fetch(`/api/users/all?sortField=${userSortField.value}&sortOrder=${sortOrderParam}&page=${userPage.value}&rows=${userRows.value}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    })
+    const result = await res.json()
+    users.value = result.data
+    totalUsers.value = result.totalCount
   } catch (error) {
-    console.error('Error loading users:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to load users',
       life: 3000
     })
+  } finally {
+    loadingUsers.value = false
   }
 }
 
@@ -1272,30 +1318,28 @@ const updateUserRole = async (userId, newRole) => {
   }
 }
 
-// Delete user
-const deleteUser = async (userId) => {
-  if (!confirm('Are you sure you want to delete this user?')) {
-    return
-  }
+// Disable user
+const disableUser = async (userId) => {
   try {
-    await db.admin.deleteUser(userId)
-    
+    const res = await fetch(`/api/users/disable`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId })
+    })
+    if (!res.ok) throw new Error('Failed to disable user')
     toast.add({
       severity: 'success',
-      summary: 'Deleted',
-      detail: 'User deleted successfully',
-      life: 2000
+      summary: 'User Disabled',
+      detail: 'The user has been disabled.',
+      life: 3000
     })
-
-    // Reload users and deleted users
+    // Optionally refresh users list
     await loadUsers()
-    await loadDeletedUsers()
   } catch (error) {
-    console.error('Error deleting user:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'Failed to delete user',
+      detail: 'Failed to disable user',
       life: 3000
     })
   }
@@ -1303,24 +1347,21 @@ const deleteUser = async (userId) => {
 
 // Restore user
 const restoreUser = async (userId) => {
-  if (!confirm('Are you sure you want to restore this user?')) {
-    return
-  }
   try {
-    await db.admin.restoreUser(userId)
-    
+    const res = await fetch(`/api/users/restore`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId })
+    })
+    if (!res.ok) throw new Error('Failed to restore user')
     toast.add({
       severity: 'success',
-      summary: 'Restored',
-      detail: 'User restored successfully',
-      life: 2000
+      summary: 'User Restored',
+      detail: 'The user has been restored.',
+      life: 3000
     })
-
-    // Reload users and deleted users
     await loadUsers()
-    await loadDeletedUsers()
   } catch (error) {
-    console.error('Error restoring user:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -1682,6 +1723,20 @@ const formatDate = (dateString) => {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
+    })
+  } catch (error) {
+    return 'Unknown date'
+  }
+}
+
+const formatDateOnlyDate = (dateString) => {
+  if (!dateString) return ''
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     })
   } catch (error) {
     return 'Unknown date'

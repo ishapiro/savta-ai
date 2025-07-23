@@ -1,4 +1,4 @@
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async (to) => {
   const user = useSupabaseUser()
   const { hasInsidersAccess } = useInsidersAccess()
   
@@ -52,6 +52,21 @@ export default defineNuxtRouteMiddleware((to) => {
   
   // Check for login loop before any redirects
   checkForLoginLoop()
+
+  if (user.value) {
+    // Fetch the user profile from the backend
+    const res = await fetch(`/api/users/${user.value.id}/info`)
+    const profile = await res.json()
+    if (profile.deleted) {
+      // Log out and redirect
+      const supabase = useNuxtApp().$supabase
+      await supabase.auth.signOut()
+      if (process.client) {
+        alert('Your account has been disabled. Please contact customer support for more information.')
+      }
+      return navigateTo('/app/login')
+    }
+  }
   
   // Allow access to auth pages regardless of authentication status
   if (to.path === '/app/login' || to.path === '/app/signup' || to.path === '/app/confirm') {

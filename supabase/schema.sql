@@ -612,29 +612,3 @@ BEGIN
   END IF;
 END $$; 
 
--- JWT Custom Claims Function for Supabase Auth Hooks (enriches JWTs with user role and logs both success and errors)
-create or replace function jwt_custom_claims(event jsonb)
-returns jsonb as $$
-declare
-  user_id uuid;
-  user_role text;
-begin
-  user_id := (event->>'user_id')::uuid;
-  begin
-    select role into user_role from profiles where user_id = jwt_custom_claims.user_id;
-    if user_role is null then
-      user_role := 'user';
-    end if;
-    -- Log successful execution
-    insert into activity_log(user_id, action, details)
-    values (user_id, 'jwt_custom_claims_success', jsonb_build_object('role', user_role));
-  exception
-    when others then
-      -- Log the error for debugging
-      insert into activity_log(user_id, action, details)
-      values (user_id, 'jwt_custom_claims_error', jsonb_build_object('error', SQLERRM));
-      user_role := 'user';
-  end;
-  return jsonb_build_object('role', user_role);
-end;
-$$ language plpgsql security definer; 
