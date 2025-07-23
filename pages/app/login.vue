@@ -30,8 +30,8 @@
       <div v-if="!providerSelectVisible" class="flex flex-col items-center w-full px-2 sm:px-4 py-3 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
         <!-- Header -->
         <div class="flex flex-col items-center mb-2 w-full">
-          <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center shadow mb-1">
-            <img src="/savta-pink.png" alt="Savta AI Logo" class="h-8 w-auto" />
+          <div class="flex items-center justify-center">
+            <img src="/savta-pink.png" alt="Savta AI Logo" class="h-20 w-auto" />
           </div>
           <h1 class="text-xl font-bold text-gray-900 mb-1">Welcome Back</h1>
           <p class="text-gray-500 text-sm">Sign in to your account</p>
@@ -91,13 +91,12 @@
         </div>
 
         <!-- Google Login -->
-        <Button
+        <!-- <Button
           class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold py-2 rounded-lg shadow-sm flex items-center justify-center gap-2 transition"
           :loading="googleLoading"
           @click="handleGoogleLogin"
         >
           <span class="flex items-center justify-center">
-            <!-- Color Google SVG Icon -->
             <svg class="h-5 w-5 mr-2" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
               <g clip-path="url(#clip0_17_40)">
                 <path d="M47.532 24.552c0-1.636-.146-3.2-.418-4.684H24.48v9.02h12.98c-.56 3.02-2.24 5.58-4.78 7.3v6.06h7.74c4.54-4.18 7.11-10.34 7.11-17.696z" fill="#4285F4"/>
@@ -113,7 +112,7 @@
             </svg>
             <span class="text-purple-600">Sign in with Google</span>
           </span>
-        </Button>
+        </Button> -->
 
         <!-- Error Message -->
         <div v-if="error" class="mt-3 w-full p-2 bg-red-50 border border-red-200 rounded text-red-600 text-sm text-center">
