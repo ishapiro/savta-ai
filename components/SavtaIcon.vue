@@ -1,6 +1,6 @@
 <template>
   <img 
-    src="/savta-pink.png" 
+    src="/savta_image_only_color.svg" 
     alt="Savta AI Logo" 
     :class="iconClass"
   />

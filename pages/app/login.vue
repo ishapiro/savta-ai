@@ -31,7 +31,7 @@
         <!-- Header -->
         <div class="flex flex-col items-center mb-2 w-full">
           <div class="flex items-center justify-center">
-            <img src="/savta-pink.png" alt="Savta AI Logo" class="h-20 w-auto" />
+            <img src="/savta_image_only_color.svg" alt="Savta AI Logo" class="h-20 w-auto" />
           </div>
           <h1 class="text-xl font-bold text-gray-900 mb-1">Welcome Back</h1>
           <p class="text-gray-500 text-sm">Sign in to your account</p>
