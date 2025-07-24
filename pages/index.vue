@@ -21,30 +21,30 @@
             <span class="inline-block bg-brand-background/80 text-brand-secondary text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full border border-brand-navigation/30 align-middle shadow-sm">beta: no warranty, no support</span>
           </div>
           <div class="max-w-xl mx-auto mt-1 px-3 py-1 text-center">
-            <h2 class="text-xs sm:text-base font-semibold mb-1 text-brand-background drop-shadow-lg">
+            <h2 class="text-xs sm:text-base font-semibold mb-1 text-brand-secondary drop-shadow-lg">
               Keep the memories that matter most, beautifully.
             </h2>
-            <p class="text-[10px] sm:text-sm text-brand-background/90 leading-relaxed mb-0.5 drop-shadow-md">
+            <p class="text-[10px] sm:text-sm text-brand-secondary/90 leading-relaxed mb-0.5 drop-shadow-md">
               Each month, we turn your family's best photos, stories, and milestones into a themed, shareable booklet — curated with a gentle touch of AI magic.
             </p>
-            <p class="text-[10px] sm:text-sm text-brand-background/80 leading-relaxed drop-shadow-md">
+            <p class="text-[10px] sm:text-sm text-brand-secondary/80 leading-relaxed drop-shadow-md">
               No more scrolling through endless chats. Just one meaningful snapshot of your family's life, preserved with love.
             </p>
           </div>
         </div>
         <div class="mb-1 animate-fade-in-up" style="animation-delay: 0.3s;">
-          <h2 class="text-lg sm:text-3xl text-white">Coming Soon</h2>
+          <h2 class="text-lg sm:text-3xl text-brand-secondary">Coming Soon</h2>
         </div>
         <div class="flex flex-col items-center mt-1 animate-fade-in-up" style="animation-delay: 0.6s;">
           <div class="w-full flex flex-col items-center">
-            <div class="text-brand-background/80 text-[10px] sm:text-sm mb-1 text-center">
+            <div class="text-brand-secondary text-[10px] sm:text-sm mb-1 text-center">
               Be the first to bring Savta&apos;s magic to your family
             </div>
             <InputText
               v-model="email"
               type="email"
               placeholder="Enter your email"
-              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-xs sm:text-sm py-1 px-3 sm:px-4 bg-brand-background/80 rounded-lg border border-brand-background/50 focus:border-brand-header focus:ring-2 focus:ring-brand-navigation/30"
+              class="mx-auto w-full max-w-xs sm:max-w-xl text-center text-xs sm:text-sm py-1 px-3 sm:px-4 bg-white rounded-lg border border-brand-primary/30 focus:border-brand-header focus:ring-2 focus:ring-brand-navigation/30"
               :class="{ 'border-red-500': messageType === 'error' }"
             />
           </div>
@@ -55,16 +55,16 @@
             :loading="loading"
             @click="handleSubscribe"
           />
-          <div v-if="message" :class="messageType === 'success' ? 'text-green-500' : 'text-white'" class="text-[10px] sm:text-xs">
+          <div v-if="message" :class="messageType === 'success' ? 'text-green-500' : 'text-brand-secondary'" class="text-[10px] sm:text-xs">
             {{ message }}
           </div>
         </div>
         <!-- Insiders Button -->
-        <div class="mt-1 pt-2 border-t border-brand-background/20">
+        <div class="mt-1 pt-2 border-t border-brand-primary/30">
           <Button
             type="button"
             label="Insiders"
-            class="w-full max-w-xs sm:max-w-fit bg-brand-background/20 hover:bg-brand-background/30 text-white border border-brand-background/30 rounded-full py-1.5 px-6 font-medium text-xs"
+            class="w-full max-w-xs sm:max-w-fit bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary border border-brand-primary/30 rounded-full py-1.5 px-6 font-medium text-xs"
             @click="showPasswordDialog = true"
           />
         </div>
