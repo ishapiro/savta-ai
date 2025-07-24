@@ -14,7 +14,7 @@
   --surface-card: #ffffff;
   --surface-hover: #f4f4f5;
   --surface-border: #e4e4e7;
-  --text-color: #5A5752;
+  --text-color: #333333;
   --text-color-secondary: #6E4B63;
 }
 
@@ -27,6 +27,7 @@
   .btn-secondary {
     text-decoration: none !important;
     outline: none !important;
+    border: none !important;
   }
 
   button:focus {
@@ -108,6 +109,19 @@
   .overlay-card-content {
     @apply absolute inset-0 flex flex-col items-center justify-center text-white z-10;
   }
+
+  .dialog-cancel {
+    @apply bg-brand-dialog-cancel text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-dialog-cancel/80;
+  }
+  .dialog-edit {
+    @apply bg-brand-secondary text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-secondary/80;
+  }
+  .dialog-save {
+    @apply bg-brand-header text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-header/80;
+  }
+  .dialog-delete {
+    @apply bg-brand-dialog-delete text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-dialog-delete/80;
+  }
 }
 
 /* Custom styles for markdown content */
@@ -140,7 +154,7 @@ html, body {
 
 body {
   background-color: #F9F6F2;
-  color: #7C7A75;
+  color: text-brand-primary;
   font-family: "Inter", "Nunito", "Helvetica Neue", sans-serif;
 }
 
@@ -149,39 +163,6 @@ body {
   max-width: 350px !important;
   white-space: normal !important;
   text-align: left !important;
-} 
-
-/* Hide PDF viewer toolbar buttons */
-.vpv-toolbar-btn[aria-label="Print"],
-button[aria-label="Print"],
-[class*="vpv-toolbar-btn"][aria-label="Print"] {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-}
-
-.vpv-toolbar-btn[aria-label="Open local file"],
-button[aria-label="Open local file"],
-[class*="vpv-toolbar-btn"][aria-label="Open local file"],
-.vpv-toolbar-btn.vp-h-8.vp-w-8[aria-label="Open local file"],
-button.vpv-toolbar-btn.vp-h-8.vp-w-8[aria-label="Open local file"],
-[data-v-851e235f][aria-label="Open local file"],
-[data-v-971703f0][aria-label="Open local file"],
-[data-v-1218acd3][aria-label="Open local file"],
-[data-v-da4050df][aria-label="Open local file"],
-.vpv-toolbar-end .vpv-toolbar-btn[aria-label="Open local file"],
-.vpv-toolbar-end button[aria-label="Open local file"] {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  position: absolute !important;
-  left: -9999px !important;
-  top: -9999px !important;
 } 
 
 /* Toast styling - increase font size by 20% and extend duration */

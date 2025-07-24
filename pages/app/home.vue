@@ -121,15 +121,18 @@ const openMagicMemoryDialog = async (buttonType = 'quick') => {
     try {
       const { useDatabase } = await import('~/composables/useDatabase')
       const db = useDatabase()
-      const assets = await db.assets.getAssets({ approved: true })
-      const hasApprovedPhotos = assets && assets.length > 0
-      if (hasApprovedPhotos) {
-        await navigateTo('/app/memory-books?openDialog=quick')
+      // Check for memory books
+      const books = await db.memoryBooks.getMemoryBooks()
+      console.log('books', books)
+      if (books && books.length > 0) {
+        await navigateTo('/app/dashboard')
       } else {
-        await navigateTo('/app/memory-books?openUploadDialog=true')
+        // No memory books, open dialog as before
+        openMagicMemoryDialog('quick')
       }
     } catch (error) {
-      await navigateTo('/app/memory-books')
+      // Fallback: open dialog if error
+      openMagicMemoryDialog('quick')
     }
   }
 }

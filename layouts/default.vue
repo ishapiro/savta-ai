@@ -7,7 +7,7 @@
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </Head>
     <!-- Header -->
-    <header class="bg-brand-navigation sticky top-0 z-40">
+    <header class="bg-brand-background border-b border-gray-300 sticky top-0 z-40">
       <nav class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
@@ -21,7 +21,7 @@
           <!-- Desktop Navigation -->
           <div class="hidden xl:flex items-center space-x-2 xl:space-x-4">
             <NuxtLink to="/app/home" class="no-underline">
-              <button class="border-0 flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+              <button class="border-0 flex items-center justify-center gap-2 bg-brand-navigation hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                 <i class="pi pi-home text-lg"></i>
                 <span>Home</span>
               </button>
@@ -206,7 +206,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="surface-section border-t border-surface-border mt-8">
+    <footer class="bg-brand-background border-t border-gray-300">
       <div class="max-w-full mx-auto px-4 sm:px-8 py-6 flex flex-col md:flex-row items-center justify-between">
         <div class="text-color-secondary text-sm text-center md:text-left w-full md:w-auto">
           Savta is a Cogitations Property.  &copy; 2025 Cogitations, llc.  All rights reserved.

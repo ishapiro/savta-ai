@@ -64,10 +64,14 @@ export default {
           background: '#F9F6F2', // cream
           primary: '#333333', // text - darker gray was #5A5752
           secondary: '#6E4B63', // H2 - plum
-          navigation: '#F5F0E8', // darker cream
-          highlight: '#7BAAA7', // H3 - dusty teal
+          navigation: ' #e4e4e7;', // light grey
+          highlight: '#41706C', // H3 - darker teal -- was #7BAAA7
           accent: '#F1B8B8', // H4 - blush
           card: '#F6E7D8', // light tan
+          'dialog-cancel': 'rgba(130, 130, 130, 0.44)', 
+          'dialog-edit': '#6E4B63', // same as secondary
+          'dialog-save': '#41706C', // darker teal  -- was #7BAAA7
+          'dialog-delete': '#D16D84', // raspberry
         },
         primary: {
           DEFAULT: 'var(--primary-color)',

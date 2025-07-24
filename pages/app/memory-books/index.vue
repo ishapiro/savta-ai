@@ -19,7 +19,7 @@
           <button
             class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             @click="showInfoDialog = true"
-            aria-label="Information about magic memories"
+            aria-label="Information about memory cards and booklets"
           >
             <i class="pi pi-info text-sm sm:text-lg text-brand-highlight"></i>
           </button>
@@ -31,7 +31,7 @@
             <div class="flex flex-col sm:flex-row gap-4">
               <div class="flex flex-col items-center">
                 <button
-                  class="border-0 bg-brand-header/80 hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
+                  class="border-0 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('quick')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
@@ -42,7 +42,7 @@
               </div>
               <div class="flex flex-col items-center">
                 <button
-                  class="border-0 bg-brand-header/80 hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
+                  class="border-0 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('full')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
@@ -56,15 +56,15 @@
           
           <!-- Memory Books Card -->
           <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
-            <h3 class="text-lg sm:text-xl font-bold text-brand-primary mb-4 text-center">Memory Books</h3>
+            <h3 class="text-lg sm:text-xl font-bold text-brand-primary mb-4 text-center">Memory Booklets</h3>
             <div class="flex flex-col items-center">
               <button
                 class="border-0 bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
                 @click="showCreateModal = true"
               >
                 <i class="pi pi-plus mr-1 sm:mr-2"></i>
-                <span class="hidden sm:inline">Special Memory Books</span>
-                <span class="sm:hidden">Memory Books</span>
+                <span class="hidden sm:inline">Special Memory Booklets</span>
+                <span class="sm:hidden">Memory Booklets</span>
               </button>
               <p class="text-sm text-brand-primary/70 mt-1 text-center">Full Control</p>
             </div>
@@ -86,7 +86,7 @@
         <div class="bg-brand-secondary/10 rounded-lg p-4 border border-brand-secondary/20">
           <h2 class="text-lg font-bold text-brand-secondary mb-2">What are Special Memory Books?</h2>
           <p class="text-base text-brand-primary mb-3">
-            Special Memory Books are for advanced users who want more control. They create multiple-page books with lots of layout options. 
+            Special Memory Booklets are for advanced users who want more control. They create multiple-page books with lots of layout options. 
             You select exactly which photos to include and have full control over the design and layout of your memory book.
           </p>
           <h3 class="text-md font-bold text-brand-secondary mb-2">Why Create Magic Memories?</h3>
@@ -151,7 +151,7 @@
     <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-12 sm:py-16">
       <div class="text-center">
         <i class="pi pi-spin pi-spinner text-3xl sm:text-4xl mb-3 sm:mb-4 text-brand-highlight"></i>
-        <p class="text-sm sm:text-base text-brand-primary/70">Loading magic memories...</p>
+        <p class="text-sm sm:text-base text-brand-primary/70">Loading memories...</p>
       </div>
     </div>
 
@@ -4076,6 +4076,7 @@ async function deleteBookConfirmed() {
     })
     toast.add({ severity: 'success', summary: 'Deleted', detail: 'Memory book deleted.', life: 6000 })
     if (typeof loadMemoryBooks === 'function') await loadMemoryBooks()
+    showDetailsModal.value = false
   } catch (err) {
     toast.add({ severity: 'error', summary: 'Delete Failed', detail: err.message || 'Could not delete book', life: 8000 })
   } finally {

@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="showDialog"
     modal
-    :header="isEditing ? 'Edit Memory Recipe' : 'Create New Memory Recipe'"
+    :header="isEditing ? 'Edit Memory Recipe' : 'Create a New Memory Recipe'"
     class="w-[95vw] max-w-4xl memory-book-dialog mt-3"
     :closable="false"
   >
@@ -299,7 +299,7 @@
                 icon="pi pi-plus"
                 size="small"
                 @click="openAssetSelector"
-                class="bg-gradient-to-r from-brand-secondary to-brand-highlight hover:from-brand-header hover:to-brand-secondary border-0 text-xs px-3 py-2"
+                class="bg-brand-dialog-save border-0 w-auto rounded-full px-6 py-2 shadow"
               />
             </div>
           </div>
@@ -335,18 +335,16 @@
         <Button
           type="button"
           label="Cleanup"
-          icon="pi pi-broom"
-          severity="danger"
+          icon="pi pi-refresh"
           @click="$emit('cleanup')"
-          class="w-full sm:w-auto bg-gradient-to-r from-brand-accent to-brand-header hover:from-brand-header hover:to-brand-accent border-0 text-white"
+          class="bg-brand-dialog-delete border-0 w-auto rounded-full px-6 py-2 shadow"
         />
         <Button
           type="button"
           label="Cancel"
           icon="pi pi-times"
-          severity="secondary"
           @click="$emit('close')"
-          class="w-full sm:w-auto"
+          class="bg-brand-dialog-cancel border-0 w-auto rounded-full px-6 py-2"
         />
         <Button
           type="submit"
@@ -354,7 +352,7 @@
           icon="pi pi-check"
           :loading="loading"
           :disabled="loading || selectedAssets.length === 0"
-          class="w-full sm:w-auto bg-gradient-to-r from-brand-secondary to-brand-header hover:from-brand-header hover:to-brand-secondary border-0"
+          class="bg-brand-dialog-save border-0 w-auto rounded-full px-6 py-2"
         />
       </div>
     </form>
@@ -397,7 +395,6 @@
                   v-if="selectedTagFilter && selectedTagFilter.length > 0"
                   icon="pi pi-times"
                   size="small"
-                  severity="secondary"
                   @click="clearTagFilter"
                   class="px-2 sm:px-3"
                   v-tooltip.top="'Clear filter'"
@@ -416,7 +413,6 @@
                 label="Clear All"
                 icon="pi pi-times"
                 size="small"
-                severity="secondary"
                 @click="selectedMemories = []"
                 class="text-xs px-2 sm:px-3 py-2"
               />
@@ -516,9 +512,8 @@
             <Button
               label="Cancel"
               icon="pi pi-times"
-              severity="secondary"
               @click="closeAssetSelector"
-              class="rounded-full px-4 sm:px-5 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
+              class="bg-brand-dialog-cancel border-0 rounded-full px-4 sm:px-5 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
             />
           </div>
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
@@ -530,7 +525,7 @@
               icon="pi pi-check"
               :disabled="selectedMemories.length === 0"
               @click="saveSelectedMemories"
-              class="bg-gradient-to-r from-brand-secondary to-brand-highlight hover:from-brand-header hover:to-brand-secondary border-0 w-full sm:w-auto text-xs sm:text-sm px-4 sm:px-5 py-2"
+              class="bg-brand-dialog-save border-0 w-full sm:w-auto text-xs sm:text-sm px-4 sm:px-5 py-2"
             />
           </div>
         </div>
