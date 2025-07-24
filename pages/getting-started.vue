@@ -29,7 +29,7 @@
         
         <div class="flex flex-col gap-4 mt-6">
           <button
-            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full max-w-xs mx-auto"
+            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full max-w-xs mx-auto border-0"
             @click="handleGetStarted"
             :disabled="user === null"
           >
@@ -37,7 +37,7 @@
             Add Your First Memory Moments
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full max-w-xs mx-auto"
+            class="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full px-8 py-3 text-lg shadow transition-all duration-200 w-full max-w-xs mx-auto border-0"
             @click="() => navigateTo('/app/dashboard')"
           >
             <i class="pi pi-home text-2xl"></i>

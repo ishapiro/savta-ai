@@ -16,7 +16,7 @@
       </h2>
       <Button
         label="Let's Do This"
-        class="w-full sm:w-auto bg-brand-header hover:bg-brand-secondary text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 mb-3"
+        class="w-full sm:w-auto bg-brand-header hover:bg-brand-secondary text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 mb-3 border-0"
         @click="openMagicMemoryDialog('quick')"
       />
       <div class="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-brand-primary mb-2">

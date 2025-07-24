@@ -13,7 +13,7 @@
           <!-- Logo -->
           <div class="flex items-center">
             <NuxtLink to="/" class="flex items-center space-x-2 no-underline">
-              <SavtaIcon class="h-8 w-auto" />
+              <SavtaIcon class="h-12 w-auto" />
               <span class="text-xl font-bold text-brand-secondary no-underline">Savta</span>
             </NuxtLink>
           </div>
@@ -21,26 +21,26 @@
           <!-- Desktop Navigation -->
           <div class="hidden xl:flex items-center space-x-2 xl:space-x-4">
             <NuxtLink to="/app/home" class="no-underline">
-              <button class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+              <button class="border-0 flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                 <i class="pi pi-home text-lg"></i>
                 <span>Home</span>
               </button>
             </NuxtLink>
             <NuxtLink to="/app/dashboard" class="no-underline">
-              <button class="flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+              <button class="border-0 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                 <i class="pi pi-th-large text-lg"></i>
                 <span>Dashboard</span>
               </button>
             </NuxtLink>
-                          <template v-if="!user">
+            <template v-if="!user">
                 <NuxtLink :to="`/app/login?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                  <button class="border-0 flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-sign-in text-lg"></i>
                     <span>Sign in</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink :to="`/app/signup?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                  <button class="border-0flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-user-plus text-lg"></i>
                     <span>Sign up</span>
                   </button>
@@ -49,33 +49,33 @@
             <template v-if="user && userProfile && !userProfile.deleted">
               <div class="flex items-center space-x-2">
                 <NuxtLink to="/app/upload" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                  <button class="border-0 flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-upload text-lg"></i>
                     <span>Upload</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink to="/app/review" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-brand-accent hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                  <button class="border-0 flex items-center justify-center gap-2 bg-brand-accent hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-check-circle text-lg"></i>
                     <span>Review</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink to="/app/memory-books" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                  <button class="border-0 flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-book text-lg"></i>
                     <span>Memories</span>
                   </button>
                 </NuxtLink>
                 <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
                   <NuxtLink to="/app/editor" class="no-underline" @click="logEditorClick">
-                    <button class="flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                    <button class="border-0flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                       <i class="pi pi-palette text-lg"></i>
                       <span>Editor</span>
                     </button>
                   </NuxtLink>
                 </template>
               </div>
-              <button @click="handleSignOut" class="flex items-center justify-center gap-2 bg-brand-background hover:bg-brand-highlight text-brand-secondary font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200">
+              <button @click="handleSignOut" class="border-0flex items-center justify-center gap-2 bg-brand-background hover:bg-brand-highlight text-brand-secondary font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200">
                 <i class="pi pi-sign-out text-lg"></i>
                 <span>Sign out</span>
               </button>
@@ -189,11 +189,11 @@
             <NuxtLink 
               v-if="item.to" 
               :to="item.to" 
-              class="text-blue-600 hover:text-blue-800 transition-colors"
+              class="text-primary hover:text-primary/80 transition-colors"
             >
               {{ item.label }}
             </NuxtLink>
-            <span v-else class="text-gray-600">{{ item.label }}</span>
+            <span v-else class="text-primary">{{ item.label }}</span>
             <i v-if="index < breadcrumbItems.length - 1" class="pi pi-chevron-right text-gray-400 text-xs"></i>
           </template>
         </nav>

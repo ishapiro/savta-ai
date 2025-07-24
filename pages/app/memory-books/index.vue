@@ -31,7 +31,7 @@
             <div class="flex flex-col sm:flex-row gap-4">
               <div class="flex flex-col items-center">
                 <button
-                  class="bg-brand-header/80 hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
+                  class="border-0 bg-brand-header/80 hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('quick')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
@@ -42,7 +42,7 @@
               </div>
               <div class="flex flex-col items-center">
                 <button
-                  class="bg-brand-header/80 hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
+                  class="border-0 bg-brand-header/80 hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('full')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
@@ -59,7 +59,7 @@
             <h3 class="text-lg sm:text-xl font-bold text-brand-primary mb-4 text-center">Memory Books</h3>
             <div class="flex flex-col items-center">
               <button
-                class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
+                class="border-0 bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
                 @click="showCreateModal = true"
               >
                 <i class="pi pi-plus mr-1 sm:mr-2"></i>
@@ -140,7 +140,7 @@
       </div>
       <template #footer>
         <div class="flex justify-end">
-          <button class="bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-primary font-bold rounded-full px-6 py-2 text-base shadow" @click="showInfoDialog = false">
+          <button class="bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-primary font-bold rounded-full px-6 py-2 text-base shadow border-0" @click="showInfoDialog = false">
             Close
           </button>
         </div>
@@ -250,52 +250,52 @@
             <!-- View Button -->
             <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onDownloadClick(book)">
               <i class="pi pi-external-link text-lg sm:text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-green-700 mt-1 font-medium">View</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-green-700 mt-1 font-medium">View</span>
             </div>
             <!-- Generate Button (only for draft, not magic) -->
             <div v-if="book.status === 'draft' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
               <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 group-hover:scale-125 transition-transform" />
-              <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Compose</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Compose</span>
             </div>
             <!-- Magic Generate Button (for draft magic books) -->
             <div v-if="book.status === 'draft' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
               <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 group-hover:scale-125 transition-transform" />
-              <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Create Recipe</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Create Recipe</span>
             </div>
             <!-- Regenerate Button (for ready or background_ready, not magic) -->
             <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
               <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
             </div>
             <!-- Magic Regenerate Button (for ready magic books) -->
             <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
               <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate Recipe' }}</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate Recipe' }}</span>
             </div>
             <!-- Approve Button (not magic) -->
             <div v-if="book.status === 'ready' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
               <i class="pi pi-check text-lg sm:text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Approve</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Approve</span>
             </div>
             <!-- Magic Approve Button -->
             <div v-if="book.status === 'ready' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
               <i class="pi pi-check text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Approve</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Approve</span>
             </div>
             <!-- Unapprove Button (not magic) -->
             <div v-if="book.status === 'approved' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
               <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
             </div>
             <!-- Magic Unapprove Button -->
             <div v-if="book.status === 'approved' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
               <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
             </div>
             <!-- View Details Button -->
             <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="viewBookDetails(book)">
               <i class="pi pi-list text-lg sm:text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
-              <span class="text-[10px] sm:text-[11px] text-gray-700 mt-1 font-medium">Details</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-gray-700 mt-1 font-medium">Details</span>
             </div>
           </div>
         </div>
@@ -313,13 +313,13 @@
         <p class="text-sm sm:text-base text-gray-500 mb-6 text-center max-w-md">You need some photos to create your first special memory. Would you like to upload some now?</p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
           <button
-            class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
+            class="border-0 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
             @click="showUploadDialog = true"
           >
             <i class="pi pi-upload mr-1 sm:mr-2"></i> Upload Photos
           </button>
           <button
-            class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
+            class="border-0 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
             @click="skipUpload"
           >
             Maybe Later
@@ -335,7 +335,7 @@
         <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No special memories yet</h3>
         <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Great! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first special memory?</p>
         <button
-          class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
+          class="border-0 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
           @click="openMagicMemoryDialog('full')"
         >
           <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Special Memory
@@ -436,7 +436,7 @@
             <div class="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full animate-ping"></div>
             <div class="absolute bottom-2 left-2 w-1 h-1 bg-white/30 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
             
-            <i class="pi pi-magic mr-2 sm:mr-3 text-lg sm:text-xl group-hover:animate-spin"></i>
+            <i class="border-0 pi pi-magic mr-2 sm:mr-3 text-lg sm:text-xl group-hover:animate-spin"></i>
             Compose the Memory Now
           </button>
           <button
@@ -631,14 +631,14 @@
           <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button
               v-if="!isUploading"
-              class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto"
+              class="border-0 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto"
               @click="showUploadDialog = false"
             >
               Close
             </button>
             <button
               v-if="!isUploading && uploadedFiles.length === 0"
-              class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+              class="border-0 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="selectFiles"
             >
               <i class="pi pi-sparkles mr-2"></i>
@@ -646,7 +646,7 @@
             </button>
             <button
               v-if="!isUploading && (uploadedFiles.length > 0 || failedFiles.length > 0)"
-              class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+              class="border-0 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="finishUpload"
             >
               <i class="pi pi-sparkles mr-2"></i>
@@ -695,7 +695,7 @@
                 <span class="sm:hidden">Unapprove</span>
               </button>
               <button
-                class="flex items-center justify-center gap-1 sm:gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
                 @click="showDetailsModal = false"
               >
                 <i class="pi pi-times text-xs sm:text-sm"></i>
@@ -857,7 +857,7 @@
                 </div>
               </div>
               <button
-                class="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+                class="border-0 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
                 @click="forceDownloadPDF(selectedBook)"
               >
                 <i class="pi pi-download text-xs sm:text-sm"></i>
@@ -865,7 +865,7 @@
                 <span class="sm:hidden">Download</span>
               </button>
             </div>
-            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3 sm:p-4 border border-emerald-200 mt-4">
+            <div class="border-0 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3 sm:p-4 border border-emerald-200 mt-4">
               <div class="flex items-start gap-2 text-xs sm:text-sm text-emerald-800">
                 <i class="pi pi-info-circle text-emerald-600 text-xs sm:text-sm mt-0.5 flex-shrink-0"></i>
                 <span>Click download to save your memory book as a PDF file to your device</span>
@@ -879,7 +879,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 v-if="selectedBook.status === 'draft'"
-                class="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="onGenerateClick(selectedBook)"
               >
                 <Wand2 class="w-3 h-3 sm:w-4 sm:h-4" />
@@ -888,7 +888,7 @@
               </button>
               <button
                 v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
-                class="flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="onRegenerateClick(selectedBook)"
                 :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
               >
@@ -898,7 +898,7 @@
               </button>
               <button
                 v-if="selectedBook.status === 'ready'"
-                class="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="approveBook(selectedBook.id)"
               >
                 <i class="pi pi-check text-xs sm:text-sm"></i>
@@ -907,7 +907,7 @@
               </button>
               <button
                 v-if="selectedBook && selectedBook.layout_type !== 'magic'"
-                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="openEditSettings(selectedBook)"
               >
                 <i class="pi pi-cog text-xs sm:text-sm"></i>
@@ -1377,7 +1377,7 @@
           <InputText
             v-model="magicMemoryTitle"
             :placeholder="'e.g. Special Trip with Karen and Sam, Summer 2023'"
-            class="w-full text-base px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition mt-2"
+            class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition mt-2"
             maxlength="80"
             show-clear
             aria-label="Memory Subject"
@@ -1787,7 +1787,7 @@
             :icon="isFirstStep() ? 'pi pi-times' : 'pi pi-arrow-left'"
             severity="secondary"
             @click="isFirstStep() ? showMagicMemoryDialog = false : previousMagicMemoryStep()"
-            class="bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-800 font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border border-gray-300"
+            class="bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-800 font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
           />
           <Button
             v-if="!isLastStep()"
@@ -1818,8 +1818,8 @@
       <div class="text-lg font-bold text-gray-900 mb-2">Are you sure?</div>
       <div class="text-gray-700 mb-4">This will move the memory to the deleted section. You can restore it later if needed.</div>
       <div class="flex justify-center gap-3">
-        <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-full px-5 py-2 text-base shadow" @click="showDeleteDialog = false">Cancel</button>
-        <button class="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold rounded-full px-5 py-2 text-base shadow" @click="deleteBookConfirmed">Delete</button>
+        <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="showDeleteDialog = false">Cancel</button>
+        <button class="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="deleteBookConfirmed">Delete</button>
       </div>
     </div>
   </Dialog>
@@ -1847,13 +1847,13 @@
           label="Try Again"
           icon="pi pi-refresh"
           @click="retryMagicMemory"
-          class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200"
+          class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200 border-0"
         />
         <Button
           label="Close"
           severity="secondary"
           @click="showErrorDialog = false"
-          class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200 border-0"
         />
       </div>
     </div>

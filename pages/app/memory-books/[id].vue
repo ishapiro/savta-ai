@@ -41,7 +41,7 @@
             label="Back"
             severity="secondary"
             size="small"
-            class="text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3"
+            class="border-0 text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3"
             @click="goBack"
           />
         </div>

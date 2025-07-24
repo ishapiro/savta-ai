@@ -51,7 +51,7 @@
           <Button
             type="button"
             label="Notify Me When It's Ready"
-            class="mt-1 w-full max-w-xs sm:max-w-md bg-brand-header hover:bg-brand-secondary text-white rounded-full py-1 text-xs sm:text-base font-semibold"
+            class="mt-1 w-full max-w-xs sm:max-w-md bg-brand-header hover:bg-brand-secondary text-white rounded-full py-1 text-xs sm:text-base font-semibold border-0"
             :loading="loading"
             @click="handleSubscribe"
           />
@@ -64,7 +64,7 @@
           <Button
             type="button"
             label="Insiders"
-            class="w-full max-w-xs sm:max-w-fit bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary border border-brand-primary/30 rounded-full py-1.5 px-6 font-medium text-xs"
+            class="w-full max-w-xs sm:max-w-fit bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary border border-brand-primary/30 rounded-full py-1.5 px-6 font-medium text-xs border-0"
             @click="showPasswordDialog = true"
           />
         </div>
@@ -89,13 +89,13 @@
                 <Button
                   type="button"
                   label="Cancel"
-                  class="flex-1 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary"
+                  class="flex-1 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary border-0"
                   @click="cancelPassword"
                 />
                 <Button
                   type="submit"
                   label="Enter"
-                  class="flex-1 bg-brand-header hover:bg-brand-secondary text-white"
+                  class="flex-1 bg-brand-header hover:bg-brand-secondary text-white border-0"
                 />
               </div>
               <div v-if="passwordError" class="text-red-500 text-sm mt-1">
