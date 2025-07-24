@@ -20,13 +20,13 @@
             @click="navigateTo('/app/review')"
           >
             <i class="pi pi-list text-lg sm:text-2xl animate-bounce"></i>
-            <span class="hidden sm:inline">View All Moments</span>
+            <span class="hidden sm:inline">View All Uploads</span>
             <span class="sm:hidden">View All</span>
           </button>
         </div>
       </div>
 
-            <!-- Upload Progress (Always Visible When Uploading) -->
+      <!-- Upload Progress (Always Visible When Uploading) -->
       <div v-if="uploadingFiles.length > 0" class="mb-6 space-y-3">
         <!-- Upload Warning -->
         <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200">
@@ -304,49 +304,8 @@
                   <i v-else class="pi pi-image text-2xl text-gray-400"></i>
                 </div>
               </div>
-              <div class="flex-1 flex flex-col p-2">
-                <!-- User Caption -->
-                <div class="mb-1">
-                  <label class="block text-xs font-semibold text-brand-primary mb-1">Your Caption</label>
-                  <InputText
-                    v-model="asset.user_caption"
-                    placeholder="Add your caption"
-                    class="w-full text-xs rounded"
-                    @blur="updateAssetCaption(asset.id, asset.user_caption)"
-                  />
-                </div>
-                <!-- AI Caption -->
-                <div v-if="asset.ai_caption" class="mb-1">
-                  <label class="block text-xs font-semibold text-brand-primary mb-1">AI Caption</label>
-                  <div class="italic text-xs text-gray-600 bg-slate-50 rounded p-1">"{{ asset.ai_caption }}"</div>
-                </div>
-                <!-- Tags -->
-                <div v-if="asset.tags && asset.tags.length > 0" class="mb-1">
-                  <label class="block text-xs font-semibold text-brand-primary mb-1">Tags</label>
-                  <div class="flex flex-wrap gap-1">
-                    <Chip
-                      v-for="tag in asset.tags"
-                      :key="tag"
-                      :label="tag"
-                      class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5"
-                    />
-                  </div>
-                </div>
-                <!-- People Detected -->
-                <div v-if="asset.people_detected && asset.people_detected.length > 0" class="mb-1">
-                  <label class="block text-xs font-semibold text-brand-primary mb-1">People/Objects</label>
-                  <div class="flex flex-wrap gap-1">
-                    <Chip
-                      v-for="person in asset.people_detected"
-                      :key="person"
-                      :label="person"
-                      class="text-xs bg-pink-100 text-pink-700 px-2 py-0.5"
-                    />
-                  </div>
-                </div>
-              </div>
               <!-- Action Bar -->
-              <div class="rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-4 py-3 flex items-center justify-center gap-4 border-t border-gray-200">
+              <div class="rounded-b-2xl bg-brand-navigation px-4 py-3 flex items-center justify-center gap-4 border-t border-gray-200">
                 <span class="inline-block px-3 py-1 rounded-full bg-orange-200 text-orange-800 font-semibold text-xs shadow">{{ asset.approved ? 'Approved' : 'Pending' }}</span>
               </div>
             </template>
@@ -481,7 +440,7 @@
                   <i class="pi pi-list text-pink-500"></i>
                   <span class="font-semibold text-gray-800">Review & Manage</span>
                 </div>
-                <p class="text-sm text-gray-600">Click "View All Moments" to access your complete collection and manage all your special memories!</p>
+                <p class="text-sm text-gray-600">Click "View All Uploads" to access your complete collection and manage all your special memories!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -586,11 +545,11 @@
             </p>
           </div>
 
-          <!-- Action Buttons -->
+          <!-- Completion Dialog Action Buttons -->
           <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
               @click="showCompletionDialog = false"
-              class="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 px-8 py-3 rounded-full font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg whitespace-nowrap flex items-center justify-center"
+              class="bg-brand-dialog-save text-white border-0 px-8 py-3 rounded-full font-semibold hover:bg-brand-header/80 transition-all duration-200 shadow-lg whitespace-nowrap flex items-center justify-center"
             >
               <i class="pi pi-check mr-2"></i>
               <span class="pr-2">Got it!</span>
@@ -598,8 +557,7 @@
             <Button
               v-if="successfulUploads > 0"
               @click="navigateTo('/app/review')"
-              severity="secondary"
-              class="px-8 py-3 rounded-full font-semibold whitespace-nowrap flex items-center justify-center"
+              class="bg-brand-dialog-edit text-white border-0 px-8 py-3 rounded-full font-semibold hover:bg-brand-secondary/80 transition-all duration-200 whitespace-nowrap flex items-center justify-center"
             >
               <i class="pi pi-eye mr-2"></i>
               <span class="hidden sm:inline pr-2">Review Moments</span>
@@ -628,19 +586,18 @@
             If you leave now, your uploads will be canceled and you'll lose your progress.
           </p>
           
+          <!-- Navigation Warning Dialog Action Buttons -->
           <div class="flex gap-3 justify-center">
             <Button
               @click="confirmNavigation"
-              severity="danger"
-              class="px-6 py-3 rounded-full font-semibold"
+              class="bg-brand-dialog-delete text-white px-6 py-3 rounded-full font-semibold hover:bg-brand-dialog-delete/80 flex items-center justify-center"
             >
               <i class="pi pi-times mr-2"></i>
               Leave Anyway
             </Button>
             <Button
               @click="cancelNavigation"
-              severity="secondary"
-              class="px-6 py-3 rounded-full font-semibold"
+              class="bg-brand-dialog-cancel text-white px-6 py-3 rounded-full font-semibold hover:bg-brand-dialog-cancel/80 flex items-center justify-center"
             >
               <i class="pi pi-check mr-2"></i>
               Stay Here

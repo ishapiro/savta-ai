@@ -106,11 +106,10 @@
         <div
           v-for="asset in filteredAssets"
           :key="asset.id"
-          class="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl hover:shadow-xl sm:hover:shadow-2xl transition-shadow border border-gray-100 h-[500px] sm:h-[600px]"
-          style="display: flex; flex-direction: column;"
+          class="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl hover:shadow-xl sm:hover:shadow-2xl transition-shadow border border-gray-100 flex flex-col justify-between"
         >
           <!-- Photo Section - Fixed Height -->
-          <div class="rounded-t-xl sm:rounded-t-2xl overflow-hidden bg-gray-100 h-[150px] sm:h-[200px]" style="flex-shrink: 0;">
+          <div class="rounded-t-xl sm:rounded-t-2xl overflow-hidden bg-gray-100 h-[120px] sm:h-[160px] flex-shrink-0">
             <div class="w-full h-full flex items-center justify-center">
               <img
                 v-if="asset.storage_url"
@@ -122,109 +121,33 @@
             </div>
           </div>
 
-          <!-- Content Section - Flexible Height -->
-          <div class="flex-1 p-2 sm:p-3 overflow-y-auto" style="min-height: 0;">
-            <!-- Title -->
-            <!-- <div class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Title</label>
-              <div class="text-xs sm:text-sm font-medium text-gray-900 bg-yellow-50 rounded p-1.5 sm:p-2 border border-yellow-200">
-                {{ asset.title || getImageName(asset.storage_url) || 'Untitled' }}
-              </div>
-            </div> -->
-
-            <!-- User Caption -->
-            <!-- <div class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Your Caption</label>
-              <div v-if="asset.user_caption && asset.user_caption !== getImageName(asset.storage_url)" class="text-xs sm:text-sm text-gray-900 bg-blue-50 rounded p-1.5 sm:p-2 border border-blue-200">
-                {{ asset.user_caption }}
-              </div>
-              <div v-else class="text-xs sm:text-sm text-gray-400 italic bg-gray-50 rounded p-1.5 sm:p-2 border border-gray-200">
-                No caption added
-              </div>
-            </div> -->
-
-            <!-- AI Caption -->
-            <div v-if="asset.ai_caption" class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-brand-primary mb-1">AI Caption</label>
-              <div class="italic text-xs sm:text-sm text-brand-primary/70 bg-brand-navigation/20 rounded p-1.5 sm:p-2 border border-brand-primary/20">"{{ asset.ai_caption }}"</div>
-            </div>
-
-            <!-- Tags -->
-            <div v-if="(asset.tags && asset.tags.length > 0) || (asset.user_tags && asset.user_tags.length > 0)" class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-brand-primary mb-1">Tags</label>
-              <div class="flex flex-wrap gap-1">
-                <Chip
-                  v-for="tag in asset.tags || []"
-                  :key="`ai-${tag}`"
-                  :label="tag"
-                  class="text-xs bg-brand-primary/10 text-brand-primary px-1.5 sm:px-2 py-0.5 sm:py-1"
-                />
-                <Chip
-                  v-for="tag in asset.user_tags || []"
-                  :key="`user-${tag}`"
-                  :label="tag"
-                  class="text-xs bg-brand-highlight/20 text-brand-highlight px-1.5 sm:px-2 py-0.5 sm:py-1"
-                />
-              </div>
-            </div>
-
-            <!-- People Detected -->
-            <div v-if="(asset.people_detected && asset.people_detected.length > 0) || (asset.user_people && asset.user_people.length > 0)" class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-brand-primary mb-1">People/Objects</label>
-              <div class="flex flex-wrap gap-1">
-                <Chip
-                  v-for="person in asset.people_detected || []"
-                  :key="`ai-${person}`"
-                  :label="person"
-                  class="text-xs bg-brand-primary/10 text-brand-primary px-1.5 sm:px-2 py-0.5 sm:py-1"
-                />
-                <Chip
-                  v-for="person in asset.user_people || []"
-                  :key="`user-${person}`"
-                  :label="person"
-                  class="text-xs bg-brand-accent/20 text-brand-accent px-1.5 sm:px-2 py-0.5 sm:py-1"
-                />
-              </div>
-            </div>
-
-            <!-- Location -->
-            <div v-if="asset.city || asset.state || asset.country" class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-brand-primary mb-1">Location</label>
-              <div class="flex flex-wrap gap-1">
-                <Chip
-                  v-if="asset.city"
-                  :label="asset.city"
-                  class="text-xs bg-brand-highlight/20 text-brand-highlight px-1.5 sm:px-2 py-0.5 sm:py-1"
-                />
-                <Chip
-                  v-if="asset.state"
-                  :label="asset.state"
-                  class="text-xs bg-brand-secondary/20 text-brand-secondary px-1.5 sm:px-2 py-0.5 sm:py-1"
-                />
-                <Chip
-                  v-if="asset.country"
-                  :label="asset.country"
-                  class="text-xs bg-brand-header/20 text-brand-header px-1.5 sm:px-2 py-0.5 sm:py-1"
-                />
-              </div>
-            </div>
-          </div>
-
           <!-- Action Bar - Fixed at Bottom -->
-          <div class="rounded-b-xl sm:rounded-b-2xl bg-gradient-to-r from-brand-highlight/20 via-brand-accent/20 to-brand-secondary/20 px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 border-t border-brand-primary/20 h-[70px] sm:h-[80px]" style="flex-shrink: 0;">
-            <div class="flex items-center gap-2 sm:gap-4 flex-1 justify-center">
+          <div class="rounded-b-xl sm:rounded-b-2xl bg-brand-navigation px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 border-t border-brand-primary/20" style="flex-shrink: 0; margin-top: auto;">
+            <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-center">
+              <div class="flex flex-col items-center cursor-pointer group" @click="openDetailsDialog(asset)" v-tooltip.top="'Details'">
+                <button class="bg-brand-dialog-edit text-white w-9 h-9 flex items-center justify-center rounded-full">
+                  <i class="pi pi-info-circle text-base sm:text-lg"></i>
+                </button>
+                <span class="text-[10px] text-brand-secondary mt-0.5 sm:mt-1">Details</span>
+              </div>
               <div v-if="!asset.approved" class="flex flex-col items-center cursor-pointer group" @click="approveAsset(asset.id)" v-tooltip.top="'Approve'">
-                <i class="pi pi-check text-2xl sm:text-3xl text-brand-highlight group-hover:scale-125 transition-transform"></i>
-                <span class="text-xs text-brand-highlight mt-0.5 sm:mt-1">Approve</span>
+                <button class="bg-brand-dialog-save text-white w-9 h-9 flex items-center justify-center rounded-full">
+                  <i class="pi pi-check text-base sm:text-lg"></i>
+                </button>
+                <span class="text-[10px] text-brand-highlight mt-0.5 sm:mt-1">Approve</span>
               </div>
               <div class="flex flex-col items-center cursor-pointer group" @click="openEditDialog(asset)" v-tooltip.top="'Edit'">
-                <i class="pi pi-pencil text-2xl sm:text-3xl text-brand-secondary group-hover:scale-125 transition-transform"></i>
-                <span class="text-xs text-brand-secondary mt-0.5 sm:mt-1">Edit</span>
+                <button class="bg-brand-dialog-edit text-white w-9 h-9 flex items-center justify-center rounded-full">
+                  <i class="pi pi-pencil text-base sm:text-lg"></i>
+                </button>
+                <span class="text-[10px] text-brand-secondary mt-0.5 sm:mt-1">Edit</span>
               </div>
-                                <div class="flex flex-col items-center cursor-pointer group" @click="deleteAsset(asset.id)" v-tooltip.top="'Trash'">
-                    <i class="pi pi-trash text-2xl sm:text-3xl text-red-500 group-hover:scale-125 transition-transform"></i>
-                    <span class="text-xs text-red-700 mt-0.5 sm:mt-1">Trash</span>
-                  </div>
+              <div class="flex flex-col items-center cursor-pointer group" @click="deleteAsset(asset.id)" v-tooltip.top="'Trash'">
+                <button class="bg-brand-dialog-delete text-white w-9 h-9 flex items-center justify-center rounded-full">
+                  <i class="pi pi-trash text-base sm:text-lg"></i>
+                </button>
+                <span class="text-[10px] text-red-700 mt-0.5 sm:mt-1">Trash</span>
+              </div>
             </div>
             <div>
               <span v-if="!asset.approved && !asset.rejected" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-yellow-200 text-yellow-800 font-semibold text-xs shadow">Pending</span>
@@ -369,7 +292,7 @@
               <button
                 @click="unapproveAsset"
                 :disabled="!editingAsset.approved"
-                class="flex items-center justify-center gap-2 bg-brand-primary/20 hover:bg-brand-primary/30 disabled:bg-brand-primary/10 disabled:cursor-not-allowed text-brand-primary font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+                class="bg-brand-dialog-cancel text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-dialog-cancel/80 w-full sm:w-auto"
               >
                 <i class="pi pi-times text-xl"></i>
                 Unapprove
@@ -377,7 +300,7 @@
               <button
                 @click="rerunAI"
                 :disabled="aiProcessing"
-                class="flex items-center justify-center gap-2 bg-brand-secondary hover:bg-brand-secondary/80 disabled:bg-brand-secondary/50 disabled:cursor-not-allowed text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+                class="bg-brand-dialog-edit text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-secondary/80 w-full sm:w-auto"
               >
                 <i class="pi pi-refresh text-xl" :class="{ 'animate-spin': aiProcessing }"></i>
                 Rerun AI
@@ -386,18 +309,54 @@
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
                 @click="showEditDialog = false"
-                class="flex items-center justify-center gap-2 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+                class="bg-brand-dialog-cancel text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-dialog-cancel/80 w-full sm:w-auto"
               >
                 <i class="pi pi-times text-xl"></i>
                 Cancel
               </button>
               <button
                 @click="saveAssetChanges"
-                class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+                class="bg-brand-dialog-save text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-header/80 w-full sm:w-auto"
               >
                 <i class="pi pi-check text-xl"></i>
                 Save Changes
               </button>
+            </div>
+          </div>
+        </div>
+      </Dialog>
+
+      <!-- Details Dialog -->
+      <Dialog v-model:visible="showDetailsDialog" modal :closable="true" :dismissableMask="true" header="Memory Details" :class="['details-dialog', 'w-full', 'max-w-2xl', 'mx-4']">
+        <div v-if="detailsAsset" class="space-y-4">
+          <div class="flex flex-col items-center">
+            <img v-if="detailsAsset.storage_url" :src="detailsAsset.storage_url" :alt="detailsAsset.user_caption || 'Family photo'" class="w-full max-w-xs rounded-xl mb-4" />
+            <i v-else class="pi pi-image text-4xl text-brand-primary/40 flex items-center justify-center h-48"></i>
+          </div>
+          <div v-if="detailsAsset.ai_caption">
+            <label class="block text-sm font-semibold text-brand-primary mb-1">AI Caption</label>
+            <div class="italic text-sm text-brand-primary/70 bg-brand-navigation/20 rounded p-2 border border-brand-primary/20">"{{ detailsAsset.ai_caption }}"</div>
+          </div>
+          <div v-if="(detailsAsset.tags && detailsAsset.tags.length > 0) || (detailsAsset.user_tags && detailsAsset.user_tags.length > 0)">
+            <label class="block text-sm font-semibold text-brand-primary mb-1">Tags</label>
+            <div class="flex flex-wrap gap-1">
+              <Chip v-for="tag in detailsAsset.tags || []" :key="`ai-${tag}`" :label="tag" class="text-xs bg-brand-primary/10 text-brand-primary px-2 py-1" />
+              <Chip v-for="tag in detailsAsset.user_tags || []" :key="`user-${tag}`" :label="tag" class="text-xs bg-brand-highlight/20 text-brand-highlight px-2 py-1" />
+            </div>
+          </div>
+          <div v-if="(detailsAsset.people_detected && detailsAsset.people_detected.length > 0) || (detailsAsset.user_people && detailsAsset.user_people.length > 0)">
+            <label class="block text-sm font-semibold text-brand-primary mb-1">People/Objects</label>
+            <div class="flex flex-wrap gap-1">
+              <Chip v-for="person in detailsAsset.people_detected || []" :key="`ai-${person}`" :label="person" class="text-xs bg-brand-primary/10 text-brand-primary px-2 py-1" />
+              <Chip v-for="person in detailsAsset.user_people || []" :key="`user-${person}`" :label="person" class="text-xs bg-brand-accent/20 text-brand-accent px-2 py-1" />
+            </div>
+          </div>
+          <div v-if="detailsAsset.city || detailsAsset.state || detailsAsset.country">
+            <label class="block text-sm font-semibold text-brand-primary mb-1">Location</label>
+            <div class="flex flex-wrap gap-1">
+              <Chip v-if="detailsAsset.city" :label="detailsAsset.city" class="text-xs bg-brand-highlight/20 text-brand-highlight px-2 py-1" />
+              <Chip v-if="detailsAsset.state" :label="detailsAsset.state" class="text-xs bg-brand-secondary/20 text-brand-secondary px-2 py-1" />
+              <Chip v-if="detailsAsset.country" :label="detailsAsset.country" class="text-xs bg-brand-header/20 text-brand-header px-2 py-1" />
             </div>
           </div>
         </div>
@@ -658,6 +617,10 @@ const tagSuggestions = ref([])
 const peopleSuggestions = ref([])
 const aiProcessing = ref(false)
 const approvingAll = ref(false)
+
+// Details dialog data
+const showDetailsDialog = ref(false)
+const detailsAsset = ref(null)
 
 // Filters
 const activeFilter = ref('all')
@@ -1186,6 +1149,12 @@ const rerunAI = async () => {
   }
 }
 
+// Details dialog functions
+function openDetailsDialog(asset) {
+  detailsAsset.value = asset
+  showDetailsDialog.value = true
+}
+
 // Helper function to extract image name from storage URL
 const getImageName = (storageUrl) => {
   if (!storageUrl) return null
@@ -1208,3 +1177,16 @@ const getImageName = (storageUrl) => {
 // Watch for changes to recalculate stats
 watch(assets, calculateStats, { deep: true })
 </script> 
+
+<style scoped>
+.details-dialog {
+  /* Fullscreen on mobile, max width on desktop */
+  @media (max-width: 640px) {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+  }
+}
+</style> 
