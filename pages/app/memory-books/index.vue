@@ -31,7 +31,7 @@
             <div class="flex flex-col sm:flex-row gap-4">
               <div class="flex flex-col items-center">
                 <button
-                  class="border-0 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
+                  class="border-0 bg-brand-highlight hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('quick')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
@@ -42,7 +42,7 @@
               </div>
               <div class="flex flex-col items-center">
                 <button
-                  class="border-0 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
+                  class="border-0 bg-brand-highlight hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('full')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
@@ -160,20 +160,19 @@
         v-for="book in memoryBooks"
         :key="book.id"
         :class="[
-          'rounded-xl shadow-lg border flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-105 p-0 overflow-hidden',
+          'rounded-xl flex flex-col overflow-hidden',
           'bg-brand-card',
           book.layout_type === 'magic' 
-            ? 'border-brand-secondary/30 magic-memory-card' 
+            ? 'border-brand-secondary/30' 
             : 'border-brand-highlight/30'
         ]"
-        style="border-radius: 0.75rem;"
       >
         <!-- Card Header -->
         <div
           :class="[
-            'relative flex items-center justify-center h-20 shadow-sm rounded-t-xl sm:rounded-t-2xl',
+            'relative flex items-center justify-center h-20',
             book.layout_type === 'magic'
-              ? 'bg-brand-header'
+              ? 'bg-brand-highlight'
               : 'bg-brand-secondary'
           ]"
         >
@@ -4580,14 +4579,6 @@ function openUploadAndReturnToMagicStep5() {
 .magic-photo-card:hover {
   box-shadow: 0 0 12px 2px #fbbf24, 0 0 16px 4px #a78bfa;
   border-color: #fbbf24;
-}
-.magic-memory-card {
-  border: 2px solid #fbbf24;
-  box-shadow: 0 0 24px 8px #fbbf24, 0 0 32px 12px #a78bfa;
-  position: relative;
-  overflow: hidden;
-  animation: magic-card-glow 2.5s infinite alternate;
-  border-radius: 0.75rem;
 }
 .magic-sparkle {
   filter: drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 16px #a78bfa);

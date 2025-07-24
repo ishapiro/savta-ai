@@ -21,13 +21,13 @@
           <!-- Desktop Navigation -->
           <div class="hidden xl:flex items-center space-x-2 xl:space-x-4">
             <NuxtLink to="/app/home" class="no-underline">
-              <button class="border-0 flex items-center justify-center gap-2 bg-brand-navigation hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+              <button class="border-0 flex items-center justify-center gap-2 bg-green-500 hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                 <i class="pi pi-home text-lg"></i>
                 <span>Home</span>
               </button>
             </NuxtLink>
             <NuxtLink to="/app/dashboard" class="no-underline">
-              <button class="border-0 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+              <button class="border-0 flex items-center justify-center gap-2 bg-brand-primary/70 hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                 <i class="pi pi-th-large text-lg"></i>
                 <span>Dashboard</span>
               </button>
@@ -35,13 +35,13 @@
             <template v-if="!user">
                 <NuxtLink :to="`/app/login?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
                   <button class="border-0 flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
-                    <i class="pi pi-sign-in text-lg"></i>
+                    <i class="pi pi-sign-in text-lg mr-2"></i>
                     <span>Sign in</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink :to="`/app/signup?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
                   <button class="border-0flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
-                    <i class="pi pi-user-plus text-lg"></i>
+                    <i class="pi pi-user-plus text-lg mr-2"></i>
                     <span>Sign up</span>
                   </button>
                 </NuxtLink>
@@ -76,7 +76,7 @@
                 </template>
               </div>
               <button @click="handleSignOut" class="border-0flex items-center justify-center gap-2 bg-brand-background hover:bg-brand-highlight text-brand-secondary font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200">
-                <i class="pi pi-sign-out text-lg"></i>
+                <i class="pi pi-sign-out text-lg mr-2"></i>
                 <span>Sign out</span>
               </button>
             </template>
