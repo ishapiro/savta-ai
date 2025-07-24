@@ -31,7 +31,7 @@
             <div class="flex flex-col sm:flex-row gap-4">
               <div class="flex flex-col items-center">
                 <button
-                  class="bg-gradient-to-r from-brand-header to-brand-secondary hover:from-brand-secondary hover:to-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 animate-pulse focus:outline-none magic-memory-btn"
+                  class="bg-brand-header/80 hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('quick')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
@@ -42,7 +42,7 @@
               </div>
               <div class="flex flex-col items-center">
                 <button
-                  class="bg-gradient-to-r from-brand-header to-brand-secondary hover:from-brand-secondary hover:to-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 animate-pulse focus:outline-none magic-memory-btn"
+                  class="bg-brand-header/80 hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('full')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
@@ -59,7 +59,7 @@
             <h3 class="text-lg sm:text-xl font-bold text-brand-primary mb-4 text-center">Memory Books</h3>
             <div class="flex flex-col items-center">
               <button
-                class="bg-gradient-to-r from-brand-header to-brand-secondary hover:from-brand-secondary hover:to-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
+                class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
                 @click="showCreateModal = true"
               >
                 <i class="pi pi-plus mr-1 sm:mr-2"></i>
@@ -161,18 +161,22 @@
         :key="book.id"
         :class="[
           'rounded-xl shadow-lg border flex flex-col transition-all duration-300 hover:shadow-xl hover:scale-105 p-0 overflow-hidden',
+          'bg-brand-card',
           book.layout_type === 'magic' 
-            ? 'bg-gradient-to-br from-brand-secondary/10 via-brand-header/10 to-brand-highlight/10 border-brand-secondary/30 magic-memory-card' 
-            : 'bg-gradient-to-br from-brand-highlight/10 via-brand-accent/10 to-brand-highlight/20 border-brand-highlight/30'
+            ? 'border-brand-secondary/30 magic-memory-card' 
+            : 'border-brand-highlight/30'
         ]"
+        style="border-radius: 0.75rem;"
       >
-        <!-- Book Cover with Gradient -->
-        <div :class="[
-          'relative h-32 flex items-center justify-center overflow-hidden',
-          book.layout_type === 'magic'
-            ? 'bg-gradient-to-br from-brand-secondary/30 via-brand-header/30 to-brand-highlight/30'
-            : 'bg-gradient-to-br from-brand-highlight/30 via-brand-accent/30 to-brand-highlight/40'
-        ]">
+        <!-- Card Header -->
+        <div
+          :class="[
+            'relative flex items-center justify-center h-20 shadow-sm rounded-t-xl sm:rounded-t-2xl',
+            book.layout_type === 'magic'
+              ? 'bg-brand-header'
+              : 'bg-brand-secondary'
+          ]"
+        >
           <!-- Status Badge: absolute top-right, smaller -->
           <div class="absolute top-2 right-2 z-1">
             <div :class="getStatusBadgeClass(book.status)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md backdrop-blur-sm min-w-[48px] min-h-[22px] justify-center">
@@ -181,27 +185,23 @@
             </div>
           </div>
           <div class="flex flex-col items-center relative z-1">
-            <div :class="[
-              'w-14 h-14 rounded-xl flex items-center justify-center shadow-lg mb-2 relative group-hover:scale-110 transition-transform duration-300',
-              book.layout_type === 'magic'
-                ? 'bg-gradient-to-br from-brand-header to-brand-secondary'
-                : 'bg-gradient-to-br from-brand-highlight to-brand-accent'
-            ]">
+            <div class="mb-2 relative group-hover:scale-110 transition-transform duration-300">
               <Wand2 v-if="book.layout_type === 'magic'" class="w-8 h-8 text-white" />
-              <i v-else class="pi pi-book text-2xl text-white"></i>
+              <i v-else class="pi pi-book w-8 h-8 text-white flex items-center justify-center text-2xl"></i>
             </div>
-            <span class="text-xs font-semibold text-brand-primary text-center px-2 leading-tight bg-white/80 rounded-lg py-1">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6))) }}</span>
+            <span class="text-xs font-semibold text-white text-center px-2 leading-tight">{{ book.title || (book.layout_type === 'magic' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6))) }}</span>
           </div>
         </div>
-        <!-- Card Content -->
-        <div class="flex-1 flex flex-col p-5 pb-3 min-h-[160px]">
+        <!-- Divider -->
+        <div class="h-0.5 w-full bg-brand-primary/10"></div>
+        <!-- Card Body (center) -->
+        <div class="flex-1 flex flex-col p-5 pb-3 min-h-[160px] bg-brand-card rounded-b-xl sm:rounded-b-2xl">
           <div v-if="book.layout_type === 'magic' && book.magic_story" class="text-brand-secondary text-xs magic-story animate-fade-in mb-3 relative leading-relaxed">
             <div class="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
               <Sparkle class="w-4 h-4 text-yellow-400 absolute left-0 top-0" />
               <span class="ml-6">{{ book.magic_story.length > 115 ? book.magic_story.slice(0, 115) + '...' : book.magic_story }}</span>
             </div>
           </div>
-          
           <!-- Regular Memory Thumbnail -->
           <div v-if="book.layout_type !== 'magic' && getFirstAssetThumbnail(book)" class="mb-3">
             <div class="relative w-full h-24 rounded-lg overflow-hidden border border-gray-200">
@@ -213,7 +213,6 @@
               <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
             </div>
           </div>
-          
           <div class="space-y-2 text-sm text-gray-600 mb-3">
             <div class="flex justify-between items-center">
               <span class="font-semibold text-gray-700">Created:</span>
@@ -236,85 +235,68 @@
             <p class="text-xs text-amber-800 font-medium leading-relaxed">{{ book.review_notes }}</p>
           </div>
         </div>
-        <!-- Action Bar -->
-        <div :class="[
-          'px-3 py-4 flex flex-wrap items-center justify-center gap-3',
-          book.layout_type === 'magic'
-            ? 'bg-gradient-to-r from-purple-100/80 to-pink-100/80 border-t border-purple-200'
-            : 'bg-gradient-to-r from-blue-100/80 to-cyan-100/80 border-t border-blue-200'
-        ]">
-          <!-- View Button -->
-          <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onDownloadClick(book)">
-            <i class="pi pi-external-link text-lg sm:text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-green-700 mt-1 font-medium">View</span>
-          </div>
-          <!-- Generate Button (only for draft, not magic) -->
-          <div v-if="book.status === 'draft' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onGenerateClick(book)">
-            <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 group-hover:scale-125 transition-transform" />
-            <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Compose</span>
-          </div>
-          <!-- Magic Generate Button (for draft magic books) -->
-          <div v-if="book.status === 'draft' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onGenerateClick(book)">
-            <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 group-hover:scale-125 transition-transform" />
-            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Create Recipe</span>
-          </div>
-          <!-- Regenerate Button (for ready or background_ready, not magic) -->
-          <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
-            <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
-          </div>
-          <!-- Magic Regenerate Button (for ready magic books) -->
-          <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
-            <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate Recipe' }}</span>
-          </div>
-          <!-- Approve Button (not magic) -->
-          <div v-if="book.status === 'ready' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="approveBook(book.id)">
-            <i class="pi pi-check text-lg sm:text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Approve</span>
-          </div>
-          <!-- Magic Approve Button -->
-          <div v-if="book.status === 'ready' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="approveBook(book.id)">
-            <i class="pi pi-check text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Approve</span>
-          </div>
-          <!-- Unapprove Button (not magic) -->
-          <div v-if="book.status === 'approved' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="unapproveBook(book.id)">
-            <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
-          </div>
-          <!-- Magic Unapprove Button -->
-          <div v-if="book.status === 'approved' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="unapproveBook(book.id)">
-            <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
-          </div>
-          <!-- View Details Button -->
-          <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="viewBookDetails(book)">
-            <i class="pi pi-list text-lg sm:text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-gray-700 mt-1 font-medium">Details</span>
-          </div>
-          <!-- Edit Settings Button (not magic) -->
-          <div v-if="selectedBook && selectedBook.layout_type !== 'magic'"
-            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
-            @click="openEditSettings(selectedBook)"
-          >
-            <i class="pi pi-cog text-xs sm:text-sm"></i>
-            <span class="hidden sm:inline">Edit Settings</span>
-            <span class="sm:hidden">Edit</span>
-          </div>
-          <!-- Magic Edit Settings Button -->
-          <div v-if="selectedBook && selectedBook.layout_type === 'magic'"
-            class="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
-            @click="openEditSettings(selectedBook)"
-          >
-            <i class="pi pi-cog text-xs sm:text-sm"></i>
-            <span class="hidden sm:inline">Edit Recipe</span>
-            <span class="sm:hidden">Edit</span>
-          </div>
-          <!-- Delete Button -->
-          <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200" @click="confirmDeleteBook(book)">
-            <i class="pi pi-trash text-lg sm:text-xl text-red-500 group-hover:scale-125 transition-transform"></i>
-            <span class="text-[10px] sm:text-[11px] text-red-700 mt-1 font-medium">Delete</span>
+        <!-- Divider -->
+        <div class="h-0.5 w-full bg-brand-primary/10"></div>
+        <!-- Card Footer -->
+        <div
+          :class="[
+            'rounded-b-xl sm:rounded-b-2xl px-4 py-3 flex items-center justify-between gap-2 border-t shadow-sm h-20',
+            book.layout_type === 'magic'
+              ? 'bg-brand-header/20 border-brand-header/20'
+              : 'bg-brand-secondary/20 border-brand-secondary/20'
+          ]"
+        >
+          <div class="flex flex-row flex-1 justify-between items-center gap-2">
+            <!-- View Button -->
+            <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onDownloadClick(book)">
+              <i class="pi pi-external-link text-lg sm:text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[10px] sm:text-[11px] text-green-700 mt-1 font-medium">View</span>
+            </div>
+            <!-- Generate Button (only for draft, not magic) -->
+            <div v-if="book.status === 'draft' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
+              <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 group-hover:scale-125 transition-transform" />
+              <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Compose</span>
+            </div>
+            <!-- Magic Generate Button (for draft magic books) -->
+            <div v-if="book.status === 'draft' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
+              <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 group-hover:scale-125 transition-transform" />
+              <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Create Recipe</span>
+            </div>
+            <!-- Regenerate Button (for ready or background_ready, not magic) -->
+            <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
+              <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
+            </div>
+            <!-- Magic Regenerate Button (for ready magic books) -->
+            <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
+              <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate Recipe' }}</span>
+            </div>
+            <!-- Approve Button (not magic) -->
+            <div v-if="book.status === 'ready' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
+              <i class="pi pi-check text-lg sm:text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Approve</span>
+            </div>
+            <!-- Magic Approve Button -->
+            <div v-if="book.status === 'ready' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
+              <i class="pi pi-check text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Approve</span>
+            </div>
+            <!-- Unapprove Button (not magic) -->
+            <div v-if="book.status === 'approved' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
+              <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
+            </div>
+            <!-- Magic Unapprove Button -->
+            <div v-if="book.status === 'approved' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
+              <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
+            </div>
+            <!-- View Details Button -->
+            <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="viewBookDetails(book)">
+              <i class="pi pi-list text-lg sm:text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
+              <span class="text-[10px] sm:text-[11px] text-gray-700 mt-1 font-medium">Details</span>
+            </div>
           </div>
         </div>
       </div>
@@ -925,12 +907,21 @@
               </button>
               <button
                 v-if="selectedBook && selectedBook.layout_type !== 'magic'"
-                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="openEditSettings(selectedBook)"
               >
                 <i class="pi pi-cog text-xs sm:text-sm"></i>
                 <span class="hidden sm:inline">Edit Settings</span>
                 <span class="sm:hidden">Edit</span>
+              </button>
+              <button
+                v-if="selectedBook"
+                class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                @click="confirmDeleteBook(selectedBook)"
+              >
+                <i class="pi pi-trash text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">Delete</span>
+                <span class="sm:hidden">Delete</span>
               </button>
             </div>
           </div>
@@ -4595,6 +4586,7 @@ function openUploadAndReturnToMagicStep5() {
   position: relative;
   overflow: hidden;
   animation: magic-card-glow 2.5s infinite alternate;
+  border-radius: 0.75rem;
 }
 .magic-sparkle {
   filter: drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 16px #a78bfa);

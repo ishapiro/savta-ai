@@ -62,11 +62,12 @@ export default {
         brand: {
           header: '#D16D84', // H1 - raspberry
           background: '#F9F6F2', // cream
-          primary: '#5A5752', // text - darker gray
+          primary: '#333333', // text - darker gray was #5A5752
           secondary: '#6E4B63', // H2 - plum
           navigation: '#F5F0E8', // darker cream
           highlight: '#7BAAA7', // H3 - dusty teal
           accent: '#F1B8B8', // H4 - blush
+          card: '#F6E7D8', // light tan
         },
         primary: {
           DEFAULT: 'var(--primary-color)',

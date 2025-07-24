@@ -4,7 +4,7 @@
 
 /* CSS Custom Properties for colors */
 :root {
-  --primary-color: #5A5752; /* Dark gray - text color */
+  --primary-color: #333333; /* Dark gray - text color */
   --primary-hover-color: #4A4742; /* Darker gray for hover */
   --primary-active-color: #3A3732; /* Even darker gray for active */
   --primary-contrast-color: #ffffff; /* White text on primary */
