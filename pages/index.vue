@@ -17,7 +17,7 @@
             <SavtaIcon :iconClass="'relative max-w-[85%] max-h-[85%] object-contain z-10 block w-16 h-16 sm:w-24 sm:h-24 mx-auto'" />
           </div>
           <div class="flex flex-col items-center gap-1">
-            <h1 class="text-xl sm:text-4xl font-extrabold text-brand-navigation font-sans tracking-tight">Savta</h1>
+            <h1 class="text-xl sm:text-4xl font-extrabold text-brand-secondary font-sans tracking-tight">Savta</h1>
             <span class="inline-block bg-brand-background/80 text-brand-secondary text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full border border-brand-navigation/30 align-middle shadow-sm">beta: no warranty, no support</span>
           </div>
           <div class="max-w-xl mx-auto mt-1 px-3 py-1 text-center">

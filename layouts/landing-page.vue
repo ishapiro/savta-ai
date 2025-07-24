@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-brand-background relative overflow-hidden">
+  <div class="min-h-screen flex flex-col bg-brand-background shadow-sm border-b border-gray-200 relative overflow-hidden">
     <!-- Add Google Fonts -->
     <Head>
       <link rel="preconnect" href="https://fonts.googleapis.com">

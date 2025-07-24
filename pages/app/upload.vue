@@ -1,22 +1,22 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
+  <div class="min-h-screen bg-brand-background p-4">
     <div class="max-w-7xl mx-auto">
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Upload Moments (Photo and Posts)</h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Upload Moments (Photo and Posts)</h1>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-brand-background transition-colors focus:outline-none flex-shrink-0"
             v-tooltip.top="'How to use this page'"
             @click="showHelpModal = true"
             aria-label="Information about upload page"
           >
-            <i class="pi pi-info text-lg text-blue-500"></i>
+            <i class="pi pi-info text-lg text-brand-highlight"></i>
           </button>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
           <button
-            class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-secondary hover:bg-brand-header text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="navigateTo('/app/review')"
           >
             <i class="pi pi-list text-lg sm:text-2xl animate-bounce"></i>
@@ -144,7 +144,7 @@
             <div class="space-y-6">
               <Card>
                 <template #title>
-                  <h2 class="text-xl font-semibold text-color">Upload Photos</h2>
+                  <h2 class="text-xl font-semibold text-brand-primary">Upload Photos</h2>
                 </template>
                 <template #content>
                   <!-- File Upload Area -->
@@ -152,17 +152,17 @@
                     @drop.prevent="handleFileDrop"
                     @dragover.prevent
                     @dragenter.prevent
-                    class="border-2 border-dashed border-surface-border rounded-lg p-6 text-center hover:border-primary transition-colors bg-white shadow"
-                    :class="{ 'border-primary bg-primary-50': isDragOver }"
+                    class="border-2 border-dashed border-brand-border rounded-lg p-6 text-center hover:border-brand-primary transition-colors bg-white shadow"
+                    :class="{ 'border-brand-primary bg-brand-primary-50': isDragOver }"
                   >
                     <div class="space-y-4">
-                      <div class="text-color-secondary">
+                      <div class="text-brand-secondary">
                         <i class="pi pi-image text-4xl"></i>
                       </div>
                       <div>
                         <label for="photo-upload" class="cursor-pointer">
-                          <span class="text-primary hover:text-primary-600 font-medium">Click to upload</span>
-                          <span class="text-color-secondary"> or drag and drop</span>
+                          <span class="text-brand-primary hover:text-brand-primary-600 font-medium">Click to upload</span>
+                          <span class="text-brand-secondary"> or drag and drop</span>
                         </label>
                         <input
                           id="photo-upload"
@@ -173,7 +173,7 @@
                           @change="handleFileSelect"
                         />
                       </div>
-                      <p class="text-xs text-color-secondary">PNG, JPG, GIF up to 15MB each (files over 5MB will be automatically compressed)</p>
+                      <p class="text-xs text-brand-secondary">PNG, JPG, GIF up to 15MB each (files over 5MB will be automatically compressed)</p>
                     </div>
                   </div>
                 </template>
@@ -185,12 +185,12 @@
             <div class="space-y-6">
               <Card>
                 <template #title>
-                  <h2 class="text-xl font-semibold text-color">Share Stories</h2>
+                  <h2 class="text-xl font-semibold text-brand-primary">Share Stories</h2>
                 </template>
                 <template #content>
                   <form @submit.prevent="submitTextStory" class="space-y-4">
                     <div class="field">
-                      <label for="story-title" class="block text-sm font-medium text-color mb-1">
+                      <label for="story-title" class="block text-sm font-medium text-brand-primary mb-1">
                         Story Title
                       </label>
                       <InputText
@@ -203,7 +203,7 @@
                     </div>
 
                     <div class="field">
-                      <label for="story-content" class="block text-sm font-medium text-color mb-1">
+                      <label for="story-content" class="block text-sm font-medium text-brand-primary mb-1">
                         Your Story
                       </label>
                       <Textarea
@@ -217,7 +217,7 @@
                     </div>
 
                     <div class="field">
-                      <label for="story-caption" class="block text-sm font-medium text-color mb-1">
+                      <label for="story-caption" class="block text-sm font-medium text-brand-primary mb-1">
                         Your Caption (Optional)
                       </label>
                       <InputText
@@ -258,7 +258,7 @@
 
       <!-- Recent Uploads -->
       <div class="mt-8">
-        <h2 class="text-xl font-semibold text-color mb-4">Recent Uploads</h2>
+        <h2 class="text-xl font-semibold text-brand-primary mb-4">Recent Uploads</h2>
         
         <!-- Review Button Section -->
         <div class="bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 rounded-2xl p-6 mb-6 border border-pink-200 shadow-lg">
@@ -282,7 +282,7 @@
           </div>
         </div>
         
-        <p class="text-sm text-color-secondary mb-4">
+        <p class="text-sm text-gray-600 mb-4">
           Showing your 10 most recent uploads. Visit the Review page to see all your memories and manage them.
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
@@ -307,7 +307,7 @@
               <div class="flex-1 flex flex-col p-2">
                 <!-- User Caption -->
                 <div class="mb-1">
-                  <label class="block text-xs font-semibold text-color mb-1">Your Caption</label>
+                  <label class="block text-xs font-semibold text-brand-primary mb-1">Your Caption</label>
                   <InputText
                     v-model="asset.user_caption"
                     placeholder="Add your caption"
@@ -317,12 +317,12 @@
                 </div>
                 <!-- AI Caption -->
                 <div v-if="asset.ai_caption" class="mb-1">
-                  <label class="block text-xs font-semibold text-color mb-1">AI Caption</label>
-                  <div class="italic text-xs text-color-secondary bg-slate-50 rounded p-1">"{{ asset.ai_caption }}"</div>
+                  <label class="block text-xs font-semibold text-brand-primary mb-1">AI Caption</label>
+                  <div class="italic text-xs text-gray-600 bg-slate-50 rounded p-1">"{{ asset.ai_caption }}"</div>
                 </div>
                 <!-- Tags -->
                 <div v-if="asset.tags && asset.tags.length > 0" class="mb-1">
-                  <label class="block text-xs font-semibold text-color mb-1">Tags</label>
+                  <label class="block text-xs font-semibold text-brand-primary mb-1">Tags</label>
                   <div class="flex flex-wrap gap-1">
                     <Chip
                       v-for="tag in asset.tags"
@@ -334,7 +334,7 @@
                 </div>
                 <!-- People Detected -->
                 <div v-if="asset.people_detected && asset.people_detected.length > 0" class="mb-1">
-                  <label class="block text-xs font-semibold text-color mb-1">People/Objects</label>
+                  <label class="block text-xs font-semibold text-brand-primary mb-1">People/Objects</label>
                   <div class="flex flex-wrap gap-1">
                     <Chip
                       v-for="person in asset.people_detected"

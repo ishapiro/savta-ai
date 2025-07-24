@@ -1,22 +1,22 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
+  <div class="min-h-screen bg-brand-background p-4">
     <div class="max-w-7xl mx-auto">
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Deleted Memories</h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Deleted Memories</h1>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-brand-background transition-colors focus:outline-none flex-shrink-0"
             v-tooltip.top="'How to use this page'"
             @click="showHelpModal = true"
             aria-label="Information about deleted memories page"
           >
-            <i class="pi pi-info text-lg text-blue-500"></i>
+            <i class="pi pi-info text-lg text-brand-highlight"></i>
           </button>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
           <button
-            class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="showEmptyTrashDialog = true"
             :disabled="deletedAssets.length === 0"
           >
@@ -25,7 +25,7 @@
             <span class="sm:hidden">Empty Trash</span>
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-primary font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="navigateTo('/app/review')"
           >
             <i class="pi pi-arrow-left text-lg sm:text-xl"></i>
@@ -97,7 +97,7 @@
         <h3 class="text-lg font-semibold text-gray-800 mb-2">No Deleted Memories</h3>
         <p class="text-gray-600">You haven't deleted any memories yet.</p>
         <button
-          class="mt-4 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200"
+          class="mt-4 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200"
           @click="navigateTo('/app/review')"
         >
           <i class="pi pi-arrow-left text-xl"></i>

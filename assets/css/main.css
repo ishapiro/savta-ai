@@ -4,18 +4,18 @@
 
 /* CSS Custom Properties for colors */
 :root {
-  --primary-color: #10b981; /* Emerald-500 */
-  --primary-hover-color: #059669; /* Emerald-600 */
-  --primary-active-color: #047857; /* Emerald-700 */
-  --primary-contrast-color: #ffffff;
+  --primary-color: #5A5752; /* Dark gray - text color */
+  --primary-hover-color: #4A4742; /* Darker gray for hover */
+  --primary-active-color: #3A3732; /* Even darker gray for active */
+  --primary-contrast-color: #ffffff; /* White text on primary */
   
   --surface-ground: #F9F6F2;
   --surface-section: #ffffff;
   --surface-card: #ffffff;
   --surface-hover: #f4f4f5;
   --surface-border: #e4e4e7;
-  --text-color: #7C7A75;
-  --text-color-secondary: #F1B8B8;
+  --text-color: #5A5752;
+  --text-color-secondary: #6E4B63;
 }
 
 @layer base {

@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen surface-ground p-4">
+  <div class="min-h-screen bg-brand-background p-4">
     <div class="max-w-4xl mx-auto">
       <div class="mb-6 flex flex-col items-center">
-        <h1 class="text-2xl sm:text-3xl font-bold text-color mb-2">Memory Book Preview</h1>
-        <p class="text-color-secondary text-center">View your special memory book as a PDF. You can download or share it from here.</p>
+        <h1 class="text-2xl sm:text-3xl font-bold text-brand-primary mb-2">Memory Book Preview</h1>
+        <p class="text-brand-primary/70 text-center">View your special memory book as a PDF. You can download or share it from here.</p>
       </div>
       <div class="w-full flex flex-col items-center">
         <!-- PDF Viewer - Mobile (with overflow) -->
@@ -16,8 +16,8 @@
               :style="pdfViewerStyle" 
             />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
-              <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
-              <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
+              <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-brand-primary/40"></i>
+              <p class="text-sm sm:text-base text-brand-primary/60 mt-2">No PDF available for preview.</p>
             </div>
           </ClientOnly>
         </div>
@@ -31,12 +31,12 @@
               :style="pdfViewerStyle" 
             />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
-              <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
-              <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
+              <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-brand-primary/40"></i>
+              <p class="text-sm sm:text-base text-brand-primary/60 mt-2">No PDF available for preview.</p>
             </div>
           </ClientOnly>
         </div>
-        <div class="z-50 flex justify-center items-center gap-3 sm:gap-4 py-4 sm:py-6 px-4 bg-gray-50 border-t border-gray-200 min-h-[60px] sm:min-h-[80px] w-full">
+        <div class="z-50 flex justify-center items-center gap-3 sm:gap-4 py-4 sm:py-6 px-4 bg-brand-navigation/20 border-t border-brand-primary/20 min-h-[60px] sm:min-h-[80px] w-full">
           <Button
             label="Back"
             severity="secondary"

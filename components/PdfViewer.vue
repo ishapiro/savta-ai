@@ -1,10 +1,10 @@
 <template>
   <ClientOnly>
-    <div class="relative w-full h-full bg-white">
+    <div class="relative w-full h-full bg-brand-background">
       <!-- PDF Document -->
       <div class="w-full h-full overflow-auto pb-16">
         <div class="w-full flex items-center justify-center p-4">
-          <div class="w-full max-w-4xl border-4 border-gray-800 rounded-lg shadow-2xl bg-white">
+          <div class="w-full max-w-4xl border-4 border-brand-primary rounded-lg shadow-2xl bg-white">
             <VuePdfEmbed
               ref="pdfRef"
               :source="props.src"
@@ -18,33 +18,33 @@
         </div>
       </div>
       <!-- Navigation Bar -->
-      <div class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-gray-200">
+      <div class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-brand-primary/20">
         <div class="flex items-center gap-2 sm:gap-4">
           <button
-            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
             :disabled="currentPage <= 1"
             @click="prevPage"
             aria-label="Previous page"
           >
-            <i class="pi pi-angle-left text-xl sm:text-2xl text-gray-700" :class="{ 'opacity-50': currentPage <= 1 }"></i>
+            <i class="pi pi-angle-left text-xl sm:text-2xl text-brand-primary" :class="{ 'opacity-50': currentPage <= 1 }"></i>
           </button>
-          <span class="text-xs sm:text-base font-medium text-gray-700 select-none">
+          <span class="text-xs sm:text-base font-medium text-brand-primary select-none">
             Page {{ currentPage }} / {{ pageCount }}
           </span>
           <button
-            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
             :disabled="currentPage >= pageCount"
             @click="nextPage"
             aria-label="Next page"
           >
-            <i class="pi pi-angle-right text-xl sm:text-2xl text-gray-700" :class="{ 'opacity-50': currentPage >= pageCount }"></i>
+            <i class="pi pi-angle-right text-xl sm:text-2xl text-brand-primary" :class="{ 'opacity-50': currentPage >= pageCount }"></i>
           </button>
           <button
-            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header ml-2"
             @click="downloadPdf"
             aria-label="Download PDF"
           >
-            <i class="pi pi-download text-xl sm:text-2xl text-blue-600"></i>
+            <i class="pi pi-download text-xl sm:text-2xl text-brand-header"></i>
           </button>
         </div>
       </div>

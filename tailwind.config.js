@@ -60,13 +60,13 @@ export default {
       },
       colors: {
         brand: {
-          header: '#D16D84', // raspberry
+          header: '#D16D84', // H1 - raspberry
           background: '#F9F6F2', // cream
-          primary: '#7C7A75', // gray  
-          secondary: '#6E4B63', // plum
-          navigation: '#F1B8B8', // blush
-          highlight: '#7BAAA7', // dusty teal
-          accent: '#E8B4B8', // lighter raspberry for accents
+          primary: '#5A5752', // text - darker gray
+          secondary: '#6E4B63', // H2 - plum
+          navigation: '#F5F0E8', // darker cream
+          highlight: '#7BAAA7', // H3 - dusty teal
+          accent: '#F1B8B8', // H4 - blush
         },
         primary: {
           DEFAULT: 'var(--primary-color)',

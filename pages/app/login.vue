@@ -1,27 +1,27 @@
 <template>
-  <div class="h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
+  <div class="h-screen flex items-center justify-center bg-brand-background relative overflow-hidden">
     <!-- Backdrop overlay -->
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-0"></div>
     
     <!-- Animated background elements -->
     <div class="fixed inset-0 pointer-events-none z-0">
-      <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/20 rounded-full blur-xl animate-pulse-slow"></div>
-      <div class="absolute top-40 right-8 sm:right-32 w-16 sm:w-24 h-16 sm:h-24 bg-purple-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 1s;"></div>
-      <div class="absolute bottom-32 left-1/3 w-24 sm:w-40 h-24 sm:h-40 bg-pink-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 2s;"></div>
-      <div class="absolute top-1/2 right-8 sm:right-20 w-12 sm:w-20 h-12 sm:h-20 bg-cyan-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
+      <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-brand-highlight/20 rounded-full blur-xl animate-pulse-slow"></div>
+      <div class="absolute top-40 right-8 sm:right-32 w-16 sm:w-24 h-16 sm:h-24 bg-brand-secondary/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 1s;"></div>
+      <div class="absolute bottom-32 left-1/3 w-24 sm:w-40 h-24 sm:h-40 bg-brand-header/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 2s;"></div>
+      <div class="absolute top-1/2 right-8 sm:right-20 w-12 sm:w-20 h-12 sm:h-20 bg-brand-accent/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
     </div>
 
     <!-- Provider Selection Dialog -->
     <Dialog v-model:visible="providerSelectVisible" modal :closable="false" :dismissableMask="false" :style="{ width: '100vw', maxWidth: '400px', maxHeight: '100vh' }" class="z-30">
       <div class="flex flex-col items-center w-full px-2 sm:px-4 py-6 bg-white rounded-2xl shadow-2xl gap-4">
-        <h2 class="text-xl font-bold text-gray-900 mb-2">Sign in to Savta AI</h2>
+        <h2 class="text-xl font-bold text-brand-primary mb-2">Sign in to Savta AI</h2>
         <Button class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold py-3 rounded-lg shadow-sm flex items-center justify-center gap-2 transition text-lg" :loading="googleLoading" @click="handleGoogleLogin">
           <svg class="h-6 w-6 mr-2" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_17_40)"><path d="M47.532 24.552c0-1.636-.146-3.2-.418-4.684H24.48v9.02h12.98c-.56 3.02-2.24 5.58-4.78 7.3v6.06h7.74c4.54-4.18 7.11-10.34 7.11-17.696z" fill="#4285F4"/><path d="M24.48 48c6.48 0 11.92-2.14 15.89-5.82l-7.74-6.06c-2.15 1.44-4.9 2.3-8.15 2.3-6.26 0-11.56-4.22-13.46-9.9H2.5v6.22C6.46 43.98 14.7 48 24.48 48z" fill="#34A853"/><path d="M11.02 28.52c-.5-1.44-.78-2.98-.78-4.52s.28-3.08.78-4.52v-6.22H2.5A23.98 23.98 0 000 24c0 3.98.96 7.74 2.5 11.02l8.52-6.5z" fill="#FBBC05"/><path d="M24.48 9.48c3.52 0 6.64 1.22 9.12 3.62l6.84-6.84C36.4 2.14 30.96 0 24.48 0 14.7 0 6.46 4.02 2.5 10.98l8.52 6.22c1.9-5.68 7.2-9.9 13.46-9.9z" fill="#EA4335"/></g><defs><clipPath id="clip0_17_40"><path fill="#fff" d="M0 0h48v48H0z"/></clipPath></defs></svg>
-          <span class="text-purple-600">Continue with Google</span>
+          <span class="text-brand-secondary">Continue with Google</span>
         </Button>
         <Button class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold py-3 rounded-lg shadow-sm flex items-center justify-center gap-2 transition text-lg" @click="showEmailForm">
           <svg class="h-6 w-6 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
-          <span class="text-purple-600">Continue with Email</span>
+          <span class="text-brand-secondary">Continue with Email</span>
         </Button>
       </div>
     </Dialog>
@@ -33,8 +33,8 @@
           <div class="flex items-center justify-center">
             <img src="/savta_image_only_color.svg" alt="Savta AI Logo" class="h-20 w-auto" />
           </div>
-          <h1 class="text-xl font-bold text-gray-900 mb-1">Welcome Back</h1>
-          <p class="text-gray-500 text-sm">Sign in to your account</p>
+          <h1 class="text-xl font-bold text-brand-primary mb-1">Welcome Back</h1>
+          <p class="text-brand-primary/70 text-sm">Sign in to your account</p>
         </div>
 
         <div v-if="disabledMessage" class="mb-4 p-4 bg-red-100 border border-red-300 rounded text-red-700 text-center font-bold text-lg">
@@ -44,7 +44,7 @@
         <!-- Login Form -->
         <form @submit.prevent="handleEmailLogin" class="flex flex-col gap-2 w-full max-w-xs sm:max-w-sm mx-auto">
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label for="email" class="block text-sm font-medium text-brand-primary mb-1">Email</label>
             <InputText
               id="email"
               v-model="email"
@@ -59,7 +59,7 @@
           </div>
 
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label for="password" class="block text-sm font-medium text-brand-primary mb-1">Password</label>
             <Password
               id="password"
               v-model="password"
@@ -77,7 +77,7 @@
           <Button
             type="submit"
             label="Sign In"
-            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg shadow transition disabled:opacity-60"
+            class="w-full bg-brand-header hover:bg-brand-secondary text-white font-semibold py-2 rounded-lg shadow transition disabled:opacity-60"
             :loading="emailLoading"
             :disabled="!email || !password"
           />
@@ -85,9 +85,9 @@
 
         <!-- Divider -->
         <div class="flex items-center w-full my-2">
-          <div class="flex-grow border-t border-gray-200"></div>
-          <span class="mx-2 text-gray-400 text-sm">or</span>
-          <div class="flex-grow border-t border-gray-200"></div>
+          <div class="flex-grow border-t border-brand-primary/20"></div>
+          <span class="mx-2 text-brand-primary/50 text-sm">or</span>
+          <div class="flex-grow border-t border-brand-primary/20"></div>
         </div>
 
         <!-- Google Login -->
@@ -121,9 +121,9 @@
 
         <!-- Footer -->
         <div class="mt-4 w-full text-center">
-          <p class="text-gray-600 text-sm">
+          <p class="text-brand-primary/70 text-sm">
             Don't have an account?
-            <a href="/app/signup" class="text-purple-600 hover:text-purple-500 font-medium">Sign up</a>
+            <a href="/app/signup" class="text-brand-secondary hover:text-brand-header font-medium">Sign up</a>
           </p>
         </div>
       </div>

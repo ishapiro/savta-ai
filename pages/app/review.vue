@@ -1,23 +1,23 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
+  <div class="min-h-screen bg-brand-background p-4">
     <div class="max-w-7xl mx-auto">
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Manage your Moments (Photos and Posts)</h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Manage your Moments (Photos and Posts)</h1>
           <button
             class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             v-tooltip.top="'How to use this page'"
             @click="showHelpModal = true"
             aria-label="Information about review page"
           >
-            <i class="pi pi-info text-lg text-blue-500"></i>
+            <i class="pi pi-info text-lg text-brand-highlight"></i>
           </button>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
           <button
             v-if="stats.pending > 0"
-            class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="approveAllPending"
             :disabled="approvingAll"
           >
@@ -26,7 +26,7 @@
             <span class="sm:hidden">Approve All</span>
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="navigateTo('/app/deleted-memories')"
           >
             <i class="pi pi-trash text-lg sm:text-2xl animate-bounce"></i>
@@ -39,24 +39,24 @@
       <!-- Stats Cards -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
-          <i class="pi pi-image text-primary text-2xl mb-2"></i>
-          <div class="text-sm text-color-secondary">Total</div>
-          <div class="text-xl font-bold text-color">{{ stats.total }}</div>
+          <i class="pi pi-image text-brand-secondary text-2xl mb-2"></i>
+          <div class="text-sm text-brand-primary/70">Total</div>
+          <div class="text-xl font-bold text-brand-primary">{{ stats.total }}</div>
         </div>
         <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
-          <i class="pi pi-clock text-warning text-2xl mb-2"></i>
-          <div class="text-sm text-color-secondary">Pending</div>
-          <div class="text-xl font-bold text-color">{{ stats.pending }}</div>
+          <i class="pi pi-clock text-yellow-500 text-2xl mb-2"></i>
+          <div class="text-sm text-brand-primary/70">Pending</div>
+          <div class="text-xl font-bold text-brand-primary">{{ stats.pending }}</div>
         </div>
         <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
-          <i class="pi pi-check text-success text-2xl mb-2"></i>
-          <div class="text-sm text-color-secondary">Approved</div>
-          <div class="text-xl font-bold text-color">{{ stats.approved }}</div>
+          <i class="pi pi-check text-brand-highlight text-2xl mb-2"></i>
+          <div class="text-sm text-brand-primary/70">Approved</div>
+          <div class="text-xl font-bold text-brand-primary">{{ stats.approved }}</div>
         </div>
         <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
-          <i class="pi pi-book text-primary text-2xl mb-2"></i>
-          <div class="text-sm text-color-secondary">Ready for Book</div>
-          <div class="text-xl font-bold text-color">{{ stats.readyForBook }}</div>
+          <i class="pi pi-book text-brand-secondary text-2xl mb-2"></i>
+          <div class="text-sm text-brand-primary/70">Ready for Book</div>
+          <div class="text-xl font-bold text-brand-primary">{{ stats.readyForBook }}</div>
         </div>
       </div>
 
@@ -65,7 +65,7 @@
         <template #content>
           <div class="flex flex-wrap items-center gap-4">
             <div class="flex items-center space-x-2">
-              <label class="text-sm font-medium text-color">Filter:</label>
+              <label class="text-sm font-medium text-brand-primary">Filter:</label>
               <Dropdown
                 v-model="activeFilter"
                 :options="filterOptions"
@@ -76,7 +76,7 @@
               />
             </div>
             <div class="flex items-center space-x-2">
-              <label class="text-sm font-medium text-color">Type:</label>
+              <label class="text-sm font-medium text-brand-primary">Type:</label>
               <Dropdown
                 v-model="typeFilter"
                 :options="typeOptions"
@@ -87,7 +87,7 @@
               />
             </div>
             <div class="flex items-center space-x-2">
-              <label class="text-sm font-medium text-color">Sort:</label>
+              <label class="text-sm font-medium text-brand-primary">Sort:</label>
               <Dropdown
                 v-model="sortBy"
                 :options="sortOptions"
@@ -145,81 +145,81 @@
 
             <!-- AI Caption -->
             <div v-if="asset.ai_caption" class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">AI Caption</label>
-              <div class="italic text-xs sm:text-sm text-gray-600 bg-slate-50 rounded p-1.5 sm:p-2 border border-gray-200">"{{ asset.ai_caption }}"</div>
+              <label class="block text-xs sm:text-sm font-semibold text-brand-primary mb-1">AI Caption</label>
+              <div class="italic text-xs sm:text-sm text-brand-primary/70 bg-brand-navigation/20 rounded p-1.5 sm:p-2 border border-brand-primary/20">"{{ asset.ai_caption }}"</div>
             </div>
 
             <!-- Tags -->
             <div v-if="(asset.tags && asset.tags.length > 0) || (asset.user_tags && asset.user_tags.length > 0)" class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Tags</label>
+              <label class="block text-xs sm:text-sm font-semibold text-brand-primary mb-1">Tags</label>
               <div class="flex flex-wrap gap-1">
                 <Chip
                   v-for="tag in asset.tags || []"
                   :key="`ai-${tag}`"
                   :label="tag"
-                  class="text-xs bg-gray-100 text-gray-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                  class="text-xs bg-brand-primary/10 text-brand-primary px-1.5 sm:px-2 py-0.5 sm:py-1"
                 />
                 <Chip
                   v-for="tag in asset.user_tags || []"
                   :key="`user-${tag}`"
                   :label="tag"
-                  class="text-xs bg-blue-100 text-blue-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                  class="text-xs bg-brand-highlight/20 text-brand-highlight px-1.5 sm:px-2 py-0.5 sm:py-1"
                 />
               </div>
             </div>
 
             <!-- People Detected -->
             <div v-if="(asset.people_detected && asset.people_detected.length > 0) || (asset.user_people && asset.user_people.length > 0)" class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">People/Objects</label>
+              <label class="block text-xs sm:text-sm font-semibold text-brand-primary mb-1">People/Objects</label>
               <div class="flex flex-wrap gap-1">
                 <Chip
                   v-for="person in asset.people_detected || []"
                   :key="`ai-${person}`"
                   :label="person"
-                  class="text-xs bg-gray-100 text-gray-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                  class="text-xs bg-brand-primary/10 text-brand-primary px-1.5 sm:px-2 py-0.5 sm:py-1"
                 />
                 <Chip
                   v-for="person in asset.user_people || []"
                   :key="`user-${person}`"
                   :label="person"
-                  class="text-xs bg-pink-100 text-pink-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                  class="text-xs bg-brand-accent/20 text-brand-accent px-1.5 sm:px-2 py-0.5 sm:py-1"
                 />
               </div>
             </div>
 
             <!-- Location -->
             <div v-if="asset.city || asset.state || asset.country" class="mb-2">
-              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Location</label>
+              <label class="block text-xs sm:text-sm font-semibold text-brand-primary mb-1">Location</label>
               <div class="flex flex-wrap gap-1">
                 <Chip
                   v-if="asset.city"
                   :label="asset.city"
-                  class="text-xs bg-green-100 text-green-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                  class="text-xs bg-brand-highlight/20 text-brand-highlight px-1.5 sm:px-2 py-0.5 sm:py-1"
                 />
                 <Chip
                   v-if="asset.state"
                   :label="asset.state"
-                  class="text-xs bg-blue-100 text-blue-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                  class="text-xs bg-brand-secondary/20 text-brand-secondary px-1.5 sm:px-2 py-0.5 sm:py-1"
                 />
                 <Chip
                   v-if="asset.country"
                   :label="asset.country"
-                  class="text-xs bg-purple-100 text-purple-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                  class="text-xs bg-brand-header/20 text-brand-header px-1.5 sm:px-2 py-0.5 sm:py-1"
                 />
               </div>
             </div>
           </div>
 
           <!-- Action Bar - Fixed at Bottom -->
-          <div class="rounded-b-xl sm:rounded-b-2xl bg-gradient-to-r from-blue-100 via-pink-100 to-purple-100 px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 border-t border-gray-200 h-[70px] sm:h-[80px]" style="flex-shrink: 0;">
+          <div class="rounded-b-xl sm:rounded-b-2xl bg-gradient-to-r from-brand-highlight/20 via-brand-accent/20 to-brand-secondary/20 px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 border-t border-brand-primary/20 h-[70px] sm:h-[80px]" style="flex-shrink: 0;">
             <div class="flex items-center gap-2 sm:gap-4 flex-1 justify-center">
               <div v-if="!asset.approved" class="flex flex-col items-center cursor-pointer group" @click="approveAsset(asset.id)" v-tooltip.top="'Approve'">
-                <i class="pi pi-check text-2xl sm:text-3xl text-green-500 group-hover:scale-125 transition-transform"></i>
-                <span class="text-xs text-green-700 mt-0.5 sm:mt-1">Approve</span>
+                <i class="pi pi-check text-2xl sm:text-3xl text-brand-highlight group-hover:scale-125 transition-transform"></i>
+                <span class="text-xs text-brand-highlight mt-0.5 sm:mt-1">Approve</span>
               </div>
               <div class="flex flex-col items-center cursor-pointer group" @click="openEditDialog(asset)" v-tooltip.top="'Edit'">
-                <i class="pi pi-pencil text-2xl sm:text-3xl text-blue-500 group-hover:scale-125 transition-transform"></i>
-                <span class="text-xs text-blue-700 mt-0.5 sm:mt-1">Edit</span>
+                <i class="pi pi-pencil text-2xl sm:text-3xl text-brand-secondary group-hover:scale-125 transition-transform"></i>
+                <span class="text-xs text-brand-secondary mt-0.5 sm:mt-1">Edit</span>
               </div>
                                 <div class="flex flex-col items-center cursor-pointer group" @click="deleteAsset(asset.id)" v-tooltip.top="'Trash'">
                     <i class="pi pi-trash text-2xl sm:text-3xl text-red-500 group-hover:scale-125 transition-transform"></i>
@@ -227,8 +227,8 @@
                   </div>
             </div>
             <div>
-              <span v-if="!asset.approved && !asset.rejected" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-orange-200 text-orange-800 font-semibold text-xs shadow">Pending</span>
-              <span v-else-if="asset.approved" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-green-200 text-green-800 font-semibold text-xs shadow">Approved</span>
+              <span v-if="!asset.approved && !asset.rejected" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-yellow-200 text-yellow-800 font-semibold text-xs shadow">Pending</span>
+              <span v-else-if="asset.approved" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-brand-highlight/20 text-brand-highlight font-semibold text-xs shadow">Approved</span>
               <span v-else-if="asset.rejected" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-red-200 text-red-800 font-semibold text-xs shadow">Rejected</span>
             </div>
           </div>
@@ -248,21 +248,21 @@
           <!-- Asset Preview -->
           <div class="flex flex-col lg:flex-row gap-6">
             <div class="w-full lg:w-1/3">
-              <div class="bg-gray-100 rounded-lg p-4">
+              <div class="bg-brand-navigation/20 rounded-lg p-4">
                 <img
                   v-if="editingAsset.storage_url"
                   :src="editingAsset.storage_url"
                   :alt="editingAsset.user_caption || 'Family photo'"
                   class="w-full h-48 lg:h-64 object-contain rounded"
                 />
-                <i v-else class="pi pi-image text-4xl text-gray-400 flex items-center justify-center h-48 lg:h-64"></i>
+                <i v-else class="pi pi-image text-4xl text-brand-primary/40 flex items-center justify-center h-48 lg:h-64"></i>
               </div>
             </div>
             
             <div class="w-full lg:w-2/3 space-y-4">
               <!-- Title -->
               <div>
-                <label class="block text-sm font-semibold text-color mb-2">Title</label>
+                <label class="block text-sm font-semibold text-brand-primary mb-2">Title</label>
                 <InputText
                   v-model="editingAsset.title"
                   placeholder="Add a title for this memory"
@@ -272,7 +272,7 @@
 
               <!-- User Caption -->
               <div>
-                <label class="block text-sm font-semibold text-color mb-2">Your Caption</label>
+                <label class="block text-sm font-semibold text-brand-primary mb-2">Your Caption</label>
                 <Textarea
                   v-model="editingAsset.user_caption"
                   placeholder="Add your caption"
@@ -283,13 +283,13 @@
 
               <!-- Custom Tags -->
               <div>
-                <label class="block text-sm font-semibold text-color mb-2">Custom Tags</label>
+                <label class="block text-sm font-semibold text-brand-primary mb-2">Custom Tags</label>
                 <div class="flex flex-wrap gap-2 mb-2">
                   <Chip
                     v-for="tag in editingAsset.user_tags || []"
                     :key="tag"
                     :label="tag"
-                    class="bg-blue-100 text-blue-700"
+                    class="bg-brand-highlight/20 text-brand-highlight"
                     removable
                     @remove="removeUserTag(tag)"
                   />
@@ -306,13 +306,13 @@
 
               <!-- Custom People/Objects -->
               <div>
-                <label class="block text-sm font-semibold text-color mb-2">People/Objects</label>
+                <label class="block text-sm font-semibold text-brand-primary mb-2">People/Objects</label>
                 <div class="flex flex-wrap gap-2 mb-2">
                   <Chip
                     v-for="person in editingAsset.user_people || []"
                     :key="person"
                     :label="person"
-                    class="bg-pink-100 text-pink-700"
+                    class="bg-brand-accent/20 text-brand-accent"
                     removable
                     @remove="removeUserPerson(person)"
                   />
@@ -329,34 +329,34 @@
 
               <!-- AI Caption (read-only) -->
               <div v-if="editingAsset.ai_caption">
-                <label class="block text-sm font-semibold text-color mb-2">AI Caption</label>
-                <div class="italic text-sm text-color-secondary bg-slate-50 rounded p-3">
+                <label class="block text-sm font-semibold text-brand-primary mb-2">AI Caption</label>
+                <div class="italic text-sm text-brand-primary/70 bg-brand-navigation/20 rounded p-3">
                   "{{ editingAsset.ai_caption }}"
                 </div>
               </div>
 
               <!-- AI Tags (read-only) -->
               <div v-if="editingAsset.tags && editingAsset.tags.length > 0">
-                <label class="block text-sm font-semibold text-color mb-2">AI Tags</label>
+                <label class="block text-sm font-semibold text-brand-primary mb-2">AI Tags</label>
                 <div class="flex flex-wrap gap-2">
                   <Chip
                     v-for="tag in editingAsset.tags"
                     :key="tag"
                     :label="tag"
-                    class="bg-gray-100 text-gray-700"
+                    class="bg-brand-primary/10 text-brand-primary"
                   />
                 </div>
               </div>
 
               <!-- AI People (read-only) -->
               <div v-if="editingAsset.people_detected && editingAsset.people_detected.length > 0">
-                <label class="block text-sm font-semibold text-color mb-2">AI People/Objects</label>
+                <label class="block text-sm font-semibold text-brand-primary mb-2">AI People/Objects</label>
                 <div class="flex flex-wrap gap-2">
                   <Chip
                     v-for="person in editingAsset.people_detected"
                     :key="person"
                     :label="person"
-                    class="bg-gray-100 text-gray-700"
+                    class="bg-brand-primary/10 text-brand-primary"
                   />
                 </div>
               </div>
@@ -369,7 +369,7 @@
               <button
                 @click="unapproveAsset"
                 :disabled="!editingAsset.approved"
-                class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+                class="flex items-center justify-center gap-2 bg-brand-primary/20 hover:bg-brand-primary/30 disabled:bg-brand-primary/10 disabled:cursor-not-allowed text-brand-primary font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
               >
                 <i class="pi pi-times text-xl"></i>
                 Unapprove
@@ -377,7 +377,7 @@
               <button
                 @click="rerunAI"
                 :disabled="aiProcessing"
-                class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+                class="flex items-center justify-center gap-2 bg-brand-secondary hover:bg-brand-secondary/80 disabled:bg-brand-secondary/50 disabled:cursor-not-allowed text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
               >
                 <i class="pi pi-refresh text-xl" :class="{ 'animate-spin': aiProcessing }"></i>
                 Rerun AI
@@ -386,14 +386,14 @@
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
                 @click="showEditDialog = false"
-                class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+                class="flex items-center justify-center gap-2 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
               >
                 <i class="pi pi-times text-xl"></i>
                 Cancel
               </button>
               <button
                 @click="saveAssetChanges"
-                class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
+                class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200 w-full sm:w-auto"
               >
                 <i class="pi pi-check text-xl"></i>
                 Save Changes
@@ -414,93 +414,93 @@
       >
         <div class="space-y-6">
           <!-- Welcome Section -->
-          <div class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-2xl p-6 border border-purple-200">
+          <div class="bg-gradient-to-r from-brand-secondary/10 via-brand-header/10 to-brand-highlight/10 rounded-2xl p-6 border border-brand-secondary/30">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-star text-purple-600 text-xl"></i>
+              <div class="w-12 h-12 bg-gradient-to-br from-brand-secondary/20 to-brand-header/20 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-star text-brand-secondary text-xl"></i>
               </div>
               <div>
-                <h3 class="text-xl font-bold text-gray-800 mb-1">Welcome to Your Memory Review Workshop! ⭐</h3>
-                <p class="text-gray-600">This is where you become the curator of your special memories - approve, edit, and organize your precious moments!</p>
+                <h3 class="text-xl font-bold text-brand-primary mb-1">Welcome to Your Memory Review Workshop! ⭐</h3>
+                <p class="text-brand-primary/70">This is where you become the curator of your special memories - approve, edit, and organize your precious moments!</p>
               </div>
             </div>
           </div>
 
           <!-- Stats Cards Section -->
-          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+          <div class="bg-gradient-to-r from-brand-highlight/10 to-brand-secondary/10 rounded-2xl p-6 border border-brand-highlight/30">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-chart-bar text-blue-600 text-lg"></i>
+              <div class="w-10 h-10 bg-gradient-to-br from-brand-highlight/20 to-brand-secondary/20 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-chart-bar text-brand-highlight text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">📊 Your Memory Collection Stats</h3>
-                <p class="text-gray-600">Track your special memory collection with these helpful statistics!</p>
+                <h3 class="text-lg font-bold text-brand-primary mb-1">📊 Your Memory Collection Stats</h3>
+                <p class="text-brand-primary/70">Track your special memory collection with these helpful statistics!</p>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
-              <div class="bg-white rounded-xl p-4 border border-blue-100">
+              <div class="bg-white rounded-xl p-4 border border-brand-highlight/30">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-image text-blue-500"></i>
-                  <span class="font-semibold text-gray-800">Total Special Moments</span>
+                  <i class="pi pi-image text-brand-secondary"></i>
+                  <span class="font-semibold text-brand-primary">Total Special Moments</span>
                 </div>
-                <p class="text-sm text-gray-600">All your uploaded moments waiting to be organized</p>
+                <p class="text-sm text-brand-primary/70">All your uploaded moments waiting to be organized</p>
               </div>
-              <div class="bg-white rounded-xl p-4 border border-blue-100">
+              <div class="bg-white rounded-xl p-4 border border-brand-highlight/30">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-clock text-amber-500"></i>
-                  <span class="font-semibold text-gray-800">Awaiting Your Approval</span>
+                  <i class="pi pi-clock text-yellow-500"></i>
+                  <span class="font-semibold text-brand-primary">Awaiting Your Approval</span>
                 </div>
-                                  <p class="text-sm text-gray-600">Moments waiting for your special approval</p>
+                                  <p class="text-sm text-brand-primary/70">Moments waiting for your special approval</p>
               </div>
-              <div class="bg-white rounded-xl p-4 border border-blue-100">
+              <div class="bg-white rounded-xl p-4 border border-brand-highlight/30">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-check text-green-500"></i>
-                  <span class="font-semibold text-gray-800">Approved</span>
+                  <i class="pi pi-check text-brand-highlight"></i>
+                  <span class="font-semibold text-brand-primary">Approved</span>
                 </div>
-                                  <p class="text-sm text-gray-600">Memories ready to join your special memory books</p>
+                                  <p class="text-sm text-brand-primary/70">Memories ready to join your special memory books</p>
               </div>
-              <div class="bg-white rounded-xl p-4 border border-blue-100">
+              <div class="bg-white rounded-xl p-4 border border-brand-highlight/30">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-book text-purple-500"></i>
-                  <span class="font-semibold text-gray-800">Ready for Special Books</span>
+                  <i class="pi pi-book text-brand-secondary"></i>
+                  <span class="font-semibold text-brand-primary">Ready for Special Books</span>
                 </div>
-                <p class="text-sm text-gray-600">Can be included in your beautiful memory collections</p>
+                <p class="text-sm text-brand-primary/70">Can be included in your beautiful memory collections</p>
               </div>
             </div>
           </div>
 
           <!-- Action Buttons Section -->
-          <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+          <div class="bg-gradient-to-r from-brand-highlight/10 to-brand-accent/10 rounded-2xl p-6 border border-brand-highlight/30">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-magic text-green-600 text-lg"></i>
+              <div class="w-10 h-10 bg-gradient-to-br from-brand-highlight/20 to-brand-accent/20 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-magic text-brand-highlight text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Moment Special Actions</h3>
-                <p class="text-gray-600">Apply your special touch to each memory moment with these helpful actions!</p>
+                <h3 class="text-lg font-bold text-brand-primary mb-1">✨ Moment Special Actions</h3>
+                <p class="text-brand-primary/70">Apply your special touch to each memory moment with these helpful actions!</p>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div class="bg-white rounded-xl p-4 border border-green-100">
+              <div class="bg-white rounded-xl p-4 border border-brand-highlight/30">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-check text-green-500 text-lg"></i>
-                  <span class="font-semibold text-gray-800">Approve</span>
+                  <i class="pi pi-check text-brand-highlight text-lg"></i>
+                  <span class="font-semibold text-brand-primary">Approve</span>
                 </div>
-                                  <p class="text-sm text-gray-600">Approve this memory moment to join your Savta Special Memory collection</p>
+                                  <p class="text-sm text-brand-primary/70">Approve this memory moment to join your Savta Special Memory collection</p>
               </div>
-              <div class="bg-white rounded-xl p-4 border border-green-100">
+              <div class="bg-white rounded-xl p-4 border border-brand-highlight/30">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-pencil text-blue-500 text-lg"></i>
-                  <span class="font-semibold text-gray-800">Edit</span>
+                  <i class="pi pi-pencil text-brand-secondary text-lg"></i>
+                  <span class="font-semibold text-brand-primary">Edit</span>
                 </div>
-                <p class="text-sm text-gray-600">Refine captions, tags, and people to make your memory perfect</p>
+                <p class="text-sm text-brand-primary/70">Refine captions, tags, and people to make your memory perfect</p>
               </div>
-              <div class="bg-white rounded-xl p-4 border border-green-100">
+              <div class="bg-white rounded-xl p-4 border border-brand-highlight/30">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-trash text-red-500 text-lg"></i>
-                  <span class="font-semibold text-gray-800">Delete</span>
+                  <span class="font-semibold text-brand-primary">Delete</span>
                 </div>
-                <p class="text-sm text-gray-600">Send to the trash (can be restored later)</p>
+                <p class="text-sm text-brand-primary/70">Send to the trash (can be restored later)</p>
               </div>
             </div>
           </div>
@@ -610,14 +610,14 @@
           </div>
 
           <!-- Call to Action -->
-          <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 border border-green-200 text-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center shadow-lg mx-auto mb-4">
-              <i class="pi pi-star text-green-600 text-2xl"></i>
+          <div class="bg-gradient-to-r from-brand-highlight/10 to-brand-secondary/10 rounded-2xl p-6 border border-brand-highlight/30 text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-brand-highlight/20 to-brand-secondary/20 rounded-full flex items-center justify-center shadow-lg mx-auto mb-4">
+              <i class="pi pi-star text-brand-highlight text-2xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">⭐ Ready to Curate Your Special Memories?</h3>
-            <p class="text-gray-600 mb-4">Start reviewing and organizing your precious memory moments!</p>
+            <h3 class="text-xl font-bold text-brand-primary mb-2">⭐ Ready to Curate Your Special Memories?</h3>
+            <p class="text-brand-primary/70 mb-4">Start reviewing and organizing your precious memory moments!</p>
             <button
-              class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
+              class="bg-gradient-to-r from-brand-highlight to-brand-secondary hover:from-brand-highlight/80 hover:to-brand-secondary/80 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
               @click="showHelpModal = false"
             >
               <i class="pi pi-check mr-2"></i>

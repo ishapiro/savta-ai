@@ -1,55 +1,55 @@
 <template>
-  <div class="min-h-screen surface-ground p-4">
+  <div class="min-h-screen bg-brand-background p-4">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="mb-6">
-        <h1 class="text-3xl font-bold text-color mb-2">Editor Dashboard</h1>
-        <p class="text-color-secondary">Manage themes and review user submissions.</p>
+        <h1 class="text-3xl font-bold text-brand-primary mb-2">Editor Dashboard</h1>
+        <p class="text-brand-primary/70">Manage themes and review user submissions.</p>
       </div>
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white p-4 rounded-lg shadow">
           <div class="flex items-center">
-            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+            <div class="p-3 rounded-full bg-brand-highlight/20 text-brand-highlight">
               <i class="pi pi-image text-xl"></i>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Pending Assets</p>
-              <p class="text-2xl font-bold text-gray-900">{{ stats.pendingAssets }}</p>
+              <p class="text-sm font-medium text-brand-primary/70">Pending Assets</p>
+              <p class="text-2xl font-bold text-brand-primary">{{ stats.pendingAssets }}</p>
             </div>
           </div>
         </div>
         <div class="bg-white p-4 rounded-lg shadow">
           <div class="flex items-center">
-            <div class="p-3 rounded-full bg-green-100 text-green-600">
+            <div class="p-3 rounded-full bg-brand-header/20 text-brand-header">
               <i class="pi pi-check-circle text-xl"></i>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Reviewed Assets</p>
-              <p class="text-2xl font-bold text-gray-900">{{ stats.reviewedAssets }}</p>
+              <p class="text-sm font-medium text-brand-primary/70">Reviewed Assets</p>
+              <p class="text-2xl font-bold text-brand-primary">{{ stats.reviewedAssets }}</p>
             </div>
           </div>
         </div>
         <div class="bg-white p-4 rounded-lg shadow">
           <div class="flex items-center">
-            <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+            <div class="p-3 rounded-full bg-brand-secondary/20 text-brand-secondary">
               <i class="pi pi-book text-xl"></i>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Memory Books</p>
-              <p class="text-2xl font-bold text-gray-900">{{ stats.memoryBooks }}</p>
+              <p class="text-sm font-medium text-brand-primary/70">Memory Books</p>
+              <p class="text-2xl font-bold text-brand-primary">{{ stats.memoryBooks }}</p>
             </div>
           </div>
         </div>
         <div class="bg-white p-4 rounded-lg shadow">
           <div class="flex items-center">
-            <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+            <div class="p-3 rounded-full bg-brand-accent/20 text-brand-accent">
               <i class="pi pi-palette text-xl"></i>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Active Themes</p>
-              <p class="text-2xl font-bold text-gray-900">{{ stats.activeThemes }}</p>
+              <p class="text-sm font-medium text-brand-primary/70">Active Themes</p>
+              <p class="text-2xl font-bold text-brand-primary">{{ stats.activeThemes }}</p>
             </div>
           </div>
         </div>
@@ -61,7 +61,7 @@
         <TabPanel header="Asset Review">
           <!-- Asset Review Instructions and Filter -->
           <div class="mb-4">
-            <div class="mb-2 text-sm text-gray-700 font-medium">
+            <div class="mb-2 text-sm text-brand-primary/70 font-medium">
               To review assets, you must select a user by their email address below.
             </div>
             <div class="flex items-center gap-4">
@@ -74,7 +74,7 @@
                 :optionDisabled="option => !option.user_id"
                 placeholder="Type to search users..."
                 class="w-80"
-                inputClass="w-full h-11 px-4 py-2 text-base rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary"
+                inputClass="w-full h-11 px-4 py-2 text-base rounded-lg border border-brand-primary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
                 :dropdown="true"
                 :forceSelection="true"
                 field="email"
@@ -82,16 +82,16 @@
               />
               <div class="flex items-center gap-2">
                 <input type="checkbox" v-model="showOnlyUnapprovedUsers" id="showOnlyUnapprovedUsers" />
-                <label for="showOnlyUnapprovedUsers" class="text-sm text-gray-700">Show only users with unapproved assets</label>
+                <label for="showOnlyUnapprovedUsers" class="text-sm text-brand-primary/70">Show only users with unapproved assets</label>
               </div>
             </div>
           </div>
 
           <!-- User Summary Header -->
-          <div v-if="selectedUser && selectedUser.user_id" class="mb-4 p-4 bg-surface-100 rounded-lg flex flex-col sm:flex-row sm:items-center gap-2">
-            <div class="font-semibold text-color">User: <span class="text-primary">{{ selectedUser.email }}</span></div>
-            <div class="text-sm text-gray-700">Total Assets: <span class="font-bold">{{ userAssetStats.total }}</span></div>
-            <div class="text-sm text-gray-700">Approved Assets: <span class="font-bold">{{ userAssetStats.approved }}</span></div>
+          <div v-if="selectedUser && selectedUser.user_id" class="mb-4 p-4 bg-brand-surface-100 rounded-lg flex flex-col sm:flex-row sm:items-center gap-2">
+            <div class="font-semibold text-brand-primary">User: <span class="text-brand-primary">{{ selectedUser.email }}</span></div>
+            <div class="text-sm text-brand-primary/70">Total Assets: <span class="font-bold">{{ userAssetStats.total }}</span></div>
+            <div class="text-sm text-brand-primary/70">Approved Assets: <span class="font-bold">{{ userAssetStats.approved }}</span></div>
           </div>
 
           <!-- Assets Data Table (only if user selected) -->
@@ -142,7 +142,7 @@
 
               <Column field="created_at" header="Created" sortable>
                 <template #body="{ data }">
-                  <span class="text-sm text-color-secondary">{{ formatDate(data.created_at) }}</span>
+                  <span class="text-sm text-brand-primary/70">{{ formatDate(data.created_at) }}</span>
                 </template>
               </Column>
 
@@ -177,8 +177,8 @@
 
           <!-- No User Selected Message -->
           <div v-else class="text-center py-8">
-            <i class="pi pi-users text-4xl text-gray-400 mb-4"></i>
-            <p class="text-gray-600">Select a user above to review their assets.</p>
+            <i class="pi pi-users text-4xl text-brand-primary/40 mb-4"></i>
+            <p class="text-brand-primary/70">Select a user above to review their assets.</p>
           </div>
         </TabPanel>
 
@@ -186,7 +186,7 @@
         <TabPanel header="Memory Books">
           <div class="space-y-4">
             <div class="flex justify-between items-center">
-              <h3 class="text-lg font-semibold text-color">Memory Books</h3>
+              <h3 class="text-lg font-semibold text-brand-primary">Memory Books</h3>
               <div class="flex items-center space-x-4">
                 <InputText
                   v-model="bookSearch"
@@ -234,7 +234,7 @@
 
               <Column field="created_at" header="Created" sortable>
                 <template #body="{ data }">
-                  <span class="text-sm text-color-secondary">{{ formatDate(data.created_at) }}</span>
+                  <span class="text-sm text-brand-primary/70">{{ formatDate(data.created_at) }}</span>
                 </template>
               </Column>
 
@@ -272,7 +272,7 @@
         <TabPanel header="Themes">
           <div class="space-y-4">
             <div class="flex justify-between items-center">
-              <h3 class="text-lg font-semibold text-color">Manage Themes</h3>
+              <h3 class="text-lg font-semibold text-brand-primary">Manage Themes</h3>
               <div class="flex items-center gap-4">
                 <!-- Show Deleted Themes Toggle -->
                 <div class="flex items-center gap-2">
@@ -281,9 +281,9 @@
                     id="showDeletedThemes" 
                     v-model="showDeletedThemes"
                     @change="loadDeletedThemes"
-                    class="w-4 h-4 text-green-600 bg-white border-2 border-gray-300 rounded ring-2 ring-gray-500 focus:ring-green-500 focus:ring-2 checked:bg-green-50 checked:border-green-500"
+                    class="w-4 h-4 text-brand-success bg-white border-2 border-brand-primary rounded ring-2 ring-brand-primary focus:ring-brand-success focus:ring-2 checked:bg-brand-success checked:border-brand-success"
                   />
-                  <label for="showDeletedThemes" class="text-sm text-gray-700 cursor-pointer">Show deleted themes</label>
+                  <label for="showDeletedThemes" class="text-sm text-brand-primary/70 cursor-pointer">Show deleted themes</label>
                 </div>
                 <Button
                   label="Create New Theme"
@@ -299,26 +299,26 @@
                 v-for="theme in themes"
                 :key="theme.id"
                 class="bg-white p-4 rounded-lg shadow border relative"
-                :class="{ 'opacity-75 border-gray-300': !theme.is_active, 'border-green-200': theme.is_active }"
+                :class="{ 'opacity-75 border-brand-primary/30': !theme.is_active, 'border-brand-success': theme.is_active }"
               >
                 <!-- Delete Icon for Admin Users -->
                 <button
                   v-if="userProfile && userProfile.role === 'admin'"
                   @click="deleteTheme(theme.id)"
-                  class="absolute top-2 right-2 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                  class="absolute top-2 right-2 p-1 text-brand-danger hover:text-brand-danger/70 hover:bg-brand-danger/10 rounded-full transition-colors"
                   title="Delete Theme"
                 >
                   <i class="pi pi-trash text-sm"></i>
                 </button>
                 
                 <div class="flex items-center justify-between mb-3">
-                  <h4 class="font-semibold text-color">{{ theme.name }}</h4>
+                  <h4 class="font-semibold text-brand-primary">{{ theme.name }}</h4>
                   <Tag
                     :value="theme.is_active ? 'Active' : 'Inactive'"
                     :severity="theme.is_active ? 'success' : 'secondary'"
                   />
                 </div>
-                <p class="text-sm text-color-secondary mb-3">{{ theme.description || 'No description' }}</p>
+                <p class="text-sm text-brand-primary/70 mb-3">{{ theme.description || 'No description' }}</p>
                 <div class="flex items-center space-x-2">
                   <Button
                     v-if="!theme.is_active"
@@ -342,21 +342,21 @@
 
             <!-- Deleted Themes Grid -->
             <div v-if="showDeletedThemes && deletedThemes.length > 0" class="space-y-4">
-              <h4 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Deleted Themes</h4>
+              <h4 class="text-lg font-semibold text-brand-primary/70 border-b border-brand-primary/20 pb-2">Deleted Themes</h4>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div
                   v-for="theme in deletedThemes"
                   :key="theme.id"
-                  class="bg-gray-50 p-4 rounded-lg shadow border border-red-200 relative opacity-75"
+                  class="bg-brand-gray-50 p-4 rounded-lg shadow border border-brand-red-200 relative opacity-75"
                 >
                   <div class="flex items-center justify-between mb-3">
-                    <h4 class="font-semibold text-gray-600">{{ theme.name }}</h4>
+                    <h4 class="font-semibold text-brand-primary/70">{{ theme.name }}</h4>
                     <Tag
                       value="Deleted"
                       severity="danger"
                     />
                   </div>
-                  <p class="text-sm text-gray-500 mb-3">{{ theme.description || 'No description' }}</p>
+                  <p class="text-sm text-brand-primary/70 mb-3">{{ theme.description || 'No description' }}</p>
                   <div class="flex items-center space-x-2">
                     <Button
                       v-if="userProfile && userProfile.role === 'admin'"
@@ -373,8 +373,8 @@
 
             <!-- No Themes Message -->
             <div v-if="themes.length === 0 && (!showDeletedThemes || deletedThemes.length === 0)" class="text-center py-8">
-              <i class="pi pi-palette text-4xl text-gray-400 mb-4"></i>
-              <p class="text-gray-600">No themes found. Create your first theme to get started.</p>
+              <i class="pi pi-palette text-4xl text-brand-primary/40 mb-4"></i>
+              <p class="text-brand-primary/70">No themes found. Create your first theme to get started.</p>
             </div>
           </div>
         </TabPanel>
@@ -386,7 +386,7 @@
         >
           <div v-if="userProfile && userProfile.role === 'admin'" class="space-y-6">
             <div class="flex items-center justify-between">
-              <h2 class="text-xl font-semibold text-color">User Management</h2>
+              <h2 class="text-xl font-semibold text-brand-primary">User Management</h2>
               <div class="flex items-center space-x-4">
                 <InputText
                   v-model="userSearch"
@@ -408,9 +408,9 @@
                     id="showDeletedUsers" 
                     v-model="showDeletedUsers"
                     @change="loadDeletedUsers"
-                    class="w-4 h-4 text-green-600 bg-white border-2 border-gray-300 rounded ring-2 ring-gray-500 focus:ring-green-500 focus:ring-2 checked:bg-green-50 checked:border-green-500"
+                    class="w-4 h-4 text-brand-success bg-white border-2 border-brand-primary rounded ring-2 ring-brand-primary focus:ring-brand-success focus:ring-2 checked:bg-brand-success checked:border-brand-success"
                   />
-                  <label for="showDeletedUsers" class="text-sm text-gray-700 cursor-pointer">Show deleted users</label>
+                  <label for="showDeletedUsers" class="text-sm text-brand-primary/70 cursor-pointer">Show deleted users</label>
                 </div>
               </div>
             </div>
@@ -436,17 +436,17 @@
                 <template #body="{ data }">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                        <span class="text-primary font-medium">
+                      <div class="h-10 w-10 rounded-full bg-brand-primary-100 flex items-center justify-center">
+                        <span class="text-brand-primary font-medium">
                           {{ data.first_name ? data.first_name.charAt(0) : data.email.charAt(0).toUpperCase() }}
                         </span>
                       </div>
                     </div>
                     <div class="ml-4">
-                      <div class="text-sm font-medium text-color">
+                      <div class="text-sm font-medium text-brand-primary">
                         {{ data.first_name }} {{ data.last_name }}
                       </div>
-                      <div class="text-sm text-color-secondary">{{ data.email }}</div>
+                      <div class="text-sm text-brand-primary/70">{{ data.email }}</div>
                     </div>
                   </div>
                 </template>
@@ -497,7 +497,7 @@
 
               <Column field="created_at" header="Created At" sortable>
                 <template #body="{ data }">
-                  <span class="text-sm text-color-secondary">{{ formatDateOnlyDate(data.created_at) }}</span>
+                  <span class="text-sm text-brand-primary/70">{{ formatDateOnlyDate(data.created_at) }}</span>
                 </template>
               </Column>
 
@@ -533,7 +533,7 @@
 
             <!-- Deleted Users Section -->
             <div v-if="showDeletedUsers && deletedUsers.length > 0" class="mt-8 space-y-4">
-              <h3 class="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-2">Deleted Users</h3>
+              <h3 class="text-lg font-semibold text-brand-primary/70 border-b border-brand-primary/20 pb-2">Deleted Users</h3>
               <DataTable
                 :value="deletedUsers"
                 :paginator="true"
@@ -548,17 +548,17 @@
                   <template #body="{ data }">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-10 w-10">
-                        <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                          <span class="text-gray-500 font-medium">
+                        <div class="h-10 w-10 rounded-full bg-brand-gray-100 flex items-center justify-center">
+                          <span class="text-brand-gray-500 font-medium">
                             {{ data.first_name ? data.first_name.charAt(0) : data.email.charAt(0).toUpperCase() }}
                           </span>
                         </div>
                       </div>
                       <div class="ml-4">
-                        <div class="text-sm font-medium text-gray-600">
+                        <div class="text-sm font-medium text-brand-primary/70">
                           {{ data.first_name }} {{ data.last_name }}
                         </div>
-                        <div class="text-sm text-gray-500">{{ data.email }}</div>
+                        <div class="text-sm text-brand-gray-500">{{ data.email }}</div>
                       </div>
                     </div>
                   </template>
@@ -584,7 +584,7 @@
 
                 <Column field="created_at" header="Created" sortable>
                   <template #body="{ data }">
-                    <span class="text-sm text-color-secondary">{{ formatDateOnlyDate(data.created_at) }}</span>
+                    <span class="text-sm text-brand-primary/70">{{ formatDateOnlyDate(data.created_at) }}</span>
                   </template>
                 </Column>
 
@@ -612,8 +612,8 @@
 
           <!-- Access Denied Message -->
           <div v-else class="text-center py-8">
-            <i class="pi pi-lock text-4xl text-gray-400 mb-4"></i>
-            <p class="text-gray-600">Admin access required to view user management.</p>
+            <i class="pi pi-lock text-4xl text-brand-primary/40 mb-4"></i>
+            <p class="text-brand-primary/70">Admin access required to view user management.</p>
           </div>
         </TabPanel>
       </TabView>
@@ -628,7 +628,7 @@
     >
       <div class="space-y-4">
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Theme Name</label>
+          <label class="block text-sm font-medium text-brand-primary mb-1">Theme Name</label>
           <InputText
             v-model="newTheme.name"
             placeholder="Enter theme name"
@@ -637,7 +637,7 @@
         </div>
 
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Description</label>
+          <label class="block text-sm font-medium text-brand-primary mb-1">Description</label>
           <Textarea
             v-model="newTheme.description"
             placeholder="Enter theme description"
@@ -647,7 +647,7 @@
         </div>
 
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Preview Image URL</label>
+          <label class="block text-sm font-medium text-brand-primary mb-1">Preview Image URL</label>
           <InputText
             v-model="newTheme.preview_image_url"
             placeholder="Paste preview image URL"
@@ -657,7 +657,7 @@
 
         <div class="grid grid-cols-2 gap-4">
           <div class="field">
-            <label class="block text-sm font-medium text-color mb-1">Background Color</label>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Background Color</label>
             <InputText
               v-model="newTheme.background_color"
               placeholder="#fffbe9"
@@ -665,7 +665,7 @@
             />
           </div>
           <div class="field">
-            <label class="block text-sm font-medium text-color mb-1">Background Opacity</label>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Background Opacity</label>
             <InputText
               v-model.number="newTheme.background_opacity"
               type="number"
@@ -679,7 +679,7 @@
 
         <div class="grid grid-cols-2 gap-4">
           <div class="field">
-            <label class="block text-sm font-medium text-color mb-1">Header Font</label>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Header Font</label>
             <InputText
               v-model="newTheme.header_font"
               placeholder="e.g., 'Times New Roman'"
@@ -687,7 +687,7 @@
             />
           </div>
           <div class="field">
-            <label class="block text-sm font-medium text-color mb-1">Body Font</label>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Body Font</label>
             <InputText
               v-model="newTheme.body_font"
               placeholder="e.g., Arial"
@@ -697,7 +697,7 @@
         </div>
 
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Signature Font</label>
+          <label class="block text-sm font-medium text-brand-primary mb-1">Signature Font</label>
           <InputText
             v-model="newTheme.signature_font"
             placeholder="e.g., 'Brush Script MT'"
@@ -707,7 +707,7 @@
 
         <div class="grid grid-cols-2 gap-4">
           <div class="field">
-            <label class="block text-sm font-medium text-color mb-1">Header Font Color</label>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Header Font Color</label>
             <InputText
               v-model="newTheme.header_font_color"
               placeholder="#000000"
@@ -715,7 +715,7 @@
             />
           </div>
           <div class="field">
-            <label class="block text-sm font-medium text-color mb-1">Body Font Color</label>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Body Font Color</label>
             <InputText
               v-model="newTheme.body_font_color"
               placeholder="#333333"
@@ -725,7 +725,7 @@
         </div>
 
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Signature Font Color</label>
+          <label class="block text-sm font-medium text-brand-primary mb-1">Signature Font Color</label>
           <InputText
             v-model="newTheme.signature_font_color"
             placeholder="#666666"
@@ -734,7 +734,7 @@
         </div>
 
         <div class="field">
-          <label class="block text-sm font-medium text-color mb-1">Layout Config (JSON)</label>
+          <label class="block text-sm font-medium text-brand-primary mb-1">Layout Config (JSON)</label>
           <Textarea
             v-model="newTheme.layout_config"
             placeholder='{"example": "JSON configuration"}'
@@ -770,58 +770,58 @@
       <div v-if="selectedUserForDetails" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-color mb-1">User ID</label>
-            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.user_id }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">User ID</label>
+            <p class="text-sm text-brand-primary/70">{{ selectedUserForDetails.user_id }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Email</label>
-            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.email }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Email</label>
+            <p class="text-sm text-brand-primary/70">{{ selectedUserForDetails.email }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">First Name</label>
-            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.first_name }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">First Name</label>
+            <p class="text-sm text-brand-primary/70">{{ selectedUserForDetails.first_name }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Last Name</label>
-            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.last_name }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Last Name</label>
+            <p class="text-sm text-brand-primary/70">{{ selectedUserForDetails.last_name }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Phone</label>
-            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.phone || '—' }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Phone</label>
+            <p class="text-sm text-brand-primary/70">{{ selectedUserForDetails.phone || '—' }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Address</label>
-            <p class="text-sm text-color-secondary">{{ selectedUserForDetails.address || '—' }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Address</label>
+            <p class="text-sm text-brand-primary/70">{{ selectedUserForDetails.address || '—' }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Role</label>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Role</label>
             <Tag :value="selectedUserForDetails.role" :severity="getRoleSeverity(selectedUserForDetails.role)" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Subscription</label>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Subscription</label>
             <Tag :value="selectedUserForDetails.subscription_type" :severity="selectedUserForDetails.subscription_type === 'premium' ? 'primary' : 'secondary'" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Created At</label>
-            <p class="text-sm text-color-secondary">{{ formatDate(selectedUserForDetails.created_at) }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Created At</label>
+            <p class="text-sm text-brand-primary/70">{{ formatDate(selectedUserForDetails.created_at) }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Updated At</label>
-            <p class="text-sm text-color-secondary">{{ formatDate(selectedUserForDetails.updated_at) }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Updated At</label>
+            <p class="text-sm text-brand-primary/70">{{ formatDate(selectedUserForDetails.updated_at) }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Disabled</label>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Disabled</label>
             <Tag :value="selectedUserForDetails.deleted ? 'Disabled' : 'Active'" :severity="selectedUserForDetails.deleted ? 'danger' : 'success'" />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-4 mt-4">
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Total Assets</label>
-            <p class="text-sm text-color-secondary">{{ userAssetsCount }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Total Assets</label>
+            <p class="text-sm text-brand-primary/70">{{ userAssetsCount }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-color mb-1">Total Memory Books</label>
-            <p class="text-sm text-color-secondary">{{ userBooksCount }}</p>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Total Memory Books</label>
+            <p class="text-sm text-brand-primary/70">{{ userBooksCount }}</p>
           </div>
         </div>
       </div>

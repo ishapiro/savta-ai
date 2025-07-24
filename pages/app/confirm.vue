@@ -1,11 +1,11 @@
 <template>
-  <div class="h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
+  <div class="h-screen flex items-center justify-center bg-brand-background relative overflow-hidden">
     <!-- Animated background elements -->
     <div class="fixed inset-0 pointer-events-none z-0">
-      <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-blue-500/20 rounded-full blur-xl animate-pulse-slow"></div>
-      <div class="absolute top-40 right-8 sm:right-32 w-16 sm:w-24 h-16 sm:h-24 bg-purple-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 1s;"></div>
-      <div class="absolute bottom-32 left-1/3 w-24 sm:w-40 h-24 sm:h-40 bg-pink-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 2s;"></div>
-      <div class="absolute top-1/2 right-8 sm:right-20 w-12 sm:w-20 h-12 sm:h-20 bg-cyan-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
+      <div class="absolute top-20 left-4 sm:left-20 w-20 sm:w-32 h-20 sm:h-32 bg-brand-highlight/20 rounded-full blur-xl animate-pulse-slow"></div>
+      <div class="absolute top-40 right-8 sm:right-32 w-16 sm:w-24 h-16 sm:h-24 bg-brand-secondary/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 1s;"></div>
+      <div class="absolute bottom-32 left-1/3 w-24 sm:w-40 h-24 sm:h-40 bg-brand-header/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 2s;"></div>
+      <div class="absolute top-1/2 right-8 sm:right-20 w-12 sm:w-20 h-12 sm:h-20 bg-brand-accent/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
     </div>
 
     <!-- Confirmation Dialog -->
@@ -23,70 +23,70 @@
         <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
           <span class="text-2xl">{{ isNewUser ? '🎉' : '✅' }}</span>
         </div>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+        <h1 class="text-xl sm:text-2xl font-bold text-brand-primary mb-1">
           {{ isNewUser ? 'Welcome to Savta AI!' : 'Welcome Back!' }}
         </h1>
-        <p class="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+        <p class="text-sm sm:text-base text-brand-primary/80 max-w-2xl mx-auto">
           {{ isNewUser ? 'Thank you for joining Savta AI. Your account is now active and ready to use.' : 'You are now successfully logged in to your Savta AI account.' }}
         </p>
       </div>
 
       <!-- User Information Card -->
-      <div v-if="user" class="bg-gray-50 rounded-lg p-2 sm:p-3 mb-2 w-full">
-        <h3 class="text-sm font-semibold text-gray-900 mb-1 flex items-center">
-            <span class="text-purple-600 mr-2">👤</span>
+      <div v-if="user" class="bg-brand-navigation/20 rounded-lg p-2 sm:p-3 mb-2 w-full">
+        <h3 class="text-sm font-semibold text-brand-secondary mb-1 flex items-center">
+            <span class="text-brand-secondary mr-2">👤</span>
             Your Account Details
           </h3>
           <div class="space-y-1">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
-              <span class="text-gray-600 font-medium text-xs">Email Address:</span>
-              <span class="text-gray-900 font-mono text-xs sm:text-sm">{{ user.email }}</span>
+              <span class="text-brand-primary/70 font-medium text-xs">Email Address:</span>
+              <span class="text-brand-primary font-mono text-xs sm:text-sm">{{ user.email }}</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
-              <span class="text-gray-600 font-medium text-xs">Account Status:</span>
+              <span class="text-brand-primary/70 font-medium text-xs">Account Status:</span>
               <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                    :class="isUserDisabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'">
+                    :class="isUserDisabled ? 'bg-red-100 text-red-800' : 'bg-brand-highlight/20 text-brand-highlight'">
                 <span class="w-2 h-2 rounded-full mr-1"
-                      :class="isUserDisabled ? 'bg-red-400' : 'bg-green-400'"></span>
+                      :class="isUserDisabled ? 'bg-red-400' : 'bg-brand-highlight'"></span>
                 {{ isUserDisabled ? 'Disabled' : (isNewUser ? 'New Account' : 'Active') }}
               </span>
             </div>
             <div v-if="isUserDisabled" class="text-center my-4">
               <span class="block font-bold text-2xl text-red-600">Your account has been disabled.</span>
-              <span class="block font-semibold text-lg text-gray-700 mt-2">Please contact customer support for more information.</span>
+              <span class="block font-semibold text-lg text-brand-primary mt-2">Please contact customer support for more information.</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
-              <span class="text-gray-600 font-medium text-xs">Signup Date:</span>
-              <span class="text-gray-900 text-xs sm:text-sm">{{ formatDate(user.created_at) }}</span>
+              <span class="text-brand-primary/70 font-medium text-xs">Signup Date:</span>
+              <span class="text-brand-primary text-xs sm:text-sm">{{ formatDate(user.created_at) }}</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
-              <span class="text-gray-600 font-medium text-xs">Last Sign In:</span>
-              <span class="text-gray-900 text-xs sm:text-sm">{{ formatDate(user.last_sign_in_at) }}</span>
+              <span class="text-brand-primary/70 font-medium text-xs">Last Sign In:</span>
+              <span class="text-brand-primary text-xs sm:text-sm">{{ formatDate(user.last_sign_in_at) }}</span>
             </div>
             <div v-if="user.user_metadata" class="flex flex-col sm:flex-row sm:items-center justify-between">
-              <span class="text-gray-600 font-medium text-xs">Provider:</span>
-              <span class="text-gray-900 capitalize text-xs sm:text-sm">{{ user.app_metadata?.provider || 'Email' }}</span>
+              <span class="text-brand-primary/70 font-medium text-xs">Provider:</span>
+              <span class="text-brand-primary capitalize text-xs sm:text-sm">{{ user.app_metadata?.provider || 'Email' }}</span>
             </div>
           </div>
         </div>
 
       <!-- Hide Next Steps if user is disabled -->
-      <div v-if="!isUserDisabled" class="bg-blue-50 rounded-lg p-2 sm:p-3 mb-2 w-full">
-        <h3 class="text-sm font-semibold text-blue-900 mb-1 flex items-center">
-            <span class="text-blue-600 mr-2">🚀</span>
+      <div v-if="!isUserDisabled" class="bg-brand-highlight/10 rounded-lg p-2 sm:p-3 mb-2 w-full">
+        <h3 class="text-sm font-semibold text-brand-highlight mb-1 flex items-center">
+            <span class="text-brand-highlight mr-2">🚀</span>
             What's Next?
           </h3>
-          <ul class="space-y-1 text-blue-800 text-xs">
+          <ul class="space-y-1 text-brand-highlight/80 text-xs">
             <li class="flex items-start">
-              <span class="text-blue-600 mr-2 mt-1">•</span>
+              <span class="text-brand-highlight mr-2 mt-1">•</span>
               <span>Explore your personalized dashboard</span>
             </li>
             <li class="flex items-start">
-              <span class="text-blue-600 mr-2 mt-1">•</span>
+              <span class="text-brand-highlight mr-2 mt-1">•</span>
               <span>Start creating your first family newsletter</span>
             </li>
             <li class="flex items-start">
-              <span class="text-blue-600 mr-2 mt-1">•</span>
+              <span class="text-brand-highlight mr-2 mt-1">•</span>
               <span>Invite family members to join</span>
             </li>
           </ul>
@@ -97,7 +97,7 @@
         <Button
           v-if="!isUserDisabled"
           label="Start Creating Special Moments"
-          class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold text-sm"
+          class="bg-brand-header hover:bg-brand-secondary text-white px-4 py-2 rounded-lg font-semibold text-sm"
           @click="goToDashboard"
         />
         <Button

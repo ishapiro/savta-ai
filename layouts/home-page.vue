@@ -7,7 +7,7 @@
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </Head>
     <!-- Header with just the logo -->
-    <header class="bg-white shadow-sm border-b border-gray-200">
+    <header class="bg-brand-navigation">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <!-- Logo -->
