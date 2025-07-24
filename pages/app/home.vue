@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100">
+  <div class="min-h-screen flex flex-col bg-[#F9F6F2]">
     <!-- Hero Section -->
     <div class="w-full px-4 sm:px-6 lg:px-8 pt-10 pb-8 text-center">
       <div class="max-w-3xl mx-auto">

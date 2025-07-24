@@ -1,40 +1,46 @@
 <template>
   <div class="min-h-screen flex flex-col surface-ground">
+    <!-- Add Google Fonts -->
+    <Head>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    </Head>
     <!-- Header -->
-    <header class="surface-section border-b border-surface-border sticky top-0 z-40 bg-white/95 backdrop-blur-sm">
-      <nav class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="bg-brand-navigation sticky top-0 z-40">
+      <nav class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
           <div class="flex items-center">
             <NuxtLink to="/" class="flex items-center space-x-3 no-underline">
               <SavtaIcon class="h-14 w-auto" />
-              <span class="text-2xl font-bold text-pink-500 no-underline">Savta</span>
+              <span class="text-2xl font-bold text-brand-secondary no-underline">Savta</span>
             </NuxtLink>
           </div>
 
           <!-- Desktop Navigation -->
           <div class="hidden xl:flex items-center space-x-2 xl:space-x-4">
             <NuxtLink to="/app/home" class="no-underline">
-              <button class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+              <button class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                 <i class="pi pi-home text-lg"></i>
                 <span>Home</span>
               </button>
             </NuxtLink>
             <NuxtLink to="/app/dashboard" class="no-underline">
-              <button class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+              <button class="flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                 <i class="pi pi-th-large text-lg"></i>
                 <span>Dashboard</span>
               </button>
             </NuxtLink>
             <template v-if="!user">
               <NuxtLink :to="`/app/login?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
-                <button class="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                <button class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                   <i class="pi pi-sign-in text-lg"></i>
                   <span>Sign in</span>
                 </button>
               </NuxtLink>
               <NuxtLink :to="`/app/signup?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="no-underline">
-                <button class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                <button class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                   <i class="pi pi-user-plus text-lg"></i>
                   <span>Sign up</span>
                 </button>
@@ -43,33 +49,33 @@
             <template v-if="user && userProfile && !userProfile.deleted">
               <div class="flex items-center space-x-2">
                 <NuxtLink to="/app/upload" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                  <button class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-upload text-lg"></i>
                     <span>Upload</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink to="/app/review" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                  <button class="flex items-center justify-center gap-2 bg-brand-accent hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-check-circle text-lg"></i>
                     <span>Review</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink to="/app/memory-books" class="no-underline">
-                  <button class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                  <button class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-book text-lg"></i>
                     <span>Memories</span>
                   </button>
                 </NuxtLink>
                 <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
                   <NuxtLink to="/app/editor" class="no-underline" @click="logEditorClick">
-                    <button class="flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
+                    <button class="flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                       <i class="pi pi-palette text-lg"></i>
                       <span>Editor</span>
                     </button>
                   </NuxtLink>
                 </template>
               </div>
-              <button @click="handleSignOut" class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200">
+              <button @click="handleSignOut" class="flex items-center justify-center gap-2 bg-brand-background hover:bg-brand-highlight text-brand-secondary font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200">
                 <i class="pi pi-sign-out text-lg"></i>
                 <span>Sign out</span>
               </button>
@@ -81,21 +87,21 @@
           <div class="flex xl:hidden items-center">
             <button
               @click="toggleMobileMenu"
-              class="relative w-8 h-8 flex flex-col justify-center items-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg transition-all duration-200"
-              :class="mobileMenuOpen ? 'bg-blue-50' : 'bg-gray-50 hover:bg-gray-100'"
+              class="relative w-8 h-8 flex flex-col justify-center items-center focus:outline-none focus:ring-2 focus:ring-brand-header focus:ring-offset-2 rounded-lg transition-all duration-200"
+              :class="mobileMenuOpen ? 'bg-brand-accent/20' : 'bg-brand-background hover:bg-brand-highlight/20'"
               aria-label="Toggle mobile menu"
             >
               <!-- Hamburger Icon with Animation -->
               <span 
-                class="w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ease-in-out"
+                class="w-5 h-0.5 bg-brand-secondary rounded-full transition-all duration-300 ease-in-out"
                 :class="mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''"
               ></span>
               <span 
-                class="w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ease-in-out mt-1"
+                class="w-5 h-0.5 bg-brand-secondary rounded-full transition-all duration-300 ease-in-out mt-1"
                 :class="mobileMenuOpen ? 'opacity-0' : ''"
               ></span>
               <span 
-                class="w-5 h-0.5 bg-gray-700 rounded-full transition-all duration-300 ease-in-out mt-1"
+                class="w-5 h-0.5 bg-brand-secondary rounded-full transition-all duration-300 ease-in-out mt-1"
                 :class="mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''"
               ></span>
             </button>
@@ -113,62 +119,62 @@
 
     <!-- Mobile Drawer Navigation (Gmail style) -->
     <div
-      class="fixed top-0 left-0 h-full w-72 max-w-[90vw] bg-white shadow-2xl z-50 xl:hidden transform transition-transform duration-300 ease-in-out rounded-r-2xl border-r border-gray-200"
+      class="fixed top-0 left-0 h-full w-72 max-w-[90vw] bg-brand-background shadow-2xl z-50 xl:hidden transform transition-transform duration-300 ease-in-out rounded-r-2xl border-r border-brand-highlight/30"
       :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'"
     >
       <!-- Profile Section -->
-      <div class="flex items-center gap-3 p-6 border-b border-gray-100">
-        <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center shadow">
+      <div class="flex items-center gap-3 p-6 border-b border-brand-highlight/30">
+        <div class="w-12 h-12 bg-gradient-to-br from-brand-header to-brand-secondary rounded-full flex items-center justify-center shadow">
           <i class="pi pi-user text-white text-2xl"></i>
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-base font-semibold text-gray-900 truncate">{{ user ? user.email : 'Guest' }}</p>
-          <p class="text-xs text-gray-500 truncate">{{ user ? 'Authenticated' : 'Limited access' }}</p>
+          <p class="text-base font-semibold text-brand-secondary truncate">{{ user ? user.email : 'Guest' }}</p>
+          <p class="text-xs text-brand-primary truncate">{{ user ? 'Authenticated' : 'Limited access' }}</p>
         </div>
       </div>
       <div class="overflow-y-auto flex-1">
         <nav class="py-2">
-          <NuxtLink to="/app/home" class="flex items-center gap-3 px-6 py-3 hover:bg-gray-100 transition rounded-xl" @click="closeMobileMenu">
-            <i class="pi pi-home text-xl text-blue-600"></i>
-            <span class="font-medium text-gray-900">Home</span>
+          <NuxtLink to="/app/home" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="closeMobileMenu">
+            <i class="pi pi-home text-xl text-brand-header"></i>
+            <span class="font-medium text-brand-secondary">Home</span>
           </NuxtLink>
-          <NuxtLink to="/app/dashboard" class="flex items-center gap-3 px-6 py-3 hover:bg-gray-100 transition rounded-xl" @click="closeMobileMenu">
-            <i class="pi pi-th-large text-xl text-gray-600"></i>
-            <span class="font-medium text-gray-900">Dashboard</span>
+          <NuxtLink to="/app/dashboard" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="closeMobileMenu">
+            <i class="pi pi-th-large text-xl text-brand-primary"></i>
+            <span class="font-medium text-brand-secondary">Dashboard</span>
           </NuxtLink>
           <template v-if="!user">
-            <NuxtLink to="/app/login" class="flex items-center gap-3 px-6 py-3 hover:bg-gray-100 transition rounded-xl" @click="closeMobileMenu">
-              <i class="pi pi-sign-in text-xl text-blue-600"></i>
-              <span class="font-medium text-gray-900">Sign In</span>
+            <NuxtLink to="/app/login" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="closeMobileMenu">
+              <i class="pi pi-sign-in text-xl text-brand-header"></i>
+              <span class="font-medium text-brand-secondary">Sign In</span>
             </NuxtLink>
-            <NuxtLink to="/app/signup" class="flex items-center gap-3 px-6 py-3 hover:bg-gray-100 transition rounded-xl" @click="closeMobileMenu">
-              <i class="pi pi-user-plus text-xl text-green-600"></i>
-              <span class="font-medium text-gray-900">Sign Up</span>
+            <NuxtLink to="/app/signup" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="closeMobileMenu">
+              <i class="pi pi-user-plus text-xl text-brand-highlight"></i>
+              <span class="font-medium text-brand-secondary">Sign Up</span>
             </NuxtLink>
           </template>
           <template v-if="user && userProfile && !userProfile.deleted">
-            <NuxtLink to="/app/upload" class="flex items-center gap-3 px-6 py-3 hover:bg-gray-100 transition rounded-xl" @click="closeMobileMenu">
-              <i class="pi pi-upload text-xl text-purple-600"></i>
-              <span class="font-medium text-gray-900">Upload</span>
+            <NuxtLink to="/app/upload" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="closeMobileMenu">
+              <i class="pi pi-upload text-xl text-brand-highlight"></i>
+              <span class="font-medium text-brand-secondary">Upload</span>
             </NuxtLink>
-            <NuxtLink to="/app/review" class="flex items-center gap-3 px-6 py-3 hover:bg-gray-100 transition rounded-xl" @click="closeMobileMenu">
-              <i class="pi pi-check-circle text-xl text-pink-600"></i>
-              <span class="font-medium text-gray-900">Review</span>
+            <NuxtLink to="/app/review" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="closeMobileMenu">
+              <i class="pi pi-check-circle text-xl text-brand-accent"></i>
+              <span class="font-medium text-brand-secondary">Review</span>
             </NuxtLink>
-            <NuxtLink to="/app/memory-books" class="flex items-center gap-3 px-6 py-3 hover:bg-gray-100 transition rounded-xl" @click="closeMobileMenu">
-              <i class="pi pi-book text-xl text-green-600"></i>
-              <span class="font-medium text-gray-900">Memories</span>
+            <NuxtLink to="/app/memory-books" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="closeMobileMenu">
+              <i class="pi pi-book text-xl text-brand-header"></i>
+              <span class="font-medium text-brand-secondary">Memories</span>
             </NuxtLink>
             <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
-              <NuxtLink to="/app/editor" class="flex items-center gap-3 px-6 py-3 hover:bg-gray-100 transition rounded-xl" @click="logEditorClick; closeMobileMenu">
-                <i class="pi pi-palette text-xl text-yellow-600"></i>
-                <span class="font-medium text-gray-900">Editor</span>
+              <NuxtLink to="/app/editor" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="logEditorClick; closeMobileMenu">
+                <i class="pi pi-palette text-xl text-brand-primary"></i>
+                <span class="font-medium text-brand-secondary">Editor</span>
               </NuxtLink>
             </template>
-            <div class="my-2 border-t border-gray-200"></div>
-            <button @click="handleSignOut" class="flex items-center gap-3 px-6 py-3 w-full hover:bg-gray-100 transition rounded-xl">
-              <i class="pi pi-sign-out text-xl text-gray-600"></i>
-              <span class="font-medium text-gray-900">Sign Out</span>
+            <div class="my-2 border-t border-brand-highlight/30"></div>
+            <button @click="handleSignOut" class="flex items-center gap-3 px-6 py-3 w-full hover:bg-brand-highlight/20 transition rounded-xl">
+              <i class="pi pi-sign-out text-xl text-brand-primary"></i>
+              <span class="font-medium text-brand-secondary">Sign Out</span>
             </button>
           </template>
         </nav>
@@ -176,7 +182,7 @@
     </div>
 
     <!-- Breadcrumb aligned with header content -->
-    <div class="hidden md:block bg-gray-50">
+    <div class="hidden md:block bg-brand-background">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav class="flex items-center space-x-2 py-2 text-sm">
           <template v-for="(item, index) in breadcrumbItems" :key="index">

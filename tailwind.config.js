@@ -59,6 +59,15 @@ export default {
         },
       },
       colors: {
+        brand: {
+          header: '#D16D84', // raspberry
+          background: '#F9F6F2', // cream
+          primary: '#7C7A75', // gray  
+          secondary: '#6E4B63', // plum
+          navigation: '#F1B8B8', // blush
+          highlight: '#7BAAA7', // dusty teal
+          accent: '#E8B4B8', // lighter raspberry for accents
+        },
         primary: {
           DEFAULT: 'var(--primary-color)',
           hover: 'var(--primary-hover-color)',
@@ -76,6 +85,14 @@ export default {
           'text-secondary': 'var(--text-color-secondary)',
           'text-muted': 'var(--text-color-secondary)'
         }
+      },
+      fontFamily: {
+        sans: ['"Inter"', '"Nunito"', 'sans-serif'],
+      },
+      fontSize: {
+        h1: ['2.5rem', { lineHeight: '1.2', fontWeight: '700' }], // 40px
+        h2: ['2rem', { lineHeight: '1.3', fontWeight: '600' }],    // 32px
+        h3: ['1.5rem', { lineHeight: '1.4', fontWeight: '500' }],  // 24px
       },
       typography: {
         DEFAULT: {

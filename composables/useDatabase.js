@@ -712,8 +712,8 @@ export const useDatabase = () => {
         const users = await res.json()
         if (!Array.isArray(users)) {
           console.error('[getAllUsers] Backend returned error or non-array:', users)
-          return []
-        }
+        return []
+      }
         console.log('[getAllUsers] Received users from backend:', users)
         return users
       } catch (err) {

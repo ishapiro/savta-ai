@@ -2,22 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Custom Properties for colors */
-:root {
-  --primary-color: #10b981; /* Emerald-500 */
-  --primary-hover-color: #059669; /* Emerald-600 */
-  --primary-active-color: #047857; /* Emerald-700 */
-  --primary-contrast-color: #ffffff;
-  
-  --surface-ground: #F9F6F2;
-  --surface-section: #ffffff;
-  --surface-card: #ffffff;
-  --surface-hover: #f4f4f5;
-  --surface-border: #e4e4e7;
-  --text-color: #7C7A75;
-  --text-color-secondary: #F1B8B8;
-}
-
 @layer base {
   /* Base styles */
   button, 
@@ -139,9 +123,8 @@ html, body {
 }
 
 body {
-  background-color: #F9F6F2;
-  color: #7C7A75;
-  font-family: "Inter", "Nunito", "Helvetica Neue", sans-serif;
+  @apply bg-gray-50 text-gray-800;
+  font-family: 'Inter', sans-serif;
 }
 
 .wide-tooltip {
