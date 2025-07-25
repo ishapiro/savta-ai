@@ -7,24 +7,14 @@
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </Head>
     <!-- Header with just the logo -->
-    <header class="bg-brand-background border-b border-gray-300 mt-5 mb-5">
+    <header class="bg-brand-background border-b border-gray-300 mt-5">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-center items-center">
           <!-- Logo -->
           <div class="flex items-center">
-              <SavtaIcon class="h-20 w-auto" />
-              <span class="ml-5 text-2xl font-bold text-pink-500">Savta</span>
+              <SavtaIcon class="h-35 w-auto" />
+              <span class="ml-5 text-2xl font-bold text-brand-header">Savta</span>
           </div>
-          
-          <!-- Right side - could add user menu or other elements later -->
-          <!-- <div class="flex items-center space-x-4">
-            <NuxtLink 
-              to="/app/dashboard" 
-              class="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Go to Dashboard
-            </NuxtLink>
-          </div> -->
         </div>
       </div>
     </header>

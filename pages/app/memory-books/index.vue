@@ -913,7 +913,7 @@
               </button>
               <button
                 v-if="selectedBook"
-                class="bg-brand-dialog-delete text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="deleteBookConfirmed">Delete</button>
+                class="bg-brand-dialog-delete text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="confirmDeleteBook(selectedBook)">Delete</button>
             </div>
           </div>
         </div>
@@ -926,47 +926,47 @@
       modal
       :style="{ width: '95vw', maxWidth: '450px' }"
       :closable="false"
-      :z-index="9999"
+      :z-index="100"
       :showHeader="false"
     >
       <!-- Semi-transparent overlay -->
-      <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm -z-10"></div>
+      <!-- <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-3xl -z-10"></div> -->
       
-      <div class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 rounded-2xl p-6 sm:p-8">
+      <div class="border-1 border-gray-100 backdrop-blur-3xl m-2 p-6 sm:p-8">
         <!-- Magic Header -->
         <div class="text-center mb-6">
           <div class="relative mb-4">
             <!-- Floating sparkles -->
-            <div class="absolute -top-2 -left-2 w-4 h-4 bg-yellow-300 rounded-full animate-ping"></div>
-            <div class="absolute -top-1 -right-1 w-3 h-3 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
-            <div class="absolute -bottom-1 -left-1 w-2 h-2 bg-blue-300 rounded-full animate-ping" style="animation-delay: 1s;"></div>
+            <div class="absolute -top-2 -left-2 w-4 h-4 bg-brand-flash rounded-full animate-ping"></div>
+            <div class="absolute -top-1 -right-1 w-3 h-3 bg-brand-highlight rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+            <div class="absolute -bottom-1 -left-1 w-2 h-2 bg-brand-accent rounded-full animate-ping" style="animation-delay: 1s;"></div>
             
             <!-- Main magic circle -->
-            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-full flex items-center justify-center shadow-lg mx-auto animate-pulse">
-              <i class="pi pi-sparkles text-3xl sm:text-4xl text-purple-600 animate-bounce"></i>
+            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-brand-accent via-brand-highlight to-brand-secondary rounded-full flex items-center justify-center shadow-lg mx-auto animate-pulse">
+              <i class="pi pi-sparkles text-3xl sm:text-4xl text-brand-header animate-bounce"></i>
             </div>
           </div>
           
-          <h2 class="text-lg sm:text-xl font-bold text-purple-700 mb-2 animate-fade-in">
-            {{ isRegenerating ? '✨ Recreating Your Memory Book ✨' : '✨ Creating Your Memory Book ✨' }}
+          <h2 class="text-lg sm:text-xl font-bold text-brand-header mb-2 animate-fade-in">
+            {{ isRegenerating ? '🌸 Recreating Your Memory Book 🌸' : '🌸 Creating Your Memory Book 🌸' }}
           </h2>
-          <p class="text-sm sm:text-base text-purple-600 font-medium">
-            {{ isRegenerating ? 'Processing your memory book with fresh settings...' : 'Processing your memory book...' }}
+          <p class="text-sm sm:text-base text-brand-primary font-medium">
+            {{ isRegenerating ? 'Baking fresh memories with love...' : 'Baking your memory book with love...' }}
           </p>
         </div>
 
         <!-- Progress Section -->
-        <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-purple-200 shadow-lg">
+        <div class="bg-white/90 backdrop-blur-sm rounded-xl p-4 sm:p-6 border-2 border-brand-highlight shadow-lg">
           <div class="text-center">
-            <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">
+            <h3 class="text-lg sm:text-xl font-semibold text-brand-header mb-3">
               {{ currentProgressMessage }}
             </h3>
             
             <!-- Animated progress bar -->
             <div class="relative mb-4">
-              <div class="w-full bg-gradient-to-r from-purple-100 to-blue-100 rounded-full h-3 shadow-inner">
+              <div class="w-full bg-gradient-to-r from-brand-accent/30 to-brand-highlight/30 rounded-full h-3 shadow-inner">
                 <div 
-                  class="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 h-3 rounded-full transition-all duration-500 ease-out shadow-lg relative overflow-hidden"
+                  class="bg-gradient-to-r from-brand-accent via-brand-highlight to-brand-secondary h-3 rounded-full transition-all duration-500 ease-out shadow-lg relative overflow-hidden"
                   :style="`width: ${currentProgress}%`"
                 >
                   <!-- Shimmer effect -->
@@ -976,9 +976,9 @@
             </div>
             
             <!-- Status indicator -->
-            <div class="flex items-center justify-center gap-2 text-sm sm:text-base text-gray-700">
-              <i class="pi pi-cog text-purple-500 animate-spin"></i>
-              <span class="font-medium">{{ isRegenerating ? 'Recreating...' : 'Processing...' }}</span>
+            <div class="flex items-center justify-center gap-2 text-sm sm:text-base text-brand-primary">
+              <i class="pi pi-cog text-brand-highlight animate-spin"></i>
+              <span class="font-medium">{{ isRegenerating ? 'Baking...' : 'Baking...' }}</span>
             </div>
           </div>
         </div>
@@ -986,11 +986,11 @@
         <!-- Magic particles effect -->
         <div class="relative mt-4 h-8">
           <div class="absolute inset-0 flex justify-center">
-            <div class="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
-            <div class="w-2 h-2 bg-purple-400 rounded-full animate-bounce ml-2" style="animation-delay: 0.2s;"></div>
-            <div class="w-2 h-2 bg-pink-400 rounded-full animate-bounce ml-2" style="animation-delay: 0.4s;"></div>
-            <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce ml-2" style="animation-delay: 0.6s;"></div>
-            <div class="w-2 h-2 bg-yellow-400 rounded-full animate-bounce ml-2" style="animation-delay: 0.8s;"></div>
+            <div class="w-2 h-2 bg-brand-flash rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+            <div class="w-2 h-2 bg-brand-highlight rounded-full animate-bounce ml-2" style="animation-delay: 0.2s;"></div>
+            <div class="w-2 h-2 bg-brand-accent rounded-full animate-bounce ml-2" style="animation-delay: 0.4s;"></div>
+            <div class="w-2 h-2 bg-brand-secondary rounded-full animate-bounce ml-2" style="animation-delay: 0.6s;"></div>
+            <div class="w-2 h-2 bg-brand-flash rounded-full animate-bounce ml-2" style="animation-delay: 0.8s;"></div>
           </div>
         </div>
       </div>
@@ -998,7 +998,7 @@
 
     <!-- Generate Confirmation Dialog -->
     <Dialog v-model:visible="showGenerateDialog" modal header="Try Another Recipe" class="w-[95vw] max-w-md">
-      <div class="py-4">
+      <div class="py-4 pt-3">
         <p class="text-sm sm:text-base">Compose this special memory? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
           <Button label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-xs px-3 py-2" @click="cancelDialog" />
@@ -1350,8 +1350,8 @@
     >
       <!-- Step 1: Title Input -->
       <div v-if="magicMemoryStep === 1 && currentButtonConfig?.steps.includes(1)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
-        <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
+        <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
@@ -1550,7 +1550,8 @@
                 <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
               </div>
               <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">Savta selects</div>
-              <div class="text-xs sm:text-sm text-gray-600">You told me {{ magicMemoryTitle || 'about your special memory' }}. I pick the best photos for this story.</div>
+              <div class="text-xs sm:text-sm text-gray-600">You told me {{ magicMemoryTitle || 'about your special memory' }}. 
+                I will pick the best photos for this story.</div>
               <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-2 right-2">
                 <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
@@ -4151,6 +4152,8 @@ async function deleteBookConfirmed() {
   } finally {
     showDeleteDialog.value = false
     bookToDelete.value = null
+    // Close the detail dialog after successful deletion
+    if (showDetailsModal) showDetailsModal.value = false
   }
 }
 

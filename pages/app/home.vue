@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col bg-brand-background">
     <!-- Hero Section -->
-    <div class="w-full px-4 sm:px-6 lg:px-8 pt-10 pb-8 text-center">
+    <div class="w-full px-4 sm:px-6 lg:px-8 pt-2 pb-8 text-center">
       <div class="max-w-3xl mx-auto">
         <h1 class="font-extrabold text-brand-primary mb-4 tracking-tight leading-tight text-center">
           <span class="block text-2xl sm:text-4xl lg:text-7xl mb-2">Your best moments.</span>
