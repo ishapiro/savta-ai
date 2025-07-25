@@ -67,10 +67,6 @@ export default defineNuxtConfig({
     },
     ssr: {
       noExternal: ['primevue']
-    },
-    define: {
-      // Prevent PrimeVue from accessing pt configuration
-      'process.env.PRIMEVUE_PT': 'undefined'
     }
   },
   runtimeConfig: {

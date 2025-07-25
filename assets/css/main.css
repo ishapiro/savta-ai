@@ -19,18 +19,18 @@
 }
 
 @layer base {
-  /* Base styles */
-  button, 
-  .p-button,
-  a[role="button"],
-  .btn-primary,
-  .btn-secondary {
+  /* Base styles - more specific targeting */
+  button:not([class*="border"]), 
+  .p-button:not([class*="border"]),
+  a[role="button"]:not([class*="border"]),
+  .btn-primary:not([class*="border"]),
+  .btn-secondary:not([class*="border"]) {
     text-decoration: none !important;
     outline: none !important;
     border: none !important;
   }
 
-  button:focus {
+  button:focus:not([class*="border"]) {
     outline: none !important;
   }
 
@@ -70,6 +70,39 @@
   /* Add PrimeVue button overrides */
   .p-button {
     @apply text-white no-underline !important;
+  }
+
+  /* Custom progress dialog styling */
+  .custom-progress-dialog {
+    border: 4px solid #ef4444 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25) !important;
+  }
+
+  /* Force border visibility for progress dialog */
+  .progress-dialog-container {
+    border: 16px solid #ef4444 !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Specific styling for progress dialog only */
+  .progress-dialog .p-dialog-content {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  /* Allow borders on elements that explicitly have border classes */
+  [class*="border-"] {
+    border-style: solid !important;
+  }
+
+
+
+  .custom-progress-dialog .p-dialog-mask {
+    -webkit-backdrop-filter: blur(24px) !important;
+    backdrop-filter: blur(24px) !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
   }
 
   .p-button:hover {

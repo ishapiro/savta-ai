@@ -45,7 +45,13 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Install PrimeVue with configuration
   nuxtApp.vueApp.use(PrimeVue, {
     ripple: true,
-    inputStyle: 'filled'
+    inputStyle: 'filled',
+    pt: {
+      // Enable PassThrough for styling
+      global: {
+        cssLayerOrder: 'tailwind-base, primevue, tailwind-utilities'
+      }
+    }
   })
   
   // Register services

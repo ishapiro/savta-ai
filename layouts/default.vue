@@ -7,7 +7,7 @@
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </Head>
     <!-- Header -->
-    <header class="bg-brand-background border-b border-gray-300 sticky top-0 z-40">
+    <header class="border-0 bg-brand-background sticky top-0 z-40">
       <nav class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
@@ -206,7 +206,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-brand-background border-t border-gray-300">
+    <footer class="bg-brand-background">
       <div class="max-w-full mx-auto px-4 sm:px-8 py-6 flex flex-col md:flex-row items-center justify-between">
         <div class="text-color-secondary text-sm text-center md:text-left w-full md:w-auto">
           Savta is a Cogitations Property.  &copy; 2025 Cogitations, llc.  All rights reserved.

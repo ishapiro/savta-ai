@@ -60,7 +60,7 @@
           </div>
         </div>
         <!-- Insiders Button -->
-        <div class="mt-1 pt-2 border-t border-brand-primary/30">
+        <div class="mt-1 pt-3">
           <Button
             type="button"
             label="Insiders"

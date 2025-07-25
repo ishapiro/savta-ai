@@ -67,6 +67,7 @@ export default {
           navigation: ' #e4e4e7;', // light grey
           highlight: '#41706C', // H3 - darker teal -- was #7BAAA7
           accent: '#F1B8B8', // H4 - blush
+          warm: '#F4E4D6', // warm cream color
           card: '#F6E7D8', // light tan
           'dialog-cancel': 'rgba(130, 130, 130, 0.44)', 
           'dialog-edit': '#6E4B63', // same as secondary
@@ -123,8 +124,4 @@ export default {
   ],
   // Ensure Tailwind classes take precedence over PrimeVue styles
   important: true,
-  // Configure the order of CSS layers
-  corePlugins: {
-    preflight: false,
-  },
 } 
