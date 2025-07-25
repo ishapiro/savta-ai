@@ -1343,15 +1343,15 @@
     <Dialog
       v-model:visible="showMagicMemoryDialog"
       modal
-      :closable="true"
-      :dismissableMask="true"
-      :style="{ maxWidth: '700px', maxHeight: '100vh', '--p-dialog-header-justify-content': 'center' }"
+      :closable="false"
+      :dismissableMask="false"
+      :style="{ maxWidth: '700px', maxHeight: '100vh' }"
       :class="['z-50', 'w-full', 'sm:w-[700px]', 'sm:max-w-[700px]', 'h-full', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl']"
     >
       <!-- Step 1: Title Input -->
       <div v-if="magicMemoryStep === 1 && currentButtonConfig?.steps.includes(1)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
-        <div class="text-center mb-2 sm:mb-6 mt-6 max-w-xs w-full mx-auto sm:max-w-full">
+        <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
@@ -1374,7 +1374,7 @@
       <!-- Step 2: Event Selection -->
       <div v-if="magicMemoryStep === 2 && currentButtonConfig?.steps.includes(2)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
-        <div class="text-center mb-2 sm:mb-6 mt-6 max-w-xs w-full mx-auto sm:max-w-full">
+        <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-calendar text-lg sm:text-2xl text-white"></i>
           </div>
@@ -1412,7 +1412,7 @@
       <!-- Step 3: Photo Count Selection -->
       <div v-if="magicMemoryStep === 3 && currentButtonConfig?.steps.includes(3)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
-        <div class="text-center mb-2 sm:mb-6 mt-6 max-w-xs w-full mx-auto sm:max-w-full">
+        <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
           </div>
@@ -1459,7 +1459,7 @@
       <!-- Step 4: Background Selection -->
       <div v-if="magicMemoryStep === 4 && currentButtonConfig?.steps.includes(4)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
-        <div class="text-center mb-2 sm:mb-6 mt-6 max-w-xs w-full mx-auto sm:max-w-full">
+        <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-palette text-lg sm:text-2xl text-white"></i>
           </div>
@@ -1528,31 +1528,31 @@
 
       <!-- Step 5: Photo Selection Method -->
       <div v-if="magicMemoryStep === 5 && currentButtonConfig?.steps.includes(5)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-8 px-4 py-6 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
-        <div class="text-center mb-4 sm:mb-8 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
-            <i class="pi pi-images text-2xl sm:text-3xl text-white"></i>
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-4 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+        <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+            <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-2">How should I pick your photos?</h3>
-          <p class="text-sm sm:text-base text-gray-600">Savta will lovingly choose the best photos for this card from the pictures you've already uploaded. If you want to add more, you can upload them now before continuing.</p>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
+          <p class="text-sm sm:text-base text-gray-600">I'll choose photos from your library. Use the tiles below to tell me how to pick them.</p>
         </div>
         
         <!-- Photo Selection Tiles -->
-        <div class="grid grid-cols-2 gap-4 w-full max-w-md mx-auto sm:max-w-2xl">
+        <div class="grid grid-cols-2 gap-3 w-full max-w-md mx-auto sm:max-w-2xl">
           <!-- Savta Selects Tile -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'last_100'">
-            <div class="border-2 rounded-xl p-6 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
               :class="magicPhotoSelectionMethod === 'last_100' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-4 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-images text-2xl sm:text-3xl text-white"></i>
+              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
               </div>
-              <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Savta selects</div>
-              <div class="text-sm text-gray-600">I'll pick the best photos for you.</div>
-              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-4 right-4">
-                <div class="w-8 h-8 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-sm"></i>
+              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">Savta selects</div>
+              <div class="text-xs sm:text-sm text-gray-600">I'll pick the best photos for you.</div>
+              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-2 right-2">
+                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
             </div>
@@ -1560,18 +1560,18 @@
 
           <!-- By Location Tile -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'geo_code'">
-            <div class="border-2 rounded-xl p-6 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
               :class="magicPhotoSelectionMethod === 'geo_code' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-4 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-map-marker text-2xl sm:text-3xl text-white"></i>
+              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-map-marker text-xl sm:text-2xl text-white"></i>
               </div>
-              <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">By location</div>
-              <div class="text-sm text-gray-600">Pick by country, city, or state.</div>
-              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-4 right-4">
-                <div class="w-8 h-8 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-sm"></i>
+              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">By location</div>
+              <div class="text-xs sm:text-sm text-gray-600">Pick by country, city, or state.</div>
+              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-2 right-2">
+                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
             </div>
@@ -1579,18 +1579,18 @@
 
           <!-- By Date Tile -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'date_range'">
-            <div class="border-2 rounded-xl p-6 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
               :class="magicPhotoSelectionMethod === 'date_range' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-4 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-calendar-plus text-2xl sm:text-3xl text-white"></i>
+              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-calendar-plus text-xl sm:text-2xl text-white"></i>
               </div>
-              <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">By date</div>
-              <div class="text-sm text-gray-600">Pick a time period.</div>
-              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-4 right-4">
-                <div class="w-8 h-8 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-sm"></i>
+              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">By date</div>
+              <div class="text-xs sm:text-sm text-gray-600">Pick a time period.</div>
+              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-2 right-2">
+                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
             </div>
@@ -1598,18 +1598,18 @@
 
           <!-- By Tags Tile -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'tags'">
-            <div class="border-2 rounded-xl p-6 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
               :class="magicPhotoSelectionMethod === 'tags' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-4 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-tags text-2xl sm:text-3xl text-white"></i>
+              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-tags text-xl sm:text-2xl text-white"></i>
               </div>
-              <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">By tags</div>
-              <div class="text-sm text-gray-600">Pick by tag or person.</div>
-              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-4 right-4">
-                <div class="w-8 h-8 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-sm"></i>
+              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">By tags</div>
+              <div class="text-xs sm:text-sm text-gray-600">Pick by tag or person.</div>
+              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-2 right-2">
+                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
             </div>
@@ -1647,9 +1647,9 @@
         </div>
 
         <!-- Upload New Photos Section -->
-        <div class="mt-6 pt-4 border-t border-gray-200 w-full max-w-md mx-auto">
+        <div class="mt-3 pt-2 border-t border-gray-200 w-full max-w-md mx-auto">
           <div class="text-center">
-            <p class="text-sm text-gray-600 mb-3">Don't see the photos you want?</p>
+            <p class="text-sm text-gray-600 mb-2">Need more photos?</p>
             <button
               @click="selectFilesForMagicMemory"
               class="bg-brand-dialog-edit text-white font-semibold rounded-full px-4 py-2 text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
@@ -1755,12 +1755,24 @@
       </div>
       <template #footer>
         <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-3 mt-3 sm:mt-4">
+          <!-- Cancel Button (always visible) -->
           <Button
-            :label="isFirstStep() ? 'Cancel' : 'Back'"
-            :icon="isFirstStep() ? 'pi pi-times' : 'pi pi-arrow-left'"
-            @click="isFirstStep() ? showMagicMemoryDialog = false : previousMagicMemoryStep()"
+            label="Cancel"
+            icon="pi pi-times"
+            @click="showMagicMemoryDialog = false"
             class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
           />
+          
+          <!-- Back Button (not on first step) -->
+          <Button
+            v-if="!isFirstStep()"
+            label="Back"
+            icon="pi pi-arrow-left"
+            @click="previousMagicMemoryStep()"
+            class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+          />
+          
+          <!-- Next Button (not on last step) -->
           <Button
             v-if="!isLastStep()"
             :label="`Next: ${getNextStepName()}`"
@@ -1769,6 +1781,8 @@
             @click="nextMagicMemoryStep"
             class="bg-brand-secondary hover:to-blue-700 text-white font-bold rounded-full px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
+          
+          <!-- Continue Button (only on last step) -->
           <Button
             v-if="isLastStep()"
             label="Let's make something beautiful together"
