@@ -1534,7 +1534,8 @@
             <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
-          <p class="text-sm sm:text-base text-gray-600">I'll choose photos from your library. Use the tiles below to tell me how to pick them.</p>
+          <p class="text-sm sm:text-base text-gray-600 mb-2">I'll choose photos from your library. Use the tiles below to tell me how to pick them.</p>
+          <p class="text-sm text-brand-flash font-medium">📸 You have {{ availableAssets.length }} photo{{ availableAssets.length !== 1 ? 's' : '' }} in your library</p>
         </div>
         
         <!-- Photo Selection Tiles -->
@@ -1549,7 +1550,7 @@
                 <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
               </div>
               <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">Savta selects</div>
-              <div class="text-xs sm:text-sm text-gray-600">I'll pick the best photos for you.</div>
+              <div class="text-xs sm:text-sm text-gray-600">You told me {{ magicMemoryTitle || 'about your special memory' }}. I pick the best photos for this story.</div>
               <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-2 right-2">
                 <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
@@ -3619,6 +3620,15 @@ function toggleMagicMemorySelection(id) {
 
 const magicLoading = ref(false)
 
+// Watch for magic memory step changes to handle Step 5 redirect
+watch(magicMemoryStep, (newStep) => {
+  if (newStep === 5 && availableAssets.value.length === 0) {
+    // User has no photos, redirect to upload dialog
+    showMagicMemoryDialog.value = false
+    showUploadDialog.value = true
+  }
+})
+
 
 
 async function onMagicMemoryContinue() {
@@ -3956,8 +3966,18 @@ const nextMagicMemoryStep = () => {
   // Find next step in the button's sequence
   const nextIndex = currentStepIndex.value + 1
   if (nextIndex < currentButtonConfig.value.steps.length) {
+    const nextStepNumber = currentButtonConfig.value.steps[nextIndex]
+    
+    // Check if we're going to Step 5 and user has no photos
+    if (nextStepNumber === 5 && availableAssets.value.length === 0) {
+      // Redirect to upload dialog instead
+      showMagicMemoryDialog.value = false
+      showUploadDialog.value = true
+      return
+    }
+    
     currentStepIndex.value = nextIndex
-    magicMemoryStep.value = currentButtonConfig.value.steps[nextIndex]
+    magicMemoryStep.value = nextStepNumber
   }
 }
 
