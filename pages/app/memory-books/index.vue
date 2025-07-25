@@ -658,13 +658,13 @@
     <Dialog
       v-model:visible="showDetailsModal"
       modal
-      class="w-[95vw] max-w-4xl mx-auto max-h-[95vh]"
+      class="w-[95vw] max-w-4xl mx-auto mb-15 mt-20"
       :auto-z-index="false"
       :z-index="1000"
     >
-      <div v-if="selectedBook" class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-100 min-h-screen">
+      <div v-if="selectedBook" class="bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen">
         <!-- Header Section -->
-        <div class="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-t-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+        <div class="bg-gradient-to-br from-white via-brand-navigation/5 to-brand-accent/10 rounded-t-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
               <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
@@ -684,7 +684,7 @@
             <div class="flex items-center gap-2 flex-wrap">
               <button
                 v-if="selectedBook.status === 'approved'"
-                class="flex items-center justify-center gap-1 sm:gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                class="flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
                 @click="unapproveBook(selectedBook.id)"
               >
                 <i class="pi pi-undo text-xs sm:text-sm"></i>
@@ -692,7 +692,7 @@
                 <span class="sm:hidden">Unapprove</span>
               </button>
               <button
-                class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-cancel text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
                 @click="showDetailsModal = false"
               >
                 <i class="pi pi-times text-xs sm:text-sm"></i>
@@ -706,42 +706,42 @@
           <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-3 mt-4">
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-calendar text-blue-600 text-xs sm:text-sm"></i>
+                <i class="pi pi-calendar text-brand-primary text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Created</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.created_at) }}</p>
             </div>
             <div v-if="selectedBook.generated_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <Wand2 class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
+                <Wand2 class="w-3 h-3 sm:w-4 sm:h-4 text-brand-primary" />
                 <span class="text-xs font-medium text-gray-600">Generated</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.generated_at) }}</p>
             </div>
             <div v-if="selectedBook.approved_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-check-circle text-green-600 text-xs sm:text-sm"></i>
+                <i class="pi pi-check-circle text-brand-accent text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Approved</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.approved_at) }}</p>
             </div>
             <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-images text-pink-600 text-xs sm:text-sm"></i>
+                <i class="pi pi-images text-brand-accent text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Assets</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.created_from_assets.length }}</p>
             </div>
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-th-large text-purple-600 text-xs sm:text-sm"></i>
+                <i class="pi pi-th-large text-brand-primary text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Layout</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.layout_type || 'grid' }}</p>
             </div>
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-calendar-plus text-orange-600 text-xs sm:text-sm"></i>
+                <i class="pi pi-calendar-plus text-brand-highlight text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Event</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_event || 'N/A' }}</p>
@@ -752,28 +752,28 @@
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-2">
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-palette text-indigo-600 text-xs sm:text-sm"></i>
+                <i class="pi pi-palette text-brand-primary text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Theme</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme || 'classic' }}</p>
             </div>
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-circle text-teal-600 text-xs sm:text-sm"></i>
+                <i class="pi pi-circle text-brand-accent text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Shape</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_shape || 'original' }}</p>
             </div>
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-table text-cyan-600 text-xs sm:text-sm"></i>
+                <i class="pi pi-table text-brand-highlight text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Grid</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.grid_layout || '2x2' }}</p>
             </div>
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                <i class="pi pi-file-edit text-violet-600 text-xs sm:text-sm"></i>
+                <i class="pi pi-file-edit text-brand-primary text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Title</span>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ selectedBook.title || 'Untitled' }}</p>
@@ -781,12 +781,12 @@
           </div>
 
           <!-- Review Notes -->
-          <div v-if="selectedBook.review_notes" class="mt-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-3 sm:p-4 border border-yellow-200">
+          <div v-if="selectedBook.review_notes" class="mt-4 bg-gradient-to-br from-brand-highlight/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-highlight/20">
             <div class="flex items-center gap-2 mb-2">
-              <i class="pi pi-comment text-yellow-600 text-sm"></i>
-              <span class="text-sm font-semibold text-yellow-800">Review Notes</span>
+              <i class="pi pi-comment text-brand-highlight text-sm"></i>
+              <span class="text-sm font-semibold text-brand-highlight">Review Notes</span>
             </div>
-            <p class="text-xs sm:text-sm text-yellow-900 italic">{{ selectedBook.review_notes }}</p>
+            <p class="text-xs sm:text-sm text-brand-highlight italic">{{ selectedBook.review_notes }}</p>
           </div>
         </div>
 
@@ -795,15 +795,15 @@
           <!-- Magic Story Section (for Magic Memories) -->
           <div v-if="selectedBook.layout_type === 'magic' && selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
             <div class="flex items-center gap-3 mb-4">
-              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-yellow-100 to-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <i class="pi pi-sparkles text-yellow-400 text-sm sm:text-base"></i>
+              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-highlight/20 to-brand-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-sparkles text-brand-highlight text-sm sm:text-base"></i>
               </div>
               <div class="min-w-0 flex-1">
-                <h3 class="text-base sm:text-lg font-bold text-purple-700">Special Story</h3>
+                <h3 class="text-base sm:text-lg font-bold text-brand-primary">Special Story</h3>
                 <p class="text-xs sm:text-sm text-gray-600">The AI-generated story for your special memory</p>
               </div>
             </div>
-            <div class="overflow-y-auto max-h-48 sm:max-h-64 bg-gradient-to-br from-yellow-50 to-purple-50 rounded-xl p-3 sm:p-4 border border-purple-200 text-purple-900 text-sm magic-story" style="word-break: break-word; line-height: 1.5;">
+            <div class="overflow-y-auto max-h-48 sm:max-h-64 bg-gradient-to-br from-brand-highlight/10 to-brand-primary/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 text-brand-primary text-sm magic-story" style="word-break: break-word; line-height: 1.5;">
               {{ selectedBook.magic_story }}
             </div>
           </div>
@@ -811,8 +811,8 @@
           <!-- Memory Assets Section -->
           <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <i class="pi pi-images text-indigo-600 text-sm sm:text-base"></i>
+              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent/20 to-brand-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-images text-brand-accent text-sm sm:text-base"></i>
               </div>
               <div class="min-w-0 flex-1">
                 <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Assets</h3>
@@ -829,7 +829,7 @@
                   v-if="getAssetThumbnail(assetId)"
                   :src="getAssetThumbnail(assetId)"
                   :alt="`Asset ${assetId.slice(-4)}`"
-                  class="w-full h-full object-cover"
+                  class="w-full h-full object-contain"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center bg-gray-100">
                   <i class="pi pi-image text-gray-400 text-xs sm:text-sm"></i>
@@ -845,8 +845,8 @@
           <div v-if="selectedBook.pdf_url" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-file-pdf text-emerald-600 text-sm sm:text-base"></i>
+                                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-file-pdf text-brand-primary text-sm sm:text-base"></i>
                 </div>
                 <div class="min-w-0 flex-1">
                   <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Book PDF</h3>
@@ -854,7 +854,7 @@
                 </div>
               </div>
               <button
-                class="border-0 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+                class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
                 @click="forceDownloadPDF(selectedBook)"
               >
                 <i class="pi pi-download text-xs sm:text-sm"></i>
@@ -862,9 +862,9 @@
                 <span class="sm:hidden">Download</span>
               </button>
             </div>
-            <div class="border-0 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3 sm:p-4 border border-emerald-200 mt-4">
-              <div class="flex items-start gap-2 text-xs sm:text-sm text-emerald-800">
-                <i class="pi pi-info-circle text-emerald-600 text-xs sm:text-sm mt-0.5 flex-shrink-0"></i>
+            <div class="border-0 bg-gradient-to-br from-brand-primary/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 mt-4">
+              <div class="flex items-start gap-2 text-xs sm:text-sm text-brand-primary">
+                <i class="pi pi-info-circle text-brand-primary text-xs sm:text-sm mt-0.5 flex-shrink-0"></i>
                 <span>Click download to save your memory book as a PDF file to your device</span>
               </div>
             </div>
@@ -876,7 +876,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 v-if="selectedBook.status === 'draft'"
-                class="border-0 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="onGenerateClick(selectedBook)"
               >
                 <Wand2 class="w-3 h-3 sm:w-4 sm:h-4" />
@@ -885,7 +885,7 @@
               </button>
               <button
                 v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
-                class="border-0 flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="onRegenerateClick(selectedBook)"
                 :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
               >
@@ -895,7 +895,7 @@
               </button>
               <button
                 v-if="selectedBook.status === 'ready'"
-                class="border-0 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="approveBook(selectedBook.id)"
               >
                 <i class="pi pi-check text-xs sm:text-sm"></i>
@@ -904,7 +904,7 @@
               </button>
               <button
                 v-if="selectedBook && selectedBook.layout_type !== 'magic'"
-                class="border-0 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="openEditSettings(selectedBook)"
               >
                 <i class="pi pi-cog text-xs sm:text-sm"></i>
@@ -924,7 +924,7 @@
     <div 
       v-if="showProgressDialog"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 transition-all duration-1000 ease-out"
-      :class="showProgressDialog ? 'backdrop-blur-2xl' : 'backdrop-blur-none'"
+      :class="showProgressDialog ? 'backdrop-blur-xl' : 'backdrop-blur-none'"
       style="z-index: 9999;"
     >
       <!-- Main dialog container -->
