@@ -140,7 +140,7 @@
       </div>
       <template #footer>
         <div class="flex justify-end">
-          <button class="bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-primary font-bold rounded-full px-6 py-2 text-base shadow border-0" @click="showInfoDialog = false">
+          <button class="bg-brand-dialog-cancel text-white font-bold rounded-full px-6 py-2 text-base shadow border-0" @click="showInfoDialog = false">
             Close
           </button>
         </div>
@@ -479,18 +479,16 @@
           <div class="absolute top-1/2 right-4 w-2 h-2 bg-blue-300 rounded-full animate-ping" style="animation-delay: 1s;"></div>
           
           <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 rounded-full flex items-center justify-center shadow-lg relative">
+            <div class="w-12 h-12 bg-brand-navigation rounded-full flex items-center justify-center shadow-lg relative">
               <i class="pi pi-sparkles text-purple-600 text-xl"></i>
-              <!-- Glow effect -->
-              <div class="absolute inset-0 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full opacity-50 animate-pulse"></div>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-purple-800 mb-1">✨ Let Savta help you with your precious memories ✨</h3>
+              <h3 class="text-xl font-bold text-purple-800 mb-1">✨ Let Savta help you with your upload your photos ✨</h3>
             </div>
           </div>
-          <div class="bg-white/80 rounded-lg p-4 border border-purple-200">
+          <div class="bg-white/80 rounded-lg p-4">
             <div class="text-sm text-gray-700 leading-relaxed">
-              <ul class="list-disc pl-4">
+              <ul class="list-disc pl-4 text-xs md:text-sm">
                 <li>Share your special photos with Savta - I'll keep them safe in my workshop</li>
                 <li>Your memories will be stored securely in your own private collection</li>
                 <li>I'll recognize the faces, places and write sweet notes about each one</li>
@@ -503,7 +501,7 @@
         <!-- Upload Progress -->
         <div v-if="isUploading" class="space-y-4">
           <!-- Overall Progress -->
-          <div class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200 relative overflow-hidden">
+          <div class="bg-brand-navigation rounded-xl p-6 relative overflow-hidden">
             <!-- Magical sparkles -->
             <div class="absolute top-3 right-3 w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
             <div class="absolute bottom-3 left-3 w-2 h-2 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.7s;"></div>
@@ -514,38 +512,38 @@
               </div>
               <div class="flex-1">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-lg font-bold text-purple-800 text-center">✨ Upload and AI Processing in Progress ✨</span>
-                  <span class="text-lg font-bold text-purple-600">{{ uploadProgress }}%</span>
+                  <span class="text-lg font-bold text-center">✨ Upload and AI Processing in Progress ✨</span>
+                  <span class="text-lg font-bold">{{ uploadProgress }}%</span>
                 </div>
                 <div class="w-full bg-white/60 rounded-full h-4 border border-purple-200">
                   <div 
-                    class="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 h-4 rounded-full transition-all duration-500 shadow-lg"
+                    class="bg-brand-card h-4 rounded-full transition-all duration-500 shadow-lg"
                     :style="{ width: uploadProgress + '%' }"
                   ></div>
                 </div>
-                <p class="text-sm text-purple-700 mt-2 font-medium">{{ uploadStatus }}</p>
+                <p class="text-sm mt-2 font-medium">{{ uploadStatus }}</p>
               </div>
             </div>
           </div>
 
           <!-- Current File Progress -->
           <div v-if="uploadingFiles.length > 0" class="bg-white/90 rounded-xl p-6 border-2 border-purple-200 shadow-lg">
-            <h4 class="text-lg font-bold text-purple-800 mb-4 flex items-center text-center gap-2">
+            <h4 class="text-lg font-bold mb-4 flex items-center text-center gap-2">
               <i class="pi pi-sparkles text-purple-600"></i>
-              🔮 Savta is working on your photos 🔮
+              🌸 Savta is working on your photos 🌸
             </h4>
             <div class="space-y-3">
               <div 
                 v-for="file in uploadingFiles" 
                 :key="file.name"
-                class="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 transition-all duration-200 hover:shadow-md"
+                class="flex items-center gap-4 p-4 bg-brand-navigation rounded-xl border border-purple-200 transition-all duration-200 hover:shadow-md"
               >
-                <div class="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-md">
+                <div class="w-10 h-10 bg-brand-navigation rounded-full flex items-center justify-center shadow-md">
                   <i class="pi pi-image text-purple-600 text-sm"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold text-purple-800 truncate">{{ file.name }}</p>
-                  <p class="text-xs text-purple-600 font-medium">{{ getMagicStatusText(file.status) }}</p>
+                  <p class="text-sm font-semibold truncate">{{ file.name }}</p>
+                  <p class="text-xs font-medium">{{ getMagicStatusText(file.status) }}</p>
                 </div>
                 <div class="flex items-center gap-2">
                   <div v-if="file.status === 'uploading'" class="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
@@ -630,14 +628,14 @@
           <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button
               v-if="!isUploading"
-              class="border-0 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto"
+              class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto"
               @click="showUploadDialog = false"
             >
               Close
             </button>
             <button
               v-if="!isUploading && uploadedFiles.length === 0"
-              class="border-0 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+              class="bg-brand-dialog-edit text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="selectFiles"
             >
               <i class="pi pi-sparkles mr-2"></i>
@@ -645,7 +643,7 @@
             </button>
             <button
               v-if="!isUploading && (uploadedFiles.length > 0 || failedFiles.length > 0)"
-              class="border-0 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+              class="bg-brand-dialog-save text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="finishUpload"
             >
               <i class="pi pi-sparkles mr-2"></i>
@@ -669,8 +667,8 @@
         <div class="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-t-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                <i class="pi pi-book text-lg sm:text-2xl text-purple-600"></i>
+              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <div class="min-w-0 flex-1">
                 <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1 truncate">{{ selectedBook.title || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
@@ -915,13 +913,7 @@
               </button>
               <button
                 v-if="selectedBook"
-                class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
-                @click="confirmDeleteBook(selectedBook)"
-              >
-                <i class="pi pi-trash text-xs sm:text-sm"></i>
-                <span class="hidden sm:inline">Delete</span>
-                <span class="sm:hidden">Delete</span>
-              </button>
+                class="bg-brand-dialog-delete text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="deleteBookConfirmed">Delete</button>
             </div>
           </div>
         </div>
@@ -1009,8 +1001,8 @@
       <div class="py-4">
         <p class="text-sm sm:text-base">Compose this special memory? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
-          <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
-          <Button label="Compose" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmGenerate" />
+          <Button label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-xs px-3 py-2" @click="cancelDialog" />
+          <Button label="Compose" size="small" class="bg-brand-dialog-save text-white font-bold rounded-full text-xs px-3 py-2" @click="confirmGenerate" />
         </div>
       </div>
     </Dialog>
@@ -1026,10 +1018,10 @@
           that's when you'll want to approve it.
         </p>
         <div class="flex gap-3 justify-end mt-4">
-          <Button label="Cancel" class="p-button-secondary" @click="cancelDialog" />
+          <Button label="Cancel" class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" @click="cancelDialog" />
           <Button 
             label="Yes, Recreate" 
-            class="p-button-danger" 
+            class="bg-brand-dialog-edit text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" 
             @click="confirmRegenerate" 
           />
         </div>
@@ -1042,8 +1034,8 @@
           Would you like to compose it now? 
           This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
-          <Button label="Cancel" severity="secondary" size="small" class="text-xs px-3 py-2" @click="cancelDialog" />
-          <Button label="Compose Now" severity="primary" size="small" class="text-xs px-3 py-2" @click="confirmDownloadDraft" />
+          <Button label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-xs px-3 py-2" @click="cancelDialog" />
+          <Button label="Compose Now" size="small" class="bg-brand-dialog-save text-white font-bold rounded-full text-xs px-3 py-2" @click="confirmDownloadDraft" />
         </div>
       </div>
     </Dialog>
@@ -1093,7 +1085,6 @@
           />
           <Button
             label="Close"
-            severity="secondary"
             size="small"
             class="text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3"
             @click="showPdfModal = false"
@@ -1148,16 +1139,14 @@
           <Button
             label="Cancel"
             icon="pi pi-times"
-            severity="secondary"
             @click="showCleanupConfirmationModal = false"
-            class="rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
+            class="bg-brand-dialog-cancel text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
           />
           <Button
             label="Yes, Clean Up"
             icon="pi pi-broom"
-            severity="danger"
             @click="confirmCleanup"
-            class="bg-red-500 hover:bg-red-600 border-0 text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm shadow w-full sm:w-auto"
+            class="bg-brand-dialog-edit text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm shadow w-full sm:w-auto"
           />
         </div>
       </template>
@@ -1205,7 +1194,6 @@
                   v-if="selectedTagFilter && selectedTagFilter.length > 0"
                   icon="pi pi-times"
                   size="small"
-                  severity="secondary"
                   @click="clearTagFilter"
                   class="px-2 sm:px-3"
                   v-tooltip.top="'Clear filter'"
@@ -1218,7 +1206,7 @@
                 icon="pi pi-check-square"
                 size="small"
                 @click="selectAllMemories"
-                class="bg-green-500 hover:bg-green-600 border-0 text-xs px-2 sm:px-3 py-2"
+                class="bg-green-500 border-0 text-xs px-2 sm:px-3 py-2"
               />
               <Button
                 label="Clear All"
@@ -1331,9 +1319,8 @@
             <Button
               label="Cancel"
               icon="pi pi-times"
-              severity="secondary"
               @click="closeSelectMemoriesDialog"
-              class="rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
+              class="bg-brand-dialog-cancel text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
             />
           </div>
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
@@ -1345,7 +1332,7 @@
               icon="pi pi-check"
               :disabled="selectedMemories.length === 0"
               @click="saveSelectedMemories"
-              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 w-full sm:w-auto text-xs sm:text-sm px-4 sm:px-5 py-2"
+              class="bg-brand-dialog-save text-white font-bold rounded-full w-full sm:w-auto text-xs sm:text-sm px-4 sm:px-5 py-2"
             />
           </div>
         </div>
@@ -1365,14 +1352,14 @@
       <div v-if="magicMemoryStep === 1 && currentButtonConfig?.steps.includes(1)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
         <div class="text-center mb-2 sm:mb-6 mt-6 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
-            <i class="pi pi-star text-2xl sm:text-3xl text-purple-500"></i>
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
+            <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
-          <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1">✨ What should we call this memory? ✨</h3>
+          <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1">✨ Help me create a special memory ✨</h3>
           <p class="text-sm sm:text-base text-gray-600">Tell me something that will help me select the best photos for your memory and create a special story for you.</p>
         </div>
         <div class="field w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
-          <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Memory Subject</label>
+          <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Something special about this memory</label>
           <InputText
             v-model="magicMemoryTitle"
             :placeholder="'e.g. Special Trip with Karen and Sam, Summer 2023'"
@@ -1542,71 +1529,97 @@
       <!-- Step 5: Photo Selection Method -->
       <div v-if="magicMemoryStep === 5 && currentButtonConfig?.steps.includes(5)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-8 px-4 py-6 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
-        <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-10 h-10 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
-            <i class="pi pi-images text-base sm:text-2xl text-white"></i>
+        <div class="text-center mb-4 sm:mb-8 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+            <i class="pi pi-images text-2xl sm:text-3xl text-white"></i>
           </div>
-          <h3 class="text-base sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
-          <p class="text-xs sm:text-base text-gray-600">Savta will lovingly choose the best photos for this card from the pictures you've already uploaded. If you want to add more, you can upload them now before continuing.</p>
+          <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-2">How should I pick your photos?</h3>
+          <p class="text-sm sm:text-base text-gray-600">Savta will lovingly choose the best photos for this card from the pictures you've already uploaded. If you want to add more, you can upload them now before continuing.</p>
         </div>
-        <div class="grid grid-cols-2 gap-2 w-full max-w-xs mx-auto sm:grid-cols-2 sm:gap-6 sm:max-w-lg">
-          <div class="relative cursor-pointer" @click="magicPhotoSelectionMethod = 'last_100'">
-            <div class="border-2 rounded-lg p-3 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'last_100' ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'">
-              <div class="w-8 h-8 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-1 flex items-center justify-center">
-                <i class="pi pi-images text-green-600 text-base"></i>
+        
+        <!-- Photo Selection Tiles -->
+        <div class="grid grid-cols-2 gap-4 w-full max-w-md mx-auto sm:max-w-2xl">
+          <!-- Savta Selects Tile -->
+          <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'last_100'">
+            <div class="border-2 rounded-xl p-6 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+              :class="magicPhotoSelectionMethod === 'last_100' 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-4 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-images text-2xl sm:text-3xl text-white"></i>
               </div>
-              <div class="text-sm font-bold text-gray-900 mb-1">Savta selects</div>
-              <div class="text-xs text-gray-600 mb-1">I'll pick the best photos for you.</div>
-              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-2 right-2">
-                <i class="pi pi-check text-purple-500 text-base"></i>
-              </div>
-            </div>
-          </div>
-          <div class="relative cursor-pointer" @click="magicPhotoSelectionMethod = 'geo_code'">
-            <div class="border-2 rounded-lg p-3 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'geo_code' ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'">
-              <div class="w-8 h-8 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-1 flex items-center justify-center">
-                <i class="pi pi-map-marker text-green-600 text-base"></i>
-              </div>
-              <div class="text-sm font-bold text-gray-900 mb-1">By location</div>
-              <div class="text-xs text-gray-600 mb-1">Pick by country, city, or state.</div>
-              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-2 right-2">
-                <i class="pi pi-check text-purple-500 text-base"></i>
+              <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Savta selects</div>
+              <div class="text-sm text-gray-600">I'll pick the best photos for you.</div>
+              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-4 right-4">
+                <div class="w-8 h-8 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-sm"></i>
+                </div>
               </div>
             </div>
           </div>
-          <div class="relative cursor-pointer" @click="magicPhotoSelectionMethod = 'date_range'">
-            <div class="border-2 rounded-lg p-3 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'date_range' ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'">
-              <div class="w-8 h-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg mx-auto mb-1 flex items-center justify-center">
-                <i class="pi pi-calendar-plus text-blue-600 text-base"></i>
+
+          <!-- By Location Tile -->
+          <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'geo_code'">
+            <div class="border-2 rounded-xl p-6 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+              :class="magicPhotoSelectionMethod === 'geo_code' 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-4 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-map-marker text-2xl sm:text-3xl text-white"></i>
               </div>
-              <div class="text-sm font-bold text-gray-900 mb-1">By date</div>
-              <div class="text-xs text-gray-600 mb-1">Pick a time period.</div>
-              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-2 right-2">
-                <i class="pi pi-check text-purple-500 text-base"></i>
+              <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">By location</div>
+              <div class="text-sm text-gray-600">Pick by country, city, or state.</div>
+              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-4 right-4">
+                <div class="w-8 h-8 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-sm"></i>
+                </div>
               </div>
             </div>
           </div>
-          <div class="relative cursor-pointer" @click="magicPhotoSelectionMethod = 'tags'">
-            <div class="border-2 rounded-lg p-3 text-center transition-all duration-200 h-full"
-              :class="magicPhotoSelectionMethod === 'tags' ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'">
-              <div class="w-8 h-8 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mx-auto mb-1 flex items-center justify-center">
-                <i class="pi pi-tags text-purple-600 text-base"></i>
+
+          <!-- By Date Tile -->
+          <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'date_range'">
+            <div class="border-2 rounded-xl p-6 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+              :class="magicPhotoSelectionMethod === 'date_range' 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-4 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-calendar-plus text-2xl sm:text-3xl text-white"></i>
               </div>
-              <div class="text-sm font-bold text-gray-900 mb-1">By tags</div>
-              <div class="text-xs text-gray-600 mb-1">Pick by tag or person.</div>
-              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-2 right-2">
-                <i class="pi pi-check text-purple-500 text-base"></i>
+              <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">By date</div>
+              <div class="text-sm text-gray-600">Pick a time period.</div>
+              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-4 right-4">
+                <div class="w-8 h-8 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-sm"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- By Tags Tile -->
+          <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'tags'">
+            <div class="border-2 rounded-xl p-6 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+              :class="magicPhotoSelectionMethod === 'tags' 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-4 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-tags text-2xl sm:text-3xl text-white"></i>
+              </div>
+              <div class="text-lg sm:text-xl font-bold text-gray-900 mb-2">By tags</div>
+              <div class="text-sm text-gray-600">Pick by tag or person.</div>
+              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-4 right-4">
+                <div class="w-8 h-8 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-sm"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
         <!-- Date Range Selection (shown when date_range is selected) -->
-        <div v-if="magicPhotoSelectionMethod === 'date_range'" class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200">
-          <h4 class="font-semibold text-blue-900 mb-2 sm:mb-3">Select Date Range</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div v-if="magicPhotoSelectionMethod === 'date_range'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
+          <h4 class="font-semibold text-brand-flash mb-4 text-center">Select Date Range</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-900 mb-2">Start Date</label>
               <Calendar v-model="magicDateRange.start" dateFormat="mm/dd/yy" placeholder="Select start date" class="w-full" />
@@ -1617,9 +1630,10 @@
             </div>
           </div>
         </div>
+
         <!-- Tag Selection (shown when tags is selected) -->
-        <div v-if="magicPhotoSelectionMethod === 'tags'" class="bg-purple-50 rounded-lg p-3 sm:p-4 border border-purple-200">
-          <h4 class="font-semibold text-purple-900 mb-2 sm:mb-3">Select Tags</h4>
+        <div v-if="magicPhotoSelectionMethod === 'tags'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
+          <h4 class="font-semibold text-brand-flash mb-4 text-center">Select Tags</h4>
           <MultiSelect
             v-model="magicSelectedTags"
             :options="computedAvailableTags"
@@ -1629,63 +1643,24 @@
             class="w-full"
             :show-toggle-all="false"
           />
-          <p class="text-xs sm:text-sm text-purple-700 mt-2">I'll find photos that have any of these tags</p>
+          <p class="text-sm text-brand-flash mt-3 text-center">I'll find photos that have any of these tags</p>
         </div>
-        <!-- Location Selection (shown when geo_code is selected) -->
-        <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-200">
-          <h4 class="font-semibold text-green-900 mb-2 sm:mb-3">Select Location</h4>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">Country</label>
-              <MultiSelect
-                v-model="magicSelectedCountries"
-                :options="computedAvailableCountries"
-                option-label="label"
-                option-value="value"
-                placeholder="Choose countries..."
-                class="w-full"
-                :show-toggle-all="false"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">State/Province</label>
-              <MultiSelect
-                v-model="magicSelectedStates"
-                :options="computedAvailableStates"
-                option-label="label"
-                option-value="value"
-                placeholder="Choose states..."
-                class="w-full"
-                :show-toggle-all="false"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">City</label>
-              <MultiSelect
-                v-model="magicSelectedCities"
-                :options="computedAvailableCities"
-                option-label="label"
-                option-value="value"
-                placeholder="Choose cities..."
-                class="w-full"
-                :show-toggle-all="false"
-              />
-            </div>
+
+        <!-- Upload New Photos Section -->
+        <div class="mt-6 pt-4 border-t border-gray-200 w-full max-w-md mx-auto">
+          <div class="text-center">
+            <p class="text-sm text-gray-600 mb-3">Don't see the photos you want?</p>
+            <button
+              @click="selectFilesForMagicMemory"
+              class="bg-brand-dialog-edit text-white font-semibold rounded-full px-4 py-2 text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
+              :disabled="isUploading"
+            >
+              <i class="pi pi-upload"></i>
+              <span v-if="!isUploading">🌸 Upload New Photos 🌸</span>
+              <span v-else>🌸 Uploading and working our magic... 🌸</span>
+            </button>
+            <p class="text-xs text-gray-500 mt-2">New photos will be automatically approved and available for selection</p>
           </div>
-          <p class="text-xs sm:text-sm text-green-700 mt-2">I'll find photos from any of these locations</p>
-        </div>
-        <!-- Note about Memory Book Creator -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 sm:p-4 border border-blue-200 flex flex-col items-center">
-          <i class="pi pi-upload text-blue-500 mb-2 text-xl"></i>
-          <h4 class="font-semibold text-blue-900 mb-1">Need to add more photos?</h4>
-          <p class="text-xs sm:text-sm text-blue-800 mb-3 text-center">You can upload new photos now and use them in your card.</p>
-          <button
-            @click="openUploadAndReturnToMagicStep5"
-            class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-lg px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
-          >
-            <i class="pi pi-upload"></i>
-            Upload Photos Now
-          </button>
         </div>
       </div>
 
@@ -1714,7 +1689,6 @@
               v-if="magicSelectedTagFilter && magicSelectedTagFilter.length > 0"
               icon="pi pi-times"
               size="small"
-              severity="secondary"
               @click="magicSelectedTagFilter = []"
               class="px-2"
               v-tooltip.top="'Clear filter'"
@@ -1784,9 +1758,8 @@
           <Button
             :label="isFirstStep() ? 'Cancel' : 'Back'"
             :icon="isFirstStep() ? 'pi pi-times' : 'pi pi-arrow-left'"
-            severity="secondary"
             @click="isFirstStep() ? showMagicMemoryDialog = false : previousMagicMemoryStep()"
-            class="bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-800 font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+            class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
           />
           <Button
             v-if="!isLastStep()"
@@ -1794,16 +1767,16 @@
             icon="pi pi-arrow-right"
             :disabled="(magicMemoryStep === 1 && !magicMemoryTitle.trim()) || (magicMemoryStep === 5 && !magicPhotoSelectionMethod.value)"
             @click="nextMagicMemoryStep"
-            class="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
+            class="bg-brand-secondary hover:to-blue-700 text-white font-bold rounded-full px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
           <Button
             v-if="isLastStep()"
-            label="Let's make some magic!"
+            label="Let's make something beautiful together"
             icon="pi pi-bolt"
             :disabled="(currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual' && magicSelectedMemories.length < 1) || magicLoading"
             :loading="magicLoading"
             @click="onMagicMemoryContinue"
-            class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0 animate-pulse"
+            class="bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto animate-pulse"
           />
         </div>
       </template>
@@ -1817,7 +1790,7 @@
       <div class="text-lg font-bold text-gray-900 mb-2">Are you sure?</div>
       <div class="text-gray-700 mb-4">This will move the memory to the deleted section. You can restore it later if needed.</div>
       <div class="flex justify-center gap-3">
-        <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="showDeleteDialog = false">Cancel</button>
+        <button class="bg-brand-dialog-cancel text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="showDeleteDialog = false">Cancel</button>
         <button class="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="deleteBookConfirmed">Delete</button>
       </div>
     </div>
@@ -1846,14 +1819,74 @@
           label="Try Again"
           icon="pi pi-refresh"
           @click="retryMagicMemory"
-          class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200 border-0"
+          class="bg-brand-dialog-edit text-white font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200 border-0"
         />
         <Button
           label="Close"
-          severity="secondary"
           @click="showErrorDialog = false"
-          class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200 border-0"
+          class="bg-brand-dialog-cancel text-white font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200 border-0"
         />
+      </div>
+    </div>
+  </Dialog>
+
+  <!-- File Error Dialog -->
+  <Dialog
+    v-model:visible="showFileErrorDialog"
+    modal
+    :closable="true"
+    :dismissableMask="true"
+    :class="[isMobile ? 'w-full h-full m-0 rounded-none' : 'w-full max-w-md rounded-2xl']"
+    :style="isMobile ? { minHeight: '100vh', minWidth: '100vw', padding: 0 } : {}"
+  >
+    <div class="text-center py-6 flex flex-col items-center justify-center h-full">
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-exclamation-triangle text-2xl text-red-500"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">File Selection Error</h3>
+      <p class="text-gray-600 mb-6">{{ fileErrorDialogMessage }}</p>
+      <div class="flex justify-center gap-3">
+        <Button
+          label="Close"
+          @click="showFileErrorDialog = false"
+          class="bg-brand-dialog-cancel text-white font-bold rounded-full px-6 py-2 shadow-lg transition-all duration-200 border-0"
+        />
+      </div>
+    </div>
+  </Dialog>
+
+  <!-- Upload Progress Dialog -->
+  <Dialog
+    v-model:visible="showUploadProgressDialog"
+    modal
+    :closable="false"
+    :dismissableMask="false"
+    class="w-full max-w-sm rounded-2xl magic-upload-dialog"
+  >
+    <div class="text-center py-8 px-6">
+      <div class="w-20 h-20 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse">
+        <i class="pi pi-upload text-3xl text-white"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">🌸 Savta is working her magic! 🌸</h3>
+      <p class="text-gray-600 mb-4">Uploading and captioning your precious memories...</p>
+      
+      <div class="bg-white rounded-lg p-4 mb-4 border-2 border-brand-flash/20">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium text-gray-700">Progress</span>
+          <span class="text-sm font-bold text-brand-flash">{{ magicUploadProgress.current }} of {{ magicUploadProgress.total }}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+          <div 
+            class="bg-gradient-to-r from-brand-flash to-brand-highlight h-3 rounded-full transition-all duration-500 ease-out"
+            :style="{ width: magicUploadProgress.total > 0 ? `${(magicUploadProgress.current / magicUploadProgress.total) * 100}%` : '0%' }"
+          ></div>
+        </div>
+        <p class="text-xs text-gray-500 truncate">{{ magicUploadProgress.filename }}</p>
+      </div>
+      
+      <div class="flex items-center justify-center gap-2 text-brand-flash">
+        <i class="pi pi-spin pi-spinner text-lg"></i>
+        <span class="text-sm font-medium">Processing with love...</span>
       </div>
     </div>
   </Dialog>
@@ -1862,7 +1895,7 @@
 <script setup>
 import { ref, watch, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useToast } from 'primevue/usetoast'
-import { Sparkles, Sparkle, Wand2 } from 'lucide-vue-next'
+import { Sparkles, Sparkle, Wand2, Gift } from 'lucide-vue-next'
 import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
 const toast = useToast()
 
@@ -2262,11 +2295,14 @@ onMounted(async () => {
   } else {
     console.log('[MEMORY-BOOKS] onMounted - no dialog parameters found')
   }
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
 })
 
 // Cleanup on unmount
 onUnmounted(() => {
   stopProgressPolling()
+  window.removeEventListener('resize', updateIsMobile)
 })
 
 // Create memory book
@@ -2474,7 +2510,7 @@ const pollPdfStatus = async () => {
       } else if (status.pdf_status === 'Background ready, creating pages...') {
         currentProgress.value = 45
         currentProgressMessage.value = 'Background ready, creating pages...'
-              } else if (status.pdf_status === '✨ Crafting your special story... ✨') {
+              } else if (status.pdf_status === '🤔 Processing with AI...') {
         currentProgress.value = 8
         currentProgressMessage.value = 'Generating story and selecting photos...'
               } else if (status.pdf_status === 'Gathering your special memories...') {
@@ -4221,12 +4257,26 @@ const selectFiles = () => {
   const fileInput = document.createElement('input')
   fileInput.type = 'file'
   fileInput.multiple = true
-  fileInput.accept = 'image/jpeg,image/jpg,image/png'
+  fileInput.accept = 'image/jpeg,image/jpg,image/png,image/gif'
   
   fileInput.onchange = async (event) => {
     const files = Array.from(event.target.files)
     if (files.length === 0) return
-    
+
+    // Validate files
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        fileErrorDialogMessage.value = 'Only JPG, PNG, or GIF images are allowed. Please select valid image files.'
+        showFileErrorDialog.value = true
+        return
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        fileErrorDialogMessage.value = `The file "${file.name}" is too large. Please select images smaller than 10MB.`
+        showFileErrorDialog.value = true
+        return
+      }
+    }
     await startUpload(files)
   }
   
@@ -4238,12 +4288,26 @@ const selectFilesForMagicMemory = () => {
   const fileInput = document.createElement('input')
   fileInput.type = 'file'
   fileInput.multiple = true
-  fileInput.accept = 'image/jpeg,image/jpg,image/png'
+  fileInput.accept = 'image/jpeg,image/jpg,image/png, image/gif'
   
   fileInput.onchange = async (event) => {
     const files = Array.from(event.target.files)
     if (files.length === 0) return
-    
+
+    // Validate files
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        fileErrorDialogMessage.value = 'Only JPG, PNG, or GIF images are allowed. Please select valid image files.'
+        showFileErrorDialog.value = true
+        return
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        fileErrorDialogMessage.value = `The file "${file.name}" is too large. Please select images smaller than 10MB.`
+        showFileErrorDialog.value = true
+        return
+      }
+    }
     await startUploadForMagicMemory(files)
   }
   
@@ -4253,6 +4317,10 @@ const selectFilesForMagicMemory = () => {
 // Start upload process for magic memory step 5
 const startUploadForMagicMemory = async (files) => {
   isUploading.value = true
+  
+  // Show progress dialog
+  showUploadProgressDialog.value = true
+  magicUploadProgress.value = { current: 0, total: files.length, filename: '' }
   
   // Initialize file tracking
   const tempUploadingFiles = files.map(file => ({
@@ -4268,6 +4336,13 @@ const startUploadForMagicMemory = async (files) => {
   for (let i = 0; i < files.length; i++) {
     const fileData = tempUploadingFiles[i]
     const file = fileData.file
+    
+    // Update progress
+    magicUploadProgress.value = { 
+      current: i + 1, 
+      total: totalFiles, 
+      filename: file.name 
+    }
     
     try {
       // Update status to uploading
@@ -4308,6 +4383,8 @@ const startUploadForMagicMemory = async (files) => {
     }
   }
   
+  // Hide progress dialog
+  showUploadProgressDialog.value = false
   isUploading.value = false
   
   if (completedFiles > 0) {
@@ -4362,7 +4439,7 @@ const startUpload = async (files) => {
       
       // Update status to processing
       fileData.status = 'processing'
-      uploadStatus.value = `🔮 Looking into our crystal ball for ${file.name}...`
+      uploadStatus.value = `🌸 Putting our AI assistant to work on  ${file.name}...`
       
       // Process with AI
       const aiResult = await $fetch('/api/ai/process-asset', {
@@ -4461,13 +4538,13 @@ const resetUploadDialog = () => {
 const getMagicStatusText = (status) => {
   switch (status) {
     case 'pending':
-      return '🌟 Waiting for magic...'
+      return '🌟 Waiting for file...'
     case 'uploading':
               return '📤 Uploading to collection...'
     case 'processing':
-      return '🔮 Crystal ball reading...'
+      return '🤔 Processing with AI...'
     case 'completed':
-              return '✨ Prepared! ✨'
+              return '✨ Uploaded, captioned, tags added! ✨'
     case 'failed':
               return '😔 Preparation failed'
     default:
@@ -4545,6 +4622,24 @@ function openUploadAndReturnToMagicStep5() {
     }
   );
 }
+
+// Responsive dialog: track mobile state
+const isMobile = ref(false)
+function updateIsMobile() {
+  isMobile.value = typeof window !== 'undefined' && window.innerWidth < 640
+}
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', updateIsMobile)
+})
+
+const showFileErrorDialog = ref(false)
+const fileErrorDialogMessage = ref('')
+const showUploadProgressDialog = ref(false)
+const magicUploadProgress = ref({ current: 0, total: 0, filename: '' })
 
 </script> 
 

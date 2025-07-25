@@ -396,7 +396,7 @@
                   icon="pi pi-times"
                   size="small"
                   @click="clearTagFilter"
-                  class="px-2 sm:px-3"
+                  class="text-xs px-2 sm:px-3 py-2"
                   v-tooltip.top="'Clear filter'"
                 />
               </div>
@@ -414,7 +414,7 @@
                 icon="pi pi-times"
                 size="small"
                 @click="selectedMemories = []"
-                class="text-xs px-2 sm:px-3 py-2"
+                class="bg-brand-cancel text-xs px-2 sm:px-3 py-2"
               />
             </div>
           </div>
@@ -484,10 +484,10 @@
               </div>
               <div>
                 <p class="text-xs sm:text-sm font-medium text-brand-primary">
-                  {{ selectedMemories.length }} memories selected
+                  {{ selectedMemories.length }} photos selected
                 </p>
                 <p class="text-xs text-brand-primary/70">
-                  Ready to create your magic memory
+                  Ready to create your cards or booklets
                 </p>
               </div>
             </div>
@@ -525,7 +525,7 @@
               icon="pi pi-check"
               :disabled="selectedMemories.length === 0"
               @click="saveSelectedMemories"
-              class="bg-brand-dialog-save border-0 w-full sm:w-auto text-xs sm:text-sm px-4 sm:px-5 py-2"
+              class="bg-brand-dialog-save rounded-full border-0 w-full sm:w-auto text-xs sm:text-sm px-4 sm:px-5 py-2"
             />
           </div>
         </div>

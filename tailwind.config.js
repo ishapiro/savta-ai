@@ -72,6 +72,7 @@ export default {
           'dialog-edit': '#6E4B63', // same as secondary
           'dialog-save': '#41706C', // darker teal  -- was #7BAAA7
           'dialog-delete': '#D16D84', // raspberry
+          'flash': '#3B82F6', // blue
         },
         primary: {
           DEFAULT: 'var(--primary-color)',
