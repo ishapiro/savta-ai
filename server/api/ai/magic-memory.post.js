@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { photos, forceAll, title, theme, memory_event, photo_count = 4, background_type = 'white' } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
+    const { photos, forceAll, title, theme, memory_event, photo_count = 4, background_type = 'white', background_color } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
     if (!photos || !Array.isArray(photos) || photos.length < 1) {
       throw createError({ statusCode: 400, statusMessage: 'At least 1 photo is required' })
     }
@@ -300,7 +300,8 @@ ${photoDataSection}`
       success: true,
       selected_photo_ids: selectedPhotoIds,
       story: result.story,
-      background_type: background_type
+      background_type: background_type,
+      background_color: background_color
     }
   } catch (error) {
     console.error('Magic Memory AI error:', error)

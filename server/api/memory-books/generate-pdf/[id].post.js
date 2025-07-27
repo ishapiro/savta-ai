@@ -138,21 +138,22 @@ export default defineEventHandler(async (event) => {
       const photoCount = Math.min(assets.length, 4) // Default to 4, but could be 1 or 6 based on user preference
 
       // Always generate a new magic story for magic memory books
-      const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          photos: photos,
-          title: book.title,
-          memory_event: book.memory_event,
-          theme: book.theme || 'classic',
-          photo_count: photoCount,
-          background_type: book.background_type || 'white'
+              const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            photos: photos,
+            title: book.title,
+            memory_event: book.memory_event,
+            theme: book.theme || 'classic',
+            photo_count: photoCount,
+            background_type: book.background_type || 'white',
+            background_color: book.background_color
+          })
         })
-      })
       if (!magicRes.ok) {
         console.error('❌ Magic memory generation failed:', magicRes.status)
         throw createError({
@@ -260,50 +261,12 @@ export default defineEventHandler(async (event) => {
       // Generate background for magical background type
       console.log('🎨 Generating magical background...')
       await updatePdfStatus(supabase, book.id, user.id, 'Creating magical background...')
-      
-      try {
-        const bgGenRes = await fetch(`${config.public.siteUrl}/api/memory-books/generate-background/${book.id}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        
-        if (!bgGenRes.ok) {
-          console.error('❌ Background generation failed:', bgGenRes.status)
-          throw new Error(`Background generation failed: ${bgGenRes.status}`)
-        }
-        
-        const bgGenData = await bgGenRes.json()
-        console.log('✅ Background generated successfully:', bgGenData.backgroundUrl)
-        
-        // Download the newly generated background
-        console.log('⬇️ Downloading newly generated background...')
-        const bgRes = await fetch(bgGenData.backgroundUrl)
-        if (!bgRes.ok) {
-          console.error('❌ Failed to fetch generated background:', bgRes.status, bgRes.statusText)
-          throw new Error(`Failed to fetch generated background: ${bgRes.status}`)
-        }
-        backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
-        console.log('✅ Generated background downloaded, size:', backgroundBuffer.length, 'bytes')
-        
-        // Update the book with the new background URL
-        const { error: updateError } = await supabase
-          .from('memory_books')
-          .update({ background_url: bgGenData.backgroundUrl })
-          .eq('id', book.id)
-        
-        if (updateError) {
-          console.error('❌ Failed to update book with background URL:', updateError)
-        } else {
-          console.log('✅ Book updated with new background URL')
-        }
-      } catch (bgError) {
-        console.error('❌ Background generation error:', bgError)
-        console.warn('⚠️ Proceeding with white background due to generation failure')
-        // Continue with white background if generation fails
-      }
+    } else if (book.background_type === 'solid') {
+      // Handle solid color background
+      console.log('🎨 Using solid color background:', book.background_color)
+      await updatePdfStatus(supabase, book.id, user.id, 'Applying solid color background...')
+      // No background buffer needed for solid color - will be applied directly in PDF
+      // No need to generate background image for solid colors
     } else {
       console.log('ℹ️ No background URL found and background_type is white, proceeding with white background.')
       // Continue without throwing; background will be white
@@ -1155,6 +1118,68 @@ export default defineEventHandler(async (event) => {
       
       console.log(`📐 Page ${pageIndex + 1} dimensions: ${width}x${height} points (${(width/72).toFixed(2)}x${(height/72).toFixed(2)} inches)`)
       
+      // Draw background (image or solid color) FIRST
+      if (book.background_type === 'solid' && book.background_color) {
+        try {
+          // Draw solid color background
+          const hexColor = book.background_color.replace('#', '')
+          
+          // Validate hex color format
+          if (!/^[0-9A-Fa-f]{6}$/.test(hexColor)) {
+            console.warn(`⚠️ Invalid hex color format: ${book.background_color}, using default gray`)
+            // Use default gray color
+            page.drawRectangle({
+              x: 0,
+              y: 0,
+              width: width,
+              height: height,
+              color: rgb(0.9, 0.9, 0.9) // Light gray
+            })
+          } else {
+            const r = parseInt(hexColor.substr(0, 2), 16) / 255
+            const g = parseInt(hexColor.substr(2, 2), 16) / 255
+            const b = parseInt(hexColor.substr(4, 2), 16) / 255
+            
+            page.drawRectangle({
+              x: 0,
+              y: 0,
+              width: width,
+              height: height,
+              color: rgb(r, g, b)
+            })
+            console.log(`🎨 Solid background color applied: ${book.background_color} (RGB: ${r}, ${g}, ${b})`)
+          }
+        } catch (colorError) {
+          console.error('❌ Error applying solid background color:', colorError)
+          console.warn('⚠️ Using default white background due to color error')
+          // Fallback to white background
+          page.drawRectangle({
+            x: 0,
+            y: 0,
+            width: width,
+            height: height,
+            color: rgb(1, 1, 1) // White
+          })
+        }
+      } else if (pdfBgImage && book.background_type !== 'white') {
+        // Draw background image, scaled to fill page, with opacity from database
+        const bgScale = Math.max(width / pdfBgImage.width, height / pdfBgImage.height)
+        const bgW = pdfBgImage.width * bgScale
+        const bgH = pdfBgImage.height * bgScale
+        const bgX = (width - bgW) / 2
+        const bgY = (height - bgH) / 2
+        // Safety feature: if opacity is 0, use 30% instead
+        const backgroundOpacity = book.background_opacity || 30
+        const opacity = (backgroundOpacity === 0 ? 30 : backgroundOpacity) / 100 // Convert percentage to decimal
+        page.drawImage(pdfBgImage, {
+          x: bgX,
+          y: bgY,
+          width: bgW,
+          height: bgH,
+          opacity: opacity
+        })
+      }
+      
       // Add border at 1/8" inside the page edge (1/8" = 9 points)
       const borderMargin = 9
       page.drawRectangle({
@@ -1173,25 +1198,6 @@ export default defineEventHandler(async (event) => {
       const bottomMargin = 50 // for page number
       const gridYOffset = (pageIndex === 0) ? topMargin : 0
       const availableHeight = height - gridYOffset - bottomMargin
-      
-      // Draw background image, scaled to fill page, with opacity from database (only if present and not white background)
-      if (pdfBgImage && book.background_type !== 'white') {
-        const bgScale = Math.max(width / pdfBgImage.width, height / pdfBgImage.height)
-        const bgW = pdfBgImage.width * bgScale
-        const bgH = pdfBgImage.height * bgScale
-        const bgX = (width - bgW) / 2
-        const bgY = (height - bgH) / 2
-        // Safety feature: if opacity is 0, use 30% instead
-        const backgroundOpacity = book.background_opacity || 30
-        const opacity = (backgroundOpacity === 0 ? 30 : backgroundOpacity) / 100 // Convert percentage to decimal
-        page.drawImage(pdfBgImage, {
-          x: bgX,
-          y: bgY,
-          width: bgW,
-          height: bgH,
-          opacity: opacity
-        })
-      }
       
       // Draw title on first page, with extra space below
       if (pageIndex === 0) {

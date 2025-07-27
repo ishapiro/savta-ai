@@ -143,24 +143,43 @@ export default defineEventHandler(async (event) => {
       .map(asset => asset.ai_caption || asset.user_caption)
       .filter(caption => caption && caption.trim())
     
-    // Create enhanced prompt with both tags and captions
+    // Create enhanced prompt with both tags and captions, but limit length to avoid DALL-E API limits
     let tagsPrompt = ''
-    if (allTags.length > 0) {
-      tagsPrompt += `, theme: ${allTags.join(', ')}`
+    
+    // Limit tags to first 10 unique tags to keep prompt manageable
+    const limitedTags = allTags.slice(0, 10)
+    if (limitedTags.length > 0) {
+      tagsPrompt += `, theme: ${limitedTags.join(', ')}`
     }
-    if (allCaptions.length > 0) {
-      tagsPrompt += `, content: ${allCaptions.join('; ')}`
+    
+    // Limit captions to first 3 to keep prompt manageable
+    const limitedCaptions = allCaptions.slice(0, 3)
+    if (limitedCaptions.length > 0) {
+      // Truncate each caption to max 100 characters to prevent excessive length
+      const truncatedCaptions = limitedCaptions.map(caption => 
+        caption.length > 100 ? caption.substring(0, 100) + '...' : caption
+      )
+      tagsPrompt += `, content: ${truncatedCaptions.join('; ')}`
     }
     
     // 2. Generate a DALL-E 3 background image
     console.log('🎨 Generating DALL-E background image...')
     const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
     if (!openaiApiKey) throw new Error('Missing OpenAI API key')
-    const dallePrompt = `Abstract background with soft, neutral colors and smooth gradients. Subtle texture for depth. 
+    
+    let dallePrompt = `Abstract background with soft, neutral colors and smooth gradients. Subtle texture for depth. 
         No letters, no numbers, no words, no symbols, no text of any kind. No people, no animals. 
         Pure ambient design. Do not include any written language, signage, characters, glyphs, or typographic elements. 
         The image must be entirely free of any writing or visual text-like shapes.
         The photos include these subjects which are the main focus of the page: ${tagsPrompt}`
+    
+    // Ensure prompt doesn't exceed DALL-E's 4000 character limit
+    if (dallePrompt.length > 3900) { // Leave some buffer
+      console.warn(`⚠️ Prompt too long (${dallePrompt.length} chars), truncating to fit DALL-E limits`)
+      dallePrompt = dallePrompt.substring(0, 3900) + '...'
+    }
+    
+    console.log(`📝 DALL-E prompt length: ${dallePrompt.length} characters`)
     
     const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',

@@ -599,7 +599,30 @@ BEGIN
       AND table_name = 'memory_books' 
       AND column_name = 'background_type'
   ) THEN
-    ALTER TABLE memory_books ADD COLUMN background_type text DEFAULT 'white' CHECK (background_type in ('white', 'magical'));
+    ALTER TABLE memory_books ADD COLUMN background_type text DEFAULT 'white' CHECK (background_type in ('white', 'magical', 'solid'));
+  END IF;
+  
+  -- Update existing background_type constraint to include 'solid' if it exists
+  DO $$
+  BEGIN
+    IF EXISTS (
+      SELECT 1 FROM information_schema.check_constraints 
+      WHERE constraint_name LIKE '%background_type%' 
+      AND table_name = 'memory_books'
+    ) THEN
+      ALTER TABLE memory_books DROP CONSTRAINT IF EXISTS memory_books_background_type_check;
+      ALTER TABLE memory_books ADD CONSTRAINT memory_books_background_type_check 
+        CHECK (background_type in ('white', 'magical', 'solid'));
+    END IF;
+  END $$;
+  
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'background_color'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN background_color text;
   END IF;
   
   IF NOT EXISTS (
