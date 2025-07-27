@@ -873,7 +873,7 @@
           <!-- Actions Section -->
           <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
             <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 justify-items-center">
+            <div class="flex flex-wrap justify-center gap-3">
               <button
                 v-if="selectedBook.status === 'draft'"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
@@ -913,7 +913,13 @@
               </button>
               <button
                 v-if="selectedBook"
-                class="bg-brand-dialog-delete text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="confirmDeleteBook(selectedBook)">Delete</button>
+                class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-delete text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                @click="confirmDeleteBook(selectedBook)"
+              >
+                <i class="pi pi-trash text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">Delete</span>
+                <span class="sm:hidden">Delete</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1086,13 +1092,13 @@
             label="Share"
             icon="pi pi-share"
             size="small"
-            class="text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 border-0"
+            class="bg-brand-dialog-edit text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 border-0"
             @click="sharePdf"
           />
           <Button
             label="Close"
             size="small"
-            class="text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3"
+            class="bg-brand-dialog-cancel text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3"
             @click="showPdfModal = false"
           />
         </div>

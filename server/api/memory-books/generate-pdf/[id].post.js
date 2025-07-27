@@ -69,6 +69,16 @@ export default defineEventHandler(async (event) => {
     }
     console.log('✅ Memory book found:', book.id, 'Status:', book.status)
     
+    console.log('📚 BOOK DATA - Memory book loaded:', {
+      id: book.id,
+      title: book.title,
+      background_type: book.background_type,
+      background_color: book.background_color,
+      background_url: book.background_url ? 'exists' : 'none',
+      layout_type: book.layout_type,
+      status: book.status
+    })
+    
     // Check if this is a magic memory book
     if (book.layout_type === 'magic') {
       console.log('✨ Magic memory detected, generating a new magic story for regeneration')
@@ -247,8 +257,76 @@ export default defineEventHandler(async (event) => {
     await updatePdfStatus(supabase, book.id, user.id, bgStatusMessage)
     let backgroundBuffer
     
-    if (book.background_url) {
-      // Download background from storage
+    // Check background_type first, then fall back to background_url if needed
+    console.log('🔍 Background type check:', {
+      background_type: book.background_type,
+      background_color: book.background_color,
+      background_url: book.background_url ? 'exists' : 'none'
+    })
+    
+    if (book.background_type === 'solid') {
+      // Handle solid color background - no background image needed
+      console.log('🎨 SOLID COLOR SELECTED - Using solid color background:', book.background_color)
+      console.log('🎨 Background color details:', {
+        raw: book.background_color,
+        type: typeof book.background_color,
+        length: book.background_color ? book.background_color.length : 0
+      })
+      await updatePdfStatus(supabase, book.id, user.id, 'Applying solid color background...')
+      // No background buffer needed for solid color - will be applied directly in PDF
+      backgroundBuffer = null
+      console.log('🎨 Set backgroundBuffer to null for solid color')
+    } else if (book.background_type === 'magical') {
+      // Generate background for magical background type
+      console.log('🎨 Generating magical background...')
+      await updatePdfStatus(supabase, book.id, user.id, 'Creating magical background...')
+      
+      try {
+        const bgGenRes = await fetch(`${config.public.siteUrl}/api/memory-books/generate-background/${book.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (!bgGenRes.ok) {
+          console.error('❌ Background generation failed:', bgGenRes.status)
+          throw new Error(`Background generation failed: ${bgGenRes.status}`)
+        }
+        
+        const bgGenData = await bgGenRes.json()
+        console.log('✅ Background generated successfully:', bgGenData.backgroundUrl)
+        
+        // Download the newly generated background
+        console.log('⬇️ Downloading newly generated background...')
+        const bgRes = await fetch(bgGenData.backgroundUrl)
+        if (!bgRes.ok) {
+          console.error('❌ Failed to fetch generated background:', bgRes.status, bgRes.statusText)
+          throw new Error(`Failed to fetch generated background: ${bgRes.status}`)
+        }
+        backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
+        console.log('✅ Generated background downloaded, size:', backgroundBuffer.length, 'bytes')
+        
+        // Update the book with the new background URL
+        const { error: updateError } = await supabase
+          .from('memory_books')
+          .update({ background_url: bgGenData.backgroundUrl })
+          .eq('id', book.id)
+        
+        if (updateError) {
+          console.error('❌ Failed to update book with background URL:', updateError)
+        } else {
+          console.log('✅ Book updated with new background URL')
+        }
+      } catch (bgError) {
+        console.error('❌ Background generation error:', bgError)
+        console.warn('⚠️ Proceeding with white background due to generation failure')
+        // Continue with white background if generation fails
+        backgroundBuffer = null
+      }
+    } else if (book.background_url && book.background_type !== 'solid') {
+      // Download existing background from storage (for magical or other types)
       console.log('⬇️ Downloading background from storage:', book.background_url)
       const bgRes = await fetch(book.background_url)
       if (!bgRes.ok) {
@@ -257,19 +335,10 @@ export default defineEventHandler(async (event) => {
       }
       backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
       console.log('✅ Background downloaded, size:', backgroundBuffer.length, 'bytes')
-    } else if (book.background_type === 'magical') {
-      // Generate background for magical background type
-      console.log('🎨 Generating magical background...')
-      await updatePdfStatus(supabase, book.id, user.id, 'Creating magical background...')
-    } else if (book.background_type === 'solid') {
-      // Handle solid color background
-      console.log('🎨 Using solid color background:', book.background_color)
-      await updatePdfStatus(supabase, book.id, user.id, 'Applying solid color background...')
-      // No background buffer needed for solid color - will be applied directly in PDF
-      // No need to generate background image for solid colors
     } else {
       console.log('ℹ️ No background URL found and background_type is white, proceeding with white background.')
       // Continue without throwing; background will be white
+      backgroundBuffer = null
     }
     
     // 3. Create PDF document
@@ -733,6 +802,24 @@ export default defineEventHandler(async (event) => {
       
       // Add border at 1/8" inside the page edge (1/8" = 9 points)
       const borderMargin = 9
+      
+      // For solid backgrounds, use transparent fill to show the background color
+      // For other backgrounds, use white fill
+      const borderFillColor = book.background_type === 'solid' ? undefined : rgb(1, 1, 1)
+      
+      console.log('🖼️ MAGIC MEMORY BORDER DRAWING - Border configuration:', {
+        background_type: book.background_type,
+        borderFillColor: borderFillColor ? 'white' : 'transparent',
+        borderMargin: borderMargin,
+        borderWidth: 3,
+        borderDimensions: {
+          x: borderMargin,
+          y: borderMargin,
+          width: pageWidth - 2 * borderMargin,
+          height: pageHeight - 2 * borderMargin
+        }
+      })
+      
       page.drawRectangle({
         x: borderMargin,
         y: borderMargin,
@@ -740,12 +827,81 @@ export default defineEventHandler(async (event) => {
         height: pageHeight - 2 * borderMargin,
         borderColor: rgb(0, 0, 0),
         borderWidth: 3, // Increased from 1 to 3 points for better visibility
-        color: rgb(1, 1, 1) // white fill
+        color: borderFillColor // transparent for solid backgrounds, white for others
       })
-      console.log(`🖼️ Magic Memory border drawn: ${borderMargin} points from edge, width: ${pageWidth - 2 * borderMargin}x${pageHeight - 2 * borderMargin}`)
+      console.log(`🖼️ MAGIC MEMORY BORDER DRAWN - Border drawn: ${borderMargin} points from edge, width: ${pageWidth - 2 * borderMargin}x${pageHeight - 2 * borderMargin}, fill: ${borderFillColor ? 'white' : 'transparent'}`)
       
       // Use the same background handling as standard books, but respect background type
-      if (pdfBgImage && book.background_type !== 'white') {
+      console.log('🎨 MAGIC MEMORY BACKGROUND - Background handling for magic memory')
+      console.log('🎨 Magic memory background check:', {
+        background_type: book.background_type,
+        background_color: book.background_color,
+        has_background_color: !!book.background_color,
+        has_pdfBgImage: !!pdfBgImage
+      })
+      
+      if (book.background_type === 'solid' && book.background_color) {
+        console.log('🎨 MAGIC MEMORY SOLID COLOR - Starting solid color background application')
+        try {
+          // Draw solid color background
+          const hexColor = book.background_color.replace('#', '')
+          console.log('🎨 Magic memory hex color processing:', {
+            original: book.background_color,
+            without_hash: hexColor,
+            hex_length: hexColor.length
+          })
+          
+          // Validate hex color format
+          if (!/^[0-9A-Fa-f]{6}$/.test(hexColor)) {
+            console.warn(`⚠️ Invalid hex color format: ${book.background_color}, using default gray`)
+            console.log('🎨 Magic memory using fallback gray color')
+            // Use default gray color
+            page.drawRectangle({
+              x: 0,
+              y: 0,
+              width: pageWidth,
+              height: pageHeight,
+              color: rgb(0.9, 0.9, 0.9) // Light gray
+            })
+            console.log('🎨 Magic memory gray fallback rectangle drawn')
+          } else {
+            const r = parseInt(hexColor.substr(0, 2), 16) / 255
+            const g = parseInt(hexColor.substr(2, 2), 16) / 255
+            const b = parseInt(hexColor.substr(4, 2), 16) / 255
+            
+            console.log('🎨 Magic memory RGB conversion successful:', {
+              hex: hexColor,
+              r: r,
+              g: g,
+              b: b,
+              r_raw: parseInt(hexColor.substr(0, 2), 16),
+              g_raw: parseInt(hexColor.substr(2, 2), 16),
+              b_raw: parseInt(hexColor.substr(4, 2), 16)
+            })
+            
+            console.log('🎨 Magic memory drawing solid color rectangle...')
+            page.drawRectangle({
+              x: 0,
+              y: 0,
+              width: pageWidth,
+              height: pageHeight,
+              color: rgb(r, g, b)
+            })
+            console.log(`🎨 MAGIC MEMORY SOLID BACKGROUND SUCCESS - Color applied: ${book.background_color} (RGB: ${r}, ${g}, ${b})`)
+          }
+        } catch (colorError) {
+          console.error('❌ Error applying solid background color to magic memory:', colorError)
+          console.warn('⚠️ Using default white background due to color error')
+          // Fallback to white background
+          page.drawRectangle({
+            x: 0,
+            y: 0,
+            width: pageWidth,
+            height: pageHeight,
+            color: rgb(1, 1, 1) // White
+          })
+        }
+      } else if (pdfBgImage && book.background_type !== 'white') {
         // Draw background image to fill the page with opacity from database
         // Safety feature: if opacity is 0, use 30% instead
         const backgroundOpacity = book.background_opacity || 30
@@ -1119,14 +1275,28 @@ export default defineEventHandler(async (event) => {
       console.log(`📐 Page ${pageIndex + 1} dimensions: ${width}x${height} points (${(width/72).toFixed(2)}x${(height/72).toFixed(2)} inches)`)
       
       // Draw background (image or solid color) FIRST
+      console.log('🎨 DRAWING BACKGROUND - Page dimensions:', { width, height })
+      console.log('🎨 Background drawing check:', {
+        background_type: book.background_type,
+        background_color: book.background_color,
+        has_background_color: !!book.background_color
+      })
+      
       if (book.background_type === 'solid' && book.background_color) {
+        console.log('🎨 SOLID COLOR DRAWING - Starting solid color background application')
         try {
           // Draw solid color background
           const hexColor = book.background_color.replace('#', '')
+          console.log('🎨 Hex color processing:', {
+            original: book.background_color,
+            without_hash: hexColor,
+            hex_length: hexColor.length
+          })
           
           // Validate hex color format
           if (!/^[0-9A-Fa-f]{6}$/.test(hexColor)) {
             console.warn(`⚠️ Invalid hex color format: ${book.background_color}, using default gray`)
+            console.log('🎨 Using fallback gray color')
             // Use default gray color
             page.drawRectangle({
               x: 0,
@@ -1135,11 +1305,23 @@ export default defineEventHandler(async (event) => {
               height: height,
               color: rgb(0.9, 0.9, 0.9) // Light gray
             })
+            console.log('🎨 Gray fallback rectangle drawn')
           } else {
             const r = parseInt(hexColor.substr(0, 2), 16) / 255
             const g = parseInt(hexColor.substr(2, 2), 16) / 255
             const b = parseInt(hexColor.substr(4, 2), 16) / 255
             
+            console.log('🎨 RGB conversion successful:', {
+              hex: hexColor,
+              r: r,
+              g: g,
+              b: b,
+              r_raw: parseInt(hexColor.substr(0, 2), 16),
+              g_raw: parseInt(hexColor.substr(2, 2), 16),
+              b_raw: parseInt(hexColor.substr(4, 2), 16)
+            })
+            
+            console.log('🎨 Drawing solid color rectangle...')
             page.drawRectangle({
               x: 0,
               y: 0,
@@ -1147,7 +1329,7 @@ export default defineEventHandler(async (event) => {
               height: height,
               color: rgb(r, g, b)
             })
-            console.log(`🎨 Solid background color applied: ${book.background_color} (RGB: ${r}, ${g}, ${b})`)
+            console.log(`🎨 SOLID BACKGROUND SUCCESS - Color applied: ${book.background_color} (RGB: ${r}, ${g}, ${b})`)
           }
         } catch (colorError) {
           console.error('❌ Error applying solid background color:', colorError)
@@ -1162,6 +1344,7 @@ export default defineEventHandler(async (event) => {
           })
         }
       } else if (pdfBgImage && book.background_type !== 'white') {
+        console.log('🎨 BACKGROUND IMAGE - Drawing background image instead of solid color')
         // Draw background image, scaled to fill page, with opacity from database
         const bgScale = Math.max(width / pdfBgImage.width, height / pdfBgImage.height)
         const bgW = pdfBgImage.width * bgScale
@@ -1171,6 +1354,13 @@ export default defineEventHandler(async (event) => {
         // Safety feature: if opacity is 0, use 30% instead
         const backgroundOpacity = book.background_opacity || 30
         const opacity = (backgroundOpacity === 0 ? 30 : backgroundOpacity) / 100 // Convert percentage to decimal
+        console.log('🎨 Background image details:', {
+          imageSize: { width: pdfBgImage.width, height: pdfBgImage.height },
+          scale: bgScale,
+          scaledSize: { width: bgW, height: bgH },
+          position: { x: bgX, y: bgY },
+          opacity: opacity
+        })
         page.drawImage(pdfBgImage, {
           x: bgX,
           y: bgY,
@@ -1178,10 +1368,31 @@ export default defineEventHandler(async (event) => {
           height: bgH,
           opacity: opacity
         })
+        console.log('🎨 Background image drawn successfully')
+      } else {
+        console.log('🎨 NO BACKGROUND - No background image or solid color to draw')
       }
       
       // Add border at 1/8" inside the page edge (1/8" = 9 points)
       const borderMargin = 9
+      
+      // For solid backgrounds, use transparent fill to show the background color
+      // For other backgrounds, use white fill
+      const borderFillColor = book.background_type === 'solid' ? undefined : rgb(1, 1, 1)
+      
+      console.log('🖼️ BORDER DRAWING - Border configuration:', {
+        background_type: book.background_type,
+        borderFillColor: borderFillColor ? 'white' : 'transparent',
+        borderMargin: borderMargin,
+        borderWidth: 3,
+        borderDimensions: {
+          x: borderMargin,
+          y: borderMargin,
+          width: width - 2 * borderMargin,
+          height: height - 2 * borderMargin
+        }
+      })
+      
       page.drawRectangle({
         x: borderMargin,
         y: borderMargin,
@@ -1189,9 +1400,9 @@ export default defineEventHandler(async (event) => {
         height: height - 2 * borderMargin,
         borderColor: rgb(0, 0, 0),
         borderWidth: 3, // Increased from 1 to 3 points for better visibility
-        color: rgb(1, 1, 1) // white fill
+        color: borderFillColor // transparent for solid backgrounds, white for others
       })
-      console.log(`🖼️ Border drawn: ${borderMargin} points from edge, width: ${width - 2 * borderMargin}x${height - 2 * borderMargin}`)
+      console.log(`🖼️ BORDER DRAWN - Border drawn: ${borderMargin} points from edge, width: ${width - 2 * borderMargin}x${height - 2 * borderMargin}, fill: ${borderFillColor ? 'white' : 'transparent'}`)
       
       // Margins
       const topMargin = 60 // for heading
