@@ -873,7 +873,7 @@
           <!-- Actions Section -->
           <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
             <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 justify-items-center">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 justify-items-center">
               <button
                 v-if="selectedBook.status === 'draft'"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
@@ -1474,20 +1474,20 @@
         </div>
         
         <!-- Background Selection Tiles -->
-        <div class="grid grid-cols-2 gap-3 w-full max-w-md mx-auto sm:max-w-2xl">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-md mx-auto sm:max-w-2xl">
           <!-- Clean & Simple Tile -->
           <div class="relative cursor-pointer group" @click="magicBackgroundType = 'white'">
-            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-3 sm:p-4 text-center transition-all duration-300 h-full min-h-[100px] sm:min-h-[128px] flex flex-col items-center justify-center"
               :class="magicBackgroundType === 'white' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-white border-2 border-gray-300 rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-file text-gray-600 text-xl sm:text-2xl"></i>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white border-2 border-gray-300 rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-file text-gray-600 text-lg sm:text-xl"></i>
               </div>
-              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">Clean & Simple</div>
-              <div class="text-xs sm:text-sm text-gray-600">Pure white background for a classic, elegant look</div>
+              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Clean & Simple</div>
+              <div class="text-xs text-gray-600">Pure white background for a classic, elegant look</div>
               <div v-if="magicBackgroundType === 'white'" class="absolute top-2 right-2">
-                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                <div class="w-5 h-5 sm:w-6 sm:h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
@@ -1496,17 +1496,37 @@
           
           <!-- Special Design Tile -->
           <div class="relative cursor-pointer group" @click="magicBackgroundType = 'magical'">
-            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-3 sm:p-4 text-center transition-all duration-300 h-full min-h-[100px] sm:min-h-[128px] flex flex-col items-center justify-center"
               :class="magicBackgroundType === 'magical' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-200 via-brand-highlight to-blue-200 rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-sparkles text-brand-header text-xl sm:text-2xl"></i>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-200 via-brand-highlight to-blue-200 rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-sparkles text-brand-header text-lg sm:text-xl"></i>
               </div>
-              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">Special Design</div>
-              <div class="text-xs sm:text-sm text-gray-600">AI-generated background that matches your story's theme</div>
+              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Special Design</div>
+              <div class="text-xs text-gray-600">AI-generated background that matches your story's theme</div>
               <div v-if="magicBackgroundType === 'magical'" class="absolute top-2 right-2">
-                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                <div class="w-5 h-5 sm:w-6 sm:h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-xs"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Solid Color Tile -->
+          <div class="relative cursor-pointer group" @click="magicBackgroundType = 'solid'">
+            <div class="border-2 rounded-xl p-3 sm:p-4 text-center transition-all duration-300 h-full min-h-[100px] sm:min-h-[128px] flex flex-col items-center justify-center"
+              :class="magicBackgroundType === 'solid' 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300"
+                   :style="{ backgroundColor: magicSolidBackgroundColor || '#e5e7eb' }">
+                <i class="pi pi-palette text-white text-lg sm:text-xl"></i>
+              </div>
+              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Solid Color</div>
+              <div class="text-xs text-gray-600">Choose your own beautiful background color</div>
+              <div v-if="magicBackgroundType === 'solid'" class="absolute top-2 right-2">
+                <div class="w-5 h-5 sm:w-6 sm:h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
@@ -1514,8 +1534,36 @@
           </div>
         </div>
 
+        <!-- Color Picker (shown when solid is selected) -->
+        <div v-if="magicBackgroundType === 'solid'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-4 w-full max-w-md mx-auto">
+          <h4 class="font-semibold text-brand-flash mb-3 text-center">Choose Your Color</h4>
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
+              <input 
+                type="color" 
+                v-model="magicSolidBackgroundColor"
+                class="w-full h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                :style="{ backgroundColor: magicSolidBackgroundColor || '#e5e7eb' }"
+              />
+            </div>
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+              <div class="w-full h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center"
+                   :style="{ backgroundColor: magicSolidBackgroundColor || '#e5e7eb' }">
+                <span class="text-sm font-medium" :class="getContrastTextClass(magicSolidBackgroundColor)">
+                  Card or Booklet
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-gray-600 text-center">
+            <p>This color will be the background for your entire memory card</p>
+          </div>
+        </div>
+
         <!-- Background Details Info -->
-        <div class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
+        <div v-if="magicBackgroundType !== 'solid'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
           <div class="flex items-start gap-3">
             <i class="pi pi-info-circle text-brand-flash mt-1"></i>
             <div>
@@ -1554,8 +1602,7 @@
                 <i class="pi pi-images text-sm sm:text-xl text-white"></i>
               </div>
               <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Savta selects</div>
-              <div class="text-xs text-gray-600">You told me {{ magicMemoryTitle || 'about your special memory' }}. 
-                I will pick the best photos for this story.</div>
+              <div class="text-xs text-gray-600">I'll search your photos for matches to "{{ magicMemoryTitle || 'your memory' }}" and pick the best 50 recent photos.</div>
               <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-1 right-1">
                 <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
@@ -3604,7 +3651,8 @@ const currentStepIndex = ref(0) // Index within the button's steps array
 const magicMemoryTitle = ref('')
 const magicMemoryEvent = ref('')
 const magicPhotoCount = ref(4) // Default to 4 photos
-const magicBackgroundType = ref('white') // 'white' or 'magical'
+const magicBackgroundType = ref('white') // 'white', 'magical', or 'solid'
+const magicSolidBackgroundColor = ref('#e5e7eb') // Default light gray color
 
 // Photo selection method variables
 const magicPhotoSelectionMethod = ref('')
@@ -3635,6 +3683,23 @@ function toggleMagicMemorySelection(id) {
 }
 
 const magicLoading = ref(false)
+
+// Helper function to determine text color based on background color
+const getContrastTextClass = (backgroundColor) => {
+  if (!backgroundColor) return 'text-gray-900'
+  
+  // Convert hex to RGB
+  const hex = backgroundColor.replace('#', '')
+  const r = parseInt(hex.substr(0, 2), 16)
+  const g = parseInt(hex.substr(2, 2), 16)
+  const b = parseInt(hex.substr(4, 2), 16)
+  
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  
+  // Return appropriate text class based on luminance
+  return luminance > 0.5 ? 'text-gray-900' : 'text-white'
+}
 
 // Watch for magic memory step changes to handle Step 5 redirect
 watch(magicMemoryStep, (newStep) => {
@@ -3703,6 +3768,7 @@ async function onMagicMemoryContinue() {
       memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
       photo_count: magicPhotoCount.value,
       background_type: magicBackgroundType.value,
+      background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
       theme: 'classic' // Default theme since it's not collected in the Magic Memory dialog
     }
     if (photos.length <= magicPhotoCount.value) {
@@ -3740,6 +3806,7 @@ async function onMagicMemoryContinue() {
         title: magicMemoryTitle.value || 'Magic Memory',
         memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
         background_type: aiRes.background_type || magicBackgroundType.value,
+        background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
         photo_count: magicPhotoCount.value
       },
       headers: {
@@ -4048,11 +4115,81 @@ const populatePhotoSelectionPool = () => {
   
   switch (magicPhotoSelectionMethod.value) {
     case 'last_100':
-      // Get the last 100 photos (most recent by created_at)
-      filteredAssets = filteredAssets
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 100)
-      console.log('🔍 [populatePhotoSelectionPool] Last 100 method - filtered assets count:', filteredAssets.length)
+      // Savta picks: Search for photos where words in user input match tags, locations, and people
+      console.log('🔍 [populatePhotoSelectionPool] Savta picks method - searching for matches')
+      
+      // Get user input words (title and event)
+      const userInput = `${magicMemoryTitle.value || ''} ${magicMemoryEvent.value || ''}`.toLowerCase().trim()
+      console.log('🔍 [populatePhotoSelectionPool] User input:', userInput)
+      
+      if (userInput) {
+        // Split user input into words, filtering out common words
+        const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'mine', 'yours', 'ours', 'theirs']
+        const searchWords = userInput.split(/\s+/).filter(word => 
+          word.length > 2 && !commonWords.includes(word)
+        )
+        console.log('🔍 [populatePhotoSelectionPool] Search words:', searchWords)
+        
+        if (searchWords.length > 0) {
+          // Find assets that match any of the search words
+          const matchingAssets = filteredAssets.filter(asset => {
+            // Check tags
+            const tagMatch = asset.tags && asset.tags.some(tag => 
+              searchWords.some(word => tag.toLowerCase().includes(word) || word.includes(tag.toLowerCase()))
+            )
+            
+            // Check locations (country, state, city)
+            const locationMatch = searchWords.some(word => {
+              const countryMatch = asset.country && asset.country.toLowerCase().includes(word)
+              const stateMatch = asset.state && asset.state.toLowerCase().includes(word)
+              const cityMatch = asset.city && asset.city.toLowerCase().includes(word)
+              return countryMatch || stateMatch || cityMatch
+            })
+            
+            // Check people detected
+            const peopleMatch = asset.people_detected && asset.people_detected.some(person => 
+              searchWords.some(word => person.toLowerCase().includes(word) || word.includes(person.toLowerCase()))
+            )
+            
+            // Check captions for additional context
+            const captionMatch = (asset.ai_caption || asset.user_caption) && 
+              searchWords.some(word => (asset.ai_caption || '').toLowerCase().includes(word) || 
+                                      (asset.user_caption || '').toLowerCase().includes(word))
+            
+            return tagMatch || locationMatch || peopleMatch || captionMatch
+          })
+          
+          console.log('🔍 [populatePhotoSelectionPool] Matching assets found:', matchingAssets.length)
+          
+                     if (matchingAssets.length > 0) {
+             // Sort by most recent and take top 50
+             filteredAssets = matchingAssets
+               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+               .slice(0, 50)
+             console.log('🔍 [populatePhotoSelectionPool] Savta picks - selected 50 most recent matching photos')
+           } else {
+             console.log('🔍 [populatePhotoSelectionPool] No matches found, falling back to most recent 50 photos')
+             // No matches found, fall back to most recent 50 photos
+             filteredAssets = filteredAssets
+               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+               .slice(0, 50)
+           }
+         } else {
+           console.log('🔍 [populatePhotoSelectionPool] No meaningful search words, using most recent 50 photos')
+           // No meaningful search words, use most recent 50 photos
+           filteredAssets = filteredAssets
+             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+             .slice(0, 50)
+         }
+       } else {
+         console.log('🔍 [populatePhotoSelectionPool] No user input, using most recent 50 photos')
+         // No user input, use most recent 50 photos
+         filteredAssets = filteredAssets
+           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+           .slice(0, 50)
+       }
+      
+      console.log('🔍 [populatePhotoSelectionPool] Savta picks method - final filtered assets count:', filteredAssets.length)
       console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
       break
       
