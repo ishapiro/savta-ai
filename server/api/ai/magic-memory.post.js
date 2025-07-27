@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { photos, forceAll, title, theme, memory_event, photo_count = 4, background_type = 'white', background_color } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
+    let { photos, forceAll, title, theme, memory_event, photo_count = 4, background_type = 'white', background_color } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
     if (!photos || !Array.isArray(photos) || photos.length < 1) {
       throw createError({ statusCode: 400, statusMessage: 'At least 1 photo is required' })
     }
@@ -24,6 +24,11 @@ export default defineEventHandler(async (event) => {
       const photoNumber = i + 1
       const paddedNumber = photoNumber.toString().padStart(3, '0') // 001, 012, 123, etc.
       let summary = `Photo ${paddedNumber}:\n- orientation: ${p.orientation || 'unknown'}\n- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
+      
+      // Add fingerprint for duplicate detection
+      if (p.fingerprint) {
+        summary += `\n- fingerprint: ${p.fingerprint}`
+      }
       
       // Add location information if available
       const locationParts = []
@@ -71,7 +76,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // System context and instructions
-    const systemInstructions = `You are a warm, witty Hallmark card writer creating personalized family stories from photos.
+    const systemInstructions = `You are a warm, witty , hip and playful, grandmother creating personalized family stories from photos.
 
 TASK: Select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool and create a 2-3 sentence story that connects them into a cohesive narrative.
 
@@ -98,10 +103,11 @@ PHOTO SELECTION RULES:
 - Choose the most meaningful and emotionally connected photos that work well together
 - Consider relationships, themes, and storytelling potential when selecting
 - If dates are available, use them to create a chronological or thematic flow
-- ${targetPhotoCount === 1 ? 'For single photos, prioritize portrait orientation when available for better layout' : 'Arrange selected photos in the best storytelling order'}
+- Arrange selected photos in the best storytelling order
 - CRITICAL: Use the photo numbers (1, 2, 3, etc.) exactly as shown in the "Photo X:" labels
 - CRITICAL: Copy the photo numbers EXACTLY - do not modify, change, or generate new numbers
 - CRITICAL: The photo numbers must match exactly with the provided pool
+- CRITICAL: Do NOT select photos with the same fingerprint - each selected photo must have a unique fingerprint
 
 STORY GUIDELINES:
 - Weave together the selected photos into a single cohesive story
@@ -139,9 +145,191 @@ IMPORTANT:
 - Use plain photo numbers (1, 2, 3, etc.) without leading zeros - NOT 001, 002, 003
 - Photo numbers correspond to the "Photo X:" entries above (ignore the zero-padding in labels)`
 
-    const prompt = `${systemInstructions}
+    // Calculate prompt length and limit photos if necessary
+    let finalPrompt = `${systemInstructions}
 
 ${photoDataSection}`
+    
+    const maxPromptLength = 10000 // Increased from 4000 to allow many more photos
+    let photosToInclude = photos
+    let truncatedPhotoCount = 0
+    
+    // If prompt is too long, use intelligent photo selection based on character contribution
+    if (finalPrompt.length > maxPromptLength) {
+      console.log(`⚠️ Initial prompt too long (${finalPrompt.length} chars), using intelligent photo selection...`)
+      
+      // Calculate character contribution for each photo
+      const photoContributions = photos.map((p, index) => {
+        const photoNumber = index + 1
+        const paddedNumber = photoNumber.toString().padStart(3, '0')
+        
+        // Calculate the character contribution of this photo
+        const photoSummary = `Photo ${paddedNumber}:
+- orientation: ${p.orientation || 'unknown'}
+- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}
+- ai_caption: ${p.ai_caption || ''}
+- people_detected: ${(p.people_detected||[]).join(', ')}
+- tags: ${(p.tags||[]).join(', ')}
+- user_tags: ${(p.user_tags||[]).join(', ')}`
+        
+        // Add location information if available
+        let locationInfo = ''
+        const locationParts = []
+        if (p.city && p.city.trim()) locationParts.push(p.city.trim())
+        if (p.state && p.state.trim()) locationParts.push(p.state.trim())
+        if (p.country && p.country.trim()) locationParts.push(p.country.trim())
+        if (p.zip_code && p.zip_code.trim()) locationParts.push(p.zip_code.trim())
+        
+        if (locationParts.length > 0) {
+          locationInfo = `\n- location: ${locationParts.join(', ')}`
+        }
+        
+        // Add date information if available
+        let dateInfo = ''
+        if (p.asset_date) {
+          const photoDate = new Date(p.asset_date)
+          const formattedDate = photoDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })
+          dateInfo = `\n- date: ${formattedDate}`
+        }
+        if (p.created_at) {
+          const uploadDate = new Date(p.created_at)
+          const mm = String(uploadDate.getMonth() + 1).padStart(2, '0')
+          const dd = String(uploadDate.getDate()).padStart(2, '0')
+          const yyyy = uploadDate.getFullYear()
+          dateInfo += `\n- upload_date: ${mm}-${dd}-${yyyy}`
+        }
+        
+        const fullPhotoText = photoSummary + locationInfo + dateInfo
+        const characterCount = fullPhotoText.length
+        
+        return {
+          photo: p,
+          index: index,
+          characterCount: characterCount,
+          photoText: fullPhotoText
+        }
+      })
+      
+      // Sort by date (newest first) to prioritize recent photos
+      photoContributions.sort((a, b) => new Date(b.photo.created_at) - new Date(a.photo.created_at))
+      
+      // Build the prompt with photos until we reach the limit
+      let currentPrompt = systemInstructions + '\n\n'
+      let selectedPhotos = []
+      let totalCharacters = currentPrompt.length
+      
+      // Add the instruction text that comes before photos
+      const instructionPrefix = `TASK: Select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool and create a 2-3 sentence story that connects them into a cohesive narrative.
+
+RESTRICTIONS:
+- Keep the story PG
+- Never use the location "West Ridge" 
+- Do not say "young ones" or "youngsters" use "kids" or "children"
+
+STYLE REQUIREMENTS:
+- Warm, fun, and lighthearted tone like a Hallmark card
+- But not too sappy or corny
+- 8th grade reading level
+- Natural, personal, and delightful language
+- Use photo context (captions, tags, people) for richness, but don't mention them literally
+- Refer to location information if available to make the story more specific and personal
+- IMPORTANT: Only use letters and symbols from the Latin character set (no Hebrew, Cyrillic, or other scripts). All output must be in English and use only Latin characters.
+
+Title: "${title}"
+Theme: "${theme}"
+
+PHOTO SELECTION RULES:
+- You MUST select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool
+- If there is a location named in the title match it against the city, state, country, or zip code in photo data
+- Prioritize photos with a recent upload_date
+- Select photos that are related to the title, theme or event
+- Choose the most meaningful and emotionally connected photos that work well together
+- Consider relationships, themes, and storytelling potential when selecting
+- If dates are available, use them to create a chronological or thematic flow
+- Arrange selected photos in the best storytelling order
+- CRITICAL: Use the photo numbers (1, 2, 3, etc.) exactly as shown in the "Photo X:" labels
+- CRITICAL: Copy the photo numbers EXACTLY - do not modify, change, or generate new numbers
+- CRITICAL: The photo numbers must match exactly with the provided pool
+
+STORY GUIDELINES:
+- Weave together the selected photos into a single cohesive story
+- Focus on relationships, emotions, and shared experiences
+- Make it feel like a personal family memory
+- Use 2-3 sentences maximum
+
+PHOTO SELECTION POOL (`
+      
+      const instructionSuffix = ` photos available):
+
+SELECTION INSTRUCTIONS:
+${forceAll ? 
+  `Use ALL ` : 
+  `From the `} photos above, select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} that will create the best story together. Choose photos that are meaningful and emotionally connected.
+
+RESPONSE FORMAT:
+Return ONLY a valid JSON object with these exact fields:
+{
+  "selected_photo_numbers": [1, 2, 3, 4],
+  "story": "Your 2-3 sentence story here..."
+}
+
+EXAMPLE:
+If you want to select photos 1, 2, 3, and 4 from the pool, your response should look like this EXACT format:
+{
+  "selected_photo_numbers": [1, 2, 3, 4],
+  "story": "Your story here..."
+}
+
+IMPORTANT: 
+- Only include photo numbers that exist in the provided pool (1 to )
+- Select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''}, no more, no less
+- Use plain photo numbers (1, 2, 3, etc.) without leading zeros - NOT 001, 002, 003
+- Photo numbers correspond to the "Photo X:" entries above (ignore the zero-padding in labels)`
+      
+      // Add instruction prefix
+      currentPrompt += instructionPrefix
+      totalCharacters += instructionPrefix.length
+      
+      // Add photos one by one until we reach the limit
+      for (const contribution of photoContributions) {
+        const photoWithSeparator = contribution.photoText + '\n\n'
+        const newTotal = totalCharacters + photoWithSeparator.length + instructionSuffix.length + contribution.index.toString().length + 10 // Buffer for photo count
+        
+        if (newTotal <= maxPromptLength) {
+          selectedPhotos.push(contribution)
+          totalCharacters += photoWithSeparator.length
+        } else {
+          break
+        }
+      }
+      
+      // Sort selected photos back to original order
+      selectedPhotos.sort((a, b) => a.index - b.index)
+      
+      // Build the final prompt with selected photos
+      const selectedPhotoTexts = selectedPhotos.map((contribution, i) => {
+        const photoNumber = i + 1
+        const paddedNumber = photoNumber.toString().padStart(3, '0')
+        return contribution.photoText.replace(/^Photo \d+:/, `Photo ${paddedNumber}:`)
+      }).join('\n\n')
+      
+      finalPrompt = `${systemInstructions}
+
+${instructionPrefix}${selectedPhotos.length}${instructionSuffix.replace('photos available):', 'photos available):\n' + selectedPhotoTexts)}`
+      
+      photosToInclude = selectedPhotos.map(c => c.photo)
+      truncatedPhotoCount = photos.length - selectedPhotos.length
+      
+      console.log(`📊 Intelligent photo selection: ${selectedPhotos.length} photos selected (${truncatedPhotoCount} removed)`)
+      console.log(`📊 Total characters: ${finalPrompt.length}/${maxPromptLength}`)
+    }
+    
+    // Update the photos array to use the limited set
+    photos = photosToInclude
 
     console.log("****************************")
     console.log("magic story prompt")
@@ -149,9 +337,13 @@ ${photoDataSection}`
     console.log(`Target photo count: ${targetPhotoCount}`)
     console.log(`Available photos: ${photos.length}`)
     console.log(`Force all: ${forceAll}`)
+    if (truncatedPhotoCount > 0) {
+      console.log(`⚠️ Prompt was too long, reduced from ${photos.length + truncatedPhotoCount} to ${photos.length} photos`)
+    }
     console.log("Available photo IDs:", photos.map(p => p.id))
     console.log("First 5 photo IDs being sent to AI:", photos.slice(0, 5).map(p => p.id))
-    console.log(prompt)
+    console.log(`Final prompt length: ${finalPrompt.length} characters`)
+    console.log(finalPrompt)
     console.log("****************************")
 
     // Call OpenAI
@@ -165,7 +357,7 @@ ${photoDataSection}`
         model: 'gpt-4o',
         messages: [
           { role: 'system', content: 'You are a warm, witty Hallmark card writer.' },
-          { role: 'user', content: prompt }
+          { role: 'user', content: finalPrompt }
         ],
         max_tokens: 3000
       })

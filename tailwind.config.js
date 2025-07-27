@@ -61,7 +61,7 @@ export default {
       colors: {
         brand: {
           header: '#D16D84', // H1 - raspberry
-          background: '#F9F6F2', // cream
+          background: '#F9F6F2', // cream #F9F6F2
           primary: '#333333', // text - darker gray was #5A5752
           secondary: '#6E4B63', // H2 - plum
           navigation: ' #e4e4e7;', // light grey

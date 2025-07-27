@@ -178,9 +178,9 @@ export default defineEventHandler(async (event) => {
       console.log('✅ Cleared existing URLs from database')
     }
     
-    // Step 1: Generate background if not already present, AI background is enabled, and background type is not white
-    if (!book.background_url && book.ai_background !== false && book.background_type !== 'white') {
-      console.log('🎨 Background not ready, AI background enabled, and background type is not white, generating background...')
+    // Step 1: Generate background if not already present, AI background is enabled, and background type is not white or solid
+    if (!book.background_url && book.ai_background !== false && book.background_type !== 'white' && book.background_type !== 'solid') {
+      console.log('🎨 Background not ready, AI background enabled, and background type is not white or solid, generating background...')
       
       try {
         // Update status to indicate background generation
@@ -232,23 +232,42 @@ export default defineEventHandler(async (event) => {
           .map(asset => asset.ai_caption || asset.user_caption)
           .filter(caption => caption && caption.trim())
         
-        // Create enhanced prompt with both tags and captions
+        // Create enhanced prompt with both tags and captions, but limit length to avoid DALL-E API limits
         let tagsPrompt = ''
-        if (allTags.length > 0) {
-          tagsPrompt += `, theme: ${allTags.join(', ')}`
+        
+        // Limit tags to first 10 unique tags to keep prompt manageable
+        const limitedTags = allTags.slice(0, 10)
+        if (limitedTags.length > 0) {
+          tagsPrompt += `, theme: ${limitedTags.join(', ')}`
         }
-        if (allCaptions.length > 0) {
-          tagsPrompt += `, content: ${allCaptions.join('; ')}`
+        
+        // Limit captions to first 3 to keep prompt manageable
+        const limitedCaptions = allCaptions.slice(0, 3)
+        if (limitedCaptions.length > 0) {
+          // Truncate each caption to max 100 characters to prevent excessive length
+          const truncatedCaptions = limitedCaptions.map(caption => 
+            caption.length > 100 ? caption.substring(0, 100) + '...' : caption
+          )
+          tagsPrompt += `, content: ${truncatedCaptions.join('; ')}`
         }
         
         // Generate a DALL-E 3 background image
         console.log('🎨 Generating DALL-E background image...')
         const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
         if (!openaiApiKey) throw new Error('Missing OpenAI API key')
-        const dallePrompt = `Empty scrapbook page background with soft pastel colors and subtle texture. 
+        
+        let dallePrompt = `Empty scrapbook page background with soft pastel colors and subtle texture. 
                 Minimalistic design. Do not include any people, animals, objects, illustrations, or figures. 
                 Background only. No characters, no faces, no silhouettes, no living creatures. 
                 No text or decorations.${tagsPrompt}`
+        
+        // Ensure prompt doesn't exceed DALL-E's 4000 character limit (using 3500 to be safe)
+        if (dallePrompt.length > 3500) { // Leave some buffer
+          console.warn(`⚠️ Prompt too long (${dallePrompt.length} chars), truncating to fit DALL-E limits`)
+          dallePrompt = dallePrompt.substring(0, 3500) + '...'
+        }
+        
+        console.log(`📝 DALL-E prompt length: ${dallePrompt.length} characters`)
         
         const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
           method: 'POST',

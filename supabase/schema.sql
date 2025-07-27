@@ -73,6 +73,7 @@ create table if not exists assets (
   ai_processed boolean default false,
   approved boolean default false,
   rejected boolean default false,
+  fingerprint text,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false
@@ -96,7 +97,7 @@ create table if not exists memory_books (
   layout_type text,
   page_count integer,
   grid_layout text default '2x2' check (grid_layout in ('1x1', '2x1', '2x2', '3x2', '3x3', '3x4', '4x4')),
-  memory_shape text default 'original' check (memory_shape in ('original', 'magic')),
+  memory_shape text default 'rounded' check (memory_shape in ('original', 'magic', 'rounded')),
   print_size text,
   quality text,
   medium text,
@@ -188,6 +189,7 @@ create index if not exists idx_assets_type on assets(type);
 create index if not exists idx_assets_approved on assets(approved);
 create index if not exists idx_assets_orientation on assets(orientation);
 create index if not exists idx_assets_dimensions on assets(width, height);
+create index if not exists idx_assets_fingerprint on assets(fingerprint);
 create index if not exists idx_asset_tags_asset_id on asset_tags(asset_id);
 create index if not exists idx_asset_tags_tag_id on asset_tags(tag_id);
 create index if not exists idx_memory_books_user_id on memory_books(user_id);

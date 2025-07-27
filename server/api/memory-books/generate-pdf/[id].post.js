@@ -1,8 +1,12 @@
 // PDF generation endpoint
 // Generates PDF using pre-generated background
 
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, rgb } from 'pdf-lib'
 import sharp from 'sharp'
+
+import smartcrop from 'smartcrop-sharp'
+import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
+import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -76,6 +80,7 @@ export default defineEventHandler(async (event) => {
       background_color: book.background_color,
       background_url: book.background_url ? 'exists' : 'none',
       layout_type: book.layout_type,
+      memory_shape: book.memory_shape,
       status: book.status
     })
     
@@ -86,29 +91,143 @@ export default defineEventHandler(async (event) => {
       // Update status for magic story generation
       await updatePdfStatus(supabase, book.id, user.id, '✨ Crafting your magical story... ✨')
       
-      // Fetch the photos from the user's selection pool (up to 12 photos they want to consider)
+      // Fetch the photos from the user's selection pool
       // For existing books without photo_selection_pool, fall back to created_from_assets
       const photoPool = book.photo_selection_pool && book.photo_selection_pool.length > 0 
         ? book.photo_selection_pool 
         : book.created_from_assets || []
       
       // Update status for photo selection
-      await updatePdfStatus(supabase, book.id, user.id, 'Savta is selecting your photos...')
+      await updatePdfStatus(supabase, book.id, user.id, 'Savta is selecting photos for you...')
       
       console.log('📸 Fetching photos from user selection pool...')
       console.log('Photo pool to use:', photoPool)
       
-      const { data: assets, error: assetsError } = await supabase
+      const { data: allAssets, error: assetsError } = await supabase
         .from('assets')
         .select('*')
         .in('id', photoPool)
         .eq('approved', true)
         .eq('deleted', false)
 
-      if (assetsError || !assets || assets.length === 0) {
+      if (assetsError || !allAssets || allAssets.length === 0) {
         console.error('❌ No photos found in selection pool:', photoPool)
         throw new Error('Failed to fetch photos from selection pool for magic memory regeneration')
       }
+
+      // Implement "Savta picks" logic to intelligently select photos
+      console.log('🔍 Implementing Savta picks logic for photo selection...')
+      let selectedAssets = allAssets
+      
+      // If we have a title, try to match it against tags, locations, and people
+      if (book.title && book.title.trim()) {
+        const userInput = book.title.toLowerCase().trim()
+        console.log('🔍 User input for photo matching:', userInput)
+        
+        // Split the input into search words
+        const searchWords = userInput.split(/\s+/).filter(word => word.length > 2)
+        console.log('🔍 Search words:', searchWords)
+        
+        if (searchWords.length > 0) {
+          // Find assets that match any of the search words
+          const matchingAssets = allAssets.filter(asset => {
+            // Check tags
+            const assetTags = (asset.tags || []).map(tag => tag.toLowerCase())
+            const tagMatch = searchWords.some(word => 
+              assetTags.some(tag => tag.includes(word) || word.includes(tag))
+            )
+            
+            // Check locations
+            const locationMatch = searchWords.some(word => {
+              const locations = [
+                asset.city?.toLowerCase(),
+                asset.state?.toLowerCase(),
+                asset.country?.toLowerCase()
+              ].filter(Boolean)
+              return locations.some(loc => loc.includes(word) || word.includes(loc))
+            })
+            
+            // Check people
+            const peopleMatch = searchWords.some(word => {
+              const people = (asset.people_detected || []).map(person => person.toLowerCase())
+              return people.some(person => person.includes(word) || word.includes(person))
+            })
+            
+            // Check captions
+            const captionMatch = searchWords.some(word => {
+              const caption = (asset.ai_caption || '').toLowerCase()
+              return caption.includes(word)
+            })
+            
+            return tagMatch || locationMatch || peopleMatch || captionMatch
+          })
+          
+          console.log('🔍 Matching assets found:', matchingAssets.length)
+          
+          if (matchingAssets.length > 0) {
+            const sortedMatchingAssets = matchingAssets
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            
+            // Check if we have fewer than 10 total images available
+            if (allAssets.length < 10) {
+              console.log(`🔍 Only ${allAssets.length} total images available, returning all images`)
+              selectedAssets = allAssets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            } else if (sortedMatchingAssets.length < 10) {
+              console.log(`🔍 Only ${sortedMatchingAssets.length} matching photos found, supplementing with recent photos to reach minimum of 10`)
+              
+              const allAssetsSorted = allAssets
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              
+              const nonMatchingAssets = allAssetsSorted.filter(asset => 
+                !sortedMatchingAssets.some(matchingAsset => matchingAsset.id === asset.id)
+              )
+              
+              const additionalNeeded = 10 - sortedMatchingAssets.length
+              const additionalAssets = nonMatchingAssets.slice(0, additionalNeeded)
+              
+              selectedAssets = [...sortedMatchingAssets, ...additionalAssets]
+              
+              console.log(`🔍 Savta picks - selected ${sortedMatchingAssets.length} matching photos + ${additionalAssets.length} recent photos = ${selectedAssets.length} total`)
+            } else {
+              // We have 10 or more matching photos, take top 25
+              selectedAssets = sortedMatchingAssets.slice(0, 25)
+              console.log('🔍 Savta picks - selected 25 most recent matching photos')
+            }
+          } else {
+            // Check if we have fewer than 10 total images available
+            if (allAssets.length < 10) {
+              console.log(`🔍 No matches found, but only ${allAssets.length} total images available, returning all images`)
+              selectedAssets = allAssets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            } else {
+              console.log('🔍 No matches found, falling back to most recent 25 photos')
+              selectedAssets = allAssets
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 25)
+            }
+          }
+        } else {
+          console.log('🔍 No meaningful search words, using most recent 25 photos')
+          selectedAssets = allAssets
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 25)
+        }
+      } else {
+        console.log('🔍 No user input, using most recent 25 photos')
+        selectedAssets = allAssets
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 25)
+      }
+      
+      // Final check: if we have fewer than 10 total images, return all of them
+      if (selectedAssets.length < 10) {
+        console.log(`🔍 Final check: Only ${selectedAssets.length} total images available, returning all images`)
+        selectedAssets = allAssets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      }
+      
+      console.log('🔍 Savta picks method - final selected assets count:', selectedAssets.length)
+      console.log('🔍 First 5 asset IDs:', selectedAssets.slice(0, 5).map(a => a.id))
+      
+      const assets = selectedAssets
 
       console.log("****************************")
       console.log("Photos in user selection pool:")
@@ -129,8 +248,11 @@ export default defineEventHandler(async (event) => {
       })
       console.log("****************************")
 
+      // Generate fingerprints for the selected assets
+      const assetsWithFingerprints = generateFingerprintsForAssets(assets)
+
       // Convert assets to photos format expected by magic-memory endpoint
-      const photos = assets.map(asset => ({
+      const photos = assetsWithFingerprints.map(asset => ({
         id: asset.id,
         width: asset.width,
         height: asset.height,
@@ -143,7 +265,8 @@ export default defineEventHandler(async (event) => {
         state: asset.state || null,
         country: asset.country || null,
         zip_code: asset.zip_code || null,
-        asset_date: asset.asset_date || null
+        asset_date: asset.asset_date || null,
+        fingerprint: asset.fingerprint
       }))
 
       // Determine photo count based on the user's selection (1, 4, or 6 photos)
@@ -252,23 +375,24 @@ export default defineEventHandler(async (event) => {
       throw new Error('No approved assets found for this book')
     }
 
+    // Generate fingerprints for assets to help AI avoid duplicates
+    const assetsWithFingerprints = generateFingerprintsForAssets(assets)
+    console.log('🔍 Generated fingerprints for', assetsWithFingerprints.length, 'assets')
+
     // 2. Get the background image from storage
     console.log('🎨 Loading background image from storage...')
 
-    // Update status - use magic-specific messages for magic books
-    const bgStatusMessage = book.layout_type === 'magic' ? 'Retrieving magical background...' : 'Retrieving background image...'
-    await updatePdfStatus(supabase, book.id, user.id, bgStatusMessage)
-    let backgroundBuffer
-    
-    // Check background_type first, then fall back to background_url if needed
+    // Check background_type first to determine if we need to show background generation message
     console.log('🔍 Background type check:', {
       background_type: book.background_type,
       background_color: book.background_color,
       background_url: book.background_url ? 'exists' : 'none'
     })
     
+    let backgroundBuffer
+    
     if (book.background_type === 'solid') {
-      // Handle solid color background - no background image needed
+      // Handle solid color background - no background image needed, skip background generation message
       console.log('🎨 SOLID COLOR SELECTED - Using solid color background:', book.background_color)
       console.log('🎨 Background color details:', {
         raw: book.background_color,
@@ -282,6 +406,9 @@ export default defineEventHandler(async (event) => {
     } else if (book.background_type === 'magical') {
       // Generate background for magical background type
       console.log('🎨 Generating magical background...')
+      // Update status - use magic-specific messages for magic books
+      const bgStatusMessage = book.layout_type === 'magic' ? 'Retrieving magical background...' : 'Retrieving background image...'
+      await updatePdfStatus(supabase, book.id, user.id, bgStatusMessage)
       await updatePdfStatus(supabase, book.id, user.id, 'Creating magical background...')
       
       try {
@@ -331,6 +458,9 @@ export default defineEventHandler(async (event) => {
     } else if (book.background_url && book.background_type !== 'solid') {
       // Download existing background from storage (for magical or other types)
       console.log('⬇️ Downloading background from storage:', book.background_url)
+      // Update status - use magic-specific messages for magic books
+      const bgStatusMessage = book.layout_type === 'magic' ? 'Retrieving magical background...' : 'Retrieving background image...'
+      await updatePdfStatus(supabase, book.id, user.id, bgStatusMessage)
       const bgRes = await fetch(book.background_url)
       if (!bgRes.ok) {
         console.error('❌ Failed to fetch background:', bgRes.status, bgRes.statusText)
@@ -340,6 +470,7 @@ export default defineEventHandler(async (event) => {
       console.log('✅ Background downloaded, size:', backgroundBuffer.length, 'bytes')
     } else {
       console.log('ℹ️ No background URL found and background_type is white, proceeding with white background.')
+      // For white background, skip background generation message since no generation is needed
       // Continue without throwing; background will be white
       backgroundBuffer = null
     }
@@ -378,10 +509,82 @@ export default defineEventHandler(async (event) => {
       return !lowerCaption.includes('.jpg') && !lowerCaption.includes('.png') && !lowerCaption.includes('.jpeg')
     }
 
+    // Helper function to check if a point is inside a rounded rectangle
+    function isInsideRoundedRect(x, y, width, height, radius) {
+      // Check if point is in the main rectangle area (excluding corners)
+      if (x >= radius && x <= width - radius && y >= 0 && y <= height) return true
+      if (x >= 0 && x <= width && y >= radius && y <= height - radius) return true
+      
+      // Check if point is in the corner circles
+      const corners = [
+        { cx: radius, cy: radius }, // top-left
+        { cx: width - radius, cy: radius }, // top-right
+        { cx: radius, cy: height - radius }, // bottom-left
+        { cx: width - radius, cy: height - radius } // bottom-right
+      ]
+      
+      for (const corner of corners) {
+        const distance = Math.sqrt((x - corner.cx) ** 2 + (y - corner.cy) ** 2)
+        if (distance <= radius) return true
+      }
+      
+      return false
+    }
+
+    // Helper function to perform smart cropping
+    async function smartCropImage(imageBuffer, targetWidth, targetHeight) {
+      try {
+        console.log('🧠 Performing smart crop...')
+        console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
+        
+        // Use smartcrop-sharp to find the best crop area
+        const crop = await smartcrop.crop(imageBuffer, {
+          width: targetWidth,
+          height: targetHeight,
+          ruleOfThirds: true,
+          boost: [
+            { x: 0, y: 0, width: 1, height: 1, weight: 1.0 } // Boost center area
+          ]
+        })
+        
+        console.log('🎯 Smart crop result:', {
+          x: crop.topCrop.x,
+          y: crop.topCrop.y,
+          width: crop.topCrop.width,
+          height: crop.topCrop.height,
+          score: crop.topCrop.score
+        })
+        
+        // Apply the smart crop
+        const croppedImage = await sharp(imageBuffer)
+          .extract({
+            left: crop.topCrop.x,
+            top: crop.topCrop.y,
+            width: crop.topCrop.width,
+            height: crop.topCrop.height
+          })
+          .resize(targetWidth, targetHeight, { fit: 'cover' })
+          .png()
+          .toBuffer()
+        
+        console.log('✅ Smart crop completed successfully')
+        return croppedImage
+      } catch (error) {
+        console.warn('⚠️ Smart crop failed, using fallback:', error.message)
+        // Fallback to regular resize
+        return await sharp(imageBuffer)
+          .resize(targetWidth, targetHeight, { fit: 'cover' })
+          .png()
+          .toBuffer()
+      }
+    }
+
     // Helper function to process image shape with AI analysis
     async function processImageShape(imageBuffer, shape, targetWidth, targetHeight, imageUrl) {
       try {
         console.log(`🔄 Processing image shape: ${shape}`)
+        console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
+        console.log(`🎯 Shape type: ${shape}`)
         let processedImage
         
         // Get AI analysis for shape recommendation and intelligent cropping
@@ -473,6 +676,10 @@ export default defineEventHandler(async (event) => {
             console.warn('⚠️ AI analysis error, using requested shape:', aiError.message)
           }
         }
+        
+        // Border configuration for all shapes
+        const borderColor = '#2D1810' // Text color for border
+        const borderWidth = 2 // Border width in pixels
         
         switch (shape) {
           case 'square':
@@ -772,11 +979,97 @@ export default defineEventHandler(async (event) => {
             }
             break
             
+          case 'rounded':
+            console.log('🎨 ROUNDED SHAPE DETECTED - Starting rounded corners processing')
+            
+            // Check if this is a magic memory book (layout_type === 'magic')
+            const isMagicMemory = book.layout_type === 'magic'
+            
+            let resizedImage
+            if (isMagicMemory) {
+              console.log('🧠 Magic memory detected - using smart cropping for rounded shape')
+              // First apply smart cropping to ensure subject is properly positioned
+              const smartCroppedImage = await smartCropImage(imageBuffer, targetWidth, targetHeight)
+              resizedImage = smartCroppedImage
+            } else {
+              console.log('📚 Regular memory book - using standard resize for rounded shape')
+              // For regular memory books, use standard resize
+              resizedImage = await sharp(imageBuffer)
+                .resize(targetWidth, targetHeight, { fit: 'inside' })
+                .png()
+                .toBuffer()
+            }
+            
+            // Create rounded corners using Sharp SVG mask approach
+            const radius = Math.min(targetWidth, targetHeight) * 0.15 // 15% of smaller dimension for radius
+            console.log(`📐 Calculated radius: ${radius}px (${Math.round(radius)}px rounded)`)
+            
+            console.log('🎨 Applying Sharp SVG mask for rounded corners...')
+            
+            // Get the actual dimensions of the resized image
+            const resizedMetadata = await sharp(resizedImage).metadata()
+            const actualWidth = resizedMetadata.width
+            const actualHeight = resizedMetadata.height
+            
+            console.log(`📏 Resized image dimensions: ${actualWidth}x${actualHeight}`)
+            
+            // Create SVG mask with actual dimensions
+            const roundedMaskSvg = `<svg width="${actualWidth}" height="${actualHeight}" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${radius}" ry="${radius}" fill="white"/>
+            </svg>`
+            
+            // Apply the mask to the resized image
+            let roundedImage = await sharp(resizedImage)
+              .composite([{
+                input: Buffer.from(roundedMaskSvg),
+                blend: 'dest-in'
+              }])
+              .png()
+              .toBuffer()
+            
+            console.log(`🎨 Applied rounded corners with Sharp, radius: ${Math.round(radius)}px`)
+            
+            // Add border to the rounded image
+            // Create a larger canvas with rounded border
+            const borderedWidth = actualWidth + (borderWidth * 2)
+            const borderedHeight = actualHeight + (borderWidth * 2)
+            
+            // Create background with rounded corners
+            const borderSvg = `<svg width="${borderedWidth}" height="${borderedHeight}" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="${borderedWidth}" height="${borderedHeight}" rx="${radius + borderWidth}" ry="${radius + borderWidth}" fill="${borderColor}"/>
+            </svg>`
+            
+            // Composite the rounded image onto the bordered background
+            processedImage = await sharp(Buffer.from(borderSvg))
+              .composite([{ 
+                input: roundedImage, 
+                blend: 'over',
+                top: borderWidth,
+                left: borderWidth
+              }])
+              .png()
+              .toBuffer()
+            
+            console.log(`✅ ${isMagicMemory ? 'SMART CROP + ' : ''}ROUNDED CORNERS PROCESSING COMPLETED`)
+            break
+            
           case 'original':
           default:
             // Keep original aspect ratio
             processedImage = await sharp(imageBuffer)
               .resize(targetWidth, targetHeight, { fit: 'inside' })
+              .png()
+              .toBuffer()
+            
+            // Add border to rectangular images
+            processedImage = await sharp(processedImage)
+              .extend({
+                top: borderWidth,
+                bottom: borderWidth,
+                left: borderWidth,
+                right: borderWidth,
+                background: borderColor
+              })
               .png()
               .toBuffer()
             break
@@ -933,13 +1226,13 @@ export default defineEventHandler(async (event) => {
       // Determine layout based on photo count
       let photoLayout
       if (photoAssets.length === 1) {
-        // Single photo: fill 50% of the card area (left half)
+        // Single photo: fill 60% of the card area (left side)
         photoLayout = {
           type: 'single',
           photoArea: {
             x: margin,
             y: margin,
-            width: pageWidth / 2 - margin, // 50% of card width minus margin
+            width: pageWidth * 0.6 - margin, // 60% of card width minus margin
             height: pageHeight - 2 * margin // Full height minus margins
           }
         }
@@ -967,10 +1260,10 @@ export default defineEventHandler(async (event) => {
           gridRows: gridRows,
           photoGridLeft: margin,
           photoGridTop: margin,
-          photoGridWidth: pageWidth / 2 - margin,
+          photoGridWidth: pageWidth * 0.6 - margin, // 60% of card width minus margin
           photoGridHeight: pageHeight - 2 * margin,
-          photoCellWidth: (pageWidth / 2 - margin - margin) / gridCols, // Account for margin between cells
-          photoCellHeight: (pageHeight - 2 * margin - margin) / gridRows // Account for margin between cells
+          photoCellWidth: (pageWidth * 0.6 - margin - margin / 2) / gridCols, // Reduced margin between cells from margin to margin/2
+          photoCellHeight: (pageHeight - 2 * margin - margin / 2) / gridRows // Reduced margin between cells from margin to margin/2
         }
         
         // Calculate positions for grid layout
@@ -979,8 +1272,8 @@ export default defineEventHandler(async (event) => {
           for (let col = 0; col < photoLayout.gridCols; col++) {
             if (photoLayout.positions.length < photoAssets.length) {
               photoLayout.positions.push({
-                x: photoLayout.photoGridLeft + col * (photoLayout.photoCellWidth + (photoLayout.gridCols > 1 ? margin / (photoLayout.gridCols - 1) : 0)),
-                y: pageHeight - margin - (row + 1) * photoLayout.photoCellHeight - row * (photoLayout.gridRows > 1 ? margin / (photoLayout.gridRows - 1) : 0)
+                x: photoLayout.photoGridLeft + col * (photoLayout.photoCellWidth + (photoLayout.gridCols > 1 ? margin / 2 / (photoLayout.gridCols - 1) : 0)), // Reduced spacing
+                y: pageHeight - margin - (row + 1) * photoLayout.photoCellHeight - row * (photoLayout.gridRows > 1 ? margin / 2 / (photoLayout.gridRows - 1) : 0) // Reduced spacing
               })
             }
           }
@@ -1062,7 +1355,7 @@ export default defineEventHandler(async (event) => {
           // Process image at higher resolution for quality
           const targetWidth = Math.round(finalWidth * 2)
           const targetHeight = Math.round(finalHeight * 2)
-          const processedImage = await processImageShape(processedImageBuffer, 'original', targetWidth, targetHeight, asset.storage_url)
+          const processedImage = await processImageShape(processedImageBuffer, book.memory_shape || 'original', targetWidth, targetHeight, asset.storage_url)
           const pdfImage = await pdfDoc.embedPng(processedImage)
           page.drawImage(pdfImage, {
             x: imgX,
@@ -1070,6 +1363,10 @@ export default defineEventHandler(async (event) => {
             width: finalWidth,
             height: finalHeight
           })
+          
+          // Add hairline border around photo
+          // Border is now added directly to the image using Sharp, no need to draw borders in PDF
+          
           console.log(`✅ Photo ${i + 1} processed: ${finalWidth}x${finalHeight} (${photoLayout.type} layout)`)
         } catch (err) {
           console.warn(`⚠️ Failed to process photo ${i + 1}:`, err.message)
@@ -1088,21 +1385,22 @@ export default defineEventHandler(async (event) => {
         }
       }
       // --- Story area: right half ---
-      const storyAreaLeft = pageWidth / 2 + margin
+      const storyAreaLeft = pageWidth * 0.6 + margin // Start at 60% position
       const storyAreaRight = pageWidth - margin
       const storyAreaTop = margin
       const storyAreaBottom = pageHeight - margin
       
-      // Add 1/2" margin (36 points) around the story text within the story area
-      const storyMargin = 36 // 1/2 inch in points
-      const storyTextLeft = storyAreaLeft + storyMargin
-      const storyTextRight = storyAreaRight - storyMargin
-      const storyTextTop = storyAreaTop + storyMargin
-      const storyTextBottom = storyAreaBottom - storyMargin
+      // Add reduced margin (5 points) on left/right and 1/2" margin (36 points) on top/bottom around the story text
+      const storyMarginHorizontal = 5 // Reduced from 14 to 5 points
+      const storyMarginVertical = 36 // 1/2 inch in points
+      const storyTextLeft = storyAreaLeft + storyMarginHorizontal
+      const storyTextRight = storyAreaRight - storyMarginHorizontal
+      const storyTextTop = storyAreaTop + storyMarginVertical
+      const storyTextBottom = storyAreaBottom - storyMarginVertical
       const storyAreaWidth = storyTextRight - storyTextLeft
       const storyAreaHeight = storyTextBottom - storyTextTop
       // Draw the story in the calculated area
-              const story = book.magic_story || 'A special family story.'
+      const story = book.magic_story || 'A special family story.'
       
       console.log("****************************")
       console.log("Story being used in PDF:")
@@ -1111,48 +1409,69 @@ export default defineEventHandler(async (event) => {
       console.log("Final story:", story)
       console.log("****************************")
       
-      // Embed Times Bold Italic font for semi-bold appearance
-      const timesBoldItalicFont = await pdfDoc.embedFont(StandardFonts.TimesRomanBoldItalic)
-      let fontSize = 18 // Slightly smaller to make bold appear more like semi-bold
-      // Function to wrap text to fit the story area width
-      function wrapText(text, font, fontSize, maxWidth) {
-        const words = text.split(' ')
-      const lines = []
-      let line = ''
-      for (const word of words) {
-          const testLine = line ? line + ' ' + word : word
-          const testLineWidth = font.widthOfTextAtSize(testLine, fontSize)
-          if (testLineWidth <= maxWidth) {
-            line = testLine
-        } else {
-          if (line) lines.push(line)
-          line = word
-        }
-      }
-      if (line) lines.push(line)
-        return lines
-      }
-      // Try to fit the text with the largest font size possible
-      let lines = wrapText(story, timesBoldItalicFont, fontSize, storyAreaWidth)
-      let lineHeight = fontSize * 2.0
-      let totalTextHeight = lines.length * lineHeight
-      let adjustedFontSize = fontSize
-      while (totalTextHeight > storyAreaHeight && adjustedFontSize > 10) {
-        adjustedFontSize -= 1
-        lines = wrapText(story, timesBoldItalicFont, adjustedFontSize, storyAreaWidth)
-        lineHeight = adjustedFontSize * 2.0
-        totalTextHeight = lines.length * lineHeight
-      }
-      // Draw the story text, left-aligned, vertically centered
-      let textY = storyTextTop + (storyAreaHeight - totalTextHeight) / 2
-      for (let i = 0; i < lines.length; i++) {
-        page.drawText(lines[i], {
+
+      
+      // Render story text using shared text renderer
+      console.log('🎨 Rendering story text with shared renderer...')
+      let storyTextBuffer
+      let storyTextImage
+      
+      try {
+        storyTextBuffer = await renderTextToImage(story, storyAreaWidth, storyAreaHeight)
+        storyTextImage = await pdfDoc.embedPng(storyTextBuffer)
+        console.log('✅ Story text rendered successfully with shared renderer')
+        
+        // Draw story text image
+        page.drawImage(storyTextImage, {
           x: storyTextLeft,
-          y: textY + (lines.length - i - 1) * lineHeight,
-          size: adjustedFontSize,
-          color: rgb(0.2, 0.2, 0.2),
-          font: timesBoldItalicFont
+          y: storyTextTop,
+          width: storyAreaWidth,
+          height: storyAreaHeight
         })
+      } catch (textError) {
+        console.warn('⚠️ Shared text renderer failed, using Times Roman fallback:', textError.message)
+        
+        // Fallback: Use pdf-lib's built-in Times Roman text rendering
+        const fallbackConfig = getPdfFallbackConfig('Times-Roman')
+        const fallbackFont = await pdfDoc.embedFont(fallbackConfig.fontName)
+        const fallbackFontSize = fallbackConfig.fontSize
+        const fallbackLineHeight = fallbackFontSize * fallbackConfig.lineHeight
+        
+        // Simple text wrapping for fallback
+        const words = story.split(' ')
+        const fallbackLines = []
+        let currentLine = ''
+        
+        for (const word of words) {
+          const testLine = currentLine ? currentLine + ' ' + word : word
+          const testWidth = fallbackFont.widthOfTextAtSize(testLine, fallbackFontSize)
+          
+          if (testWidth <= storyAreaWidth) {
+            currentLine = testLine
+          } else {
+            if (currentLine) fallbackLines.push(currentLine)
+            currentLine = word
+          }
+        }
+        if (currentLine) fallbackLines.push(currentLine)
+        
+        // Draw text directly on the page
+        let yPosition = storyTextTop + storyAreaHeight - fallbackLineHeight
+        
+        for (const line of fallbackLines) {
+          if (yPosition >= storyTextTop) {
+            page.drawText(line, {
+              x: storyTextLeft,
+              y: yPosition,
+              size: fallbackFontSize,
+              font: fallbackFont,
+              color: rgb(fallbackConfig.color.r, fallbackConfig.color.g, fallbackConfig.color.b)
+            })
+          }
+          yPosition -= fallbackLineHeight
+        }
+        
+        console.log('✅ Times Roman fallback text rendering completed')
       }
       // End magic memory layout
       await updatePdfStatus(supabase, book.id, user.id, '✨ Magic Memory PDF created! ✨')
@@ -1251,10 +1570,14 @@ export default defineEventHandler(async (event) => {
         pageHeight = 842
     }
     
+    // Use assets with fingerprints for regular PDF generation
+    const regularAssetsWithFingerprints = generateFingerprintsForAssets(assets)
+    console.log('🔍 Generated fingerprints for regular PDF generation:', regularAssetsWithFingerprints.length, 'assets')
+    
     // Calculate exactly how many pages we need for the assets, with a hard limit of 10 pages
-    const calculatedPages = Math.ceil(assets.length / assetsPerPage)
+    const calculatedPages = Math.ceil(regularAssetsWithFingerprints.length / assetsPerPage)
     const totalPages = Math.min(calculatedPages, 10)
-    const totalPhotos = assets.length
+    const totalPhotos = regularAssetsWithFingerprints.length
     
     console.log(`📄 Generating PDF with ${totalPages} pages for ${assets.length} assets (${assetsPerPage} assets per page, max 10 pages)`)
     
@@ -1269,7 +1592,7 @@ export default defineEventHandler(async (event) => {
       await updatePdfStatus(supabase, book.id, user.id, `Creating ${pageNumStr} page (${pageIndex + 1}/${totalPages})`)
       console.log(`📄 Creating page ${pageIndex + 1}/${totalPages}`)
       const startIndex = pageIndex * assetsPerPage
-      const pageAssets = assets.slice(startIndex, startIndex + assetsPerPage)
+      const pageAssets = regularAssetsWithFingerprints.slice(startIndex, startIndex + assetsPerPage)
       
       // Add page to PDF with calculated dimensions
       const page = pdfDoc.addPage([pageWidth, pageHeight])
@@ -1438,7 +1761,7 @@ export default defineEventHandler(async (event) => {
         const asset = pageAssets[i]
         processedPhotos++
         const progressPercent = Math.round((processedPhotos / totalPhotos) * 100)
-        await updatePdfStatus(supabase, book.id, user.id, `Processing photo ${processedPhotos}/${totalPhotos} (${progressPercent}%)`)
+        await updatePdfStatus(supabase, book.id, user.id, `Savta is selecting photos for you... (${progressPercent}%)`)
         console.log(`🖼️ Processing asset ${i + 1}/${pageAssets.length}:`, asset.id, 'Type:', asset.type)
         const col = i % gridCols
         const row = Math.floor(i / gridCols)
@@ -1468,10 +1791,13 @@ export default defineEventHandler(async (event) => {
             
             // Get memory shape from book settings
             const memoryShape = book.memory_shape || 'original'
+            console.log(`🎯 MEMORY SHAPE FOR THIS ASSET: ${memoryShape}`)
+            console.log(`📋 Asset ID: ${asset.id}, Title: ${asset.title || 'No title'}`)
             
             // Process image shape if needed
             let finalImageBuffer = processedImageBuffer
             if (memoryShape !== 'original') {
+              console.log(`🔄 SHAPE PROCESSING REQUIRED - Shape: ${memoryShape}`)
               // Calculate target dimensions for shape processing
               const targetWidth = Math.round(drawWidth * 2) // Higher resolution for better quality
               const targetHeight = Math.round(drawHeight * 2)
@@ -1479,7 +1805,7 @@ export default defineEventHandler(async (event) => {
               finalImageBuffer = await processImageShape(processedImageBuffer, memoryShape, targetWidth, targetHeight, asset.storage_url)
               console.log(`✅ Shape processing complete. Final buffer size: ${finalImageBuffer.length} bytes`)
             } else {
-              console.log(`ℹ️ Using original aspect ratio (no shape processing)`)
+              console.log(`ℹ️ Using original aspect ratio (no shape processing) - Shape is: ${memoryShape}`)
             }
             
             let pdfImage
@@ -1774,6 +2100,48 @@ export default defineEventHandler(async (event) => {
     // Small delay to ensure database transaction is committed
     await new Promise(resolve => setTimeout(resolve, 1000))
     
+    // ======= DEBUGGING SUMMARY LOG =======
+    try {
+      console.log('================ SAVTA PDF GENERATION SUMMARY ================')
+      console.log('Book ID:', book.id)
+      console.log('Title:', book.title)
+      console.log('Background type:', book.background_type)
+      console.log('Background color:', book.background_color)
+      if (typeof photoPool !== 'undefined') {
+        console.log('Photo pool count:', Array.isArray(photoPool) ? photoPool.length : 'N/A')
+        console.log('Photo pool IDs:', Array.isArray(photoPool) ? photoPool : 'N/A')
+      }
+      if (typeof allAssets !== 'undefined') {
+        console.log('All assets count:', allAssets.length)
+        console.log('All asset IDs:', allAssets.map(a => a.id))
+      }
+      if (typeof selectedAssets !== 'undefined') {
+        console.log('Selected assets count (Savta picks):', selectedAssets.length)
+        console.log('Selected asset IDs:', selectedAssets.map(a => a.id))
+      }
+      if (typeof searchWords !== 'undefined') {
+        console.log('Savta picks search words:', searchWords)
+      }
+      if (typeof finalPrompt !== 'undefined') {
+        console.log('Final AI prompt length:', finalPrompt.length)
+      }
+      if (typeof truncatedPhotoCount !== 'undefined' && truncatedPhotoCount > 0) {
+        console.log(`⚠️ AI prompt was too long, reduced from ${selectedAssets.length + truncatedPhotoCount} to ${selectedAssets.length} photos`)
+      }
+      if (typeof fallbackResult !== 'undefined') {
+        console.log('⚠️ Fallback result used:', fallbackResult)
+      }
+      // Add number of photos returned by the AI
+      if (typeof magicData !== 'undefined' && magicData.selected_photo_numbers) {
+        console.log('Number of photos returned by AI:', magicData.selected_photo_numbers.length)
+        console.log('AI selected photo numbers:', magicData.selected_photo_numbers)
+      }
+      console.log('================ END SAVTA PDF GENERATION SUMMARY ================')
+    } catch (summaryLogError) {
+      console.warn('⚠️ Error in summary log:', summaryLogError)
+    }
+    // ... existing code ...
+    
     return {
       success: true,
       downloadUrl: publicUrl,
@@ -1809,179 +2177,4 @@ async function updatePdfStatus(supabase, bookId, userId, status) {
   }
 } 
 
-// Helper function to create caption images using sharp and SVG
-async function createCaptionImage(captionText, maxWidth, maxHeight) {
-  try {
-    // Validate input parameters
-    if (!captionText || typeof captionText !== 'string') {
-      console.warn('Invalid caption text provided:', captionText);
-      return null;
-    }
-    
-    if (!maxWidth || !maxHeight || isNaN(maxWidth) || isNaN(maxHeight) || maxWidth <= 0 || maxHeight <= 0) {
-      console.warn('Invalid dimensions provided:', { maxWidth, maxHeight });
-      return null;
-    }
-    
-    console.log('Creating caption image with dimensions:', { maxWidth, maxHeight, captionText: captionText.substring(0, 50) + '...' });
-    
-    // Dynamic font sizing to fit text optimally
-    const minFontSize = 6;
-    const maxFontSize = 14;
-    const padding = 12;
-    const scaleFactor = 2; // Create at 2x resolution for better sharpness
-    let fontSize = maxFontSize;
-    let displayLines = [];
-    let captionHeight = 0;
-    let captionWidth = maxWidth;
-    
-    // Try different font sizes until text fits
-    while (fontSize >= minFontSize) {
-      const lineHeight = fontSize * 2.0; // Proportional line height (60% of font size)
-      const charWidth = fontSize * 0.6; // Approximate character width
-      const maxCharsPerLine = Math.floor((maxWidth - padding * 2) / charWidth);
-      
-      console.log(`Trying font size ${fontSize}px with maxCharsPerLine: ${maxCharsPerLine}`);
-      
-      // Wrap text for current font size
-      const words = captionText.split(' ');
-      const lines = [];
-      let currentLine = '';
-      
-      for (const word of words) {
-        const testLine = currentLine ? currentLine + ' ' + word : word;
-        if (testLine.length <= maxCharsPerLine) {
-          currentLine = testLine;
-        } else {
-          if (currentLine) {
-            lines.push(currentLine);
-            currentLine = word;
-          } else {
-            // Word is too long, split it
-            lines.push(word.substring(0, maxCharsPerLine));
-            currentLine = word.substring(maxCharsPerLine);
-          }
-        }
-      }
-      if (currentLine) {
-        lines.push(currentLine);
-      }
-      
-      // Limit to 4 lines maximum
-      const testLines = lines.slice(0, 4);
-      const testHeight = testLines.length * lineHeight + padding * 2;
-      
-      // Check if this font size works
-      if (testHeight <= maxHeight) {
-        displayLines = testLines;
-        captionHeight = testHeight;
-        break;
-      }
-      
-      // Try smaller font size
-      fontSize -= 1;
-    }
-    
-    // If we couldn't fit the text even with minimum font size, use the smallest size
-    if (displayLines.length === 0) {
-      fontSize = minFontSize;
-      const lineHeight = fontSize * 2.0; // Proportional line height (60% of font size)
-      const charWidth = fontSize * 0.6;
-      const maxCharsPerLine = Math.floor((maxWidth - padding * 2) / charWidth);
-      
-      // Simple word wrapping for minimum font size
-      const words = captionText.split(' ');
-      const lines = [];
-      let currentLine = '';
-      
-      for (const word of words) {
-        const testLine = currentLine ? currentLine + ' ' + word : word;
-        if (testLine.length <= maxCharsPerLine) {
-          currentLine = testLine;
-        } else {
-          if (currentLine) {
-            lines.push(currentLine);
-            currentLine = word;
-          } else {
-            lines.push(word.substring(0, maxCharsPerLine));
-            currentLine = word.substring(maxCharsPerLine);
-          }
-        }
-      }
-      if (currentLine) {
-        lines.push(currentLine);
-      }
-      
-      displayLines = lines.slice(0, 4);
-      captionHeight = displayLines.length * lineHeight + padding * 2;
-    }
-    
-    console.log('Final caption parameters:', { 
-      fontSize, 
-      displayLines: displayLines.length, 
-      captionHeight, 
-      maxHeight,
-      textPreview: displayLines.join(' | ')
-    });
-    
-    // Final validation of calculated dimensions
-    if (captionWidth <= 0 || captionHeight <= 0 || isNaN(captionWidth) || isNaN(captionHeight)) {
-      console.warn('Invalid calculated dimensions:', { captionWidth, captionHeight, maxWidth, maxHeight });
-      return null;
-    }
-    
-    console.log('Caption dimensions calculated:', { captionWidth, captionHeight, displayLines: displayLines.length });
-    
-    // Create SVG with gradient background and text
-    const lineHeight = fontSize * 2.0; // Proportional line height (60% of font size)
-    const totalTextHeight = displayLines.length * lineHeight;
-    const textStartY = (captionHeight - totalTextHeight) / 2 + lineHeight / 2 - 5; // Center the text block, moved up 5px
-    
-    const svgLines = displayLines.map((line, i) => 
-      `<tspan x="50%" dy="${i === 0 ? '0' : lineHeight + 'px'}">${line}</tspan>`
-    ).join('');
-    
-    const svg = `
-      <svg width="${captionWidth * scaleFactor}" height="${captionHeight * scaleFactor}">
-        <!-- Gradient background with soft edges -->
-        <defs>
-          <radialGradient id="captionGradient" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" style="stop-color:white;stop-opacity:0.85" />
-            <stop offset="70%" style="stop-color:white;stop-opacity:0.75" />
-            <stop offset="100%" style="stop-color:white;stop-opacity:0.3" />
-          </radialGradient>
-        </defs>
-        
-        <!-- Background with rounded corners and gradient -->
-        <rect x="${4 * scaleFactor}" y="${4 * scaleFactor}" width="${(captionWidth - 8) * scaleFactor}" height="${(captionHeight - 8) * scaleFactor}" 
-              rx="${6 * scaleFactor}" ry="${6 * scaleFactor}" fill="url(#captionGradient)" 
-              stroke="white" stroke-width="${1 * scaleFactor}" stroke-opacity="0.3"/>
-        
-        <!-- Text with improved sharpness -->
-        <text x="50%" y="${textStartY * scaleFactor}" text-anchor="middle" 
-              font-size="${fontSize * scaleFactor}" fill="#3a277a" font-family="sans-serif" 
-              font-weight="600" dominant-baseline="hanging"
-              style="text-rendering: optimizeLegibility; font-smooth: never;">
-          ${svgLines}
-        </text>
-      </svg>
-    `;
-    
-    // Create image using sharp with validated dimensions and enhanced sharpness
-    const buffer = await sharp(Buffer.from(svg))
-      .resize(Math.round(captionWidth), Math.round(captionHeight), {
-        kernel: 'lanczos3',
-        fit: 'fill'
-      })
-      .png({ quality: 100, compressionLevel: 0 })
-      .toBuffer();
-    
-    console.log('Caption image created successfully:', { width: captionWidth, height: captionHeight, bufferSize: buffer.length });
-    return { buffer, width: captionWidth, height: captionHeight };
-  } catch (error) {
-    console.error('Error creating caption image:', error);
-    console.error('Error details:', { maxWidth, maxHeight, captionText: captionText?.substring(0, 50) });
-    // Fallback to simple text - return null so the PDF generator can use its fallback
-    return null;
-  }
-} 
+ 

@@ -173,10 +173,10 @@ export default defineEventHandler(async (event) => {
         The image must be entirely free of any writing or visual text-like shapes.
         The photos include these subjects which are the main focus of the page: ${tagsPrompt}`
     
-    // Ensure prompt doesn't exceed DALL-E's 4000 character limit
-    if (dallePrompt.length > 3900) { // Leave some buffer
+    // Ensure prompt doesn't exceed DALL-E's 4000 character limit (using 3500 to be safe)
+    if (dallePrompt.length > 3500) { // Leave some buffer
       console.warn(`⚠️ Prompt too long (${dallePrompt.length} chars), truncating to fit DALL-E limits`)
-      dallePrompt = dallePrompt.substring(0, 3900) + '...'
+      dallePrompt = dallePrompt.substring(0, 3500) + '...'
     }
     
     console.log(`📝 DALL-E prompt length: ${dallePrompt.length} characters`)

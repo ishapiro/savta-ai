@@ -57,7 +57,8 @@ export default defineEventHandler(async (event) => {
         grid_layout: gridLayout,
         print_size: '7x5',
         include_captions: true,
-        include_tags: true
+        include_tags: true,
+        memory_shape: 'rounded'
       })
       .select()
       .single()

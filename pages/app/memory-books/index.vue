@@ -1526,7 +1526,7 @@
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
               <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300"
-                   :style="{ backgroundColor: magicSolidBackgroundColor || '#e5e7eb' }">
+                   :style="{ backgroundColor: magicSolidBackgroundColor || '#F4E4D6' }">
                 <i class="pi pi-palette text-white text-lg sm:text-xl"></i>
               </div>
               <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Solid Color</div>
@@ -1550,13 +1550,13 @@
                 type="color" 
                 v-model="magicSolidBackgroundColor"
                 class="w-full h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
-                :style="{ backgroundColor: magicSolidBackgroundColor || '#e5e7eb' }"
+                :style="{ backgroundColor: magicSolidBackgroundColor || '#F4E4D6' }"
               />
             </div>
             <div class="flex-1">
               <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
               <div class="w-full h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center"
-                   :style="{ backgroundColor: magicSolidBackgroundColor || '#e5e7eb' }">
+                   :style="{ backgroundColor: magicSolidBackgroundColor || '#F4E4D6' }">
                 <span class="text-sm font-medium" :class="getContrastTextClass(magicSolidBackgroundColor)">
                   Card or Booklet
                 </span>
@@ -3658,7 +3658,7 @@ const magicMemoryTitle = ref('')
 const magicMemoryEvent = ref('')
 const magicPhotoCount = ref(4) // Default to 4 photos
 const magicBackgroundType = ref('white') // 'white', 'magical', or 'solid'
-const magicSolidBackgroundColor = ref('#e5e7eb') // Default light gray color
+const magicSolidBackgroundColor = ref('#F9F6F2') // Default warm cream color
 
 // Photo selection method variables
 const magicPhotoSelectionMethod = ref('')
@@ -4167,19 +4167,57 @@ const populatePhotoSelectionPool = () => {
           
           console.log('🔍 [populatePhotoSelectionPool] Matching assets found:', matchingAssets.length)
           
-                     if (matchingAssets.length > 0) {
-             // Sort by most recent and take top 50
-             filteredAssets = matchingAssets
-               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-               .slice(0, 50)
-             console.log('🔍 [populatePhotoSelectionPool] Savta picks - selected 50 most recent matching photos')
-           } else {
-             console.log('🔍 [populatePhotoSelectionPool] No matches found, falling back to most recent 50 photos')
-             // No matches found, fall back to most recent 50 photos
-             filteredAssets = filteredAssets
-               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-               .slice(0, 50)
-           }
+          if (matchingAssets.length > 0) {
+            // Sort matching assets by most recent
+            const sortedMatchingAssets = matchingAssets
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            
+            // Check if we have fewer than 10 total images available
+            if (filteredAssets.length < 10) {
+              console.log(`🔍 [populatePhotoSelectionPool] Only ${filteredAssets.length} total images available, returning all images`)
+              // Return all available images, sorted by most recent
+              filteredAssets = filteredAssets
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            } else if (sortedMatchingAssets.length < 10) {
+              console.log(`🔍 [populatePhotoSelectionPool] Only ${sortedMatchingAssets.length} matching photos found, supplementing with recent photos to reach minimum of 10`)
+              
+              // Get all assets sorted by most recent
+              const allAssetsSorted = filteredAssets
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              
+              // Find assets that are not already in matching assets
+              const nonMatchingAssets = allAssetsSorted.filter(asset => 
+                !sortedMatchingAssets.some(matchingAsset => matchingAsset.id === asset.id)
+              )
+              
+              // Take enough recent non-matching assets to reach at least 10 total
+              const additionalNeeded = 10 - sortedMatchingAssets.length
+              const additionalAssets = nonMatchingAssets.slice(0, additionalNeeded)
+              
+              // Combine matching assets with additional recent assets
+              filteredAssets = [...sortedMatchingAssets, ...additionalAssets]
+              
+              console.log(`🔍 [populatePhotoSelectionPool] Savta picks - selected ${sortedMatchingAssets.length} matching photos + ${additionalAssets.length} recent photos = ${filteredAssets.length} total`)
+            } else {
+              // We have 10 or more matching photos, take top 50
+              filteredAssets = sortedMatchingAssets.slice(0, 50)
+              console.log('🔍 [populatePhotoSelectionPool] Savta picks - selected 50 most recent matching photos')
+            }
+          } else {
+            // Check if we have fewer than 10 total images available
+            if (filteredAssets.length < 10) {
+              console.log(`🔍 [populatePhotoSelectionPool] No matches found, but only ${filteredAssets.length} total images available, returning all images`)
+              // Return all available images, sorted by most recent
+              filteredAssets = filteredAssets
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            } else {
+              console.log('🔍 [populatePhotoSelectionPool] No matches found, falling back to most recent 50 photos')
+              // No matches found, fall back to most recent 50 photos
+              filteredAssets = filteredAssets
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 50)
+            }
+          }
          } else {
            console.log('🔍 [populatePhotoSelectionPool] No meaningful search words, using most recent 50 photos')
            // No meaningful search words, use most recent 50 photos
@@ -4278,6 +4316,14 @@ const populatePhotoSelectionPool = () => {
         .slice(0, 100)
       console.log('🔍 [populatePhotoSelectionPool] Default method - filtered assets count:', filteredAssets.length)
       break
+  }
+  
+  // Final check: if we have fewer than 10 total images, return all of them
+  if (filteredAssets.length < 10) {
+    console.log(`🔍 [populatePhotoSelectionPool] Final check: Only ${filteredAssets.length} total images available, returning all images`)
+    // Return all available images, sorted by most recent
+    filteredAssets = filteredAssets
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   }
   
   const result = filteredAssets.map(asset => asset.id)

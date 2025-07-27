@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="relative w-full h-full bg-brand-background">
+    <div class="relative w-full h-full bg-brand-navigation">
       <!-- PDF Document -->
       <div class="w-full h-full overflow-auto pb-16">
         <div class="w-full h-full flex items-center justify-center p-4 mb-2">
