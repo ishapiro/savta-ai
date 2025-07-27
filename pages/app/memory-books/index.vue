@@ -1355,7 +1355,7 @@
       :class="['z-50', 'w-full', 'sm:w-[700px]', 'sm:max-w-[700px]', 'h-full', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl']"
     >
       <!-- Step 1: Title Input -->
-      <div v-if="magicMemoryStep === 1 && currentButtonConfig?.steps.includes(1)"
+      <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
@@ -1378,7 +1378,7 @@
       </div>
 
       <!-- Step 2: Event Selection -->
-      <div v-if="magicMemoryStep === 2 && currentButtonConfig?.steps.includes(2)"
+      <div v-if="magicMemoryStep === MAGIC_STEPS.EVENT && currentButtonConfig?.steps.includes(MAGIC_STEPS.EVENT)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-brand-secondary rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
@@ -1416,7 +1416,7 @@
       </div>
 
       <!-- Step 3: Photo Count Selection -->
-      <div v-if="magicMemoryStep === 3 && currentButtonConfig?.steps.includes(3)"
+      <div v-if="magicMemoryStep === MAGIC_STEPS.COUNT && currentButtonConfig?.steps.includes(MAGIC_STEPS.COUNT)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
@@ -1463,7 +1463,7 @@
       </div>
 
       <!-- Step 4: Background Selection -->
-      <div v-if="magicMemoryStep === 4 && currentButtonConfig?.steps.includes(4)"
+      <div v-if="magicMemoryStep === MAGIC_STEPS.BACKGROUND && currentButtonConfig?.steps.includes(MAGIC_STEPS.BACKGROUND)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
@@ -1531,7 +1531,7 @@
       </div>
 
       <!-- Step 5: Photo Selection Method -->
-      <div v-if="magicMemoryStep === 5 && currentButtonConfig?.steps.includes(5)"
+      <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTOS && currentButtonConfig?.steps.includes(MAGIC_STEPS.PHOTOS)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
@@ -1543,7 +1543,7 @@
         </div>
         
         <!-- Photo Selection Tiles -->
-        <div class="grid grid-cols-2 gap-2 w-full max-w-md mx-auto sm:max-w-2xl">
+        <div class="grid grid-cols-2 gap-3 w-full max-w-md mx-auto sm:max-w-2xl">
           <!-- Savta Selects Tile -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'last_100'">
             <div class="border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[70px] flex flex-col items-center justify-center"
@@ -1671,7 +1671,7 @@
       </div>
 
       <!-- Step 6: Photo Selection (only for manual selection) -->
-      <div v-if="magicMemoryStep === 6 && currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual' && !loadingAssets" class="space-y-3 sm:space-y-4 px-4 overflow-x-hidden">
+      <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && currentButtonConfig?.steps.includes(MAGIC_STEPS.MANUAL) && magicPhotoSelectionMethod === 'manual' && !loadingAssets" class="space-y-3 sm:space-y-4 px-4 overflow-x-hidden">
         <div class="bg-gradient-to-r from-yellow-50 via-brand-navigation to-blue-50 rounded-lg p-3 sm:p-4 border border-brand-highlight flex items-center gap-2 sm:gap-3 animate-pulse max-w-xs w-full mx-auto">
           <i class="pi pi-sparkles text-lg sm:text-2xl text-yellow-400 animate-bounce"></i>
           <div>
@@ -1753,7 +1753,7 @@
           </div>
         </div>
       </div>
-      <div v-else-if="loadingAssets && currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual'" class="flex items-center justify-center py-8">
+      <div v-else-if="loadingAssets && currentButtonConfig?.steps.includes(MAGIC_STEPS.MANUAL) && magicPhotoSelectionMethod === 'manual'" class="flex items-center justify-center py-8">
         <div class="text-center">
           <i class="pi pi-spin pi-spinner text-3xl text-brand-header mb-3"></i>
           <p class="text-sm text-gray-600">Looking through your beautiful memories...</p>
@@ -1783,7 +1783,7 @@
             v-if="!isLastStep()"
             :label="`Next: ${getNextStepName()}`"
             icon="pi pi-arrow-right"
-            :disabled="(magicMemoryStep === 1 && !magicMemoryTitle.trim()) || (magicMemoryStep === 5 && !magicPhotoSelectionMethod.value)"
+            :disabled="(magicMemoryStep === MAGIC_STEPS.TITLE && !magicMemoryTitle.trim()) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && !magicPhotoSelectionMethod.value)"
             @click="nextMagicMemoryStep"
             class="bg-brand-secondary hover:to-blue-700 text-white font-bold rounded-full px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
@@ -3569,25 +3569,36 @@ import { defineAsyncComponent } from 'vue'
 const PdfViewer = defineAsyncComponent(() => import('~/components/PdfViewer.vue'))
 
 const showMagicMemoryDialog = ref(false)
+
+// Step identifiers for better code readability
+const MAGIC_STEPS = {
+  TITLE: 'title',
+  EVENT: 'event', 
+  COUNT: 'count',
+  BACKGROUND: 'background',
+  PHOTOS: 'photos',
+  MANUAL: 'manual'
+}
+
 // Step definitions with required/optional flags
 const stepDefinitions = {
-  1: { name: "Title Input", required: true },
-  2: { name: "Event Selection", required: false },
-  3: { name: "Photo Count Selection", required: true },
-  4: { name: "Background Selection", required: true },
-  5: { name: "Photo Selection Method", required: true },
-  6: { name: "Photo Selection", required: true }
+  [MAGIC_STEPS.TITLE]: { name: "Title Input", required: true },
+  [MAGIC_STEPS.EVENT]: { name: "Event Selection", required: false },
+  [MAGIC_STEPS.COUNT]: { name: "Photo Count Selection", required: true },
+  [MAGIC_STEPS.BACKGROUND]: { name: "Background Selection", required: true },
+  [MAGIC_STEPS.PHOTOS]: { name: "Photo Selection Method", required: true },
+  [MAGIC_STEPS.MANUAL]: { name: "Photo Selection", required: true }
 }
 
 // Button configurations defining which steps to include
 const buttonConfigs = {
-  full: { steps: [1, 2, 3, 4, 5], name: "Full Magic Memory" },
-  basic: { steps: [1, 3, 4, 5], name: "Basic Magic Memory" },
-  quick: { steps: [1, 4, 5], name: "Quick Magic Memory" }
+  full: { steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.EVENT, MAGIC_STEPS.COUNT, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.PHOTOS], name: "Full Magic Memory" },
+  basic: { steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.COUNT, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.PHOTOS], name: "Basic Magic Memory" },
+  quick: { steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.PHOTOS], name: "Quick Magic Memory" }
 }
 
 // Current magic memory dialog state
-const magicMemoryStep = ref(1) // Current step within the button's sequence
+const magicMemoryStep = ref(MAGIC_STEPS.TITLE) // Current step within the button's sequence
 const currentButtonConfig = ref(null) // Current button configuration being used
 const currentStepIndex = ref(0) // Index within the button's steps array
 const magicMemoryTitle = ref('')
@@ -3627,7 +3638,7 @@ const magicLoading = ref(false)
 
 // Watch for magic memory step changes to handle Step 5 redirect
 watch(magicMemoryStep, (newStep) => {
-  if (newStep === 5 && availableAssets.value.length === 0) {
+  if (newStep === MAGIC_STEPS.PHOTOS && availableAssets.value.length === 0) {
     // User has no photos, redirect to upload dialog
     showMagicMemoryDialog.value = false
     showUploadDialog.value = true
@@ -3638,7 +3649,7 @@ watch(magicMemoryStep, (newStep) => {
 
 async function onMagicMemoryContinue() {
   // If step 6 (photo selection) is included and manual selection is chosen, validate selection
-  if (currentButtonConfig.value.steps.includes(6) && magicPhotoSelectionMethod.value === 'manual' && magicSelectedMemories.value.length < 1) {
+  if (currentButtonConfig.value.steps.includes(MAGIC_STEPS.MANUAL) && magicPhotoSelectionMethod.value === 'manual' && magicSelectedMemories.value.length < 1) {
     return
   }
   
@@ -3661,7 +3672,7 @@ async function onMagicMemoryContinue() {
     
     let selectedAssets
     
-    if (currentButtonConfig.value.steps.includes(6) && magicPhotoSelectionMethod.value === 'manual') {
+    if (currentButtonConfig.value.steps.includes(MAGIC_STEPS.MANUAL) && magicPhotoSelectionMethod.value === 'manual') {
       // For manual selection, use the selected memories
       selectedAssets = availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
       console.log('🔍 [onMagicMemoryContinue] Manual selection - selected assets count:', selectedAssets.length)
@@ -3948,7 +3959,7 @@ const openMagicMemoryDialog = async (buttonType = 'full') => {
 
 // Reload assets for magic memory step 6
 const reloadAssetsForMagicMemory = async () => {
-  if (magicMemoryStep.value === 6) {
+  if (magicMemoryStep.value === MAGIC_STEPS.MANUAL) {
     loadingAssets.value = true
     try {
       const allApprovedAssets = await db.assets.getAssets({ approved: true })
@@ -3964,11 +3975,11 @@ const reloadAssetsForMagicMemory = async () => {
 
 const nextMagicMemoryStep = () => {
   // Validate current step before proceeding
-  if (magicMemoryStep.value === 1 && !magicMemoryTitle.value.trim()) {
+  if (magicMemoryStep.value === MAGIC_STEPS.TITLE && !magicMemoryTitle.value.trim()) {
     return // Don't proceed if title is empty
   }
   
-  if (magicMemoryStep.value === 5 && !magicPhotoSelectionMethod.value) {
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && !magicPhotoSelectionMethod.value) {
     return // Don't proceed if photo selection method is not chosen
   }
   
@@ -3978,7 +3989,7 @@ const nextMagicMemoryStep = () => {
     const nextStepNumber = currentButtonConfig.value.steps[nextIndex]
     
     // Check if we're going to Step 5 and user has no photos
-    if (nextStepNumber === 5 && availableAssets.value.length === 0) {
+    if (nextStepNumber === MAGIC_STEPS.PHOTOS && availableAssets.value.length === 0) {
       // Redirect to upload dialog instead
       showMagicMemoryDialog.value = false
       showUploadDialog.value = true
@@ -3998,7 +4009,7 @@ const previousMagicMemoryStep = () => {
     magicMemoryStep.value = currentButtonConfig.value.steps[prevIndex]
     
     // Clear custom event if going back to step 2
-    if (magicMemoryStep.value === 2) {
+    if (magicMemoryStep.value === MAGIC_STEPS.EVENT) {
       magicCustomMemoryEvent.value = ''
     }
   }
@@ -4661,7 +4672,7 @@ function openUploadAndReturnToMagicStep5() {
     (val) => {
       if (!val) {
         showMagicMemoryDialog.value = true;
-        magicMemoryStep.value = 5;
+        magicMemoryStep.value = MAGIC_STEPS.PHOTOS;
         unwatch();
       }
     }
