@@ -92,7 +92,6 @@
   }
 
   .p-dialog .p-dialog-footer {
-    border-top: 1px solid var(--dialog-border-color) !important;
     border-bottom-left-radius: 12px !important;
     border-bottom-right-radius: 12px !important;
   }

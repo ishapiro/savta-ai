@@ -1356,7 +1356,7 @@
     >
       <!-- Step 1: Title Input -->
       <div v-if="magicMemoryStep === 1 && currentButtonConfig?.steps.includes(1)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
@@ -1379,7 +1379,7 @@
 
       <!-- Step 2: Event Selection -->
       <div v-if="magicMemoryStep === 2 && currentButtonConfig?.steps.includes(2)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-brand-secondary rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-calendar text-lg sm:text-2xl text-white"></i>
@@ -1417,7 +1417,7 @@
 
       <!-- Step 3: Photo Count Selection -->
       <div v-if="magicMemoryStep === 3 && currentButtonConfig?.steps.includes(3)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
@@ -1464,65 +1464,63 @@
 
       <!-- Step 4: Background Selection -->
       <div v-if="magicMemoryStep === 4 && currentButtonConfig?.steps.includes(4)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
-        <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
-            <i class="pi pi-palette text-lg sm:text-2xl text-white"></i>
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+        <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+            <i class="pi pi-palette text-xl sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">What kind of background would you like?</h3>
-          <p class="text-sm sm:text-base text-gray-600">Choose a clean white background or let me create a special design that matches your story's theme!</p>
+          <p class="text-sm sm:text-base text-gray-600 mb-2">Choose a clean white background or let me create a special design that matches your story's theme!</p>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 w-full max-w-xs mx-auto sm:gap-6 sm:max-w-[520px] sm:mx-auto">
-          <div
-            class="relative cursor-pointer"
-            @click="magicBackgroundType = 'white'"
-          >
-            <div
-              class="border-2 rounded-lg p-4 sm:p-6 text-center transition-all duration-200 h-full"
+        
+        <!-- Background Selection Tiles -->
+        <div class="grid grid-cols-2 gap-3 w-full max-w-md mx-auto sm:max-w-2xl">
+          <!-- Clean & Simple Tile -->
+          <div class="relative cursor-pointer group" @click="magicBackgroundType = 'white'">
+            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
               :class="magicBackgroundType === 'white' 
-                ? 'border-brand-highlight bg-brand-navigation shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-brand-highlight hover:bg-brand-navigation/25'"
-            >
-              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white border-2 border-gray-300 rounded-lg mx-auto mb-2 sm:mb-3 flex items-center justify-center">
-                <i class="pi pi-file text-gray-600 text-lg sm:text-xl"></i>
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-white border-2 border-gray-300 rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-file text-gray-600 text-xl sm:text-2xl"></i>
               </div>
-              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Clean & Simple</div>
-              <div class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Pure white background for a classic, elegant look</div>
-              <div class="text-xs text-gray-500">Perfect for formal events and timeless memories</div>
-              <div v-if="magicBackgroundType === 'white'" class="absolute top-2 right-2 sm:top-3 sm:right-3">
-                <i class="pi pi-check text-brand-header text-sm sm:text-lg"></i>
+              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">Clean & Simple</div>
+              <div class="text-xs sm:text-sm text-gray-600">Pure white background for a classic, elegant look</div>
+              <div v-if="magicBackgroundType === 'white'" class="absolute top-2 right-2">
+                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-xs"></i>
+                </div>
               </div>
             </div>
           </div>
           
-          <div
-            class="relative cursor-pointer"
-            @click="magicBackgroundType = 'magical'"
-          >
-            <div
-              class="border-2 rounded-lg p-4 sm:p-6 text-center transition-all duration-200 h-full"
+          <!-- Special Design Tile -->
+          <div class="relative cursor-pointer group" @click="magicBackgroundType = 'magical'">
+            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
               :class="magicBackgroundType === 'magical' 
-                ? 'border-brand-highlight bg-brand-navigation shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-brand-highlight hover:bg-brand-navigation/25'"
-            >
-              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-200 via-brand-highlight to-blue-200 rounded-lg mx-auto mb-2 sm:mb-3 flex items-center justify-center">
-                <i class="pi pi-sparkles text-brand-header text-lg sm:text-xl"></i>
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-200 via-brand-highlight to-blue-200 rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-sparkles text-brand-header text-xl sm:text-2xl"></i>
               </div>
-              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Special Design</div>
-              <div class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">AI-generated background that matches your story's theme</div>
-              <div class="text-xs text-gray-500">Adds a whimsical, personalized touch to your memory</div>
-              <div v-if="magicBackgroundType === 'magical'" class="absolute top-2 right-2 sm:top-3 sm:right-3">
-                <i class="pi pi-check text-brand-header text-sm sm:text-lg"></i>
+              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">Special Design</div>
+              <div class="text-xs sm:text-sm text-gray-600">AI-generated background that matches your story's theme</div>
+              <div v-if="magicBackgroundType === 'magical'" class="absolute top-2 right-2">
+                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-xs"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200 w-full max-w-xs mx-auto mt-2 sm:max-w-[520px] sm:mx-auto">
-          <div class="flex items-start gap-2 sm:gap-3">
-            <i class="pi pi-info-circle text-blue-500 mt-1"></i>
+
+        <!-- Background Details Info -->
+        <div class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
+          <div class="flex items-start gap-3">
+            <i class="pi pi-info-circle text-brand-flash mt-1"></i>
             <div>
-              <h4 class="font-semibold text-blue-900 mb-1">Background Details</h4>
-              <p class="text-xs sm:text-sm text-blue-800">
+              <h4 class="font-semibold text-brand-flash mb-1">Background Details</h4>
+              <p class="text-xs sm:text-sm text-gray-700">
                 {{ magicBackgroundType === 'white' 
                   ? 'A clean white background will make your photos and story the star of the show.' 
                   : 'I\'ll create a beautiful background design that complements your story and makes your memory even more special.' }}
@@ -1534,32 +1532,32 @@
 
       <!-- Step 5: Photo Selection Method -->
       <div v-if="magicMemoryStep === 5 && currentButtonConfig?.steps.includes(5)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-4 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
             <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
-          <p class="text-sm sm:text-base text-gray-600 mb-2">I'll choose photos from your library. Use the tiles below to tell me how to pick them.</p>
-          <p class="text-sm text-brand-flash font-medium">📸 You have {{ availableAssets.length }} photo{{ availableAssets.length !== 1 ? 's' : '' }} in your library</p>
+          <p class="text-xs sm:text-base text-gray-600 mb-2">I'll choose photos from your library. Use the tiles below to tell me how to pick them.</p>
+          <p class="text-xs text-brand-flash font-medium">📸 You have {{ availableAssets.length }} photo{{ availableAssets.length !== 1 ? 's' : '' }} in your library</p>
         </div>
         
         <!-- Photo Selection Tiles -->
-        <div class="grid grid-cols-2 gap-3 w-full max-w-md mx-auto sm:max-w-2xl">
+        <div class="grid grid-cols-2 gap-2 w-full max-w-md mx-auto sm:max-w-2xl">
           <!-- Savta Selects Tile -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'last_100'">
-            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[70px] flex flex-col items-center justify-center"
               :class="magicPhotoSelectionMethod === 'last_100' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
+              <div class="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-images text-sm sm:text-xl text-white"></i>
               </div>
-              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">Savta selects</div>
-              <div class="text-xs sm:text-sm text-gray-600">You told me {{ magicMemoryTitle || 'about your special memory' }}. 
+              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Savta selects</div>
+              <div class="text-xs text-gray-600">You told me {{ magicMemoryTitle || 'about your special memory' }}. 
                 I will pick the best photos for this story.</div>
-              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-2 right-2">
-                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-1 right-1">
+                <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
@@ -1568,17 +1566,17 @@
 
           <!-- By Location Tile -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'geo_code'">
-            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[70px] flex flex-col items-center justify-center"
               :class="magicPhotoSelectionMethod === 'geo_code' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-map-marker text-xl sm:text-2xl text-white"></i>
+              <div class="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-map-marker text-sm sm:text-xl text-white"></i>
               </div>
-              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">By location</div>
-              <div class="text-xs sm:text-sm text-gray-600">Pick by country, city, or state.</div>
-              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-2 right-2">
-                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">By location</div>
+              <div class="text-xs text-gray-600">Pick by country, city, or state.</div>
+              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-1 right-1">
+                <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
@@ -1587,17 +1585,17 @@
 
           <!-- By Date Tile -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'date_range'">
-            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[70px] flex flex-col items-center justify-center"
               :class="magicPhotoSelectionMethod === 'date_range' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-calendar-plus text-xl sm:text-2xl text-white"></i>
+              <div class="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-calendar-plus text-sm sm:text-xl text-white"></i>
               </div>
-              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">By date</div>
-              <div class="text-xs sm:text-sm text-gray-600">Pick a time period.</div>
-              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-2 right-2">
-                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">By date</div>
+              <div class="text-xs text-gray-600">Pick a time period.</div>
+              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-1 right-1">
+                <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
@@ -1606,17 +1604,17 @@
 
           <!-- By Tags Tile -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'tags'">
-            <div class="border-2 rounded-xl p-4 text-center transition-all duration-300 h-full min-h-[128px] flex flex-col items-center justify-center"
+            <div class="border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[70px] flex flex-col items-center justify-center"
               :class="magicPhotoSelectionMethod === 'tags' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-tags text-xl sm:text-2xl text-white"></i>
+              <div class="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-tags text-sm sm:text-xl text-white"></i>
               </div>
-              <div class="text-base sm:text-lg font-bold text-gray-900 mb-1">By tags</div>
-              <div class="text-xs sm:text-sm text-gray-600">Pick by tag or person.</div>
-              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-2 right-2">
-                <div class="w-6 h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">By tags</div>
+              <div class="text-xs text-gray-600">Pick by tag or person.</div>
+              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-1 right-1">
+                <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
                 </div>
               </div>
