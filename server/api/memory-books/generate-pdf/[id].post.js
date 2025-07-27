@@ -92,6 +92,9 @@ export default defineEventHandler(async (event) => {
         ? book.photo_selection_pool 
         : book.created_from_assets || []
       
+      // Update status for photo selection
+      await updatePdfStatus(supabase, book.id, user.id, 'Savta is selecting your photos...')
+      
       console.log('📸 Fetching photos from user selection pool...')
       console.log('Photo pool to use:', photoPool)
       
