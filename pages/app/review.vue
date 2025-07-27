@@ -507,10 +507,10 @@
           </div>
 
           <!-- Page Actions Section -->
-          <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-6 border border-pink-200">
+          <div class="bg-gradient-to-r from-brand-navigation to-brand-warm rounded-2xl p-6 border border-brand-highlight">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-rocket text-pink-600 text-lg"></i>
+              <div class="w-10 h-10 bg-gradient-to-br from-brand-navigation to-brand-warm rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-rocket text-brand-secondary text-lg"></i>
               </div>
               <div>
                 <h3 class="text-lg font-bold text-gray-800 mb-1">🚀 Powerful Page Actions</h3>
@@ -520,14 +520,14 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-book text-purple-500"></i>
+                  <i class="pi pi-book text-brand-header"></i>
                   <span class="font-semibold text-gray-800">Compose Special Memory</span>
                 </div>
                 <p class="text-sm text-gray-600">Create a beautiful memory book from your approved special moments</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-trash text-pink-500"></i>
+                  <i class="pi pi-trash text-brand-secondary"></i>
                   <span class="font-semibold text-gray-800">View Deleted Memories</span>
                 </div>
                                   <p class="text-sm text-gray-600">Visit the memory vault to restore forgotten special moments</p>

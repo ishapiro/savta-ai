@@ -110,7 +110,7 @@
                 </clipPath>
               </defs>
             </svg>
-            <span class="text-purple-600">Sign in with Google</span>
+            <span class="text-brand-header">Sign in with Google</span>
           </span>
         </Button> -->
 

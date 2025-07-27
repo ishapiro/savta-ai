@@ -16,6 +16,9 @@
   --surface-border: #e4e4e7;
   --text-color: #333333;
   --text-color-secondary: #6E4B63;
+  
+  /* Dialog border color */
+  --dialog-border-color: #41706C; /* brand-highlight color */
 }
 
 @layer base {
@@ -70,6 +73,28 @@
   /* Add PrimeVue button overrides */
   .p-button {
     @apply text-white no-underline !important;
+  }
+
+  /* Global PrimeVue Dialog Border Styling */
+  .p-dialog {
+    border: 1px solid var(--dialog-border-color) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important; /* Ensures content doesn't break the rounded corners */
+  }
+
+  .p-dialog .p-dialog-header {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+  }
+
+  .p-dialog .p-dialog-content {
+    border-radius: 0 !important; /* Remove default border radius since parent handles it */
+  }
+
+  .p-dialog .p-dialog-footer {
+    border-top: 1px solid var(--dialog-border-color) !important;
+    border-bottom-left-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
   }
 
   /* Custom progress dialog styling */

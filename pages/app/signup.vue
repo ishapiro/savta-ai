@@ -138,7 +138,7 @@
                 </clipPath>
               </defs>
             </svg>
-            <span class="text-purple-600">Sign up with Google</span>
+            <span class="text-brand-header">Sign up with Google</span>
           </span>
         </Button> -->
 

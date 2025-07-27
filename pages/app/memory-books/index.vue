@@ -227,7 +227,7 @@
             </div>
             <div v-if="book.created_from_assets" class="flex justify-between items-center">
               <span class="font-semibold text-gray-700">Assets:</span>
-              <span class="bg-gradient-to-r from-blue-100 to-purple-100 px-3 py-1 rounded-full text-xs font-bold text-gray-700 border border-gray-200">{{ book.created_from_assets.length }}</span>
+              <span class="bg-gradient-to-r from-blue-100 to-brand-navigation px-3 py-1 rounded-full text-xs font-bold text-gray-700 border border-gray-200">{{ book.created_from_assets.length }}</span>
             </div>
           </div>
           <div v-if="book.review_notes" class="mb-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200">
@@ -253,8 +253,8 @@
             </div>
             <!-- Generate Button (only for draft, not magic) -->
             <div v-if="book.status === 'draft' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
-              <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 group-hover:scale-125 transition-transform" />
-              <span class="border-0 text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Compose</span>
+              <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-brand-header group-hover:scale-125 transition-transform" />
+              <span class="border-0 text-[10px] sm:text-[11px] text-brand-header mt-1 font-medium">Compose</span>
             </div>
             <!-- Magic Generate Button (for draft magic books) -->
             <div v-if="book.status === 'draft' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
@@ -273,8 +273,8 @@
             </div>
             <!-- Approve Button (not magic) -->
             <div v-if="book.status === 'ready' && book.layout_type !== 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
-              <i class="pi pi-check text-lg sm:text-xl text-purple-600 group-hover:scale-125 transition-transform"></i>
-              <span class="border-0 text-[10px] sm:text-[11px] text-purple-700 mt-1 font-medium">Approve</span>
+              <i class="pi pi-check text-lg sm:text-xl text-brand-header group-hover:scale-125 transition-transform"></i>
+              <span class="border-0 text-[10px] sm:text-[11px] text-brand-header mt-1 font-medium">Approve</span>
             </div>
             <!-- Magic Approve Button -->
             <div v-if="book.status === 'ready' && book.layout_type === 'magic'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
@@ -334,7 +334,7 @@
         <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No special memories yet</h3>
         <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Great! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first special memory?</p>
         <button
-          class="border-0 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
+          class="border-0 bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
           @click="openMagicMemoryDialog('full')"
         >
           <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Special Memory
@@ -376,39 +376,39 @@
         <!-- Background magic particles -->
         <div class="absolute inset-0 pointer-events-none">
           <div class="absolute top-4 left-4 w-2 h-2 bg-yellow-300 rounded-full animate-ping" style="animation-delay: 0s;"></div>
-          <div class="absolute top-8 right-8 w-1 h-1 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.3s;"></div>
+          <div class="absolute top-8 right-8 w-1 h-1 bg-brand-highlight rounded-full animate-ping" style="animation-delay: 0.3s;"></div>
           <div class="absolute bottom-8 left-8 w-1 h-1 bg-blue-300 rounded-full animate-ping" style="animation-delay: 0.6s;"></div>
-          <div class="absolute bottom-4 right-4 w-2 h-2 bg-pink-300 rounded-full animate-ping" style="animation-delay: 0.9s;"></div>
+          <div class="absolute bottom-4 right-4 w-2 h-2 bg-brand-secondary rounded-full animate-ping" style="animation-delay: 0.9s;"></div>
           <div class="absolute top-1/2 left-2 w-1 h-1 bg-yellow-400 rounded-full animate-ping" style="animation-delay: 1.2s;"></div>
-          <div class="absolute top-1/2 right-2 w-1 h-1 bg-purple-400 rounded-full animate-ping" style="animation-delay: 1.5s;"></div>
+          <div class="absolute top-1/2 right-2 w-1 h-1 bg-brand-highlight rounded-full animate-ping" style="animation-delay: 1.5s;"></div>
         </div>
 
         <!-- Main sparkle animation -->
         <div class="relative mb-4 sm:mb-6">
-          <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-full flex items-center justify-center shadow-2xl animate-pulse relative">
+          <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-yellow-200 via-brand-highlight to-blue-200 rounded-full flex items-center justify-center shadow-2xl animate-pulse relative">
             <i class="pi pi-sparkles text-4xl sm:text-5xl text-yellow-500 animate-bounce"></i>
             <!-- Glow effect -->
-            <div class="absolute inset-0 bg-gradient-to-br from-yellow-300 to-purple-300 rounded-full opacity-30 animate-pulse"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-yellow-300 to-brand-highlight rounded-full opacity-30 animate-pulse"></div>
           </div>
           <!-- Enhanced floating sparkles -->
           <div class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-6 h-6 sm:w-8 sm:h-8 bg-yellow-300 rounded-full animate-ping shadow-lg"></div>
-          <div class="absolute -bottom-2 -left-2 sm:-bottom-3 sm:-left-3 w-4 h-4 sm:w-6 sm:h-6 bg-purple-300 rounded-full animate-ping shadow-lg" style="animation-delay: 0.5s;"></div>
+          <div class="absolute -bottom-2 -left-2 sm:-bottom-3 sm:-left-3 w-4 h-4 sm:w-6 sm:h-6 bg-brand-highlight rounded-full animate-ping shadow-lg" style="animation-delay: 0.5s;"></div>
           <div class="absolute top-1/2 -right-4 sm:-right-6 w-3 h-3 sm:w-4 sm:h-4 bg-blue-300 rounded-full animate-ping shadow-lg" style="animation-delay: 1s;"></div>
-          <div class="absolute top-1/2 -left-4 sm:-left-6 w-4 h-4 sm:w-5 sm:h-5 bg-pink-300 rounded-full animate-ping shadow-lg" style="animation-delay: 1.5s;"></div>
+          <div class="absolute top-1/2 -left-4 sm:-left-6 w-4 h-4 sm:w-5 sm:h-5 bg-brand-secondary rounded-full animate-ping shadow-lg" style="animation-delay: 1.5s;"></div>
         </div>
         
         <!-- Enhanced success message -->
-        <h2 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-3 sm:mb-4 animate-fade-in">
+        <h2 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 via-brand-secondary to-blue-600 bg-clip-text text-transparent mb-3 sm:mb-4 animate-fade-in">
           ✨ Recipe Created Successfully! ✨
         </h2>
         
-        <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-2xl p-5 sm:p-6 border-2 border-purple-200 mb-4 sm:mb-6 shadow-xl relative overflow-hidden">
+        <div class="bg-gradient-to-r from-yellow-50 via-brand-navigation to-blue-50 rounded-2xl p-5 sm:p-6 border-2 border-brand-highlight mb-4 sm:mb-6 shadow-xl relative overflow-hidden">
           <!-- Inner sparkles -->
           <div class="absolute top-2 right-2 w-3 h-3 bg-yellow-300 rounded-full animate-ping"></div>
-          <div class="absolute bottom-2 left-2 w-2 h-2 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.7s;"></div>
+          <div class="absolute bottom-2 left-2 w-2 h-2 bg-brand-highlight rounded-full animate-ping" style="animation-delay: 0.7s;"></div>
           
           <p class="text-lg sm:text-xl text-gray-800 leading-relaxed mb-3 sm:mb-4">
-            You have just defined the <span class="font-bold text-purple-600">special recipe</span> we will use to generate your custom magic memory!
+            You have just defined the <span class="font-bold text-brand-header">special recipe</span> we will use to generate your custom magic memory!
           </p>
           
           <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 sm:p-4 border border-blue-200 shadow-lg">
@@ -428,7 +428,7 @@
         <!-- Enhanced action buttons -->
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
           <button
-            class="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
+            class="flex-1 bg-gradient-to-r from-purple-500 via-brand-secondary to-blue-500 hover:from-purple-600 hover:via-brand-secondary hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
             @click="composeNewlyCreatedMemory"
           >
             <!-- Button sparkles -->
@@ -472,18 +472,18 @@
       </template>
       <div class="space-y-6 max-w-xs w-full mx-auto sm:max-w-2xl sm:mx-auto">
         <!-- Upload Instructions -->
-        <div v-if="!isUploading && uploadedFiles.length === 0" class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200 relative overflow-hidden">
+        <div v-if="!isUploading && uploadedFiles.length === 0" class="bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-xl p-6 border-2 border-brand-highlight relative overflow-hidden">
           <!-- Magical sparkles -->
           <div class="absolute top-2 right-2 w-3 h-3 bg-yellow-300 rounded-full animate-ping"></div>
-          <div class="absolute bottom-2 left-2 w-2 h-2 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+          <div class="absolute bottom-2 left-2 w-2 h-2 bg-brand-highlight rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
           <div class="absolute top-1/2 right-4 w-2 h-2 bg-blue-300 rounded-full animate-ping" style="animation-delay: 1s;"></div>
           
           <div class="flex items-center gap-4 mb-4">
             <div class="w-12 h-12 bg-brand-navigation rounded-full flex items-center justify-center shadow-lg relative">
-              <i class="pi pi-sparkles text-purple-600 text-xl"></i>
+              <i class="pi pi-sparkles text-brand-header text-xl"></i>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-purple-800 mb-1">✨ Let Savta help you with your upload your photos ✨</h3>
+              <h3 class="text-xl font-bold text-brand-header mb-1">✨ Let Savta help you with your upload your photos ✨</h3>
             </div>
           </div>
           <div class="bg-white/80 rounded-lg p-4">
@@ -504,18 +504,18 @@
           <div class="bg-brand-navigation rounded-xl p-6 relative overflow-hidden">
             <!-- Magical sparkles -->
             <div class="absolute top-3 right-3 w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
-            <div class="absolute bottom-3 left-3 w-2 h-2 bg-purple-300 rounded-full animate-ping" style="animation-delay: 0.7s;"></div>
+            <div class="absolute bottom-3 left-3 w-2 h-2 bg-brand-highlight rounded-full animate-ping" style="animation-delay: 0.7s;"></div>
             
             <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-sparkles text-purple-600 text-lg animate-pulse"></i>
+              <div class="w-10 h-10 bg-gradient-to-br from-brand-navigation to-brand-warm rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-sparkles text-brand-header text-lg animate-pulse"></i>
               </div>
               <div class="flex-1">
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-lg font-bold text-center">✨ Upload and AI Processing in Progress ✨</span>
                   <span class="text-lg font-bold">{{ uploadProgress }}%</span>
                 </div>
-                <div class="w-full bg-white/60 rounded-full h-4 border border-purple-200">
+                <div class="w-full bg-white/60 rounded-full h-4 border border-brand-highlight">
                   <div 
                     class="bg-brand-card h-4 rounded-full transition-all duration-500 shadow-lg"
                     :style="{ width: uploadProgress + '%' }"
@@ -529,25 +529,25 @@
           <!-- Current File Progress -->
           <div v-if="uploadingFiles.length > 0" class="bg-white/90 rounded-xl p-6 border-2 border-purple-200 shadow-lg">
             <h4 class="text-lg font-bold mb-4 flex items-center text-center gap-2">
-              <i class="pi pi-sparkles text-purple-600"></i>
+              <i class="pi pi-sparkles text-brand-header"></i>
               🌸 Savta is working on your photos 🌸
             </h4>
             <div class="space-y-3">
               <div 
                 v-for="file in uploadingFiles" 
                 :key="file.name"
-                class="flex items-center gap-4 p-4 bg-brand-navigation rounded-xl border border-purple-200 transition-all duration-200 hover:shadow-md"
+                class="flex items-center gap-4 p-4 bg-brand-navigation rounded-xl border border-brand-highlight transition-all duration-200 hover:shadow-md"
               >
                 <div class="w-10 h-10 bg-brand-navigation rounded-full flex items-center justify-center shadow-md">
-                  <i class="pi pi-image text-purple-600 text-sm"></i>
+                  <i class="pi pi-image text-brand-header text-sm"></i>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-semibold truncate">{{ file.name }}</p>
                   <p class="text-xs font-medium">{{ getMagicStatusText(file.status) }}</p>
                 </div>
                 <div class="flex items-center gap-2">
-                  <div v-if="file.status === 'uploading'" class="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                  <div v-else-if="file.status === 'processing'" class="w-5 h-5 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div v-if="file.status === 'uploading'" class="w-5 h-5 border-2 border-brand-highlight border-t-transparent rounded-full animate-spin"></div>
+                  <div v-else-if="file.status === 'processing'" class="w-5 h-5 border-2 border-brand-secondary border-t-transparent rounded-full animate-spin"></div>
                   <div v-else-if="file.status === 'completed'" class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-md">
                     <i class="pi pi-check text-white text-xs"></i>
                   </div>
@@ -873,7 +873,7 @@
           <!-- Actions Section -->
           <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
             <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 justify-items-center">
               <button
                 v-if="selectedBook.status === 'draft'"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
@@ -1168,9 +1168,9 @@
     >
       <div v-if="!loadingAssets" class="space-y-4">
         <!-- Instructions -->
-        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 sm:p-4 border border-blue-200">
+        <div class="bg-gradient-to-r from-blue-50 to-brand-navigation rounded-lg p-3 sm:p-4 border border-brand-highlight">
           <div class="flex items-center space-x-3 mb-2">
-            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-100 to-brand-navigation rounded-full flex items-center justify-center">
               <i class="pi pi-heart text-blue-600 text-xs sm:text-sm"></i>
             </div>
             <h3 class="text-base sm:text-lg font-semibold text-gray-900">Choose Your Memories</h3>
@@ -1381,7 +1381,7 @@
       <div v-if="magicMemoryStep === 2 && currentButtonConfig?.steps.includes(2)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
         <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-brand-secondary rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-calendar text-lg sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Tell me what kind of event this was</h3>
@@ -1435,15 +1435,15 @@
             <div
               class="border-2 rounded-lg p-3 sm:p-4 text-center transition-all duration-200"
               :class="magicPhotoCount === count 
-                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+                ? 'border-brand-highlight bg-brand-navigation shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-brand-highlight hover:bg-brand-navigation/25'"
             >
               <div class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{{ count }}</div>
               <div class="text-xs sm:text-sm text-gray-600">
                 {{ count === 1 ? 'Photo' : 'Photos' }}
               </div>
               <div v-if="magicPhotoCount === count" class="absolute top-1 right-1 sm:top-2 sm:right-2">
-                <i class="pi pi-check text-purple-500 text-sm sm:text-lg"></i>
+                <i class="pi pi-check text-brand-header text-sm sm:text-lg"></i>
               </div>
             </div>
           </div>
@@ -1466,7 +1466,7 @@
       <div v-if="magicMemoryStep === 4 && currentButtonConfig?.steps.includes(4)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center px-4 py-2 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-8 sm:py-8">
         <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-palette text-lg sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">What kind of background would you like?</h3>
@@ -1480,8 +1480,8 @@
             <div
               class="border-2 rounded-lg p-4 sm:p-6 text-center transition-all duration-200 h-full"
               :class="magicBackgroundType === 'white' 
-                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+                ? 'border-brand-highlight bg-brand-navigation shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-brand-highlight hover:bg-brand-navigation/25'"
             >
               <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white border-2 border-gray-300 rounded-lg mx-auto mb-2 sm:mb-3 flex items-center justify-center">
                 <i class="pi pi-file text-gray-600 text-lg sm:text-xl"></i>
@@ -1490,7 +1490,7 @@
               <div class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">Pure white background for a classic, elegant look</div>
               <div class="text-xs text-gray-500">Perfect for formal events and timeless memories</div>
               <div v-if="magicBackgroundType === 'white'" class="absolute top-2 right-2 sm:top-3 sm:right-3">
-                <i class="pi pi-check text-purple-500 text-sm sm:text-lg"></i>
+                <i class="pi pi-check text-brand-header text-sm sm:text-lg"></i>
               </div>
             </div>
           </div>
@@ -1502,17 +1502,17 @@
             <div
               class="border-2 rounded-lg p-4 sm:p-6 text-center transition-all duration-200 h-full"
               :class="magicBackgroundType === 'magical' 
-                ? 'border-purple-500 bg-purple-50 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'"
+                ? 'border-brand-highlight bg-brand-navigation shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-brand-highlight hover:bg-brand-navigation/25'"
             >
-              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-200 via-purple-200 to-blue-200 rounded-lg mx-auto mb-2 sm:mb-3 flex items-center justify-center">
-                <i class="pi pi-sparkles text-purple-600 text-lg sm:text-xl"></i>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-200 via-brand-highlight to-blue-200 rounded-lg mx-auto mb-2 sm:mb-3 flex items-center justify-center">
+                <i class="pi pi-sparkles text-brand-header text-lg sm:text-xl"></i>
               </div>
               <div class="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Special Design</div>
               <div class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">AI-generated background that matches your story's theme</div>
               <div class="text-xs text-gray-500">Adds a whimsical, personalized touch to your memory</div>
               <div v-if="magicBackgroundType === 'magical'" class="absolute top-2 right-2 sm:top-3 sm:right-3">
-                <i class="pi pi-check text-purple-500 text-sm sm:text-lg"></i>
+                <i class="pi pi-check text-brand-header text-sm sm:text-lg"></i>
               </div>
             </div>
           </div>
@@ -1674,10 +1674,10 @@
 
       <!-- Step 6: Photo Selection (only for manual selection) -->
       <div v-if="magicMemoryStep === 6 && currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual' && !loadingAssets" class="space-y-3 sm:space-y-4 px-4 overflow-x-hidden">
-        <div class="bg-gradient-to-r from-yellow-50 via-purple-50 to-blue-50 rounded-lg p-3 sm:p-4 border border-purple-200 flex items-center gap-2 sm:gap-3 animate-pulse max-w-xs w-full mx-auto">
+        <div class="bg-gradient-to-r from-yellow-50 via-brand-navigation to-blue-50 rounded-lg p-3 sm:p-4 border border-brand-highlight flex items-center gap-2 sm:gap-3 animate-pulse max-w-xs w-full mx-auto">
           <i class="pi pi-sparkles text-lg sm:text-2xl text-yellow-400 animate-bounce"></i>
           <div>
-            <h3 class="text-base sm:text-lg font-bold text-purple-700 mb-1">Choose your photos for "{{ magicMemoryTitle }}"</h3>
+            <h3 class="text-base sm:text-lg font-bold text-brand-header mb-1">Choose your photos for "{{ magicMemoryTitle }}"</h3>
             <p class="text-xs sm:text-sm text-gray-700">Select up to 12 photos that you'd like me to consider for your Magic Memory story. I'll select the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your choices!</p>
           </div>
         </div>
@@ -1716,7 +1716,7 @@
               <div v-if="magicSelectedMemories.includes(asset.id)" class="absolute inset-0 bg-yellow-200/40 rounded-lg z-20 flex items-center justify-center pointer-events-none transition-all duration-200">
                 <i class="pi pi-check text-4xl text-yellow-500 animate-bounce"></i>
               </div>
-              <div class="aspect-square bg-gradient-to-br from-purple-100 via-yellow-50 to-blue-100 rounded-lg overflow-hidden border-2 border-purple-200 hover:border-yellow-400 transition-colors">
+              <div class="aspect-square bg-gradient-to-br from-brand-navigation via-yellow-50 to-blue-100 rounded-lg overflow-hidden border-2 border-brand-highlight hover:border-yellow-400 transition-colors">
                 <img
                   v-if="asset.storage_url"
                   :src="asset.storage_url"
@@ -1728,7 +1728,7 @@
                 </div>
               </div>
               <div class="mt-1 text-center">
-                <p class="text-xs font-medium text-purple-900 truncate px-1">{{ asset.user_caption || asset.ai_caption || `Photo ${asset.id.slice(-4)}` }}</p>
+                <p class="text-xs font-medium text-brand-header truncate px-1">{{ asset.user_caption || asset.ai_caption || `Photo ${asset.id.slice(-4)}` }}</p>
               </div>
             </div>
           </div>
@@ -1743,7 +1743,7 @@
               <p class="text-sm text-gray-600 mb-3">Don't see the photos you want?</p>
               <button
                 @click="selectFilesForMagicMemory"
-                class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg px-4 py-2 text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
+                class="bg-gradient-to-r from-purple-500 to-brand-secondary hover:from-purple-600 hover:to-brand-secondary text-white font-semibold rounded-lg px-4 py-2 text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
                 :disabled="isUploading"
               >
                 <i class="pi pi-upload"></i>
@@ -1757,7 +1757,7 @@
       </div>
       <div v-else-if="loadingAssets && currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual'" class="flex items-center justify-center py-8">
         <div class="text-center">
-          <i class="pi pi-spin pi-spinner text-3xl text-purple-400 mb-3"></i>
+          <i class="pi pi-spin pi-spinner text-3xl text-brand-header mb-3"></i>
           <p class="text-sm text-gray-600">Looking through your beautiful memories...</p>
         </div>
       </div>
@@ -1813,12 +1813,12 @@
       <div class="text-gray-700 mb-4">This will move the memory to the deleted section. You can restore it later if needed.</div>
       <div class="flex justify-center gap-3">
         <button class="bg-brand-dialog-cancel text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="showDeleteDialog = false">Cancel</button>
-        <button class="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="deleteBookConfirmed">Delete</button>
+        <button class="bg-gradient-to-r from-red-500 to-brand-secondary hover:from-red-600 hover:to-brand-secondary text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="deleteBookConfirmed">Delete</button>
       </div>
     </div>
   </Dialog>
   <div v-if="showAICaptionOverlay" class="fixed top-0 left-0 w-full z-50 flex justify-center pointer-events-none">
-    <div class="mt-4 px-3 py-2 sm:mt-6 sm:px-6 sm:py-3 rounded-2xl shadow-lg bg-white/70 text-purple-800 text-base sm:text-lg font-caveat flex items-center gap-2 sm:gap-3 animate-magic-fade max-w-xs sm:max-w-md md:max-w-lg w-auto break-words">
+    <div class="mt-4 px-3 py-2 sm:mt-6 sm:px-6 sm:py-3 rounded-2xl shadow-lg bg-white/70 text-brand-header text-base sm:text-lg font-caveat flex items-center gap-2 sm:gap-3 animate-magic-fade max-w-xs sm:max-w-md md:max-w-lg w-auto break-words">
       <i class="pi pi-sparkles text-yellow-400 text-xl sm:text-2xl animate-bounce flex-shrink-0"></i>
       <span class="italic truncate">The magic whispers:</span>
       <span class="font-bold break-words">"{{ lastAICaption }}"</span>
@@ -3146,7 +3146,7 @@ const getStatusBadgeClass = (status) => {
     'background_ready': 'bg-blue-50 text-blue-700 border border-blue-200',
     'ready': 'bg-emerald-50 text-emerald-700 border border-emerald-200',
     'approved': 'bg-green-50 text-green-700 border border-green-200',
-    'distributed': 'bg-purple-50 text-purple-700 border border-purple-200',
+    'distributed': 'bg-brand-navigation text-brand-secondary border border-brand-highlight',
     'archived': 'bg-gray-50 text-gray-700 border border-gray-200'
   }
   return badgeClassMap[status] || 'bg-gray-50 text-gray-700 border border-gray-200'

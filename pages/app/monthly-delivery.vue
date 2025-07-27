@@ -1,8 +1,8 @@
 <template>
   <div class="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-8">
     <div class="text-center mb-8 sm:mb-12">
-      <div class="w-20 h-20 sm:w-24 sm:h-24 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <i class="pi pi-calendar text-pink-500 text-3xl sm:text-4xl"></i>
+      <div class="w-20 h-20 sm:w-24 sm:h-24 bg-brand-navigation rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="pi pi-calendar text-brand-secondary text-3xl sm:text-4xl"></i>
       </div>
       <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Monthly Delivery</h2>
       <p class="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
@@ -51,7 +51,7 @@
         
         <button
           @click="navigateToUpload"
-          class="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"
+          class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"
         >
           Start Creating Memories Now
         </button>

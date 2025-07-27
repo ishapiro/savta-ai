@@ -48,7 +48,7 @@
           <div class="text-xl font-bold text-color">{{ stats.photos }}</div>
         </div>
         <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
-          <i class="pi pi-file-edit text-purple-500 text-2xl mb-2"></i>
+          <i class="pi pi-file-edit text-brand-header text-2xl mb-2"></i>
           <div class="text-sm text-color-secondary">Stories</div>
           <div class="text-xl font-bold text-color">{{ stats.stories }}</div>
         </div>
@@ -186,7 +186,7 @@
                   v-for="person in asset.user_people || []"
                   :key="`user-${person}`"
                   :label="person"
-                  class="text-xs bg-pink-100 text-pink-700 px-1.5 sm:px-2 py-0.5 sm:py-1"
+                  class="text-xs bg-brand-secondary/10 text-brand-secondary px-1.5 sm:px-2 py-0.5 sm:py-1"
                 />
               </div>
             </div>
@@ -320,7 +320,7 @@
             </div>
             <div class="bg-white rounded-xl p-4 border border-red-100">
               <div class="flex items-center gap-2 mb-2">
-                <i class="pi pi-file-edit text-purple-500"></i>
+                <i class="pi pi-file-edit text-brand-header"></i>
                 <span class="font-semibold text-gray-800">Stories</span>
               </div>
               <p class="text-sm text-gray-600">Deleted story memories</p>
@@ -365,9 +365,9 @@
         </div>
 
         <!-- Empty Trash Section -->
-        <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-2xl p-6 border border-red-200">
+        <div class="bg-gradient-to-r from-red-50 to-brand-navigation rounded-2xl p-6 border border-red-200">
           <div class="flex items-center gap-4 mb-4">
-            <div class="w-10 h-10 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-100 to-brand-navigation rounded-full flex items-center justify-center shadow-lg">
               <i class="pi pi-exclamation-triangle text-red-600 text-lg"></i>
             </div>
             <div>

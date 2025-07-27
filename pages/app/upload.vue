@@ -37,7 +37,7 @@
         </div>
 
         <!-- Oversized Files Warning -->
-        <div v-if="oversizedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-3 border border-red-200">
+        <div v-if="oversizedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-brand-navigation rounded-lg p-3 border border-red-200">
           <div class="flex items-center gap-2 mb-2">
             <i class="pi pi-times-circle text-red-600 text-sm"></i>
             <span class="text-sm font-semibold text-red-800">📁 Files too large ({{ oversizedFiles.length }} skipped)</span>
@@ -53,7 +53,7 @@
         </div>
 
         <!-- Overall Progress Bar -->
-        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-200">
+        <div class="bg-gradient-to-r from-blue-50 to-brand-navigation rounded-lg p-3 border border-blue-200">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
               <i class="pi pi-cloud-upload text-blue-500 text-sm"></i>
@@ -65,7 +65,7 @@
           <!-- Overall Progress Bar -->
           <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
             <div 
-              class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
+              class="bg-gradient-to-r from-blue-500 to-brand-secondary h-2 rounded-full transition-all duration-300 ease-out"
               :style="{ width: overallProgress + '%' }"
             ></div>
           </div>
@@ -261,11 +261,11 @@
         <h2 class="text-xl font-semibold text-brand-primary mb-4">Recent Uploads</h2>
         
         <!-- Review Button Section -->
-        <div class="bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 rounded-2xl p-6 mb-6 border border-pink-200 shadow-lg">
+        <div class="bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-2xl p-6 mb-6 border border-brand-highlight shadow-lg">
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-heart text-pink-600 text-xl"></i>
+              <div class="w-12 h-12 bg-gradient-to-br from-brand-navigation to-brand-warm rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-heart text-brand-secondary text-xl"></i>
               </div>
               <div>
                 <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Manage Your Special Moments</h3>
@@ -273,7 +273,7 @@
               </div>
             </div>
             <button
-              class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
+              class="bg-gradient-to-r from-brand-secondary to-purple-500 hover:from-brand-secondary hover:to-purple-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
               @click="navigateTo('/app/review')"
             >
               <i class="pi pi-list text-lg"></i>
@@ -324,10 +324,10 @@
       >
         <div class="space-y-6">
           <!-- Welcome Section -->
-          <div class="bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-2xl p-6 border border-purple-200">
+          <div class="bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-2xl p-6 border border-brand-highlight">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-magic text-purple-600 text-xl"></i>
+              <div class="w-12 h-12 bg-gradient-to-br from-brand-navigation to-brand-warm rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-magic text-brand-header text-xl"></i>
               </div>
               <div>
                 <h3 class="text-xl font-bold text-gray-800 mb-1">Welcome to Your Memory Workshop! 🎨</h3>
@@ -424,10 +424,10 @@
           </div>
 
           <!-- Tips Section -->
-          <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-6 border border-pink-200">
+          <div class="bg-gradient-to-r from-brand-navigation to-brand-warm rounded-2xl p-6 border border-brand-highlight">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-lightbulb text-pink-600 text-lg"></i>
+              <div class="w-10 h-10 bg-gradient-to-br from-brand-navigation to-brand-warm rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-lightbulb text-brand-secondary text-lg"></i>
               </div>
               <div>
                 <h3 class="text-lg font-bold text-gray-800 mb-1">🌟 Special Tips & Tricks</h3>
@@ -437,28 +437,28 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-list text-pink-500"></i>
+                  <i class="pi pi-list text-brand-secondary"></i>
                   <span class="font-semibold text-gray-800">Review & Manage</span>
                 </div>
                 <p class="text-sm text-gray-600">Click "View All Uploads" to access your complete collection and manage all your special memories!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-check-circle text-purple-500"></i>
+                  <i class="pi pi-check-circle text-brand-header"></i>
                   <span class="font-semibold text-gray-800">Approval Process</span>
                 </div>
                 <p class="text-sm text-gray-600">Only approved moments can be included in your beautiful special memory books!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-edit text-pink-500"></i>
+                  <i class="pi pi-edit text-brand-secondary"></i>
                   <span class="font-semibold text-gray-800">Edit & Refine</span>
                 </div>
                 <p class="text-sm text-gray-600">Use the Review page to edit captions, approve, or delete moments with ease!</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-pink-100">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-book text-purple-500"></i>
+                  <i class="pi pi-book text-brand-header"></i>
                   <span class="font-semibold text-gray-800">Memory Books</span>
                 </div>
                 <p class="text-sm text-gray-600">Create beautiful memory books from your approved moments - the ultimate special collection!</p>
@@ -467,14 +467,14 @@
           </div>
 
           <!-- Call to Action -->
-          <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-200 text-center">
-            <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg mx-auto mb-4">
+          <div class="bg-gradient-to-r from-blue-50 to-brand-navigation rounded-2xl p-6 border border-brand-highlight text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-brand-navigation rounded-full flex items-center justify-center shadow-lg mx-auto mb-4">
               <i class="pi pi-rocket text-blue-600 text-2xl"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">🚀 Ready to Start Your Special Journey?</h3>
             <p class="text-gray-600 mb-4">Upload your first moment (photo or post) and watch the special moments unfold!</p>
             <button
-              class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
+              class="bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
               @click="showHelpModal = false"
             >
               <i class="pi pi-check mr-2"></i>
@@ -539,7 +539,7 @@
           </div>
 
           <!-- Fun Message -->
-          <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6">
+          <div class="bg-gradient-to-r from-blue-50 to-brand-navigation rounded-lg p-4 mb-6">
             <p class="text-sm text-gray-600">
               <span v-if="successfulUploads > 0">✨ Your memories are now ready for review and approval!</span>
             </p>
