@@ -100,81 +100,92 @@
     <!-- Edit Defaults Mode Indicator -->
     <div v-if="isEditDefaultsMode" class="mb-2 p-3 bg-yellow-50 border border-yellow-300 rounded text-sm">
       <div class="text-yellow-800">
-        <strong>⚠️ Edit Defaults Mode Active</strong>
-        <p class="mt-1">You are editing the default layout for size: <span class="font-semibold">{{ props.size }}</span></p>
-        <p class="mt-1 text-xs">Changes will be saved as the new default for this size.</p>
+        <strong>⚠️ Edit Defaults Mode Active</strong> - Editing default layout for size: <span class="font-semibold">{{ props.size }}</span>
       </div>
     </div>
 
     <!-- Buttons right above layout area -->
-    <div class="mb-2 space-x-2">
-      <button @click="addPhoto" class="px-2 py-1 bg-green-600 text-white rounded text-sm">Add Photo</button>
-      <button 
-        @click="addStory" 
-        :disabled="!!layoutData.story"
-        class="px-2 py-1 bg-blue-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Add Story
-      </button>
-      <button 
-        v-if="layoutData.story"
-        @click="deleteStory" 
-        class="px-2 py-1 bg-red-600 text-white rounded text-sm"
-      >
-        Remove Story
-      </button>
-      <button @click="resetLayout" class="px-2 py-1 bg-orange-600 text-white rounded text-sm">Reset</button>
-      <button @click="saveLayout" class="px-2 py-1 bg-blue-600 text-white rounded text-sm">Save Layout</button>
+    <div class="mb-2 space-y-2">
+      <!-- First row of buttons -->
+      <div class="flex flex-wrap gap-2">
+        <button @click="addPhoto" class="px-2 py-1 bg-green-600 text-white rounded text-sm">Add Photo</button>
+        <button 
+          @click="addStory" 
+          :disabled="!!layoutData.story"
+          class="px-2 py-1 bg-blue-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Add Story
+        </button>
+        <button 
+          v-if="layoutData.story"
+          @click="deleteStory" 
+          class="px-2 py-1 bg-red-600 text-white rounded text-sm"
+        >
+          Remove Story
+        </button>
+        <button @click="resetLayout" class="px-2 py-1 bg-orange-600 text-white rounded text-sm">Reset</button>
+        <button @click="saveLayout" class="px-2 py-1 bg-blue-600 text-white rounded text-sm">Save Layout</button>
+        <button
+          @click="showPasswordDialog = true"
+          class="px-2 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded text-sm transition-colors"
+        >
+          Edit Defaults
+        </button>
+        <button
+          @click="showJsonDialog = true"
+          class="px-2 py-1 bg-teal-600 text-white rounded text-sm hover:bg-teal-700"
+        >
+          Show JSON
+        </button>
+      </div>
       
-      <!-- Multi-select controls -->
-      <button 
-        @click="clearSelection" 
-        :disabled="selectedBoxes.length === 0"
-        class="px-2 py-1 bg-gray-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Clear Selection ({{ selectedBoxes.length }})
-      </button>
-      <button 
-        @click="makeSameSize" 
-        :disabled="selectedBoxes.length < 2"
-        class="px-2 py-1 bg-indigo-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Same Size & Distribute
-      </button>
-      
-      <!-- Edit Defaults Mode Toggle -->
-      <button
-        @click="showPasswordDialog = true"
-        class="px-2 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded text-sm transition-colors"
-      >
-        Edit Defaults
-      </button>
-
-      <!-- Exit Edit Mode Button (only show in edit mode) -->
-      <button
-        v-if="isEditDefaultsMode"
-        @click="exitEditMode"
-        class="px-2 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-      >
-        Exit Edit Mode
-      </button>
-
-      <!-- Save Defaults Button (only show in edit mode) -->
-      <button
-        v-if="isEditDefaultsMode"
-        @click="saveEditedDefaults"
-        class="px-2 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700"
-      >
-        Save as Default
-      </button>
-
-      <!-- Show JSON Button -->
-      <button
-        @click="showJsonDialog = true"
-        class="px-2 py-1 bg-teal-600 text-white rounded text-sm hover:bg-teal-700"
-      >
-        Show JSON
-      </button>
+      <!-- Second row of buttons -->
+      <div class="flex flex-wrap gap-2">
+        <button 
+          @click="clearSelection" 
+          :disabled="selectedBoxes.length === 0"
+          class="px-2 py-1 bg-gray-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Clear Selection ({{ selectedBoxes.length }})
+        </button>
+        <button 
+          @click="makeSameSize" 
+          :disabled="selectedBoxes.length < 2"
+          class="px-2 py-1 bg-indigo-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Same Size & Distribute
+        </button>
+        <button 
+          @click="copySelectedBoxes" 
+          :disabled="selectedBoxes.length === 0"
+          class="px-2 py-1 bg-blue-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Copy ({{ selectedBoxes.length }})
+        </button>
+        <button 
+          @click="pasteCopiedBoxes" 
+          :disabled="copiedBoxes.length === 0"
+          class="px-2 py-1 bg-green-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Paste ({{ copiedBoxes.length }})
+        </button>
+        
+        <!-- Edit Defaults Mode Buttons (only show in edit mode) -->
+        <button
+          v-if="isEditDefaultsMode"
+          @click="exitEditMode"
+          class="px-2 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
+        >
+          Exit Edit Mode
+        </button>
+        <button
+          v-if="isEditDefaultsMode"
+          @click="saveEditedDefaults"
+          class="px-2 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700"
+        >
+          Save as Default
+        </button>
+      </div>
     </div>
 
     <!-- Password Dialog -->
@@ -252,6 +263,66 @@
       </div>
     </div>
 
+    <!-- Resize Dialog -->
+    <div v-if="showResizeDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl border-2 border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-brand-secondary">Resize Element</h3>
+          <button
+            @click="showResizeDialog = false"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <i class="pi pi-times text-xl"></i>
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <div class="text-sm text-gray-600">
+            <p>Current size: <strong>{{ resizeDialogData.currentWidth }}×{{ resizeDialogData.currentHeight }}px</strong></p>
+            <p>Enter new dimensions in millimeters:</p>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Width (mm)</label>
+              <InputText
+                v-model="resizeDialogData.newWidthMm"
+                type="number"
+                placeholder="Width"
+                class="w-full"
+                min="1"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Height (mm)</label>
+              <InputText
+                v-model="resizeDialogData.newHeightMm"
+                type="number"
+                placeholder="Height"
+                class="w-full"
+                min="1"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-6 flex justify-end gap-3">
+          <button
+            @click="showResizeDialog = false"
+            class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            @click="applyResize"
+            class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div 
       class="relative overflow-auto bg-gray-100 rounded-lg p-4" 
       :class="{ 'border-4 border-yellow-400 bg-yellow-50': isEditDefaultsMode }"
@@ -309,6 +380,7 @@
           :id="`box-story`"
           :style="boxStyle(layoutData.story.position, layoutData.story.size)"
           @click="toggleSelection('story', $event)"
+          @dblclick="handleBoxDoubleClick('story', $event)"
         >
           <div class="drag-handle" :id="`drag-story`" @pointerdown="startDrag('story', $event)"></div>
           <span>Story ({{ layoutData.story.fontSizePt }}pt)</span>
@@ -325,6 +397,7 @@
           :id="`box-${photo.id}`"
           :style="photoBoxStyle(photo)"
           @click="toggleSelection(photo.id, $event)"
+          @dblclick="handleBoxDoubleClick(photo.id, $event)"
         >
           <div class="drag-handle" :id="`drag-${photo.id}`" @pointerdown="startDrag(photo.id, $event)"></div>
           <span>Photo {{ photo.id }}</span>
@@ -367,6 +440,20 @@ const showInstructionsDialog = ref(false)
 
 // JSON popup dialog
 const showJsonDialog = ref(false)
+
+// Resize dialog
+const showResizeDialog = ref(false)
+const resizeDialogData = ref({
+  id: null,
+  currentWidth: 0,
+  currentHeight: 0,
+  newWidthMm: '',
+  newHeightMm: ''
+})
+
+// Copy/paste functionality
+const copiedBoxes = ref([])
+const nextPhotoId = ref(1)
 
 // Snap functionality
 const snapEnabled = ref(false)
@@ -1132,13 +1219,30 @@ function stopInteraction() {
       
       console.log('[DRAG STOP] Syncing final position to data:', { currentDragId, finalX, finalY })
       
+      // Convert from wireframe coordinates back to card coordinates
+      const cardX = finalX - cardPosition.value.left
+      const cardY = finalY - cardPosition.value.top
+      
+      // Get the appropriate size for clamping
+      let size
+      if (currentDragId === 'story') {
+        size = layoutData.story.size
+      } else {
+        const photo = layoutData.photos.find(p => p.id === currentDragId)
+        size = photo ? photo.size : { width: 200, height: 150 }
+      }
+      
+      // Apply clamping to bounds
+      let finalPos = clampToBounds({ x: cardX, y: cardY }, size)
+      
       // Apply final snapping if enabled
-      let finalPos = { x: finalX, y: finalY }
       if (snapEnabled.value) {
         finalPos = snapToGrid(finalPos)
         // Update the DOM element with the snapped position
-        box.style.left = `${finalPos.x}px`
-        box.style.top = `${finalPos.y}px`
+        const snappedX = cardPosition.value.left + finalPos.x
+        const snappedY = cardPosition.value.top + finalPos.y
+        box.style.left = `${snappedX}px`
+        box.style.top = `${snappedY}px`
         console.log('[DRAG STOP] Final snapped position:', finalPos)
       }
       
@@ -1188,6 +1292,144 @@ function startResize(id, event) {
   
   document.addEventListener('pointermove', onPointerMove)
   document.addEventListener('pointerup', stopInteraction)
+}
+
+function applyResize() {
+  const id = resizeDialogData.value.id
+  const newWidthMm = parseFloat(resizeDialogData.value.newWidthMm)
+  const newHeightMm = parseFloat(resizeDialogData.value.newHeightMm)
+
+  if (isNaN(newWidthMm) || isNaN(newHeightMm) || newWidthMm <= 0 || newHeightMm <= 0) {
+    alert('Please enter valid positive numbers for width and height.')
+    return
+  }
+
+  // Convert mm to pixels using the scale factor
+  const scale = SCALE_FACTOR.value
+  let newWidthPx = Math.round(newWidthMm * scale)
+  let newHeightPx = Math.round(newHeightMm * scale)
+
+  // Ensure minimum size
+  newWidthPx = Math.max(50, newWidthPx)
+  newHeightPx = Math.max(50, newHeightPx)
+
+  // Apply snapping if enabled
+  if (snapEnabled.value) {
+    newWidthPx = Math.round(newWidthPx / snapGridSize) * snapGridSize
+    newHeightPx = Math.round(newHeightPx / snapGridSize) * snapGridSize
+  }
+
+  // Update the box size in layoutData
+  if (id === 'story') {
+    layoutData.story.size.width = newWidthPx
+    layoutData.story.size.height = newHeightPx
+  } else {
+    const photo = layoutData.photos.find(p => p.id === id)
+    if (photo) {
+      photo.size.width = newWidthPx
+      photo.size.height = newHeightPx
+    }
+  }
+
+  showResizeDialog.value = false
+  alert(`✅ Element resized to ${newWidthMm}mm × ${newHeightMm}mm`)
+}
+
+// Copy selected boxes
+function copySelectedBoxes() {
+  if (selectedBoxes.value.length === 0) {
+    alert('Please select at least one box to copy.')
+    return
+  }
+  
+  copiedBoxes.value = []
+  
+  selectedBoxes.value.forEach(boxId => {
+    if (boxId === 'story') {
+      // Copy story box
+      copiedBoxes.value.push({
+        type: 'story',
+        id: 'story',
+        position: { ...layoutData.story.position },
+        size: { ...layoutData.story.size },
+        fontSizePt: layoutData.story.fontSizePt
+      })
+    } else {
+      // Copy photo box
+      const photo = layoutData.photos.find(p => p.id === boxId)
+      if (photo) {
+        copiedBoxes.value.push({
+          type: 'photo',
+          id: photo.id,
+          position: { ...photo.position },
+          size: { ...photo.size },
+          borderRadius: photo.borderRadius
+        })
+      }
+    }
+  })
+  
+  // Deselect all boxes after copying
+  selectedBoxes.value = []
+  
+  console.log('[COPY] Copied boxes:', copiedBoxes.value)
+}
+
+// Paste copied boxes
+function pasteCopiedBoxes() {
+  if (copiedBoxes.value.length === 0) {
+    alert('No boxes copied. Please copy some boxes first.')
+    return
+  }
+  
+  const offset = 20 // Offset in pixels for pasted boxes
+  const newSelectedBoxes = []
+  
+  copiedBoxes.value.forEach(copiedBox => {
+    if (copiedBox.type === 'story') {
+      // Paste story box
+      const newPosition = {
+        x: copiedBox.position.x + offset,
+        y: copiedBox.position.y + offset
+      }
+      
+      // Apply clamping to ensure it stays within bounds
+      const clampedPosition = clampToBounds(newPosition, copiedBox.size)
+      
+      layoutData.story.position = clampedPosition
+      layoutData.story.size = { ...copiedBox.size }
+      layoutData.story.fontSizePt = copiedBox.fontSizePt
+      
+      newSelectedBoxes.push('story')
+    } else if (copiedBox.type === 'photo') {
+      // Paste photo box
+      const newPhotoId = `photo-${nextPhotoId.value}`
+      nextPhotoId.value++
+      
+      const newPosition = {
+        x: copiedBox.position.x + offset,
+        y: copiedBox.position.y + offset
+      }
+      
+      // Apply clamping to ensure it stays within bounds
+      const clampedPosition = clampToBounds(newPosition, copiedBox.size)
+      
+      const newPhoto = {
+        id: newPhotoId,
+        position: clampedPosition,
+        size: { ...copiedBox.size },
+        borderRadius: copiedBox.borderRadius
+      }
+      
+      layoutData.photos.push(newPhoto)
+      newSelectedBoxes.push(newPhotoId)
+    }
+  })
+  
+  // Select the newly pasted boxes
+  selectedBoxes.value = newSelectedBoxes
+  
+  console.log('[PASTE] Pasted boxes:', newSelectedBoxes)
 }
 
 function addPhoto() {
@@ -1319,6 +1561,17 @@ onMounted(() => {
     console.log('[MOUNTED] Layout editor initialized with default layout')
     hasExistingLayout = false
   }
+
+  // Initialize nextPhotoId based on existing photos
+  if (layoutData.photos.length > 0) {
+    const maxId = Math.max(...layoutData.photos.map(p => {
+      const match = p.id.match(/photo-(\d+)/)
+      return match ? parseInt(match[1]) : 0
+    }))
+    nextPhotoId.value = maxId + 1
+  } else {
+    nextPhotoId.value = 1
+  }
 })
 
 // Function to get current layout data as JSON string
@@ -1378,6 +1631,40 @@ function copyJsonToClipboard() {
     console.error('Failed to copy JSON to clipboard:', err)
     alert('Failed to copy JSON to clipboard.')
   })
+}
+
+// Function to handle double-click on boxes
+function handleBoxDoubleClick(id, event) {
+  event.preventDefault()
+  event.stopPropagation()
+  
+  // Get current dimensions
+  let currentWidth, currentHeight
+  if (id === 'story') {
+    currentWidth = layoutData.story.size.width
+    currentHeight = layoutData.story.size.height
+  } else {
+    const photo = layoutData.photos.find(p => p.id === id)
+    if (!photo) return
+    currentWidth = photo.size.width
+    currentHeight = photo.size.height
+  }
+  
+  // Convert pixels to mm using the scale factor
+  const scale = SCALE_FACTOR.value
+  const widthMm = Math.round(currentWidth / scale)
+  const heightMm = Math.round(currentHeight / scale)
+  
+  // Set up dialog data
+  resizeDialogData.value = {
+    id: id,
+    currentWidth: currentWidth,
+    currentHeight: currentHeight,
+    newWidthMm: widthMm.toString(),
+    newHeightMm: heightMm.toString()
+  }
+  
+  showResizeDialog.value = true
 }
 
 // Generate proper default layout for a given size

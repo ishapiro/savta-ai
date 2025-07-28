@@ -67,10 +67,10 @@
                   </button>
                 </NuxtLink>
                 <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
-                  <NuxtLink to="/app/editor" class="no-underline" @click="logEditorClick">
+                  <NuxtLink to="/app/admin" class="no-underline" @click="logEditorClick">
                     <button class="border-0flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                       <i class="pi pi-palette text-lg"></i>
-                      <span>Editor</span>
+                      <span>Admin</span>
                     </button>
                   </NuxtLink>
                 </template>
@@ -166,9 +166,9 @@
               <span class="font-medium text-brand-secondary">Memories</span>
             </NuxtLink>
             <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
-              <NuxtLink to="/app/editor" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="logEditorClick; closeMobileMenu">
+              <NuxtLink to="/app/admin" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="logEditorClick; closeMobileMenu">
                 <i class="pi pi-palette text-xl text-brand-primary"></i>
-                <span class="font-medium text-brand-secondary">Editor</span>
+                <span class="font-medium text-brand-secondary">Admin</span>
               </NuxtLink>
             </template>
             <div class="my-2 border-t border-brand-highlight/30"></div>

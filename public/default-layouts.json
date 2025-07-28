@@ -426,11 +426,19 @@
     ]
   },
   "8.5x11": {
-    "name": "Letter Portrait Layout",
+    "name": "8.5x11 Portrait Layout",
     "units": {
       "position": "px",
       "size": "px",
       "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
     },
     "orientation": "portrait",
     "story": null,
@@ -438,48 +446,72 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 20,
+          "y": 20
         },
         "size": {
-          "width": 200,
-          "height": 150
+          "width": 194,
+          "height": 167
         },
         "borderRadius": 12
       },
       {
         "id": "2",
         "position": {
-          "x": 270,
-          "y": 50
+          "x": 234,
+          "y": 20
         },
         "size": {
-          "width": 200,
-          "height": 150
+          "width": 194,
+          "height": 167
         },
         "borderRadius": 12
       },
       {
         "id": "3",
         "position": {
-          "x": 490,
-          "y": 50
+          "x": 20,
+          "y": 207
         },
         "size": {
-          "width": 200,
-          "height": 150
+          "width": 194,
+          "height": 167
         },
         "borderRadius": 12
       },
       {
         "id": "4",
         "position": {
-          "x": 50,
-          "y": 220
+          "x": 234,
+          "y": 207
         },
         "size": {
-          "width": 200,
-          "height": 150
+          "width": 194,
+          "height": 167
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "photo-1",
+        "position": {
+          "x": 20,
+          "y": 395
+        },
+        "size": {
+          "width": 194,
+          "height": 167
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "photo-2",
+        "position": {
+          "x": 235,
+          "y": 395
+        },
+        "size": {
+          "width": 194,
+          "height": 167
         },
         "borderRadius": 12
       }

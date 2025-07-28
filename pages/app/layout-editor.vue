@@ -9,11 +9,11 @@
             <p class="text-brand-primary/70 text-xs">Design and customize memory book layouts.</p>
           </div>
           <Button
-            label="Back to Editor"
             icon="pi pi-arrow-left"
-            severity="secondary"
+            label="Back to Admin"
+            class="mb-4"
             size="small"
-            @click="router.push('/app/editor')"
+            @click="router.push('/app/admin')"
           />
         </div>
       </div>

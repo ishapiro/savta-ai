@@ -96,7 +96,7 @@ The application uses a nested routing structure where all authenticated pages ar
 - `/app/login` - Authentication page
 - `/app/signup` - Registration page
 - `/app/editor` - Content editor (admin/editor only)
-- `/app/admin` - Admin panel (admin only)
+- `/app/admin` - Content editor (admin/editor only)
 
 ### Routing Changes
 Originally, the app had a parent route at `pages/app.vue` that nested child routes underneath it. This caused issues where child pages would render below the dashboard content instead of replacing it entirely.
@@ -371,74 +371,4 @@ This comprehensive cleanup script will:
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run cleanup` - Comprehensive cleanup and dependency reinstall
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
-
-## Deployment
-
-The project is configured for Vercel deployment with the `vercel.json` configuration file. Simply connect your repository to Vercel and deploy.
-
-- `vercel deploy --prod --force`
-
-This will do a complete rebuild and redeploy the the app.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-### Why We Use a Commercial PDF Library
-
-For PDF generation, we use the [pdf-lib](https://pdf-lib.js.org/) library. While there are some open-source PDF solutions, we chose pdf-lib because:
-
-- It is a robust, well-maintained, and feature-rich commercial-grade library.
-- It supports advanced PDF features (custom fonts, image embedding, precise layout, etc.) required for professional-quality memory books.
-- It is actively maintained and widely used in production applications.
-- It works seamlessly in both Node.js and browser environments, which is important for our serverless/Nuxt 3 architecture.
-
-**Note:** pdf-lib is MIT licensed and free for commercial use, but is considered a commercial-grade solution due to its reliability and support. We do not use any proprietary/paid PDF SDKs.
-
-This choice ensures that the generated memory books are visually beautiful, reliable, and compatible with all major PDF viewers.
-
-## PDF Viewing (Frontend)
-
-This project uses [`@vue-pdf-viewer/viewer`](https://www.npmjs.com/package/@vue-pdf-viewer/viewer) for displaying PDFs in the browser. The integration is handled via a custom `PdfViewer.vue` component, which provides a modern, mobile-friendly PDF viewer UI for users.
-
-### How It Works
-- **Component:** `components/PdfViewer.vue` wraps the `VPdfViewer` component from `@vue-pdf-viewer/viewer` and handles all configuration and license management.
-- **Usage:** Import and use `<PdfViewer :src="pdfUrl" />` anywhere you need to display a PDF. The `src` prop should be a URL or Blob to the PDF file.
-- **License:** The PDF viewer requires a license key, which is fetched from a secure Nuxt server API endpoint (`/api/vpv-license-key`) using the `useVuePdfViewerLicense` composable. The license is initialized globally and injected into the viewer.
-- **Options:** The viewer is configured for a mobile-friendly experience, with download enabled, print disabled, and a full set of navigation and accessibility features. See `components/PdfViewer.vue` for all options.
-- **Styling:** The viewer is styled with Tailwind CSS and custom CSS to ensure it fits responsively and hides unnecessary toolbar buttons (like print and open file).
-- **Transpilation:** The Nuxt config (`nuxt.config.ts`) includes `@vue-pdf-viewer/viewer` in the `build.transpile` array for compatibility.
-
-### Example Usage
-```vue
-<PdfViewer :src="pdfBlobUrl" :height="'80vh'" />
-```
-
-### Key Files
-- `components/PdfViewer.vue` — Main wrapper for the PDF viewer
-- `composables/useVuePdfViewerLicense.js` — Handles license fetching and initialization
-- `server/api/vpv-license-key.get.js` — Securely provides the license key from environment variables
-- `nuxt.config.ts` — Ensures the viewer is transpiled and compatible with SSR
-
-## Admin Access and Supabase JWT Authentication Hooks
-
-**Important:**
-
-- Enabling a Supabase JWT authentication hook causes Supabase to append additional information to the authentication callback URL. This extra data breaks Nuxt/Vue routing, resulting in navigation errors and failed logins.
-- Because of this, you cannot use JWT claims (such as a custom 'role' claim) to control admin access to tables like `profiles`.
-- **Instead, all admin features (such as managing users, roles, and themes) are implemented using server-side API endpoints that run with the Supabase service role key.** These endpoints perform privileged operations securely and are not affected by the routing issue.
-
-If Supabase changes their routing or hook behavior in the future, this project can be updated to use JWT claims for RLS and admin access. For now, all admin logic is handled server-side.
+- `

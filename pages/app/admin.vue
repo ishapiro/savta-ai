@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="mb-6">
-        <h1 class="text-3xl font-bold text-brand-primary mb-2">Editor Dashboard</h1>
+        <h1 class="text-3xl font-bold text-brand-primary mb-2">Admin Dashboard</h1>
         <p class="text-brand-primary/70">Manage themes and review user submissions.</p>
       </div>
 

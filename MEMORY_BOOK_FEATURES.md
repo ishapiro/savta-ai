@@ -92,7 +92,7 @@ The application uses a comprehensive database schema with the following key tabl
 
 ### 5. Editor Interface
 
-**Location**: `/app/editor`
+**Location**: `/app/admin`
 
 **Features**:
 - **Asset Review**: Review and approve/reject user-submitted assets
@@ -299,8 +299,8 @@ All user actions are logged in the `activity_log` table:
 - `pages/app/upload.vue` - Asset upload interface
 - `pages/app/review.vue` - Review and approval
 - `pages/app/memory-books.vue` - Memory book management
-- `pages/app/editor.vue` - Editor dashboard with admin features
-- `pages/app/editor.vue` - Editor interface
+- `pages/app/admin.vue` - Admin dashboard with admin features
+- `pages/app/admin.vue` - Admin interface
 - `middleware/auth.js` - Authentication middleware
 - `middleware/admin.js` - Admin access control
 - `middleware/editor.js` - Editor access control

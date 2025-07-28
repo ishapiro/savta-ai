@@ -167,12 +167,11 @@ const goBack = () => {
     pdfBlobUrl.value = ''
   }
   // Navigate back to the editor page with the memory books tab (index 1) and selected user
-  const userId = route.query.userId
-  const queryParams = { tab: '1' }
-  if (userId) {
-    queryParams.userId = userId
+  const queryParams = {
+    tab: '1', // Memory books tab
+    user: selectedUser.value
   }
-  router.push({ path: '/app/editor', query: queryParams })
+  router.push({ path: '/app/admin', query: queryParams })
 }
 
 onMounted(fetchPdfUrl)
