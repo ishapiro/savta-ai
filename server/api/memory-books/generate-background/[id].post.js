@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
     console.log('✅ Memory book found:', book.id, 'Status:', book.status)
     
     // Check if the book is ready for processing
-    if (book.status !== 'ready' && book.status !== 'draft') {
+    if (book.status !== 'ready' && book.status !== 'draft' && book.status !== 'background_ready') {
       console.log('❌ Book not ready for processing, status:', book.status)
       throw createError({
         statusCode: 400,

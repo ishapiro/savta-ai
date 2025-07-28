@@ -1000,24 +1000,57 @@ export default defineEventHandler(async (event) => {
               // Check if this is a magic memory book (layout_type === 'magic')
               const isMagicMemory = book.layout_type === 'magic'
               
+              // Get image metadata to determine orientation
+              const imageMetadata = await sharp(imageBuffer).metadata()
+              const isPortrait = imageMetadata.height > imageMetadata.width
+              const isLandscape = imageMetadata.width > imageMetadata.height
+              
+              console.log(`📐 Image orientation: ${isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'}`)
+              console.log(`📏 Original dimensions: ${imageMetadata.width}x${imageMetadata.height}`)
+              
+              // Standardize sizes for rounded photos based on orientation
+              let standardizedWidth, standardizedHeight
+              
+              if (isPortrait) {
+                // Standard portrait size: 177x315 (from the logs)
+                standardizedWidth = 177
+                standardizedHeight = 315
+                console.log('📐 Standardizing portrait photo to 177x315')
+              } else if (isLandscape) {
+                // Standard landscape size: 315x177 (same proportions, rotated)
+                standardizedWidth = 315
+                standardizedHeight = 177
+                console.log('📐 Standardizing landscape photo to 315x177')
+              } else {
+                // Square photo: use the smaller dimension as base
+                const baseSize = Math.min(targetWidth, targetHeight)
+                standardizedWidth = baseSize
+                standardizedHeight = baseSize
+                console.log(`📐 Standardizing square photo to ${baseSize}x${baseSize}`)
+              }
+              
+              // Scale up for high quality processing
+              const highResWidth = standardizedWidth * 2
+              const highResHeight = standardizedHeight * 2
+              
               let resizedImage
               if (isMagicMemory) {
                 console.log('🧠 Magic memory detected - using smart cropping for rounded shape')
                 console.log('🎯 Smart crop will prioritize faces in center area')
                 // First apply smart cropping to ensure subject is properly positioned
-                const smartCroppedImage = await smartCropImage(imageBuffer, targetWidth, targetHeight)
+                const smartCroppedImage = await smartCropImage(imageBuffer, highResWidth, highResHeight)
                 resizedImage = smartCroppedImage
               } else {
                 console.log('📚 Regular memory book - using standard resize for rounded shape')
-                // For regular memory books, use standard resize
+                // For regular memory books, use standard resize with standardized dimensions
                 resizedImage = await sharp(imageBuffer)
-                  .resize(targetWidth, targetHeight, { fit: 'inside' })
+                  .resize(highResWidth, highResHeight, { fit: 'cover' })
                   .png()
                   .toBuffer()
               }
             
             // Create rounded corners using Sharp SVG mask approach
-            const radius = Math.min(targetWidth, targetHeight) * 0.15 // 15% of smaller dimension for radius
+            const radius = Math.min(standardizedWidth, standardizedHeight) * 0.15 // 15% of smaller dimension for radius
             console.log(`📐 Calculated radius: ${radius}px (${Math.round(radius)}px rounded)`)
             
             console.log('🎨 Applying Sharp SVG mask for rounded corners...')
@@ -1066,7 +1099,8 @@ export default defineEventHandler(async (event) => {
               .png()
               .toBuffer()
             
-            console.log(`✅ ${isMagicMemory ? 'SMART CROP + ' : ''}ROUNDED CORNERS PROCESSING COMPLETED`)
+                          console.log(`✅ ${isMagicMemory ? 'SMART CROP + ' : ''}ROUNDED CORNERS PROCESSING COMPLETED`)
+              console.log(`📐 Standardized dimensions used: ${standardizedWidth}x${standardizedHeight} (${isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'})`)
             break
             
           case 'original':

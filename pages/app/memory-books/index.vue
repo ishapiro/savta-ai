@@ -4310,13 +4310,13 @@ const populatePhotoSelectionPool = () => {
             const sortedMatchingAssets = matchingAssets
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
             
-            // Check if we have fewer than 10 total images available
-            if (filteredAssets.length < 10) {
+            // Check if we have fewer than 20 total images available
+            if (filteredAssets.length < 25) {
               console.log(`🔍 [populatePhotoSelectionPool] Only ${filteredAssets.length} total images available, returning all images`)
               // Return all available images, sorted by most recent
               filteredAssets = filteredAssets
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            } else if (sortedMatchingAssets.length < 10) {
+            } else if (sortedMatchingAssets.length < 25) {
               console.log(`🔍 [populatePhotoSelectionPool] Only ${sortedMatchingAssets.length} matching photos found, supplementing with recent photos to reach minimum of 10`)
               
               // Get all assets sorted by most recent
@@ -4329,7 +4329,7 @@ const populatePhotoSelectionPool = () => {
               )
               
               // Take enough recent non-matching assets to reach at least 10 total
-              const additionalNeeded = 10 - sortedMatchingAssets.length
+              const additionalNeeded = 25 - sortedMatchingAssets.length
               const additionalAssets = nonMatchingAssets.slice(0, additionalNeeded)
               
               // Combine matching assets with additional recent assets
@@ -4337,38 +4337,38 @@ const populatePhotoSelectionPool = () => {
               
               console.log(`🔍 [populatePhotoSelectionPool] Savta picks - selected ${sortedMatchingAssets.length} matching photos + ${additionalAssets.length} recent photos = ${filteredAssets.length} total`)
             } else {
-              // We have 10 or more matching photos, take top 50
-              filteredAssets = sortedMatchingAssets.slice(0, 50)
-              console.log('🔍 [populatePhotoSelectionPool] Savta picks - selected 50 most recent matching photos')
+              // We have 25 or more matching photos, take top 25
+              filteredAssets = sortedMatchingAssets.slice(0, 25)
+              console.log('🔍 [populatePhotoSelectionPool] Savta picks - selected 20 most recent matching photos')
             }
           } else {
             // Check if we have fewer than 10 total images available
-            if (filteredAssets.length < 10) {
+            if (filteredAssets.length < 25) {
               console.log(`🔍 [populatePhotoSelectionPool] No matches found, but only ${filteredAssets.length} total images available, returning all images`)
               // Return all available images, sorted by most recent
               filteredAssets = filteredAssets
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
             } else {
-              console.log('🔍 [populatePhotoSelectionPool] No matches found, falling back to most recent 50 photos')
+              console.log('🔍 [populatePhotoSelectionPool] No matches found, falling back to most recent 25 photos')
               // No matches found, fall back to most recent 50 photos
               filteredAssets = filteredAssets
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                .slice(0, 50)
+                .slice(0, 25)
             }
           }
          } else {
-           console.log('🔍 [populatePhotoSelectionPool] No meaningful search words, using most recent 50 photos')
+           console.log('🔍 [populatePhotoSelectionPool] No meaningful search words, using most recent 25 photos')
            // No meaningful search words, use most recent 50 photos
            filteredAssets = filteredAssets
              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-             .slice(0, 50)
+             .slice(0, 25)
          }
        } else {
-         console.log('🔍 [populatePhotoSelectionPool] No user input, using most recent 50 photos')
+         console.log('🔍 [populatePhotoSelectionPool] No user input, using most recent 25 photos')
          // No user input, use most recent 50 photos
          filteredAssets = filteredAssets
            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-           .slice(0, 50)
+           .slice(0, 25)
        }
       
       console.log('🔍 [populatePhotoSelectionPool] Savta picks method - final filtered assets count:', filteredAssets.length)
@@ -4449,16 +4449,16 @@ const populatePhotoSelectionPool = () => {
       return magicSelectedMemories.value
       
     default:
-      // Default to last 100 photos if no method is selected
+      // Default to last 25 photos if no method is selected
       filteredAssets = filteredAssets
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 100)
+        .slice(0, 25)
       console.log('🔍 [populatePhotoSelectionPool] Default method - filtered assets count:', filteredAssets.length)
       break
   }
   
-  // Final check: if we have fewer than 10 total images, return all of them
-  if (filteredAssets.length < 10) {
+  // Final check: if we have fewer than 25 total images, return all of them
+  if (filteredAssets.length < 25) {
     console.log(`🔍 [populatePhotoSelectionPool] Final check: Only ${filteredAssets.length} total images available, returning all images`)
     // Return all available images, sorted by most recent
     filteredAssets = filteredAssets

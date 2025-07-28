@@ -6,13 +6,13 @@ import he from 'he'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-// Load embedded EB Garamond font
-const fontPath = join(process.cwd(), 'assets', 'fonts', 'EBGaramond-Regular.ttf')
+// Load embedded EB Garamond Italic font
+const fontPath = join(process.cwd(), 'assets', 'fonts', 'EBGaramond-Italic.ttf')
 let embeddedFont = null
 
 try {
   embeddedFont = readFileSync(fontPath)
-  console.log('✅ EB Garamond font loaded successfully')
+  console.log('✅ EB Garamond Italic font loaded successfully')
 } catch (error) {
   console.warn('⚠️ Could not load embedded font, falling back to web font:', error.message)
 }
@@ -190,12 +190,12 @@ export async function renderTextToImage(text, width, height, options = {}) {
     lineHeight = 1.4,
     padding = 2, // Reduced from 8 to 2 for much tighter margins
     color = '#2D1810',
-    dpi = 600, // Ultra high-quality DPI for embedded fonts
-    scale = 8   // High scale for embedded font quality
+    dpi = 1200, // Ultra high-quality DPI for embedded fonts
+    scale = 16   // High scale for embedded font quality
   } = options
   
   try {
-    console.log('🎨 Rendering ultra high-quality text at 600 DPI with Sharp and embedded fonts...')
+    console.log('🎨 Rendering ultra high-quality text at 1200 DPI with Sharp and embedded fonts...')
     
     // Validate input dimensions
     if (!width || !height || width <= 0 || height <= 0) {
@@ -221,7 +221,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
     
     // Create SVG with embedded font for optimal quality
     const fontFamily = embeddedFont ? 'EB Garamond' : 'EB Garamond, Times New Roman, serif'
-    const fontImport = embeddedFont ? '' : '@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;display=swap");'
+    const fontImport = embeddedFont ? '' : '@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@1,400&amp;display=swap");'
     
     const svgContent = `<svg width="${scaledWidth}" height="${scaledHeight}" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -229,6 +229,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
           ${fontImport}
           .text { 
             font-family: ${fontFamily}; 
+            font-style: italic;
             fill: ${color}; 
             text-rendering: geometricPrecision;
             font-feature-settings: "liga" 1, "kern" 1;
@@ -250,7 +251,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
           const y = startY + (i * scaledFontSize * lineHeight)
           const escapedLine = escapeXml(line)
           console.log(`📝 Line ${i + 1}: "${line}" → "${escapedLine}" (y: ${y})`)
-          return `<text x="${scaledPadding}" y="${y}" class="text" font-size="${scaledFontSize}" font-weight="400">${escapedLine}</text>`
+          return `<text x="${scaledPadding}" y="${y}" class="text" font-size="${scaledFontSize}" font-weight="400" font-style="italic">${escapedLine}</text>`
         }).join('')
       })()}
     </svg>`
@@ -271,7 +272,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
       })
       .toBuffer()
     
-    console.log('✅ Ultra high-quality text rendered successfully at 600 DPI with Sharp and embedded fonts')
+    console.log('✅ Ultra high-quality text rendered successfully at 1200 DPI with Sharp and embedded fonts')
     return buffer
     
   } catch (error) {
@@ -294,8 +295,8 @@ export async function createCaptionImage(captionText, maxWidth, maxHeight, optio
     lineHeight = 1.3,   // Tighter line height for captions
     padding = 6,         // Smaller padding for captions
     color = '#2D1810',
-    dpi = 600,          // Ultra high-quality DPI
-    scale = 8           // High scale for embedded font quality
+    dpi = 1200,         // Ultra high-quality DPI
+    scale = 16          // High scale for embedded font quality
   } = options
   
   return await renderTextToImage(captionText, maxWidth, maxHeight, {
