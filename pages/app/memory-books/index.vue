@@ -1705,6 +1705,97 @@
           <p class="text-sm text-brand-flash mt-3 text-center">I'll find photos that have any of these tags</p>
         </div>
 
+        <!-- Location Selection (shown when geo_code is selected) -->
+        <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
+          <h4 class="font-semibold text-brand-flash mb-4 text-center">Select Location</h4>
+          <div class="space-y-4">
+            <!-- Location Type Selection -->
+            <div>
+              <label class="block text-sm font-medium text-gray-900 mb-2">Location Type</label>
+              <Dropdown
+                v-model="magicLocationType"
+                :options="[
+                  { label: 'Country', value: 'country' },
+                  { label: 'State/Province', value: 'state' },
+                  { label: 'City', value: 'city' }
+                ]"
+                option-label="label"
+                option-value="value"
+                placeholder="Select location type..."
+                class="w-full"
+              />
+            </div>
+
+            <!-- Country Selection -->
+            <div v-if="magicLocationType === 'country'">
+              <label class="block text-sm font-medium text-gray-900 mb-2">Select Country</label>
+              <Dropdown
+                v-model="magicSelectedLocation"
+                :options="availableCountries"
+                option-label="label"
+                option-value="value"
+                placeholder="Choose a country..."
+                class="w-full"
+                :filter="true"
+                filter-placeholder="Search countries..."
+              />
+            </div>
+
+            <!-- State Selection -->
+            <div v-if="magicLocationType === 'state'">
+              <label class="block text-sm font-medium text-gray-900 mb-2">Select State/Province</label>
+              <Dropdown
+                v-model="magicSelectedLocation"
+                :options="availableStates"
+                option-label="label"
+                option-value="value"
+                placeholder="Choose a state..."
+                class="w-full"
+                :filter="true"
+                filter-placeholder="Search states..."
+              />
+            </div>
+
+            <!-- City Selection -->
+            <div v-if="magicLocationType === 'city'">
+              <label class="block text-sm font-medium text-gray-900 mb-2">Select City</label>
+              <Dropdown
+                v-model="magicSelectedLocation"
+                :options="availableCities"
+                option-label="label"
+                option-value="value"
+                placeholder="Choose a city..."
+                class="w-full"
+                :filter="true"
+                filter-placeholder="Search cities..."
+              />
+            </div>
+
+            <!-- Selected Location Display -->
+            <div v-if="magicSelectedLocation" class="bg-brand-flash/20 rounded-lg p-3 border border-brand-flash/30">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <i class="pi pi-map-marker text-brand-flash"></i>
+                  <span class="text-sm font-medium text-gray-900">
+                    {{ magicLocationType === 'country' ? 'Country' : magicLocationType === 'state' ? 'State' : 'City' }}: {{ magicSelectedLocation }}
+                  </span>
+                </div>
+                <Button
+                  label="Change"
+                  icon="pi pi-edit"
+                  size="small"
+                  @click="magicSelectedLocation = null"
+                  class="bg-brand-flash border-0 text-xs px-2 py-1"
+                />
+              </div>
+            </div>
+
+            <p class="text-sm text-brand-flash mt-3 text-center">
+              I'll find photos from {{ magicLocationType === 'country' ? 'this country' : magicLocationType === 'state' ? 'this state/province' : 'this city' }}
+            </p>
+          </div>
+        </div>
+
         <!-- Upload New Photos Section -->
         <div class="mt-3 pt-2 border-t border-gray-200 w-full max-w-md mx-auto">
           <div class="text-center">
@@ -1836,7 +1927,7 @@
             v-if="!isLastStep()"
             :label="`Next: ${getNextStepName()}`"
             icon="pi pi-arrow-right"
-            :disabled="(magicMemoryStep === MAGIC_STEPS.TITLE && !magicMemoryTitle.trim()) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && !magicPhotoSelectionMethod.value)"
+            :disabled="(magicMemoryStep === MAGIC_STEPS.TITLE && !magicMemoryTitle.trim()) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && !magicPhotoSelectionMethod.value) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod === 'geo_code' && !magicSelectedLocation.value)"
             @click="nextMagicMemoryStep"
             class="bg-brand-secondary hover:to-blue-700 text-white font-bold rounded-full px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
@@ -2526,7 +2617,7 @@ const pollPdfStatus = async () => {
           stopProgressPolling()
           showProgressDialog.value = false
           loadMemoryBooks() // Reload to show updated status
-        }, 2000) // Reduced delay since backend is now immediate
+        }, 4000) // Wait 4 seconds to give system time to save the generated PDF
         return
       }
       
@@ -2561,7 +2652,7 @@ const pollPdfStatus = async () => {
         setTimeout(() => {
           stopProgressPolling()
           showProgressDialog.value = false
-        }, 2000)
+        }, 4000) // Wait 4 seconds to give system time to save the generated PDF
       } else if (status.pdf_status === 'not_started') {
         currentProgress.value = 5
         currentProgressMessage.value = 'Gathering special ingredients...'
@@ -3664,9 +3755,13 @@ const magicSolidBackgroundColor = ref('#F9F6F2') // Default warm cream color
 const magicPhotoSelectionMethod = ref('')
 const magicDateRange = ref({ start: null, end: null })
 const magicSelectedTags = ref([])
-const magicSelectedCountries = ref([])
-const magicSelectedStates = ref([])
-const magicSelectedCities = ref([])
+
+// Location selection variables
+const magicLocationType = ref('country')
+const magicSelectedLocation = ref('')
+const availableCountries = ref([])
+const availableStates = ref([])
+const availableCities = ref([])
 
 const magicSelectedTagFilter = ref([])
 const magicSelectedMemories = ref([])
@@ -4018,10 +4113,16 @@ const openMagicMemoryDialog = async (buttonType = 'full') => {
   magicSelectedMemories.value = []
   magicSelectedTagFilter.value = []
   
+  // Reset location selection variables
+  magicLocationType.value = 'country'
+  magicSelectedLocation.value = ''
+  
   loadingAssets.value = true
   try {
     const allApprovedAssets = await db.assets.getAssets({ approved: true })
     availableAssets.value = allApprovedAssets || []
+    // Populate available locations for location-based filtering
+    populateAvailableLocations()
   } catch (error) {
     availableAssets.value = []
   } finally {
@@ -4054,6 +4155,11 @@ const nextMagicMemoryStep = () => {
   
   if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && !magicPhotoSelectionMethod.value) {
     return // Don't proceed if photo selection method is not chosen
+  }
+  
+  // Validate location selection if geo_code is selected
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod.value === 'geo_code' && !magicSelectedLocation.value) {
+    return // Don't proceed if location is not selected
   }
   
   // Find next step in the button's sequence
@@ -4104,6 +4210,38 @@ const isLastStep = () => {
 
 const isFirstStep = () => {
   return currentStepIndex.value === 0
+}
+
+// Function to populate available locations from user's assets
+const populateAvailableLocations = () => {
+  if (!availableAssets.value || availableAssets.value.length === 0) {
+    availableCountries.value = []
+    availableStates.value = []
+    availableCities.value = []
+    return
+  }
+  
+  // Extract unique locations from assets
+  const countries = [...new Set(availableAssets.value
+    .map(asset => asset.country)
+    .filter(country => country && country.trim() !== ''))]
+  
+  const states = [...new Set(availableAssets.value
+    .map(asset => asset.state)
+    .filter(state => state && state.trim() !== ''))]
+  
+  const cities = [...new Set(availableAssets.value
+    .map(asset => asset.city)
+    .filter(city => city && city.trim() !== ''))]
+  
+  // Convert to dropdown options format
+  availableCountries.value = countries.map(country => ({ label: country, value: country }))
+  availableStates.value = states.map(state => ({ label: state, value: state }))
+  availableCities.value = cities.map(city => ({ label: city, value: city }))
+  
+  console.log('🔍 [populateAvailableLocations] Available countries:', availableCountries.value.length)
+  console.log('🔍 [populateAvailableLocations] Available states:', availableStates.value.length)
+  console.log('🔍 [populateAvailableLocations] Available cities:', availableCities.value.length)
 }
 
 // Function to populate photo selection pool based on user's choice
@@ -4238,26 +4376,27 @@ const populatePhotoSelectionPool = () => {
       break
       
     case 'geo_code':
-      // Filter by selected locations (country, state, city)
-      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected countries:', magicSelectedCountries.value)
-      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected states:', magicSelectedStates.value)
-      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected cities:', magicSelectedCities.value)
+      // Filter by selected location
+      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected location type:', magicLocationType.value)
+      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected location:', magicSelectedLocation.value)
       
-      const hasLocationSelection = (magicSelectedCountries.value && magicSelectedCountries.value.length > 0) ||
-                                  (magicSelectedStates.value && magicSelectedStates.value.length > 0) ||
-                                  (magicSelectedCities.value && magicSelectedCities.value.length > 0)
-      
-      if (hasLocationSelection) {
+      if (magicSelectedLocation.value) {
         const beforeFilter = filteredAssets.length
         filteredAssets = filteredAssets.filter(asset => {
-          const matchesCountry = !magicSelectedCountries.value.length || 
-                                (asset.country && magicSelectedCountries.value.includes(asset.country))
-          const matchesState = !magicSelectedStates.value.length || 
-                              (asset.state && magicSelectedStates.value.includes(asset.state))
-          const matchesCity = !magicSelectedCities.value.length || 
-                             (asset.city && magicSelectedCities.value.includes(asset.city))
+          let hasMatch = false
           
-          const hasMatch = matchesCountry || matchesState || matchesCity
+          switch (magicLocationType.value) {
+            case 'country':
+              hasMatch = asset.country && asset.country === magicSelectedLocation.value
+              break
+            case 'state':
+              hasMatch = asset.state && asset.state === magicSelectedLocation.value
+              break
+            case 'city':
+              hasMatch = asset.city && asset.city === magicSelectedLocation.value
+              break
+          }
+          
           if (hasMatch) {
             console.log('🔍 [populatePhotoSelectionPool] Asset matches location:', asset.id, 'country:', asset.country, 'state:', asset.state, 'city:', asset.city)
           }
@@ -4266,7 +4405,7 @@ const populatePhotoSelectionPool = () => {
         console.log('🔍 [populatePhotoSelectionPool] Geo code method - before filter:', beforeFilter, 'after filter:', filteredAssets.length)
         console.log('🔍 [populatePhotoSelectionPool] Geo code method - matching assets:', filteredAssets.map(a => ({ id: a.id, country: a.country, state: a.state, city: a.city })))
       } else {
-        console.log('🔍 [populatePhotoSelectionPool] Geo code method - no locations selected, returning all assets')
+        console.log('🔍 [populatePhotoSelectionPool] Geo code method - no location selected, returning all assets')
       }
       break
       

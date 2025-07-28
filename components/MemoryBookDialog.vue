@@ -402,6 +402,33 @@
               </div>
             </div>
             <div class="flex items-center justify-center sm:justify-end gap-2">
+              <!-- Location Filter Button -->
+              <Button
+                label="Location"
+                icon="pi pi-map-marker"
+                size="small"
+                @click="openLocationDialog"
+                class="bg-brand-secondary hover:bg-brand-header border-0 text-xs px-2 sm:px-3 py-2"
+                :class="{ 'bg-brand-header text-white': selectedLocationFilter }"
+              />
+              <!-- Tag Filter Button -->
+              <Button
+                label="Tags"
+                icon="pi pi-tags"
+                size="small"
+                @click="openTagDialog"
+                class="bg-brand-secondary hover:bg-brand-header border-0 text-xs px-2 sm:px-3 py-2"
+                :class="{ 'bg-brand-header text-white': selectedTagFilter && selectedTagFilter.length > 0 }"
+              />
+              <!-- Date Filter Button -->
+              <Button
+                label="Date"
+                icon="pi pi-calendar"
+                size="small"
+                @click="openDateDialog"
+                class="bg-brand-secondary hover:bg-brand-header border-0 text-xs px-2 sm:px-3 py-2"
+                :class="{ 'bg-brand-header text-white': selectedDateFilter }"
+              />
               <Button
                 label="Select All"
                 icon="pi pi-check-square"
@@ -421,6 +448,8 @@
           <div class="mt-2 text-xs sm:text-sm text-brand-primary/70 text-center sm:text-left">
             Showing {{ filteredAssets.length }} of {{ availableAssets.length }} memories
             <span v-if="selectedTagFilter && selectedTagFilter.length > 0" class="block sm:inline"> • Filtered by: {{ selectedTagFilter.join(', ') }}</span>
+            <span v-if="selectedLocationFilter" class="block sm:inline"> • Location: {{ selectedLocationFilter }}</span>
+            <span v-if="selectedDateFilter" class="block sm:inline"> • Date: {{ formatDateRange(selectedDateFilter) }}</span>
           </div>
         </div>
         <!-- Memories Grid -->
@@ -531,11 +560,327 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- Location Selection Dialog -->
+    <Dialog
+      v-model:visible="showLocationDialog"
+      modal
+      header="Filter by Location"
+      class="w-[95vw] max-w-2xl location-dialog"
+      :closable="false"
+    >
+      <div class="space-y-4">
+        <div class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-4 border border-brand-secondary/30">
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="w-8 h-8 bg-gradient-to-br from-brand-secondary/20 to-brand-highlight/20 rounded-full flex items-center justify-center">
+              <i class="pi pi-map-marker text-brand-secondary text-sm"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-brand-primary">Choose Location</h3>
+          </div>
+          <p class="text-sm text-brand-primary/70">Select a location to filter your memories. Only memories from this location will be shown.</p>
+        </div>
+
+        <div class="bg-white rounded-lg border border-brand-primary/20 p-4">
+          <div class="space-y-4">
+            <!-- Location Search -->
+            <div>
+              <label class="block text-sm font-medium text-brand-primary mb-2">Search Locations</label>
+              <InputText
+                v-model="locationSearch"
+                placeholder="Type to search locations..."
+                class="w-full"
+                @input="filterLocations"
+              />
+            </div>
+
+            <!-- Available Locations -->
+            <div>
+              <label class="block text-sm font-medium text-brand-primary mb-2">Available Locations</label>
+              <div class="max-h-48 overflow-y-auto border border-brand-primary/20 rounded-lg">
+                <div
+                  v-for="location in filteredLocations"
+                  :key="location"
+                  class="flex items-center justify-between p-3 hover:bg-brand-highlight/10 cursor-pointer border-b border-brand-primary/10 last:border-b-0"
+                  @click="selectLocation(location)"
+                >
+                  <div class="flex items-center space-x-3">
+                    <i class="pi pi-map-marker text-brand-secondary"></i>
+                    <span class="text-sm text-brand-primary">{{ location }}</span>
+                  </div>
+                  <div v-if="selectedLocationFilter === location" class="w-5 h-5 bg-brand-secondary rounded-full flex items-center justify-center">
+                    <i class="pi pi-check text-white text-xs"></i>
+                  </div>
+                </div>
+                <div v-if="filteredLocations.length === 0" class="p-4 text-center text-sm text-brand-primary/70">
+                  No locations found
+                </div>
+              </div>
+            </div>
+
+            <!-- Clear Location Filter -->
+            <div v-if="selectedLocationFilter" class="bg-brand-highlight/10 rounded-lg p-3 border border-brand-highlight/30">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="pi pi-map-marker text-brand-secondary"></i>
+                  <span class="text-sm font-medium text-brand-primary">Selected: {{ selectedLocationFilter }}</span>
+                </div>
+                <Button
+                  label="Clear"
+                  icon="pi pi-times"
+                  size="small"
+                  @click="clearLocationFilter"
+                  class="bg-brand-dialog-delete border-0 text-xs px-3 py-1"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            @click="closeLocationDialog"
+            class="bg-brand-dialog-cancel border-0 rounded-full px-4 py-2"
+          />
+          <Button
+            label="Apply Filter"
+            icon="pi pi-check"
+            @click="applyLocationFilter"
+            class="bg-brand-dialog-save border-0 rounded-full px-4 py-2"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Tag Selection Dialog -->
+    <Dialog
+      v-model:visible="showTagDialog"
+      modal
+      header="Filter by Tags"
+      class="w-[95vw] max-w-2xl tag-dialog"
+      :closable="false"
+    >
+      <div class="space-y-4">
+        <div class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-4 border border-brand-secondary/30">
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="w-8 h-8 bg-gradient-to-br from-brand-secondary/20 to-brand-highlight/20 rounded-full flex items-center justify-center">
+              <i class="pi pi-tags text-brand-secondary text-sm"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-brand-primary">Choose Tags</h3>
+          </div>
+          <p class="text-sm text-brand-primary/70">Select one or more tags to filter your memories. Only memories with these tags will be shown.</p>
+        </div>
+
+        <div class="bg-white rounded-lg border border-brand-primary/20 p-4">
+          <div class="space-y-4">
+            <!-- Tag Search -->
+            <div>
+              <label class="block text-sm font-medium text-brand-primary mb-2">Search Tags</label>
+              <InputText
+                v-model="tagSearch"
+                placeholder="Type to search tags..."
+                class="w-full"
+                @input="filterTags"
+              />
+            </div>
+
+            <!-- Available Tags -->
+            <div>
+              <label class="block text-sm font-medium text-brand-primary mb-2">Available Tags</label>
+              <div class="max-h-48 overflow-y-auto border border-brand-primary/20 rounded-lg">
+                <div
+                  v-for="tag in filteredTags"
+                  :key="tag"
+                  class="flex items-center justify-between p-3 hover:bg-brand-highlight/10 cursor-pointer border-b border-brand-primary/10 last:border-b-0"
+                  @click="toggleTagSelection(tag)"
+                >
+                  <div class="flex items-center space-x-3">
+                    <i class="pi pi-tag text-brand-secondary"></i>
+                    <span class="text-sm text-brand-primary">{{ tag }}</span>
+                  </div>
+                  <div v-if="selectedTagFilter.includes(tag)" class="w-5 h-5 bg-brand-secondary rounded-full flex items-center justify-center">
+                    <i class="pi pi-check text-white text-xs"></i>
+                  </div>
+                </div>
+                <div v-if="filteredTags.length === 0" class="p-4 text-center text-sm text-brand-primary/70">
+                  No tags found
+                </div>
+              </div>
+            </div>
+
+            <!-- Selected Tags -->
+            <div v-if="selectedTagFilter.length > 0" class="bg-brand-highlight/10 rounded-lg p-3 border border-brand-highlight/30">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-brand-primary">Selected Tags:</span>
+                <Button
+                  label="Clear All"
+                  icon="pi pi-times"
+                  size="small"
+                  @click="clearTagFilter"
+                  class="bg-brand-dialog-delete border-0 text-xs px-3 py-1"
+                />
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <div
+                  v-for="tag in selectedTagFilter"
+                  :key="tag"
+                  class="flex items-center space-x-2 bg-brand-secondary text-white rounded-full px-3 py-1 text-xs"
+                >
+                  <span>{{ tag }}</span>
+                  <button @click="removeTag(tag)" class="hover:bg-white/20 rounded-full w-4 h-4 flex items-center justify-center">
+                    <i class="pi pi-times text-xs"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            @click="closeTagDialog"
+            class="bg-brand-dialog-cancel border-0 rounded-full px-4 py-2"
+          />
+          <Button
+            label="Apply Filter"
+            icon="pi pi-check"
+            @click="applyTagFilter"
+            class="bg-brand-dialog-save border-0 rounded-full px-4 py-2"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Date Selection Dialog -->
+    <Dialog
+      v-model:visible="showDateDialog"
+      modal
+      header="Filter by Date"
+      class="w-[95vw] max-w-2xl date-dialog"
+      :closable="false"
+    >
+      <div class="space-y-4">
+        <div class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-4 border border-brand-secondary/30">
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="w-8 h-8 bg-gradient-to-br from-brand-secondary/20 to-brand-highlight/20 rounded-full flex items-center justify-center">
+              <i class="pi pi-calendar text-brand-secondary text-sm"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-brand-primary">Choose Date Range</h3>
+          </div>
+          <p class="text-sm text-brand-primary/70">Select a date range to filter your memories. Only memories within this range will be shown.</p>
+        </div>
+
+        <div class="bg-white rounded-lg border border-brand-primary/20 p-4">
+          <div class="space-y-4">
+            <!-- Date Range Selection -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-brand-primary mb-2">From Date</label>
+                <Calendar
+                  v-model="dateRange.from"
+                  :show-icon="true"
+                  date-format="mm/dd/yy"
+                  placeholder="Select start date"
+                  class="w-full"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-brand-primary mb-2">To Date</label>
+                <Calendar
+                  v-model="dateRange.to"
+                  :show-icon="true"
+                  date-format="mm/dd/yy"
+                  placeholder="Select end date"
+                  class="w-full"
+                />
+              </div>
+            </div>
+
+            <!-- Quick Date Presets -->
+            <div>
+              <label class="block text-sm font-medium text-brand-primary mb-2">Quick Presets</label>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <Button
+                  label="Last Week"
+                  size="small"
+                  @click="setDatePreset('lastWeek')"
+                  class="bg-brand-secondary hover:bg-brand-header border-0 text-xs"
+                />
+                <Button
+                  label="Last Month"
+                  size="small"
+                  @click="setDatePreset('lastMonth')"
+                  class="bg-brand-secondary hover:bg-brand-header border-0 text-xs"
+                />
+                <Button
+                  label="Last 3 Months"
+                  size="small"
+                  @click="setDatePreset('last3Months')"
+                  class="bg-brand-secondary hover:bg-brand-header border-0 text-xs"
+                />
+                <Button
+                  label="Last Year"
+                  size="small"
+                  @click="setDatePreset('lastYear')"
+                  class="bg-brand-secondary hover:bg-brand-header border-0 text-xs"
+                />
+              </div>
+            </div>
+
+            <!-- Selected Date Range -->
+            <div v-if="dateRange.from || dateRange.to" class="bg-brand-highlight/10 rounded-lg p-3 border border-brand-highlight/30">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="pi pi-calendar text-brand-secondary"></i>
+                  <span class="text-sm font-medium text-brand-primary">
+                    {{ formatDateRange({ from: dateRange.from, to: dateRange.to }) }}
+                  </span>
+                </div>
+                <Button
+                  label="Clear"
+                  icon="pi pi-times"
+                  size="small"
+                  @click="clearDateFilter"
+                  class="bg-brand-dialog-delete border-0 text-xs px-3 py-1"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            @click="closeDateDialog"
+            class="bg-brand-dialog-cancel border-0 rounded-full px-4 py-2"
+          />
+          <Button
+            label="Apply Filter"
+            icon="pi pi-check"
+            @click="applyDateFilter"
+            class="bg-brand-dialog-save border-0 rounded-full px-4 py-2"
+          />
+        </div>
+      </template>
+    </Dialog>
   </Dialog>
 </template>
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
+
+// Import database composable
+const db = useDatabase()
 
 const props = defineProps({
   isEditing: Boolean,
@@ -570,6 +915,29 @@ const availableAssets = ref([])
 const selectedAssets = ref([])
 const selectedMemories = ref([])
 const selectedTagFilter = ref([])
+
+// Secondary dialog states
+const showLocationDialog = ref(false)
+const showTagDialog = ref(false)
+const showDateDialog = ref(false)
+
+// Location filter state
+const locationSearch = ref('')
+const selectedLocationFilter = ref('')
+const availableLocations = ref([])
+const filteredLocations = ref([])
+
+// Tag filter state (separate from existing selectedTagFilter)
+const tagSearch = ref('')
+const availableTags = ref([])
+const filteredTags = ref([])
+
+// Date filter state
+const selectedDateFilter = ref(null)
+const dateRange = ref({
+  from: null,
+  to: null
+})
 
 // Options for dropdowns
 const layoutOptions = ref([
@@ -633,7 +1001,6 @@ const memoryEventOptions = ref([
 
 // Database composable
 const { $supabase: supabase } = useNuxtApp()
-const db = useDatabase()
 
 // Computed properties
 const showDialog = computed({
@@ -646,11 +1013,38 @@ const showDialog = computed({
 })
 
 const filteredAssets = computed(() => {
-  if (!Array.isArray(availableAssets.value)) return []
-  return availableAssets.value.filter(asset =>
-    asset.type === 'photo' &&
-    (!selectedTagFilter.value.length || (asset.tags && asset.tags.some(tag => selectedTagFilter.value.includes(tag))))
-  )
+  let filtered = availableAssets.value
+
+  // Apply location filter
+  if (selectedLocationFilter.value) {
+    filtered = filtered.filter(asset => 
+      asset.location && asset.location === selectedLocationFilter.value
+    )
+  }
+
+  // Apply tag filter
+  if (selectedTagFilter.value && selectedTagFilter.value.length > 0) {
+    filtered = filtered.filter(asset => {
+      const assetTags = [...(asset.tags || []), ...(asset.user_tags || [])]
+      return selectedTagFilter.value.some(tag => assetTags.includes(tag))
+    })
+  }
+
+  // Apply date filter
+  if (selectedDateFilter.value) {
+    filtered = filtered.filter(asset => {
+      if (!asset.asset_date) return false
+      const assetDate = new Date(asset.asset_date)
+      const from = selectedDateFilter.value.from ? new Date(selectedDateFilter.value.from) : null
+      const to = selectedDateFilter.value.to ? new Date(selectedDateFilter.value.to) : null
+      
+      if (from && assetDate < from) return false
+      if (to && assetDate > to) return false
+      return true
+    })
+  }
+
+  return filtered
 })
 
 const computedAvailableTags = computed(() => {
@@ -765,6 +1159,158 @@ const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
   return date.toLocaleDateString()
+}
+
+// Location dialog methods
+const openLocationDialog = () => {
+  showLocationDialog.value = true
+  // Extract unique locations from available assets
+  const locations = [...new Set(availableAssets.value
+    .map(asset => asset.location)
+    .filter(location => location && location.trim() !== ''))]
+  availableLocations.value = locations
+  filteredLocations.value = locations
+}
+
+const closeLocationDialog = () => {
+  showLocationDialog.value = false
+  locationSearch.value = ''
+}
+
+const filterLocations = () => {
+  if (!locationSearch.value) {
+    filteredLocations.value = availableLocations.value
+  } else {
+    filteredLocations.value = availableLocations.value.filter(location =>
+      location.toLowerCase().includes(locationSearch.value.toLowerCase())
+    )
+  }
+}
+
+const selectLocation = (location) => {
+  selectedLocationFilter.value = location
+}
+
+const clearLocationFilter = () => {
+  selectedLocationFilter.value = ''
+}
+
+const applyLocationFilter = () => {
+  showLocationDialog.value = false
+  // The filtering will be handled by the computed property
+}
+
+// Tag dialog methods
+const openTagDialog = () => {
+  showTagDialog.value = true
+  // Extract unique tags from available assets
+  const tags = [...new Set(availableAssets.value
+    .flatMap(asset => [...(asset.tags || []), ...(asset.user_tags || [])])
+    .filter(tag => tag && tag.trim() !== ''))]
+  availableTags.value = tags
+  filteredTags.value = tags
+}
+
+const closeTagDialog = () => {
+  showTagDialog.value = false
+  tagSearch.value = ''
+}
+
+const filterTags = () => {
+  if (!tagSearch.value) {
+    filteredTags.value = availableTags.value
+  } else {
+    filteredTags.value = availableTags.value.filter(tag =>
+      tag.toLowerCase().includes(tagSearch.value.toLowerCase())
+    )
+  }
+}
+
+const toggleTagSelection = (tag) => {
+  const index = selectedTagFilter.value.indexOf(tag)
+  if (index > -1) {
+    selectedTagFilter.value.splice(index, 1)
+  } else {
+    selectedTagFilter.value.push(tag)
+  }
+}
+
+const removeTag = (tag) => {
+  const index = selectedTagFilter.value.indexOf(tag)
+  if (index > -1) {
+    selectedTagFilter.value.splice(index, 1)
+  }
+}
+
+const applyTagFilter = () => {
+  showTagDialog.value = false
+  // The filtering will be handled by the computed property
+}
+
+// Date dialog methods
+const openDateDialog = () => {
+  showDateDialog.value = true
+  // Reset date range
+  dateRange.value = { from: null, to: null }
+}
+
+const closeDateDialog = () => {
+  showDateDialog.value = false
+  dateRange.value = { from: null, to: null }
+}
+
+const setDatePreset = (preset) => {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  
+  switch (preset) {
+    case 'lastWeek':
+      dateRange.value = {
+        from: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000),
+        to: today
+      }
+      break
+    case 'lastMonth':
+      dateRange.value = {
+        from: new Date(today.getFullYear(), today.getMonth() - 1, today.getDate()),
+        to: today
+      }
+      break
+    case 'last3Months':
+      dateRange.value = {
+        from: new Date(today.getFullYear(), today.getMonth() - 3, today.getDate()),
+        to: today
+      }
+      break
+    case 'lastYear':
+      dateRange.value = {
+        from: new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()),
+        to: today
+      }
+      break
+  }
+}
+
+const clearDateFilter = () => {
+  selectedDateFilter.value = null
+  dateRange.value = { from: null, to: null }
+}
+
+const applyDateFilter = () => {
+  if (dateRange.value.from || dateRange.value.to) {
+    selectedDateFilter.value = {
+      from: dateRange.value.from,
+      to: dateRange.value.to
+    }
+  }
+  showDateDialog.value = false
+}
+
+const formatDateRange = (range) => {
+  if (!range) return ''
+  const from = range.from ? new Date(range.from).toLocaleDateString() : 'Any'
+  const to = range.to ? new Date(range.to).toLocaleDateString() : 'Any'
+  return `${from} to ${to}`
 }
 
 function handleSubmit() {
