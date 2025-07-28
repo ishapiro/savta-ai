@@ -331,20 +331,10 @@ ${instructionPrefix}${selectedPhotos.length}${instructionSuffix.replace('photos 
     // Update the photos array to use the limited set
     photos = photosToInclude
 
-    console.log("****************************")
-    console.log("magic story prompt")
-    console.log("****************************")
-    console.log(`Target photo count: ${targetPhotoCount}`)
-    console.log(`Available photos: ${photos.length}`)
-    console.log(`Force all: ${forceAll}`)
+    console.log(`📝 Magic story prompt: ${targetPhotoCount} photos, ${photos.length} available, ${finalPrompt.length} chars`)
     if (truncatedPhotoCount > 0) {
-      console.log(`⚠️ Prompt was too long, reduced from ${photos.length + truncatedPhotoCount} to ${photos.length} photos`)
+      console.log(`⚠️ Prompt truncated: ${photos.length + truncatedPhotoCount} → ${photos.length} photos`)
     }
-    console.log("Available photo IDs:", photos.map(p => p.id))
-    console.log("First 5 photo IDs being sent to AI:", photos.slice(0, 5).map(p => p.id))
-    console.log(`Final prompt length: ${finalPrompt.length} characters`)
-    console.log(finalPrompt)
-    console.log("****************************")
 
     // Call OpenAI
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -371,11 +361,7 @@ ${instructionPrefix}${selectedPhotos.length}${instructionSuffix.replace('photos 
     const openaiData = await openaiRes.json()
     const aiText = openaiData.choices[0].message.content
 
-    console.log("****************************")
-    console.log("AI response received")
-    console.log("****************************")
-    console.log(aiText)
-    console.log("****************************")
+    console.log(`🤖 AI response received (${aiText.length} chars)`)
 
     // Clean up JSON response - remove leading zeros from photo numbers
     let cleanedAiText = aiText
@@ -391,11 +377,7 @@ ${instructionPrefix}${selectedPhotos.length}${instructionSuffix.replace('photos 
       })
       
       if (cleanedAiText !== aiText) {
-        console.log("****************************")
-        console.log("Cleaned JSON (removed leading zeros)")
-        console.log("****************************")
-        console.log(cleanedAiText)
-        console.log("****************************")
+        console.log(`🔧 Cleaned JSON (removed leading zeros)`)
       }
     } catch (cleanupErr) {
       console.warn('⚠️ JSON cleanup failed, proceeding with original:', cleanupErr.message)
@@ -408,11 +390,7 @@ ${instructionPrefix}${selectedPhotos.length}${instructionSuffix.replace('photos 
       const jsonMatch = cleanedAiText.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         result = JSON.parse(jsonMatch[0])
-        console.log("****************************")
-        console.log("Parsed JSON result")
-        console.log("****************************")
-        console.log(JSON.stringify(result, null, 2))
-        console.log("****************************")
+        console.log(`✅ Parsed JSON: ${result.selected_photo_numbers?.length || 0} photos selected`)
       } else {
         throw new Error('No JSON found in response')
       }

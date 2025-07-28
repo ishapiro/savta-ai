@@ -229,24 +229,7 @@ export default defineEventHandler(async (event) => {
       
       const assets = selectedAssets
 
-      console.log("****************************")
-      console.log("Photos in user selection pool:")
-      console.log("****************************")
-      console.log("Number of assets:", assets.length)
-      console.log("Photo selection pool:", photoPool)
-      console.log("Original photo_selection_pool:", book.photo_selection_pool)
-      console.log("Photos used in final memory:", book.created_from_assets)
-      assets.forEach((asset, index) => {
-        console.log(`Asset ${index + 1}:`, {
-          id: asset.id,
-          in_pool: photoPool.includes(asset.id) ? 'YES' : 'NO',
-          in_final: book.created_from_assets?.includes(asset.id) ? 'YES' : 'NO',
-          ai_caption: asset.ai_caption,
-          people_detected: asset.people_detected,
-          tags: asset.tags
-        })
-      })
-      console.log("****************************")
+      console.log(`📸 Photo pool: ${assets.length} assets, ${book.created_from_assets?.length || 0} selected`)
 
       // Generate fingerprints for the selected assets
       const assetsWithFingerprints = generateFingerprintsForAssets(assets)
@@ -537,14 +520,45 @@ export default defineEventHandler(async (event) => {
         console.log('🧠 Performing smart crop...')
         console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
         
-        // Use smartcrop-sharp to find the best crop area
+        // Get image metadata to determine orientation
+        const metadata = await sharp(imageBuffer).metadata()
+        const isPortrait = metadata.height > metadata.width
+        const isLandscape = metadata.width > metadata.height
+        
+        console.log(`📐 Image orientation: ${isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'}`)
+        console.log(`📏 Original dimensions: ${metadata.width}x${metadata.height}`)
+        
+        // Configure boost areas based on orientation
+        let boostAreas = []
+        
+        if (isPortrait) {
+          console.log('🎯 Portrait image - prioritizing top half for faces')
+          boostAreas = [
+            { x: 0, y: 0, width: 1, height: 0.5, weight: 2.5 }, // Boost top half (faces)
+            { x: 0.25, y: 0.25, width: 0.5, height: 0.5, weight: 2.0 }, // Boost center area
+            { x: 0, y: 0, width: 1, height: 1, weight: 1.0 } // Boost entire image
+          ]
+        } else if (isLandscape) {
+          console.log('🎯 Landscape image - prioritizing center area for faces')
+          boostAreas = [
+            { x: 0.25, y: 0.25, width: 0.5, height: 0.5, weight: 2.5 }, // Boost center area (faces)
+            { x: 0, y: 0, width: 1, height: 1, weight: 1.0 } // Boost entire image
+          ]
+        } else {
+          // Square image - use balanced approach
+          console.log('🎯 Square image - using balanced face prioritization')
+          boostAreas = [
+            { x: 0.25, y: 0.25, width: 0.5, height: 0.5, weight: 2.0 }, // Boost center area
+            { x: 0, y: 0, width: 1, height: 1, weight: 1.0 } // Boost entire image
+          ]
+        }
+        
+        // Use smartcrop-sharp to find the best crop area with orientation-aware face prioritization
         const crop = await smartcrop.crop(imageBuffer, {
           width: targetWidth,
           height: targetHeight,
           ruleOfThirds: true,
-          boost: [
-            { x: 0, y: 0, width: 1, height: 1, weight: 1.0 } // Boost center area
-          ]
+          boost: boostAreas
         })
         
         console.log('🎯 Smart crop result:', {
@@ -552,7 +566,8 @@ export default defineEventHandler(async (event) => {
           y: crop.topCrop.y,
           width: crop.topCrop.width,
           height: crop.topCrop.height,
-          score: crop.topCrop.score
+          score: crop.topCrop.score,
+          orientation: isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'
         })
         
         // Apply the smart crop
@@ -567,7 +582,7 @@ export default defineEventHandler(async (event) => {
           .png()
           .toBuffer()
         
-        console.log('✅ Smart crop completed successfully')
+        console.log('✅ Smart crop completed successfully with orientation-aware prioritization')
         return croppedImage
       } catch (error) {
         console.warn('⚠️ Smart crop failed, using fallback:', error.message)
@@ -979,26 +994,27 @@ export default defineEventHandler(async (event) => {
             }
             break
             
-          case 'rounded':
-            console.log('🎨 ROUNDED SHAPE DETECTED - Starting rounded corners processing')
-            
-            // Check if this is a magic memory book (layout_type === 'magic')
-            const isMagicMemory = book.layout_type === 'magic'
-            
-            let resizedImage
-            if (isMagicMemory) {
-              console.log('🧠 Magic memory detected - using smart cropping for rounded shape')
-              // First apply smart cropping to ensure subject is properly positioned
-              const smartCroppedImage = await smartCropImage(imageBuffer, targetWidth, targetHeight)
-              resizedImage = smartCroppedImage
-            } else {
-              console.log('📚 Regular memory book - using standard resize for rounded shape')
-              // For regular memory books, use standard resize
-              resizedImage = await sharp(imageBuffer)
-                .resize(targetWidth, targetHeight, { fit: 'inside' })
-                .png()
-                .toBuffer()
-            }
+                      case 'rounded':
+              console.log('🎨 ROUNDED SHAPE DETECTED - Starting rounded corners processing')
+              
+              // Check if this is a magic memory book (layout_type === 'magic')
+              const isMagicMemory = book.layout_type === 'magic'
+              
+              let resizedImage
+              if (isMagicMemory) {
+                console.log('🧠 Magic memory detected - using smart cropping for rounded shape')
+                console.log('🎯 Smart crop will prioritize faces in center area')
+                // First apply smart cropping to ensure subject is properly positioned
+                const smartCroppedImage = await smartCropImage(imageBuffer, targetWidth, targetHeight)
+                resizedImage = smartCroppedImage
+              } else {
+                console.log('📚 Regular memory book - using standard resize for rounded shape')
+                // For regular memory books, use standard resize
+                resizedImage = await sharp(imageBuffer)
+                  .resize(targetWidth, targetHeight, { fit: 'inside' })
+                  .png()
+                  .toBuffer()
+              }
             
             // Create rounded corners using Sharp SVG mask approach
             const radius = Math.min(targetWidth, targetHeight) * 0.15 // 15% of smaller dimension for radius
@@ -1399,15 +1415,16 @@ export default defineEventHandler(async (event) => {
       const storyTextBottom = storyAreaBottom - storyMarginVertical
       const storyAreaWidth = storyTextRight - storyTextLeft
       const storyAreaHeight = storyTextBottom - storyTextTop
+      
+      console.log('📏 Story area dimensions:')
+      console.log(`   Width: ${storyAreaWidth} points`)
+      console.log(`   Height: ${storyAreaHeight} points`)
+      console.log(`   Available space: ${storyAreaWidth * storyAreaHeight} square points`)
+      
       // Draw the story in the calculated area
       const story = book.magic_story || 'A special family story.'
       
-      console.log("****************************")
-      console.log("Story being used in PDF:")
-      console.log("****************************")
-      console.log("book.magic_story:", book.magic_story)
-      console.log("Final story:", story)
-      console.log("****************************")
+      console.log(`📖 Story for PDF: "${story.substring(0, 100)}..."`)
       
 
       
@@ -1417,7 +1434,13 @@ export default defineEventHandler(async (event) => {
       let storyTextImage
       
       try {
-        storyTextBuffer = await renderTextToImage(story, storyAreaWidth, storyAreaHeight)
+        // Convert points to pixels for image rendering (72 points = 1 inch, assume 96 DPI for screen)
+        const pointsToPixels = 96 / 72 // Convert points to pixels
+        const storyAreaWidthPixels = Math.round(storyAreaWidth * pointsToPixels)
+        const storyAreaHeightPixels = Math.round(storyAreaHeight * pointsToPixels)
+        
+        console.log(`📏 Calling renderTextToImage with dimensions: ${storyAreaWidth}x${storyAreaHeight} points (${storyAreaWidthPixels}x${storyAreaHeightPixels} pixels)`)
+        storyTextBuffer = await renderTextToImage(story, storyAreaWidthPixels, storyAreaHeightPixels)
         storyTextImage = await pdfDoc.embedPng(storyTextBuffer)
         console.log('✅ Story text rendered successfully with shared renderer')
         
@@ -1455,21 +1478,36 @@ export default defineEventHandler(async (event) => {
         }
         if (currentLine) fallbackLines.push(currentLine)
         
-        // Draw text directly on the page
+        // Draw text directly on the page with truncation
         let yPosition = storyTextTop + storyAreaHeight - fallbackLineHeight
+        let linesDrawn = 0
+        const maxLines = Math.floor(storyAreaHeight / fallbackLineHeight)
+        
+        console.log(`📏 Fallback rendering: can fit ${maxLines} lines in ${storyAreaHeight}px height`)
         
         for (const line of fallbackLines) {
-          if (yPosition >= storyTextTop) {
-            page.drawText(line, {
+          if (yPosition >= storyTextTop && linesDrawn < maxLines) {
+            // Truncate the last line if we're at the limit
+            let displayLine = line
+            if (linesDrawn === maxLines - 1 && linesDrawn < fallbackLines.length - 1) {
+              // We're on the last line but there are more lines to show
+              displayLine = line.substring(0, Math.max(0, line.length - 3)) + '...'
+              console.log(`✂️ Fallback truncated last line to: "${displayLine}"`)
+            }
+            
+            page.drawText(displayLine, {
               x: storyTextLeft,
               y: yPosition,
               size: fallbackFontSize,
               font: fallbackFont,
               color: rgb(fallbackConfig.color.r, fallbackConfig.color.g, fallbackConfig.color.b)
             })
+            linesDrawn++
           }
           yPosition -= fallbackLineHeight
         }
+        
+        console.log(`📊 Fallback rendered ${linesDrawn} lines (${fallbackLines.length} total available)`)
         
         console.log('✅ Times Roman fallback text rendering completed')
       }
