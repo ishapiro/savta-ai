@@ -25,11 +25,19 @@
       
       <!-- Edit Defaults Mode Toggle -->
       <button
-        @click="isEditDefaultsMode = !isEditDefaultsMode"
-        :class="isEditDefaultsMode ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-500 hover:bg-purple-600'"
-        class="px-2 py-1 text-white rounded text-sm transition-colors"
+        @click="showPasswordDialog = true"
+        class="px-2 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded text-sm transition-colors"
       >
-        {{ editDefaultsButtonText }}
+        Edit Defaults
+      </button>
+
+      <!-- Exit Edit Mode Button (only show in edit mode) -->
+      <button
+        v-if="isEditDefaultsMode"
+        @click="exitEditMode"
+        class="px-2 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
+      >
+        Exit Edit Mode
       </button>
 
       <!-- Save Defaults Button (only show in edit mode) -->
@@ -40,6 +48,47 @@
       >
         Save as Default
       </button>
+    </div>
+
+    <!-- Password Dialog -->
+    <div v-if="showPasswordDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
+        <h3 class="text-lg font-semibold text-brand-secondary mb-4">Editor Defaults Access</h3>
+        <p class="text-brand-primary mb-4">Enter the password to edit default layouts:</p>
+        <p class="text-sm text-gray-600 mb-4 italic">Hint: Think about education and innovation</p>
+        
+        <form @submit.prevent="checkPassword" class="space-y-4">
+          <InputText
+            v-model="password"
+            type="password"
+            placeholder="Enter password"
+            class="w-full"
+            autocomplete="current-password"
+            aria-label="Password"
+            @keyup.enter="checkPassword"
+          />
+          
+          <div class="flex gap-3">
+            <Button
+              type="button"
+              label="Cancel"
+              severity="secondary"
+              class="flex-1"
+              @click="cancelPassword"
+            />
+            <Button
+              type="submit"
+              label="Enter"
+              class="flex-1"
+              @click="checkPassword"
+            />
+          </div>
+          
+          <div v-if="passwordError" class="text-red-500 text-sm">
+            {{ passwordError }}
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Size and Scale Information -->
@@ -127,6 +176,12 @@ const props = defineProps({
 
 const emit = defineEmits(['save'])
 
+// Password protection variables
+const showPasswordDialog = ref(false)
+const password = ref('')
+const passwordError = ref('')
+const isEditDefaultsMode = ref(false)
+
 // Plain JavaScript variables for drag state
 let isDragging = false
 let currentDragId = null
@@ -155,11 +210,30 @@ const layoutData = reactive({
   ]
 })
 
-// Edit defaults mode
-const isEditDefaultsMode = ref(false)
-const editDefaultsButtonText = computed(() => 
-  isEditDefaultsMode.value ? 'Exit Edit Mode' : 'Edit Defaults'
-)
+// Password protection functions
+function checkPassword() {
+  if (password.value === 'edventions') {
+    isEditDefaultsMode.value = true
+    showPasswordDialog.value = false
+    password.value = ''
+    passwordError.value = ''
+  } else {
+    passwordError.value = 'Incorrect password. Please try again.'
+  }
+}
+
+function cancelPassword() {
+  showPasswordDialog.value = false
+  password.value = ''
+  passwordError.value = ''
+}
+
+function exitEditMode() {
+  isEditDefaultsMode.value = false
+  showPasswordDialog.value = false
+  password.value = ''
+  passwordError.value = ''
+}
 
 // Function to calculate dimensions and scale factor based on size
 function calculateSizeDimensions(size) {
