@@ -153,21 +153,18 @@
                     <Button
                       v-if="!data.approved"
                       icon="pi pi-check"
-                      severity="success"
-                      size="small"
+                      class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-2 py-1 text-xs"
                       @click="approveAsset(data.id)"
                     />
                     <Button
                       v-if="!data.approved"
                       icon="pi pi-times"
-                      severity="danger"
-                      size="small"
+                      class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-2 py-1 text-xs"
                       @click="rejectAsset(data.id)"
                     />
                     <Button
                       icon="pi pi-eye"
-                      severity="info"
-                      size="small"
+                      class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
                       @click="viewAsset(data)"
                     />
                   </div>
@@ -245,21 +242,18 @@
                     <Button
                       v-if="data.status === 'ready'"
                       icon="pi pi-download"
-                      severity="info"
-                      size="small"
+                      class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
                       @click="downloadBook(data)"
                     />
                     <Button
                       v-if="data.status === 'draft'"
                       icon="pi pi-play"
-                      severity="success"
-                      size="small"
+                      class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-2 py-1 text-xs"
                       @click="generateBook(data)"
                     />
                     <Button
                       icon="pi pi-eye"
-                      severity="info"
-                      size="small"
+                      class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
                       @click="viewBook(data)"
                     />
                   </div>
@@ -291,7 +285,7 @@
                   label="Create New Theme"
                   icon="pi pi-plus"
                   @click="showCreateThemeModal = true"
-                  class="bg-brand-highlight p-4 border-0"
+                  class="bg-brand-dialog-save p-4 border-0"
                 />
               </div>
             </div>
@@ -308,7 +302,7 @@
                 <button
                   v-if="userProfile && userProfile.role === 'admin'"
                   @click="deleteTheme(theme.id)"
-                  class="absolute top-2 right-2 p-1 text-brand-danger hover:text-brand-danger/70 hover:bg-brand-danger/10 rounded-full transition-colors"
+                  class="bg-brand-dialog-delete absolute top-2 right-2 p-1 text-brand-danger hover:text-brand-danger/70 hover:bg-brand-danger/10 rounded-full transition-colors"
                   title="Delete Theme"
                 >
                   <i class="pi pi-trash text-sm"></i>
@@ -328,7 +322,7 @@
                     label="Activate"
                     severity="success"
                     size="small"
-                    class="text-xs px-2 py-1"
+                    class="bg-brand-dialog-save text-xs px-2 py-1"
                     @click="activateTheme(theme.id)"
                   />
                   <Button
@@ -336,7 +330,7 @@
                     label="Deactivate"
                     severity="warning"
                     size="small"
-                    class="text-xs px-2 py-1"
+                    class="bg-brand-dialog-cancel text-xs px-2 py-1"
                     @click="deactivateTheme(theme.id)"
                   />
                 </div>
@@ -366,7 +360,7 @@
                       label="Restore"
                       severity="success"
                       size="small"
-                      class="text-xs px-2 py-1"
+                      class="bg-brand-dialog-save text-xs px-2 py-1"
                       @click="restoreTheme(theme.id)"
                     />
                   </div>
@@ -510,23 +504,20 @@
                     <Button
                       v-if="!data.deleted"
                       icon="pi pi-ban"
-                      severity="warning"
-                      size="small"
+                      class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-2 py-1 text-xs"
                       @click="disableUser(data.user_id)"
                       title="Disable User"
                     />
                     <Button
                       v-else
                       icon="pi pi-refresh"
-                      severity="success"
-                      size="small"
+                      class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-2 py-1 text-xs"
                       @click="restoreUser(data.user_id)"
                       title="Restore User"
                     />
                     <Button
                       icon="pi pi-eye"
-                      severity="info"
-                      size="small"
+                      class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
                       @click="viewUserDetails(data)"
                     />
                   </div>
@@ -596,14 +587,12 @@
                     <div class="flex items-center space-x-2">
                       <Button
                         icon="pi pi-refresh"
-                        severity="success"
-                        size="small"
+                        class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-2 py-1 text-xs"
                         @click="restoreUser(data.user_id)"
                       />
                       <Button
                         icon="pi pi-eye"
-                        severity="info"
-                        size="small"
+                        class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
                         @click="viewUserDetails(data)"
                       />
                     </div>
@@ -823,7 +812,7 @@
               label="Create Theme"
               :loading="creatingTheme"
               class="bg-brand-dialog-primary hover:bg-brand-dialog-primary-hover text-white border-0 px-3 py-1 text-xs"
-              @click="createTheme"
+              @click="() => { console.log('[BUTTON] Create Theme clicked, dialog visible:', showCreateThemeModal.value); createTheme(); }"
             />
           </div>
         </div>
@@ -899,7 +888,7 @@
         <div class="flex justify-end">
           <Button
             label="Close"
-            severity="secondary"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
             @click="showUserModal = false"
           />
         </div>
@@ -1644,8 +1633,18 @@ const viewBook = (book) => {
 
 // Theme actions
 const createTheme = async () => {
+  console.log('[CREATE THEME] ===== FUNCTION CALLED =====')
+  console.log('[CREATE THEME] Starting theme creation...')
+  console.log('[CREATE THEME] Theme data:', newTheme.value)
   
   if (!newTheme.value.name) {
+    console.log('[CREATE THEME] No theme name provided')
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Theme name is required',
+      life: 3000
+    })
     return
   }
 
@@ -1668,11 +1667,14 @@ const createTheme = async () => {
 
   try {
     const themeToSave = { ...newTheme.value }
+    console.log('[CREATE THEME] Theme to save:', themeToSave)
     
     if (themeToSave.layout_config && typeof themeToSave.layout_config === 'string') {
       try {
         themeToSave.layout_config = JSON.parse(themeToSave.layout_config)
+        console.log('[CREATE THEME] Parsed layout config:', themeToSave.layout_config)
       } catch (e) {
+        console.error('[CREATE THEME] JSON parse error:', e)
         toast.add({
           severity: 'error',
           summary: 'Error',
@@ -1684,7 +1686,9 @@ const createTheme = async () => {
       }
     }
     
+    console.log('[CREATE THEME] Calling database createTheme...')
     const createdTheme = await db.editor.createTheme(themeToSave)
+    console.log('[CREATE THEME] Database response:', createdTheme)
     
     toast.add({
       severity: 'success',
@@ -1714,7 +1718,7 @@ const createTheme = async () => {
     // Reload themes
     await loadThemes()
   } catch (error) {
-    console.error('Error creating theme:', error)
+    console.error('[CREATE THEME] Error creating theme:', error)
     
     // Handle specific error types
     let errorMessage = 'Failed to create theme'
@@ -1733,6 +1737,7 @@ const createTheme = async () => {
     })
   } finally {
     creatingTheme.value = false
+    console.log('[CREATE THEME] Theme creation completed')
   }
 }
 

@@ -70,9 +70,17 @@ export default {
           warm: '#F4E4D6', // warm cream color
           card: '#F6E7D8', // light tan
           'dialog-cancel': 'rgba(130, 130, 130, 0.44)', 
+          'dialog-cancel-hover': 'rgba(100, 100, 100, 0.6)',
           'dialog-edit': '#6E4B63', // same as secondary
+          'dialog-edit-hover': '#5A3F52', // darker plum
           'dialog-save': '#41706C', // darker teal  -- was #7BAAA7
+          'dialog-save-hover': '#355A57', // darker teal
           'dialog-delete': '#D16D84', // raspberry
+          'dialog-delete-hover': '#B85A6F', // darker raspberry
+          'dialog-primary': '#6E4B63', // plum - for primary actions
+          'dialog-primary-hover': '#5A3F52', // darker plum
+          'dialog-secondary': '#F4E4D6', // warm cream - for secondary actions
+          'dialog-secondary-hover': '#E8D4C2', // darker warm cream
           'flash': '#3B82F6', // blue
         },
         primary: {
