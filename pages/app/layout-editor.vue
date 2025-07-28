@@ -1,24 +1,25 @@
 <template>
-  <div class="min-h-screen bg-brand-background p-4">
-    <div class="max-w-7xl mx-auto">
+  <div class="h-screen w-full bg-brand-background overflow-hidden">
+    <div class="w-full h-full flex flex-col">
       <!-- Header -->
-      <div class="mb-6">
+      <div class="bg-white border-b border-gray-200 p-3 flex-shrink-0">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-brand-primary mb-2">Layout Editor</h1>
-            <p class="text-brand-primary/70">Design and customize memory book layouts.</p>
+            <h1 class="text-xl font-bold text-brand-primary mb-1">Layout Editor</h1>
+            <p class="text-brand-primary/70 text-xs">Design and customize memory book layouts.</p>
           </div>
           <Button
             label="Back to Editor"
             icon="pi pi-arrow-left"
             severity="secondary"
+            size="small"
             @click="router.push('/app/editor')"
           />
         </div>
       </div>
 
       <!-- Layout Editor Component -->
-      <div class="bg-white p-6 rounded-lg shadow">
+      <div class="flex-1 bg-white overflow-hidden">
         <LayoutEditor @save="handleSave" />
       </div>
     </div>
