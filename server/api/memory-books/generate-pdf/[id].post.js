@@ -1406,13 +1406,14 @@ export default defineEventHandler(async (event) => {
       const storyAreaTop = margin
       const storyAreaBottom = pageHeight - margin
       
-      // Add reduced margin (5 points) on left/right and 1/2" margin (36 points) on top/bottom around the story text
+      // Add reduced margin (5 points) on left/right and 1/2" margin (36 points) on top, reduced bottom margin by 10mm
       const storyMarginHorizontal = 5 // Reduced from 14 to 5 points
-      const storyMarginVertical = 36 // 1/2 inch in points
+      const storyMarginVerticalTop = 36 // 1/2 inch in points for top margin
+      const storyMarginVerticalBottom = 8 // Reduced bottom margin by ~28 points (10mm) from 36 to 8
       const storyTextLeft = storyAreaLeft + storyMarginHorizontal
       const storyTextRight = storyAreaRight - storyMarginHorizontal
-      const storyTextTop = storyAreaTop + storyMarginVertical
-      const storyTextBottom = storyAreaBottom - storyMarginVertical
+      const storyTextTop = storyAreaTop + storyMarginVerticalTop
+      const storyTextBottom = storyAreaBottom - storyMarginVerticalBottom
       const storyAreaWidth = storyTextRight - storyTextLeft
       const storyAreaHeight = storyTextBottom - storyTextTop
       

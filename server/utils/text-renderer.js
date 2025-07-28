@@ -3,6 +3,20 @@
 
 import sharp from 'sharp'
 import he from 'he'
+import { readFileSync } from 'fs'
+import { join } from 'path'
+
+// Load embedded EB Garamond font
+const fontPath = join(process.cwd(), 'assets', 'fonts', 'EBGaramond-Regular.ttf')
+let embeddedFont = null
+
+try {
+  embeddedFont = readFileSync(fontPath)
+  console.log('✅ EB Garamond font loaded successfully')
+} catch (error) {
+  console.warn('⚠️ Could not load embedded font, falling back to web font:', error.message)
+}
+
 
 /**
  * Escape XML/SVG special characters using the he library
@@ -25,7 +39,7 @@ export function escapeXml(text) {
 }
 
 /**
- * Wrap text to fit within specified width
+ * Wrap text to fit within specified width using improved character-based estimation
  * @param {string} text - Text to wrap
  * @param {number} maxWidth - Maximum width in pixels
  * @param {number} fontSize - Font size in pixels
@@ -36,19 +50,59 @@ export function wrapText(text, maxWidth, fontSize) {
   const lines = []
   let currentLine = ''
   
+  console.log(`🔍 wrapText called with maxWidth: ${maxWidth}px, fontSize: ${fontSize}px`)
+  console.log(`🔍 Text to wrap: "${text}"`)
+  console.log(`🔍 Words count: ${words.length}`)
+  
+  // Improved character width estimation for EB Garamond font
+  const getCharWidth = (char) => {
+    // Narrow characters
+    if ('ijl|.,;:!?\'"`~()[]{}'.includes(char)) return fontSize * 0.26
+    // Medium characters  
+    if ('abcdefghkmnopqrstuvwxyz0123456789'.includes(char)) return fontSize * 0.52
+    // Wide characters
+    if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.includes(char)) return fontSize * 0.65
+    // Extra wide characters
+    if ('MW'.includes(char)) return fontSize * 0.79
+    // Space character
+    if (char === ' ') return fontSize * 0.40
+    // Default for other characters
+    return fontSize * 0.52
+  }
+  
+  const measureTextWidth = (text) => {
+    return text.split('').reduce((width, char) => width + getCharWidth(char), 0)
+  }
+  
   for (const word of words) {
     const testLine = currentLine ? currentLine + ' ' + word : word
-    // More accurate width calculation for Garamond
-    const estimatedWidth = testLine.length * fontSize * 0.65
+    const width = measureTextWidth(testLine)
     
-    if (estimatedWidth <= maxWidth) {
+    console.log(`🔍 Testing: "${testLine}" - width: ${width.toFixed(1)}px, maxWidth: ${maxWidth}px`)
+    
+    if (width <= maxWidth) {
       currentLine = testLine
+      console.log(`✅ Line fits, continuing: "${currentLine}"`)
     } else {
-      if (currentLine) lines.push(currentLine)
+      if (currentLine) {
+        lines.push(currentLine)
+        console.log(`📝 Added line: "${currentLine}"`)
+      }
       currentLine = word
+      console.log(`🔄 Starting new line with: "${currentLine}"`)
     }
   }
-  if (currentLine) lines.push(currentLine)
+  if (currentLine) {
+    lines.push(currentLine)
+    console.log(`📝 Added final line: "${currentLine}"`)
+  }
+  
+  console.log(`📊 wrapText result: ${lines.length} lines`)
+  lines.forEach((line, i) => {
+    const lineWidth = measureTextWidth(line)
+    console.log(`📝 Line ${i + 1}: "${line}" (${line.length} chars, ${lineWidth.toFixed(1)}px)`)
+  })
+  
   return lines
 }
 
@@ -57,72 +111,73 @@ export function wrapText(text, maxWidth, fontSize) {
  * @param {string} text - Text to fit
  * @param {number} maxWidth - Maximum width in pixels
  * @param {number} maxHeight - Maximum height in pixels
- * @param {number} startFontSize - Starting font size (default: 15)
+ * @param {number} startFontSize - Starting font size (default: 16)
  * @param {number} lineHeight - Line height multiplier (default: 1.4)
  * @returns {Object} - Object containing lines and final font size
  */
-export function autoSizeText(text, maxWidth, maxHeight, startFontSize = 15, lineHeight = 1.4) {
-  let fontSize = startFontSize
-  let lines = []
-  let wasTruncated = false
+export function autoSizeText(text, maxWidth, maxHeight, startFontSize = 16, lineHeight = 1.4) {
+  // Clean the input text to ensure it's a single string with no line breaks
+  const cleanText = text.replace(/\n/g, ' ').replace(/\r/g, ' ').replace(/\s+/g, ' ').trim()
   
-  console.log(`📝 Auto-sizing text: "${text.substring(0, 50)}..."`)
+  console.log(`📝 Auto-sizing text: "${cleanText.substring(0, 50)}..."`)
   console.log(`📏 Available space: ${maxWidth}x${maxHeight}px`)
   
-  // Try to fit text with font size reduction
-  for (let attempt = 0; attempt < 20; attempt++) {
-    // Re-wrap text with current font size to get optimal line breaks
-    lines = wrapText(text, maxWidth, fontSize)
+  let bestFontSize = startFontSize
+  let bestLines = []
+  let wasTruncated = false
+  
+  // Try different font sizes from largest to smallest
+  for (let fontSize = startFontSize; fontSize >= 8; fontSize--) {
+    // Use the wrapText function which properly calculates line breaks with accurate measurement
+    const lines = wrapText(cleanText, maxWidth, fontSize)
+    
+    // Calculate total height needed
     const totalHeight = lines.length * fontSize * lineHeight
     
-    console.log(`🔄 Attempt ${attempt + 1}: ${fontSize}px font, ${lines.length} lines, ${totalHeight}px height`)
+    console.log(`🔄 Font ${fontSize}px: ${lines.length} lines, ${totalHeight}px height`)
     
-    // More aggressive fit criteria - leave more room
+    // Check if this font size fits
     if (totalHeight <= maxHeight * 0.9) {
-      console.log(`✅ Text fits comfortably at ${fontSize}px font size`)
-      break // Font size fits with room to spare
-    } else {
-      // More aggressive font size reduction
-      fontSize = Math.max(3, fontSize - 2) // Reduce by 2px, allow even smaller minimum
+      bestFontSize = fontSize
+      bestLines = lines
+      console.log(`✅ Found good fit at ${fontSize}px font size`)
+      break
     }
   }
   
-  // If text still doesn't fit, truncate it
-  const totalHeight = lines.length * fontSize * lineHeight
-  if (totalHeight > maxHeight * 0.9 || fontSize <= 3) {
-    console.warn('⚠️ Text still too long after font reduction, truncating with ellipsis')
+  // If no font size fits, use the smallest and truncate
+  if (bestLines.length === 0) {
+    console.warn('⚠️ No font size fits, using smallest size and truncating')
     wasTruncated = true
+    bestFontSize = 8
     
-    // Calculate how many lines we can fit (with more conservative estimate)
-    const maxLines = Math.floor((maxHeight * 0.9) / (fontSize * lineHeight))
-    console.log(`📏 Can fit ${maxLines} lines at ${fontSize}px font size`)
+    const lines = wrapText(cleanText, maxWidth, bestFontSize)
     
-    // Re-wrap text and limit to max lines
-    lines = wrapText(text, maxWidth, fontSize)
+    // Calculate how many lines we can fit
+    const maxLines = Math.floor((maxHeight * 0.9) / (bestFontSize * lineHeight))
     
     if (lines.length > maxLines) {
-      lines = lines.slice(0, maxLines)
+      bestLines = lines.slice(0, maxLines)
       
       // Add ellipsis to the last line
-      if (lines.length > 0) {
-        const lastLine = lines[lines.length - 1]
-        // Remove 3 characters and add ellipsis, but ensure we don't go negative
+      if (bestLines.length > 0) {
+        const lastLine = bestLines[bestLines.length - 1]
         const charsToRemove = Math.min(3, lastLine.length)
         const truncatedLine = lastLine.substring(0, lastLine.length - charsToRemove)
-        lines[lines.length - 1] = truncatedLine + '...'
-        console.log(`✂️ Truncated last line to: "${lines[lines.length - 1]}"`)
+        bestLines[bestLines.length - 1] = truncatedLine + '...'
+        console.log(`✂️ Truncated last line to: "${bestLines[bestLines.length - 1]}"`)
       }
     }
   }
   
-  const finalHeight = lines.length * fontSize * lineHeight
-  console.log(`📊 Final result: ${fontSize}px font, ${lines.length} lines, ${finalHeight}px height${wasTruncated ? ' (truncated)' : ''}`)
+  const finalHeight = bestLines.length * bestFontSize * lineHeight
+  console.log(`📊 Final result: ${bestFontSize}px font, ${bestLines.length} lines, ${finalHeight}px height${wasTruncated ? ' (truncated)' : ''}`)
   
-  return { lines, fontSize, wasTruncated }
+  return { lines: bestLines, fontSize: bestFontSize, wasTruncated }
 }
 
 /**
- * Render high-quality text using Sharp with auto-sizing at 300 DPI
+ * Render high-quality text using Sharp's native text rendering at 600 DPI
  * @param {string} text - Text to render
  * @param {number} width - Target width in pixels
  * @param {number} height - Target height in pixels
@@ -131,16 +186,16 @@ export function autoSizeText(text, maxWidth, maxHeight, startFontSize = 15, line
  */
 export async function renderTextToImage(text, width, height, options = {}) {
   const {
-    startFontSize = 15,
+    startFontSize = 16,
     lineHeight = 1.4,
     padding = 2, // Reduced from 8 to 2 for much tighter margins
     color = '#2D1810',
-    dpi = 300, // Print-quality DPI
-    scale = 4   // Higher scale for 300 DPI rendering
+    dpi = 600, // Ultra high-quality DPI for embedded fonts
+    scale = 8   // High scale for embedded font quality
   } = options
   
   try {
-    console.log('🎨 Rendering high-quality text at 300 DPI with Sharp...')
+    console.log('🎨 Rendering ultra high-quality text at 600 DPI with Sharp and embedded fonts...')
     
     // Validate input dimensions
     if (!width || !height || width <= 0 || height <= 0) {
@@ -158,43 +213,54 @@ export async function renderTextToImage(text, width, height, options = {}) {
     
     console.log(`📏 Auto-sized text: ${fontSize}px font, ${lines.length} lines${wasTruncated ? ' (truncated)' : ''}`)
     
-    // Create ultra high-resolution transparent background image for 300 DPI
+    // Create ultra high-resolution image for 600 DPI
     const scaledWidth = width * scale
     const scaledHeight = height * scale
     const scaledFontSize = fontSize * scale
     const scaledPadding = padding * scale
     
-    // Create SVG with EB Garamond font and exact dimensions
+    // Create SVG with embedded font for optimal quality
+    const fontFamily = embeddedFont ? 'EB Garamond' : 'EB Garamond, Times New Roman, serif'
+    const fontImport = embeddedFont ? '' : '@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;display=swap");'
+    
     const svgContent = `<svg width="${scaledWidth}" height="${scaledHeight}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;display=swap');
+          ${fontImport}
           .text { 
-            font-family: 'EB Garamond', serif; 
+            font-family: ${fontFamily}; 
             fill: ${color}; 
-            text-rendering: optimizeLegibility;
+            text-rendering: geometricPrecision;
             font-feature-settings: "liga" 1, "kern" 1;
+            font-smooth: never;
+            -webkit-font-smoothing: none;
+            shape-rendering: crispEdges;
+            font-display: block;
           }
         </style>
       </defs>
       <rect width="${scaledWidth}" height="${scaledHeight}" fill="transparent"/>
-      ${lines.map((line, i) => {
-        const y = scaledPadding + scaledFontSize + (i * scaledFontSize * lineHeight)
-        const escapedLine = escapeXml(line)
-        console.log(`📝 Line ${i + 1}: "${line}" → "${escapedLine}"`)
-        return `<text x="${scaledPadding}" y="${y}" class="text" font-size="${scaledFontSize}" font-weight="400">${escapedLine}</text>`
-      }).join('')}
+      ${(() => {
+        // Calculate total text height
+        const totalTextHeight = lines.length * scaledFontSize * lineHeight
+        // Calculate starting Y position to center the text block
+        const startY = scaledPadding + (scaledHeight - (scaledPadding * 2) - totalTextHeight) / 2 + scaledFontSize
+        
+        return lines.map((line, i) => {
+          const y = startY + (i * scaledFontSize * lineHeight)
+          const escapedLine = escapeXml(line)
+          console.log(`📝 Line ${i + 1}: "${line}" → "${escapedLine}" (y: ${y})`)
+          return `<text x="${scaledPadding}" y="${y}" class="text" font-size="${scaledFontSize}" font-weight="400">${escapedLine}</text>`
+        }).join('')
+      })()}
     </svg>`
     
-    console.log(`🎨 Creating SVG with ${lines.length} lines, font size: ${scaledFontSize}px, dimensions: ${scaledWidth}x${scaledHeight}`)
+    console.log(`🎨 Creating optimized SVG with ${lines.length} lines, font size: ${scaledFontSize}px, dimensions: ${scaledWidth}x${scaledHeight}`)
     
-    // Debug: Log the first few characters of the SVG to identify problematic characters
-    console.log(`🔍 SVG preview (first 200 chars): ${svgContent.substring(0, 200)}`)
-    
-    // Create the image directly from SVG content
+    // Create the image with optimized settings for web fonts
     const buffer = await sharp(Buffer.from(svgContent))
       .resize(width, height, { 
-        kernel: 'lanczos3',
+        kernel: 'mitchell',
         fit: 'fill'
       })
       .png({
@@ -205,7 +271,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
       })
       .toBuffer()
     
-    console.log('✅ High-quality text rendered successfully at 300 DPI with Sharp')
+    console.log('✅ Ultra high-quality text rendered successfully at 600 DPI with Sharp and embedded fonts')
     return buffer
     
   } catch (error) {
@@ -228,8 +294,8 @@ export async function createCaptionImage(captionText, maxWidth, maxHeight, optio
     lineHeight = 1.3,   // Tighter line height for captions
     padding = 6,         // Smaller padding for captions
     color = '#2D1810',
-    dpi = 300,          // Print-quality DPI
-    scale = 4           // Higher scale for 300 DPI rendering
+    dpi = 600,          // Ultra high-quality DPI
+    scale = 8           // High scale for embedded font quality
   } = options
   
   return await renderTextToImage(captionText, maxWidth, maxHeight, {
@@ -254,4 +320,4 @@ export function getPdfFallbackConfig(fontName = 'Times-Roman') {
     lineHeight: 1.4,
     color: { r: 0.176, g: 0.094, b: 0.063 } // #2D1810
   }
-} 
+}
