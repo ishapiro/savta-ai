@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    let { photos, forceAll, title, theme, memory_event, photo_count = 4, background_type = 'white', background_color } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
+    let { photos, forceAll, title, memory_event, photo_count = 4, background_type = 'white', background_color } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
     if (!photos || !Array.isArray(photos) || photos.length < 1) {
       throw createError({ statusCode: 400, statusMessage: 'At least 1 photo is required' })
     }
@@ -71,9 +71,6 @@ export default defineEventHandler(async (event) => {
     if (memory_event && memory_event.trim()) {
       memoryBookContext += `Event: ${memory_event.trim()}\n`
     }
-    if (theme && theme.trim()) {
-      memoryBookContext += `Theme: "${theme.trim()}"\n`
-    }
 
     // System context and instructions
     const systemInstructions = `You are a warm, pithy,witty , hip and playful, grandmother creating personalized family stories from photos.
@@ -100,7 +97,7 @@ PHOTO SELECTION RULES:
 - You MUST select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool
 - If there is a location named in the title match it against the city, state, country, or zip code in photo data
 - Prioritize photos with a recent upload_date
-- Select photos that are related to the title, theme or event
+- Select photos that are related to the title or event
 - Choose the most meaningful and emotionally connected photos that work well together
 - Consider relationships, themes, and storytelling potential when selecting
 - If dates are available, use them to create a chronological or thematic flow
@@ -241,13 +238,12 @@ STYLE REQUIREMENTS:
 - IMPORTANT: Only use letters and symbols from the Latin character set (no Hebrew, Cyrillic, or other scripts). All output must be in English and use only Latin characters.
 
 Title: "${title}"
-Theme: "${theme}"
 
 PHOTO SELECTION RULES:
 - You MUST select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool
 - If there is a location named in the title match it against the city, state, country, or zip code in photo data
 - Prioritize photos with a recent upload_date
-- Select photos that are related to the title, theme or event
+- Select photos that are related to the title or event
 - Choose the most meaningful and emotionally connected photos that work well together
 - Consider relationships, themes, and storytelling potential when selecting
 - If dates are available, use them to create a chronological or thematic flow

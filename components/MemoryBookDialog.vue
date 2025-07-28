@@ -28,39 +28,23 @@
             />
           </div>
           
-          <!-- Memory Event and Theme side by side -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Memory Event -->
-            <div>
-              <label class="block text-sm font-medium text-brand-primary mb-2">Memory Event</label>
-              <Dropdown
-                v-model="form.memoryEvent"
-                :options="memoryEventOptions"
-                option-label="label"
-                option-value="value"
-                placeholder="Select event"
-                class="w-full"
-              />
-              <InputText
-                v-if="form.memoryEvent === 'custom'"
-                v-model="form.customMemoryEvent"
-                class="w-full mt-2"
-                placeholder="Enter custom event"
-              />
-            </div>
-            
-            <!-- Theme -->
-            <div>
-              <label class="block text-sm font-medium text-brand-primary mb-2">Theme</label>
-              <Dropdown
-                v-model="form.theme"
-                :options="themeOptions"
-                option-label="label"
-                option-value="value"
-                placeholder="Select theme"
-                class="w-full"
-              />
-            </div>
+          <!-- Memory Event -->
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-2">Memory Event</label>
+            <Dropdown
+              v-model="form.memoryEvent"
+              :options="memoryEventOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select event"
+              class="w-full"
+            />
+            <InputText
+              v-if="form.memoryEvent === 'custom'"
+              v-model="form.customMemoryEvent"
+              class="w-full mt-2"
+              placeholder="Enter custom event"
+            />
           </div>
         </div>
       </div>
@@ -72,8 +56,8 @@
           Layout & Print
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Layout Type (hidden for magic memories) -->
-          <div class="hidden">
+          <!-- Layout Type -->
+          <div>
             <label class="block text-sm font-medium text-brand-primary mb-2">Layout Type</label>
             <Dropdown
               v-model="form.layoutType"
@@ -122,6 +106,23 @@
               placeholder="Select medium"
               class="w-full"
             />
+          </div>
+          
+          <!-- Theme (only show when layout type is 'theme') -->
+          <div v-if="form.layoutType === 'theme'">
+            <label class="block text-sm font-medium text-brand-primary mb-2">Theme</label>
+            <Dropdown
+              v-model="form.theme"
+              :options="themeOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select theme"
+              class="w-full"
+              :loading="loadingThemes"
+            />
+            <small class="text-brand-primary/70 text-xs mt-1 block">
+              Select a custom theme for your memory book layout
+            </small>
           </div>
         </div>
       </div>
@@ -898,7 +899,7 @@ const form = ref({
   printSize: '8x10',
   quality: 'standard',
   medium: 'digital',
-  theme: 'classic',
+  theme: '', // Will be set when themes are loaded
   memoryEvent: '',
   customMemoryEvent: '',
   backgroundType: 'white',
@@ -944,16 +945,22 @@ const layoutOptions = ref([
   { label: 'Grid Layout', value: 'grid' },
   { label: 'Timeline Layout', value: 'timeline' },
   { label: 'Story Layout', value: 'story' },
-  { label: 'Album Layout', value: 'album' }
+  { label: 'Album Layout', value: 'album' },
+  { label: 'Theme Layout', value: 'theme' }
 ])
 
 const printSizeOptions = ref([
-  { label: '5x7 inches', value: '5x7' },
-  { label: '6x8 inches', value: '6x8' },
-  { label: '8x10 inches', value: '8x10' },
-  { label: '11x14 inches', value: '11x14' },
-  { label: '12x12 inches', value: '12x12' },
-  { label: 'A4', value: 'a4' }
+  { label: '3x5 inches (Portrait)', value: '3x5' },
+  { label: '5x3 inches (Landscape)', value: '5x3' },
+  { label: '5x7 inches (Portrait)', value: '5x7' },
+  { label: '7x5 inches (Landscape)', value: '7x5' },
+  { label: '8x10 inches (Portrait)', value: '8x10' },
+  { label: '10x8 inches (Landscape)', value: '10x8' },
+  { label: '8.5x11 inches (Letter Portrait)', value: '8.5x11' },
+  { label: '11x8.5 inches (Letter Landscape)', value: '11x8.5' },
+  { label: '11x14 inches (Portrait)', value: '11x14' },
+  { label: '14x11 inches (Landscape)', value: '14x11' },
+  { label: '12x12 inches (Square)', value: '12x12' }
 ])
 
 const qualityOptions = ref([
@@ -968,12 +975,39 @@ const mediumOptions = ref([
   { label: 'Web View', value: 'web' }
 ])
 
-const themeOptions = ref([
-  { label: 'Classic', value: 'classic' },
-  { label: 'Modern', value: 'modern' },
-  { label: 'Vintage', value: 'vintage' },
-  { label: 'Minimalist', value: 'minimalist' }
-])
+const themeOptions = ref([])
+const loadingThemes = ref(false)
+
+// Function to fetch themes from database
+const fetchThemes = async () => {
+  try {
+    loadingThemes.value = true
+    const { data, error } = await supabase
+      .from('themes')
+      .select('id, name, description, is_active')
+      .eq('is_active', true)
+      .eq('deleted', false)
+      .order('name')
+    
+    if (error) {
+      console.error('Error fetching themes:', error)
+      return
+    }
+    
+    // Transform themes for dropdown
+    themeOptions.value = data.map(theme => ({
+      label: theme.name,
+      value: theme.id,
+      description: theme.description
+    }))
+    
+    console.log('[MEMORY-BOOK-DIALOG] Fetched themes:', themeOptions.value)
+  } catch (error) {
+    console.error('Error fetching themes:', error)
+  } finally {
+    loadingThemes.value = false
+  }
+}
 
 const gridLayoutOptions = ref([
   { label: '1 memory per page (1x1)', value: '1x1' },
@@ -1083,7 +1117,7 @@ watch(() => props.initialData, (val) => {
       printSize: '8x10',
       quality: 'standard',
       medium: 'digital',
-      theme: 'classic',
+      theme: '', // Will be set when themes are loaded
       memoryEvent: '',
       customMemoryEvent: '',
       backgroundType: 'white',
@@ -1095,6 +1129,13 @@ watch(() => props.initialData, (val) => {
     }
   }
 }, { immediate: true })
+
+// Watch for layout type changes to reset theme when not using theme layout
+watch(() => form.value.layoutType, (newLayoutType) => {
+  if (newLayoutType !== 'theme') {
+    form.value.theme = ''
+  }
+})
 
 // Watch for initial selected assets
 watch(() => props.initialSelectedAssets, (val) => {
@@ -1312,6 +1353,11 @@ const formatDateRange = (range) => {
   const to = range.to ? new Date(range.to).toLocaleDateString() : 'Any'
   return `${from} to ${to}`
 }
+
+// Fetch themes when component mounts
+onMounted(() => {
+  fetchThemes()
+})
 
 function handleSubmit() {
   emit('submit', {

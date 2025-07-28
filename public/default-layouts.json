@@ -1,0 +1,871 @@
+{
+  "3x5": {
+    "name": "Small Portrait Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "portrait",
+    "story": {
+      "position": {
+        "x": 50,
+        "y": 500
+      },
+      "size": {
+        "width": 500,
+        "height": 80
+      },
+      "fontSizePt": 8,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 240,
+          "height": 200
+        },
+        "borderRadius": 8
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 310,
+          "y": 50
+        },
+        "size": {
+          "width": 240,
+          "height": 200
+        },
+        "borderRadius": 8
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 270
+        },
+        "size": {
+          "width": 240,
+          "height": 200
+        },
+        "borderRadius": 8
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 310,
+          "y": 270
+        },
+        "size": {
+          "width": 240,
+          "height": 200
+        },
+        "borderRadius": 8
+      }
+    ]
+  },
+  "5x3": {
+    "name": "Small Landscape Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "landscape",
+    "story": {
+      "position": {
+        "x": 533,
+        "y": 40
+      },
+      "size": {
+        "width": 267,
+        "height": 400
+      },
+      "fontSizePt": 8,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 8
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 290,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 8
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 220
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 8
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 290,
+          "y": 220
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 8
+      }
+    ]
+  },
+  "5x7": {
+    "name": "Medium Portrait Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "portrait",
+    "story": {
+      "position": {
+        "x": 50,
+        "y": 600
+      },
+      "size": {
+        "width": 500,
+        "height": 100
+      },
+      "fontSizePt": 9,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 240,
+          "height": 180
+        },
+        "borderRadius": 10
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 310,
+          "y": 50
+        },
+        "size": {
+          "width": 240,
+          "height": 180
+        },
+        "borderRadius": 10
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 250
+        },
+        "size": {
+          "width": 240,
+          "height": 180
+        },
+        "borderRadius": 10
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 310,
+          "y": 250
+        },
+        "size": {
+          "width": 240,
+          "height": 180
+        },
+        "borderRadius": 10
+      }
+    ]
+  },
+  "7x5": {
+    "name": "Medium Landscape Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "landscape",
+    "story": {
+      "position": {
+        "x": 533,
+        "y": 50
+      },
+      "size": {
+        "width": 267,
+        "height": 500
+      },
+      "fontSizePt": 9,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 220
+        },
+        "borderRadius": 10
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 290,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 220
+        },
+        "borderRadius": 10
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 290
+        },
+        "size": {
+          "width": 220,
+          "height": 220
+        },
+        "borderRadius": 10
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 290,
+          "y": 290
+        },
+        "size": {
+          "width": 220,
+          "height": 220
+        },
+        "borderRadius": 10
+      }
+    ]
+  },
+  "8x10": {
+    "name": "Large Portrait Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "portrait",
+    "story": {
+      "position": {
+        "x": 50,
+        "y": 600
+      },
+      "size": {
+        "width": 500,
+        "height": 120
+      },
+      "fontSizePt": 10,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 200
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 290,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 200
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 270
+        },
+        "size": {
+          "width": 220,
+          "height": 200
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 290,
+          "y": 270
+        },
+        "size": {
+          "width": 220,
+          "height": 200
+        },
+        "borderRadius": 12
+      }
+    ]
+  },
+  "10x8": {
+    "name": "Large Landscape Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "landscape",
+    "story": {
+      "position": {
+        "x": 533,
+        "y": 60
+      },
+      "size": {
+        "width": 267,
+        "height": 520
+      },
+      "fontSizePt": 10,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 290,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 220
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 290,
+          "y": 220
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      }
+    ]
+  },
+  "8.5x11": {
+    "name": "Letter Portrait Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "portrait",
+    "story": {
+      "position": {
+        "x": 6,
+        "y": 358
+      },
+      "size": {
+        "width": 432.765625,
+        "height": 225.578125
+      },
+      "fontSizePt": 10,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 7,
+          "y": 6
+        },
+        "size": {
+          "width": 118.6015625,
+          "height": 111.80859375
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 142,
+          "y": 7
+        },
+        "size": {
+          "width": 138.27734375,
+          "height": 112.265625
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 9,
+          "y": 141
+        },
+        "size": {
+          "width": 428.48046875,
+          "height": 193.0859375
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 309,
+          "y": 9
+        },
+        "size": {
+          "width": 127.1484375,
+          "height": 110.75390625
+        },
+        "borderRadius": 12
+      }
+    ]
+  },
+  "11x8.5": {
+    "name": "Letter Landscape Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "landscape",
+    "story": {
+      "position": {
+        "x": 533,
+        "y": 70
+      },
+      "size": {
+        "width": 267,
+        "height": 540
+      },
+      "fontSizePt": 10,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 290,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 220
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 290,
+          "y": 220
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      }
+    ]
+  },
+  "11x14": {
+    "name": "Extra Large Portrait Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "portrait",
+    "story": {
+      "position": {
+        "x": 50,
+        "y": 600
+      },
+      "size": {
+        "width": 500,
+        "height": 120
+      },
+      "fontSizePt": 11,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 240,
+          "height": 200
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 310,
+          "y": 50
+        },
+        "size": {
+          "width": 240,
+          "height": 200
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 270
+        },
+        "size": {
+          "width": 240,
+          "height": 200
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 310,
+          "y": 270
+        },
+        "size": {
+          "width": 240,
+          "height": 200
+        },
+        "borderRadius": 12
+      }
+    ]
+  },
+  "14x11": {
+    "name": "Extra Large Landscape Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "landscape",
+    "story": {
+      "position": {
+        "x": 533,
+        "y": 80
+      },
+      "size": {
+        "width": 267,
+        "height": 560
+      },
+      "fontSizePt": 11,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 290,
+          "y": 50
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 220
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 290,
+          "y": 220
+        },
+        "size": {
+          "width": 220,
+          "height": 150
+        },
+        "borderRadius": 12
+      }
+    ]
+  },
+  "12x12": {
+    "name": "Square Layout",
+    "units": {
+      "position": "px",
+      "size": "px",
+      "fontSize": "pt"
+    },
+    "canvasSize": {
+      "width": 0,
+      "height": 0
+    },
+    "cardSize": {
+      "width": 0,
+      "height": 0
+    },
+    "orientation": "square",
+    "story": {
+      "position": {
+        "x": 50,
+        "y": 600
+      },
+      "size": {
+        "width": 500,
+        "height": 120
+      },
+      "fontSizePt": 10,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 50,
+          "y": 50
+        },
+        "size": {
+          "width": 240,
+          "height": 240
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 310,
+          "y": 50
+        },
+        "size": {
+          "width": 240,
+          "height": 240
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 50,
+          "y": 310
+        },
+        "size": {
+          "width": 240,
+          "height": 240
+        },
+        "borderRadius": 12
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 310,
+          "y": 310
+        },
+        "size": {
+          "width": 240,
+          "height": 240
+        },
+        "borderRadius": 12
+      }
+    ]
+  }
+}

@@ -774,6 +774,39 @@
           </div>
         </div>
 
+        <!-- Size and Shape Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Size & Shape</h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Size</label>
+              <Dropdown
+                v-model="newTheme.size"
+                :options="sizeOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select size"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Rounded Corners</label>
+              <div class="flex items-center gap-2">
+                <div 
+                  @click="newTheme.rounded = !newTheme.rounded"
+                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
+                  :class="newTheme.rounded ? 'bg-brand-success border-brand-success' : 'bg-white'"
+                >
+                  <span v-if="newTheme.rounded" class="text-blue-600 text-xs font-bold">×</span>
+                </div>
+                <label @click="newTheme.rounded = !newTheme.rounded" class="text-xs text-brand-primary/70 cursor-pointer">
+                  Use rounded corners for memory shapes
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Layout Configuration -->
         <div class="border-t border-gray-200 pt-2">
           <div class="flex items-center justify-between mb-2">
@@ -794,29 +827,21 @@
         </div>
       </div>
 
-      <template #footer>
-        <div class="flex justify-between gap-2">
-          <Button
-            label="Save Layout"
-            icon="pi pi-save"
-            class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 py-1 text-xs"
-            @click="saveLayoutToTheme"
-          />
-          <div class="flex gap-2">
-            <Button
-              label="Cancel"
-              class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
-              @click="showCreateThemeModal = false"
-            />
-            <Button
-              label="Create Theme"
-              :loading="creatingTheme"
-              class="bg-brand-dialog-primary hover:bg-brand-dialog-primary-hover text-white border-0 px-3 py-1 text-xs"
-              @click="() => { console.log('[BUTTON] Create Theme clicked, dialog visible:', showCreateThemeModal.value); createTheme(); }"
-            />
-          </div>
-        </div>
-      </template>
+                    <template #footer>
+                <div class="flex justify-end gap-2">
+                  <Button
+                    label="Cancel"
+                    class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+                    @click="showCreateThemeModal = false"
+                  />
+                  <Button
+                    label="Create Theme"
+                    :loading="creatingTheme"
+                    class="bg-brand-dialog-primary hover:bg-brand-dialog-primary-hover text-white border-0 px-3 py-1 text-xs"
+                    @click="() => { console.log('[BUTTON] Create Theme clicked, dialog visible:', showCreateThemeModal.value); createTheme(); }"
+                  />
+                </div>
+              </template>
     </Dialog>
 
     <!-- User Details Modal -->
@@ -908,6 +933,7 @@
       <div class="h-full">
         <LayoutEditor 
           :initial-layout="getInitialLayout()"
+          :size="newTheme.size"
           @save="handleLayoutSave" 
         />
       </div>
@@ -973,7 +999,9 @@ const newTheme = ref({
   header_font_color: '',
   body_font_color: '',
   signature_font_color: '',
-  layout_config: ''
+  layout_config: '',
+  rounded: false,
+  size: '8.5x11'
 })
 
 // Font options for EBGaramond fonts
@@ -988,6 +1016,21 @@ const fontOptions = ref([
   { label: 'EB Garamond Bold Italic', value: 'EB Garamond Bold Italic' },
   { label: 'EB Garamond ExtraBold', value: 'EB Garamond ExtraBold' },
   { label: 'EB Garamond ExtraBold Italic', value: 'EB Garamond ExtraBold Italic' }
+])
+
+// Size options for themes
+const sizeOptions = ref([
+  { label: '3x5 inches (Portrait)', value: '3x5' },
+  { label: '5x3 inches (Landscape)', value: '5x3' },
+  { label: '5x7 inches (Portrait)', value: '5x7' },
+  { label: '7x5 inches (Landscape)', value: '7x5' },
+  { label: '8x10 inches (Portrait)', value: '8x10' },
+  { label: '10x8 inches (Landscape)', value: '10x8' },
+  { label: '8.5x11 inches (Letter Portrait)', value: '8.5x11' },
+  { label: '11x8.5 inches (Letter Landscape)', value: '11x8.5' },
+  { label: '11x14 inches (Portrait)', value: '11x14' },
+  { label: '14x11 inches (Landscape)', value: '14x11' },
+  { label: '12x12 inches (Square)', value: '12x12' }
 ])
 
 // User management variables
@@ -1857,6 +1900,11 @@ const openLayoutEditorForTheme = () => {
 }
 
 const getInitialLayout = () => {
+  // Ensure theme has a size, default to 7x5 if not set
+  if (!newTheme.value.size) {
+    newTheme.value.size = '7x5'
+  }
+  
   if (!newTheme.value.layout_config) {
     return null
   }

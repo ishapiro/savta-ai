@@ -98,7 +98,7 @@ create table if not exists memory_books (
   page_count integer,
   grid_layout text default '2x2' check (grid_layout in ('1x1', '2x1', '2x2', '3x2', '3x3', '3x4', '4x4')),
   memory_shape text default 'rounded' check (memory_shape in ('original', 'magic', 'rounded')),
-  print_size text,
+  print_size text default '8.5x11' check (print_size in ('3x5', '5x3', '5x7', '7x5', '8x10', '10x8', '8.5x11', '11x8.5', '11x14', '14x11', '12x12')),
   quality text,
   medium text,
   theme text,
@@ -151,6 +151,8 @@ create table if not exists themes (
   body_font_color text,
   signature_font_color text,
   layout_config jsonb,
+  rounded boolean default false,
+  size text default '8.5x11' check (size in ('3x5', '5x3', '5x7', '7x5', '8x10', '10x8', '8.5x11', '11x8.5', '11x14', '14x11', '12x12')),
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false
@@ -194,6 +196,7 @@ create index if not exists idx_asset_tags_asset_id on asset_tags(asset_id);
 create index if not exists idx_asset_tags_tag_id on asset_tags(tag_id);
 create index if not exists idx_memory_books_user_id on memory_books(user_id);
 create index if not exists idx_memory_books_status on memory_books(status);
+create index if not exists idx_memory_books_print_size on memory_books(print_size);
 create index if not exists idx_pdf_status_book_id on pdf_status(book_id);
 create index if not exists idx_pdf_status_user_id on pdf_status(user_id);
 create index if not exists idx_activity_log_user_id on activity_log(user_id);
@@ -201,6 +204,8 @@ create index if not exists idx_activity_log_action on activity_log(action);
 create index if not exists idx_activity_log_timestamp on activity_log(timestamp);
 create index if not exists idx_themes_name on themes(name);
 create index if not exists idx_themes_is_active on themes(is_active);
+create index if not exists idx_themes_rounded on themes(rounded);
+create index if not exists idx_themes_size on themes(size);
 
 -- Create updated_at trigger function
 create or replace function update_updated_at_column()

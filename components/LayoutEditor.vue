@@ -20,10 +20,68 @@
       >
         Remove Story
       </button>
+      <button @click="resetLayout" class="px-2 py-1 bg-orange-600 text-white rounded text-sm">Reset</button>
       <button @click="saveLayout" class="px-2 py-1 bg-blue-600 text-white rounded text-sm">Save Layout</button>
+      
+      <!-- Edit Defaults Mode Toggle -->
+      <button
+        @click="isEditDefaultsMode = !isEditDefaultsMode"
+        :class="isEditDefaultsMode ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-500 hover:bg-purple-600'"
+        class="px-2 py-1 text-white rounded text-sm transition-colors"
+      >
+        {{ editDefaultsButtonText }}
+      </button>
+
+      <!-- Save Defaults Button (only show in edit mode) -->
+      <button
+        v-if="isEditDefaultsMode"
+        @click="saveEditedDefaults"
+        class="px-2 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700"
+      >
+        Save as Default
+      </button>
     </div>
 
-    <div class="relative" :style="canvasStyle" id="canvas">
+    <!-- Size and Scale Information -->
+    <div class="mb-3 p-2 bg-gray-50 border border-gray-200 rounded text-sm">
+      <div class="flex justify-between items-center">
+        <span class="text-gray-700">
+          <strong>Size:</strong> {{ sizeDimensions.width }}" × {{ sizeDimensions.height }}" 
+          ({{ sizeDimensions.aspectRatio.toFixed(2) }}:1 ratio)
+        </span>
+        <span class="text-gray-700">
+          <strong>Scale Factor:</strong> {{ SCALE_FACTOR.toFixed(2) }}x
+        </span>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
+      <div class="text-blue-800">
+        <strong>Instructions:</strong>
+        <ul class="mt-1 space-y-1">
+          <li>• Click and drag the <span class="font-semibold text-blue-600">blue dots</span> to move elements</li>
+          <li>• Click the <span class="font-semibold text-red-600">red X</span> to delete an element</li>
+          <li>• Use the Reset button to restore default layout for current size</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Edit Defaults Mode Indicator -->
+    <div v-if="isEditDefaultsMode" class="mb-3 p-3 bg-yellow-50 border border-yellow-300 rounded text-sm">
+      <div class="text-yellow-800">
+        <strong>⚠️ Edit Defaults Mode Active</strong>
+        <p class="mt-1">You are editing the default layout for size: <span class="font-semibold">{{ props.size }}</span></p>
+        <p class="mt-1 text-xs">Changes will be saved as the new default for this size.</p>
+      </div>
+    </div>
+
+    <div 
+      class="relative" 
+      :style="canvasStyle" 
+      :class="{ 'border-4 border-yellow-400 bg-yellow-50': isEditDefaultsMode }"
+      id="canvas"
+    >
       <!-- Original boxes restored -->
       <div
         v-if="layoutData.story"
@@ -54,12 +112,16 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive } from 'vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 
 const props = defineProps({
   initialLayout: {
     type: Object,
     default: null
+  },
+  size: {
+    type: String,
+    default: '7x5'
   }
 })
 
@@ -76,8 +138,8 @@ let resizeStart = { x: 0, y: 0, width: 0, height: 0 }
 const layoutData = reactive({
   name: 'Four Photo Portrait with Story',
   units: { position: 'px', size: 'px', fontSize: 'pt' },
-  canvasSize: { width: 840, height: 600 },
-  cardSize: { width: 2100, height: 1500 },
+  canvasSize: { width: 800, height: 600 },
+  cardSize: { width: 0, height: 0 }, // Will be calculated based on size
   orientation: 'portrait',
   story: {
     position: { x: 70, y: 420 },
@@ -93,7 +155,131 @@ const layoutData = reactive({
   ]
 })
 
-const SCALE_FACTOR = 2.5
+// Edit defaults mode
+const isEditDefaultsMode = ref(false)
+const editDefaultsButtonText = computed(() => 
+  isEditDefaultsMode.value ? 'Exit Edit Mode' : 'Edit Defaults'
+)
+
+// Function to calculate dimensions and scale factor based on size
+function calculateSizeDimensions(size) {
+  const sizeMap = {
+    '3x5': { width: 3, height: 5, aspectRatio: 0.6 },
+    '5x3': { width: 5, height: 3, aspectRatio: 1.67 },
+    '5x7': { width: 5, height: 7, aspectRatio: 0.71 },
+    '7x5': { width: 7, height: 5, aspectRatio: 1.4 },
+    '8x10': { width: 8, height: 10, aspectRatio: 0.8 },
+    '10x8': { width: 10, height: 8, aspectRatio: 1.25 },
+    '8.5x11': { width: 8.5, height: 11, aspectRatio: 0.77 },
+    '11x8.5': { width: 11, height: 8.5, aspectRatio: 1.29 },
+    '11x14': { width: 11, height: 14, aspectRatio: 0.79 },
+    '14x11': { width: 14, height: 11, aspectRatio: 1.27 },
+    '12x12': { width: 12, height: 12, aspectRatio: 1 }
+  }
+  
+  return sizeMap[size] || sizeMap['7x5'] // Default to 7x5 if size not found
+}
+
+// Default layouts loaded from JSON file
+let defaultLayouts = null
+
+// Load default layouts from JSON file
+async function loadDefaultLayouts() {
+  if (!defaultLayouts) {
+    try {
+      const response = await fetch('/default-layouts.json')
+      defaultLayouts = await response.json()
+    } catch (error) {
+      console.error('Failed to load default layouts:', error)
+      // Fallback to a simple default
+      defaultLayouts = {
+        '7x5': {
+          name: 'Medium Landscape Layout',
+          units: { position: 'px', size: 'px', fontSize: 'pt' },
+          canvasSize: { width: 0, height: 0 },
+          cardSize: { width: 0, height: 0 },
+          orientation: 'landscape',
+          story: {
+            position: { x: 533, y: 50 },
+            size: { width: 267, height: 500 },
+            fontSizePt: 9,
+            align: 'center'
+          },
+          photos: [
+            { id: '1', position: { x: 50, y: 50 }, size: { width: 220, height: 220 }, borderRadius: 10 },
+            { id: '2', position: { x: 290, y: 50 }, size: { width: 220, height: 220 }, borderRadius: 10 },
+            { id: '3', position: { x: 50, y: 290 }, size: { width: 220, height: 220 }, borderRadius: 10 },
+            { id: '4', position: { x: 290, y: 290 }, size: { width: 220, height: 220 }, borderRadius: 10 }
+          ]
+        }
+      }
+    }
+  }
+  return defaultLayouts
+}
+
+// Get default layout for a specific size
+async function getDefaultLayout(size) {
+  const layouts = await loadDefaultLayouts()
+  return layouts[size] || layouts['7x5'] // Default to 7x5 if size not found
+}
+
+// Save edited defaults back to JSON file
+async function saveEditedDefaults() {
+  try {
+    const layouts = await loadDefaultLayouts()
+    
+    // Create a clean copy of the current layout data
+    const layoutToSave = {
+      name: layoutData.name,
+      units: { ...layoutData.units },
+      canvasSize: { width: 0, height: 0 }, // Always 0, calculated by watcher
+      cardSize: { width: 0, height: 0 },
+      orientation: layoutData.orientation,
+      story: layoutData.story ? { ...layoutData.story } : null,
+      photos: layoutData.photos.map(photo => ({ ...photo }))
+    }
+    
+    // Update the layout for current size
+    layouts[props.size] = layoutToSave
+    
+    // Save back to server
+    const response = await fetch('/api/layouts/save-defaults', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(layouts)
+    })
+    
+    if (response.ok) {
+      console.log('[SAVE DEFAULTS] Successfully saved defaults for size:', props.size)
+      // Reload the defaults to ensure we have the latest
+      defaultLayouts = null
+      await loadDefaultLayouts()
+      
+      // Show success message
+      alert(`✅ Default layout for ${props.size} saved successfully!`)
+    } else {
+      console.error('[SAVE DEFAULTS] Failed to save defaults:', response.statusText)
+      alert('❌ Failed to save default layout. Please try again.')
+    }
+  } catch (error) {
+    console.error('[SAVE DEFAULTS] Error saving defaults:', error)
+    alert('❌ Error saving default layout. Please try again.')
+  }
+}
+
+// Calculate dimensions and scale factor
+const sizeDimensions = computed(() => calculateSizeDimensions(props.size))
+const SCALE_FACTOR = computed(() => {
+  // Calculate scale factor to fit within 800x600 wireframe
+  const maxWidth = 800
+  const maxHeight = 600
+  const scaleX = maxWidth / (sizeDimensions.value.width * 100) // Convert inches to points (1 inch = 100 points)
+  const scaleY = maxHeight / (sizeDimensions.value.height * 100)
+  return Math.min(scaleX, scaleY, 2.5) // Cap at 2.5x scale factor
+})
 
 const canvasStyle = computed(() => ({
   width: `${layoutData.canvasSize.width}px`,
@@ -414,6 +600,18 @@ function deletePhoto(id) {
   // Vue template will automatically remove the box
 }
 
+async function resetLayout() {
+  const defaultLayout = await getDefaultLayout(props.size)
+  
+  // Reset to default layout for current size
+  layoutData.name = defaultLayout.name
+  layoutData.orientation = defaultLayout.orientation
+  layoutData.story = defaultLayout.story
+  layoutData.photos = defaultLayout.photos
+  
+  console.log('[RESET] Reset to default layout for size:', props.size)
+}
+
 function saveLayout() {
   // Create a deep copy of the layout data
   const jsonLayout = JSON.parse(JSON.stringify(layoutData))
@@ -447,14 +645,60 @@ function saveLayout() {
   emit('save', jsonLayout)
 }
 
+// Track if this is an existing theme with layout data
+let hasExistingLayout = false
+
+// Watcher to update canvas size based on aspect ratio
+watch(() => props.size, (newSize) => {
+  const dimensions = calculateSizeDimensions(newSize)
+  const maxWidth = 800
+  const maxHeight = 600
+  
+  // Calculate canvas size to maintain aspect ratio within 800x600 bounds
+  if (dimensions.aspectRatio > 1) {
+    // Landscape: fit to width
+    layoutData.canvasSize.width = maxWidth
+    layoutData.canvasSize.height = Math.round(maxWidth / dimensions.aspectRatio)
+  } else {
+    // Portrait: fit to height
+    layoutData.canvasSize.height = maxHeight
+    layoutData.canvasSize.width = Math.round(maxHeight * dimensions.aspectRatio)
+  }
+  
+  // Update card size (actual print size in points)
+  layoutData.cardSize.width = Math.round(dimensions.width * 100 * SCALE_FACTOR.value)
+  layoutData.cardSize.height = Math.round(dimensions.height * 100 * SCALE_FACTOR.value)
+  
+  // Only reposition boxes if this is a new theme (no existing layout)
+  if (!hasExistingLayout) {
+    getDefaultLayout(newSize).then(defaultLayout => {
+      layoutData.name = defaultLayout.name
+      layoutData.orientation = defaultLayout.orientation
+      layoutData.story = defaultLayout.story
+      layoutData.photos = defaultLayout.photos
+    })
+  }
+  
+  console.log('[SIZE CHANGE]', { 
+    size: newSize, 
+    dimensions, 
+    canvasSize: layoutData.canvasSize, 
+    cardSize: layoutData.cardSize,
+    scaleFactor: SCALE_FACTOR.value,
+    hasExistingLayout
+  })
+}, { immediate: true })
+
 // Initialize boxes when component mounts
 onMounted(() => {
   // If initial layout is provided, use it to initialize the layout data
   if (props.initialLayout) {
     console.log('[MOUNTED] Initializing with provided layout:', props.initialLayout)
     Object.assign(layoutData, props.initialLayout)
+    hasExistingLayout = true
   } else {
     console.log('[MOUNTED] Layout editor initialized with default layout')
+    hasExistingLayout = false
   }
 })
 </script>
@@ -485,11 +729,11 @@ onMounted(() => {
   left: 4px;
   width: 20px;
   height: 20px;
-  background: #dc2626;
+  background: #3b82f6;
   border-radius: 50%;
   cursor: move;
   z-index: 10;
-  border: 2px solid #991b1b;
+  border: 2px solid #1d4ed8;
 }
 
 .resize-handle {
@@ -501,5 +745,29 @@ onMounted(() => {
   background: #555;
   cursor: nwse-resize;
   border-radius: 2px;
+}
+
+.box button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  transition: background-color 0.2s;
+}
+
+.box button:hover {
+  background: #b91c1c;
 }
 </style>
