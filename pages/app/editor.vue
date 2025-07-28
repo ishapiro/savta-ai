@@ -59,6 +59,7 @@
       <TabView v-model:activeIndex="activeTabIndex">
         <!-- Asset Review Tab -->
         <TabPanel header="Asset Review">
+
           <!-- Asset Review Instructions and Filter -->
           <div class="mb-4">
             <div class="mb-2 text-sm text-brand-primary/70 font-medium">
@@ -285,10 +286,12 @@
                   />
                   <label for="showDeletedThemes" class="text-sm text-brand-primary/70 cursor-pointer">Show deleted themes</label>
                 </div>
+
                 <Button
                   label="Create New Theme"
                   icon="pi pi-plus"
                   @click="showCreateThemeModal = true"
+                  class="bg-brand-highlight p-4 border-0"
                 />
               </div>
             </div>
@@ -624,138 +627,205 @@
       v-model:visible="showCreateThemeModal"
       modal
       header="Create New Theme"
-      :style="{ width: '500px' }"
+      :style="{ width: '800px' }"
     >
-      <div class="space-y-4">
-        <div class="field">
-          <label class="block text-sm font-medium text-brand-primary mb-1">Theme Name</label>
-          <InputText
-            v-model="newTheme.name"
-            placeholder="Enter theme name"
-            class="w-full"
-          />
+      <div class="space-y-3">
+        <!-- Basic Theme Info -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="field">
+            <label class="block text-xs font-medium text-brand-primary mb-1">Theme Name</label>
+            <InputText
+              v-model="newTheme.name"
+              placeholder="Enter theme name"
+              class="w-full text-xs"
+            />
+          </div>
+          <div class="field">
+            <label class="block text-xs font-medium text-brand-primary mb-1">Preview Image URL</label>
+            <InputText
+              v-model="newTheme.preview_image_url"
+              placeholder="Paste preview image URL"
+              class="w-full text-xs"
+            />
+          </div>
         </div>
 
         <div class="field">
-          <label class="block text-sm font-medium text-brand-primary mb-1">Description</label>
+          <label class="block text-xs font-medium text-brand-primary mb-1">Description</label>
           <Textarea
             v-model="newTheme.description"
             placeholder="Enter theme description"
-            rows="3"
-            class="w-full"
+            rows="1"
+            class="w-full text-xs"
           />
         </div>
 
-        <div class="field">
-          <label class="block text-sm font-medium text-brand-primary mb-1">Preview Image URL</label>
-          <InputText
-            v-model="newTheme.preview_image_url"
-            placeholder="Paste preview image URL"
-            class="w-full"
-          />
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div class="field">
-            <label class="block text-sm font-medium text-brand-primary mb-1">Background Color</label>
-            <InputText
-              v-model="newTheme.background_color"
-              placeholder="#fffbe9"
-              class="w-full"
-            />
-          </div>
-          <div class="field">
-            <label class="block text-sm font-medium text-brand-primary mb-1">Background Opacity</label>
-            <InputText
-              v-model.number="newTheme.background_opacity"
-              type="number"
-              min="0"
-              max="100"
-              placeholder="100"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div class="field">
-            <label class="block text-sm font-medium text-brand-primary mb-1">Header Font</label>
-            <InputText
-              v-model="newTheme.header_font"
-              placeholder="e.g., 'Times New Roman'"
-              class="w-full"
-            />
-          </div>
-          <div class="field">
-            <label class="block text-sm font-medium text-brand-primary mb-1">Body Font</label>
-            <InputText
-              v-model="newTheme.body_font"
-              placeholder="e.g., Arial"
-              class="w-full"
-            />
+        <!-- Background Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Background</h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Color</label>
+              <div class="flex gap-2">
+                <ColorPicker
+                  v-model="newTheme.background_color"
+                  :default-color="newTheme.background_color || '#fffbe9'"
+                  class="w-8 h-8"
+                />
+                <InputText
+                  v-model="newTheme.background_color"
+                  placeholder="#fffbe9"
+                  class="flex-1 text-xs"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Opacity</label>
+              <InputText
+                v-model.number="newTheme.background_opacity"
+                type="number"
+                min="0"
+                max="100"
+                placeholder="100"
+                class="w-full text-xs"
+              />
+            </div>
           </div>
         </div>
 
-        <div class="field">
-          <label class="block text-sm font-medium text-brand-primary mb-1">Signature Font</label>
-          <InputText
-            v-model="newTheme.signature_font"
-            placeholder="e.g., 'Brush Script MT'"
-            class="w-full"
-          />
+        <!-- Font Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Fonts</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Header</label>
+              <Dropdown
+                v-model="newTheme.header_font"
+                :options="fontOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select header font"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Body</label>
+              <Dropdown
+                v-model="newTheme.body_font"
+                :options="fontOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select body font"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Signature</label>
+              <Dropdown
+                v-model="newTheme.signature_font"
+                :options="fontOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select signature font"
+                class="w-full text-xs"
+              />
+            </div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div class="field">
-            <label class="block text-sm font-medium text-brand-primary mb-1">Header Font Color</label>
-            <InputText
-              v-model="newTheme.header_font_color"
-              placeholder="#000000"
-              class="w-full"
+        <!-- Font Colors -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Font Colors</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Header</label>
+              <div class="flex gap-2">
+                <ColorPicker
+                  v-model="newTheme.header_font_color"
+                  :default-color="newTheme.header_font_color || '#000000'"
+                  class="w-8 h-8"
+                />
+                <InputText
+                  v-model="newTheme.header_font_color"
+                  placeholder="#000000"
+                  class="flex-1 text-xs"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Body</label>
+              <div class="flex gap-2">
+                <ColorPicker
+                  v-model="newTheme.body_font_color"
+                  :default-color="newTheme.body_font_color || '#333333'"
+                  class="w-8 h-8"
+                />
+                <InputText
+                  v-model="newTheme.body_font_color"
+                  placeholder="#333333"
+                  class="flex-1 text-xs"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Signature</label>
+              <div class="flex gap-2">
+                <ColorPicker
+                  v-model="newTheme.signature_font_color"
+                  :default-color="newTheme.signature_font_color || '#666666'"
+                  class="w-8 h-8"
+                />
+                <InputText
+                  v-model="newTheme.signature_font_color"
+                  placeholder="#666666"
+                  class="flex-1 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Configuration -->
+        <div class="border-t border-gray-200 pt-2">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-semibold text-brand-primary">Layout Configuration</h4>
+            <Button
+              label="Layout Editor"
+              icon="pi pi-palette"
+              class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
+              @click="openLayoutEditorForTheme"
             />
           </div>
-          <div class="field">
-            <label class="block text-sm font-medium text-brand-primary mb-1">Body Font Color</label>
-            <InputText
-              v-model="newTheme.body_font_color"
-              placeholder="#333333"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-brand-primary mb-1">Signature Font Color</label>
-          <InputText
-            v-model="newTheme.signature_font_color"
-            placeholder="#666666"
-            class="w-full"
-          />
-        </div>
-
-        <div class="field">
-          <label class="block text-sm font-medium text-brand-primary mb-1">Layout Config (JSON)</label>
           <Textarea
             v-model="newTheme.layout_config"
             placeholder='{"example": "JSON configuration"}'
-            rows="3"
-            class="w-full"
+            rows="2"
+            class="w-full text-xs"
           />
         </div>
       </div>
 
       <template #footer>
-        <div class="flex justify-end gap-2">
+        <div class="flex justify-between gap-2">
           <Button
-            label="Cancel"
-            severity="secondary"
-            @click="showCreateThemeModal = false"
+            label="Save Layout"
+            icon="pi pi-save"
+            class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 py-1 text-xs"
+            @click="saveLayoutToTheme"
           />
-          <Button
-            label="Create Theme"
-            :loading="creatingTheme"
-            @click="createTheme"
-          />
+          <div class="flex gap-2">
+            <Button
+              label="Cancel"
+              class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+              @click="showCreateThemeModal = false"
+            />
+            <Button
+              label="Create Theme"
+              :loading="creatingTheme"
+              class="bg-brand-dialog-primary hover:bg-brand-dialog-primary-hover text-white border-0 px-3 py-1 text-xs"
+              @click="createTheme"
+            />
+          </div>
         </div>
       </template>
     </Dialog>
@@ -835,6 +905,24 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- Layout Editor Dialog -->
+    <Dialog
+      v-model:visible="showLayoutEditorDialog"
+      modal
+      header="Layout Editor"
+      :style="{ width: '80vw', height: '80vh' }"
+      :maximizable="true"
+      :resizable="true"
+      class="layout-editor-dialog"
+    >
+      <div class="h-full">
+        <LayoutEditor 
+          :initial-layout="getInitialLayout()"
+          @save="handleLayoutSave" 
+        />
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -882,6 +970,7 @@ const showCreateThemeModal = ref(false)
 const creatingTheme = ref(false)
 const showDeletedThemes = ref(false)
 const deletedThemes = ref([])
+const showLayoutEditorDialog = ref(false)
 const newTheme = ref({
   name: '',
   description: '',
@@ -897,6 +986,20 @@ const newTheme = ref({
   signature_font_color: '',
   layout_config: ''
 })
+
+// Font options for EBGaramond fonts
+const fontOptions = ref([
+  { label: 'EB Garamond Regular', value: 'EB Garamond' },
+  { label: 'EB Garamond Italic', value: 'EB Garamond Italic' },
+  { label: 'EB Garamond Medium', value: 'EB Garamond Medium' },
+  { label: 'EB Garamond Medium Italic', value: 'EB Garamond Medium Italic' },
+  { label: 'EB Garamond SemiBold', value: 'EB Garamond SemiBold' },
+  { label: 'EB Garamond SemiBold Italic', value: 'EB Garamond SemiBold Italic' },
+  { label: 'EB Garamond Bold', value: 'EB Garamond Bold' },
+  { label: 'EB Garamond Bold Italic', value: 'EB Garamond Bold Italic' },
+  { label: 'EB Garamond ExtraBold', value: 'EB Garamond ExtraBold' },
+  { label: 'EB Garamond ExtraBold Italic', value: 'EB Garamond ExtraBold Italic' }
+])
 
 // User management variables
 const users = ref([])
@@ -1737,6 +1840,89 @@ const restoreTheme = async (themeId) => {
   }
 }
 
+// Layout Editor functions
+const openLayoutEditor = () => {
+  console.log('[Layout Editor] Button clicked, opening layout editor dialog')
+  showLayoutEditorDialog.value = true
+}
+
+const openLayoutEditorForTheme = () => {
+  console.log('[Layout Editor] Opening layout editor for theme')
+  showLayoutEditorDialog.value = true
+}
+
+const getInitialLayout = () => {
+  if (!newTheme.value.layout_config) {
+    return null
+  }
+  
+  try {
+    // If it's already an object, return it
+    if (typeof newTheme.value.layout_config === 'object') {
+      return newTheme.value.layout_config
+    }
+    
+    // If it's a string, parse it
+    if (typeof newTheme.value.layout_config === 'string') {
+      return JSON.parse(newTheme.value.layout_config)
+    }
+    
+    return null
+  } catch (error) {
+    console.error('[Layout Editor] Error parsing layout config:', error)
+    return null
+  }
+}
+
+const saveLayoutToTheme = () => {
+  // This function will be called when the user clicks "Save Layout" button
+  // It will trigger the layout editor to save the current layout to the theme
+  if (showLayoutEditorDialog.value) {
+    // If layout editor is open, we need to trigger a save
+    // For now, we'll just show a message
+    toast.add({
+      severity: 'info',
+      summary: 'Save Layout',
+      detail: 'Please use the Save Layout button in the Layout Editor dialog',
+      life: 3000
+    })
+  } else {
+    // If layout editor is not open, we can save the current layout_config
+    if (newTheme.value.layout_config) {
+      toast.add({
+        severity: 'success',
+        summary: 'Layout Saved',
+        detail: 'Layout configuration saved to theme',
+        life: 3000
+      })
+    } else {
+      toast.add({
+        severity: 'warn',
+        summary: 'No Layout',
+        detail: 'Please use the Layout Editor to create a layout first',
+        life: 3000
+      })
+    }
+  }
+}
+
+const handleLayoutSave = (layoutJson) => {
+  console.log('Saved layout:', layoutJson)
+  
+  // Save the layout JSON to the theme's layout_config field
+  newTheme.value.layout_config = JSON.stringify(layoutJson, null, 2)
+  
+  toast.add({
+    severity: 'success',
+    summary: 'Layout Saved',
+    detail: 'Layout configuration saved to theme',
+    life: 3000
+  })
+  
+  // Close the dialog after saving
+  showLayoutEditorDialog.value = false
+}
+
 // Helper functions
 const getBookStatusText = (status) => {
   const statusMap = {
@@ -1797,4 +1983,18 @@ const getRoleSeverity = (role) => {
   }
   return severityMap[role] || 'secondary'
 }
-</script> 
+</script>
+
+<style scoped>
+.layout-editor-dialog {
+  z-index: 9999 !important;
+}
+
+.layout-editor-dialog :deep(.p-dialog) {
+  z-index: 9999 !important;
+}
+
+.layout-editor-dialog :deep(.p-dialog-mask) {
+  z-index: 9998 !important;
+}
+</style> 

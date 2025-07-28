@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   
   // If user is not authenticated, redirect to login
   if (!user.value) {
-    return navigateTo('/login')
+    return navigateTo('/app/login')
   }
   
   // Check if user has editor or admin role
