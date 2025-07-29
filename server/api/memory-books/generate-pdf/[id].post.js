@@ -1993,50 +1993,50 @@ export default defineEventHandler(async (event) => {
 
       let selectedAssets = assets
       let aiStory = book.magic_story || null
-      // If not enough assets, or no story, call AI and update book (like magic layout)
-      if (assets.length < photoCount || !aiStory) {
-        const photos = assets.map(asset => ({
-          id: asset.id,
-          url: asset.storage_url,
-          caption: asset.user_caption || asset.ai_caption || '',
-          tags: asset.tags || [],
-          user_tags: asset.user_tags || [],
-          city: asset.city || null,
-          state: asset.state || null,
-          country: asset.country || null,
-          zip_code: asset.zip_code || null,
-          asset_date: asset.asset_date || null,
-          fingerprint: asset.fingerprint
-        }))
-        const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            photos: photos,
-            title: book.title,
-            memory_event: book.memory_event,
-            theme: book.theme || 'classic',
-            photo_count: photoCount,
-            background_type: book.background_type || 'white',
-            background_color: book.background_color
-          })
+      // Always call AI for theme layouts to ensure fresh story generation (like magic layout)
+      console.log('🎨 Theme layout detected, generating a new story for regeneration')
+      
+      const photos = assets.map(asset => ({
+        id: asset.id,
+        url: asset.storage_url,
+        caption: asset.user_caption || asset.ai_caption || '',
+        tags: asset.tags || [],
+        user_tags: asset.user_tags || [],
+        city: asset.city || null,
+        state: asset.state || null,
+        country: asset.country || null,
+        zip_code: asset.zip_code || null,
+        asset_date: asset.asset_date || null,
+        fingerprint: asset.fingerprint
+      }))
+      const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          photos: photos,
+          title: book.title,
+          memory_event: book.memory_event,
+          theme: book.theme || 'classic',
+          photo_count: photoCount,
+          background_type: book.background_type || 'white',
+          background_color: book.background_color
         })
-        if (magicRes.ok) {
-          const magicData = await magicRes.json()
-          // Use selected_photo_ids (array of asset IDs) from AI response
-          if (magicData.selected_photo_ids && Array.isArray(magicData.selected_photo_ids)) {
-            selectedAssets = assets.filter(a => magicData.selected_photo_ids.includes(a.id))
-          }
-          aiStory = magicData.story
-          // Update the book with the new story and asset IDs
-          await supabase.from('memory_books').update({
-            magic_story: aiStory,
-            created_from_assets: selectedAssets.map(a => a.id)
-          }).eq('id', book.id)
+      })
+      if (magicRes.ok) {
+        const magicData = await magicRes.json()
+        // Use selected_photo_ids (array of asset IDs) from AI response
+        if (magicData.selected_photo_ids && Array.isArray(magicData.selected_photo_ids)) {
+          selectedAssets = assets.filter(a => magicData.selected_photo_ids.includes(a.id))
         }
+        aiStory = magicData.story
+        // Update the book with the new story and asset IDs
+        await supabase.from('memory_books').update({
+          magic_story: aiStory,
+          created_from_assets: selectedAssets.map(a => a.id)
+        }).eq('id', book.id)
       }
 
       // Match photos to positions based on aspect ratio to minimize cropping
