@@ -858,11 +858,38 @@ async function saveEditedDefaults() {
 // Calculate dimensions and simple scaling
 const sizeDimensions = computed(() => calculateSizeDimensions(props.size))
 
-// Simple wireframe scaling - card is displayed at a reasonable size
-const WIREFRAME_WIDTH = 800 // Fixed wireframe width
-const WIREFRAME_HEIGHT = 600 // Fixed wireframe height
-const BORDER_MM = 10 // 10mm border
-const SPACING_MM = 10 // 10mm spacing between elements
+// Dynamic wireframe scaling based on card dimensions
+const BASE_WIREFRAME_WIDTH = 800
+const BASE_WIREFRAME_HEIGHT = 600
+const MIN_SCALE = 2.0
+const MAX_SCALE = 4.0
+
+// Calculate dynamic wireframe dimensions based on card size
+const wireframeDimensions = computed(() => {
+  const cardWidthInches = sizeDimensions.value.width
+  const cardHeightInches = sizeDimensions.value.height
+  
+  // Convert inches to mm (1 inch = 25.4mm)
+  const cardWidthMm = cardWidthInches * 25.4
+  const cardHeightMm = cardHeightInches * 25.4
+  
+  // Calculate aspect ratio
+  const cardAspectRatio = cardWidthMm / cardHeightMm
+  
+  // Adjust wireframe dimensions based on card aspect ratio
+  let width = BASE_WIREFRAME_WIDTH
+  let height = BASE_WIREFRAME_HEIGHT
+  
+  if (cardAspectRatio < 0.8) {
+    // Tall cards (portrait) - increase height
+    height = Math.max(BASE_WIREFRAME_HEIGHT, Math.round(cardHeightMm * 2.5))
+  } else if (cardAspectRatio > 1.2) {
+    // Wide cards (landscape) - increase width
+    width = Math.max(BASE_WIREFRAME_WIDTH, Math.round(cardWidthMm * 2.5))
+  }
+  
+  return { width, height }
+})
 
 // Calculate scale factor to fit card in wireframe
 const SCALE_FACTOR = computed(() => {
@@ -873,9 +900,11 @@ const SCALE_FACTOR = computed(() => {
   const cardWidthMm = cardWidthInches * 25.4
   const cardHeightMm = cardHeightInches * 25.4
   
+  const { width: wireframeWidth, height: wireframeHeight } = wireframeDimensions.value
+  
   // Calculate scale to fit in wireframe with minimal borders
-  const availableWidth = WIREFRAME_WIDTH - 100 // 50px border on each side
-  const availableHeight = WIREFRAME_HEIGHT - 100 // 50px border on each side
+  const availableWidth = wireframeWidth - 100 // 50px border on each side
+  const availableHeight = wireframeHeight - 120 // 60px border on each side for more space
   
   const scaleX = availableWidth / cardWidthMm
   const scaleY = availableHeight / cardHeightMm
@@ -883,8 +912,8 @@ const SCALE_FACTOR = computed(() => {
   // Use the smaller scale to ensure card fits completely
   const scale = Math.min(scaleX, scaleY)
   
-  // Ensure we have a reasonable scale (not zero or negative)
-  return Math.max(scale, 2.5) // Increased minimum scale for better visibility
+  // Ensure we have a reasonable scale within bounds
+  return Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale))
 })
 
 // Calculate card dimensions in wireframe pixels
@@ -911,23 +940,27 @@ const cardDimensions = computed(() => {
 const cardPosition = computed(() => {
   const cardWidth = cardDimensions.value.width
   const cardHeight = cardDimensions.value.height
+  const { width: wireframeWidth, height: wireframeHeight } = wireframeDimensions.value
   
   return {
-    left: Math.round((WIREFRAME_WIDTH - cardWidth) / 2),
-    top: Math.round((WIREFRAME_HEIGHT - cardHeight) / 2)
+    left: Math.round((wireframeWidth - cardWidth) / 2),
+    top: Math.round((wireframeHeight - cardHeight) / 2)
   }
 })
 
-const canvasStyle = computed(() => ({
-  width: `${WIREFRAME_WIDTH}px`,
-  height: `${WIREFRAME_HEIGHT}px`,
-  backgroundColor: '#fff8f0',
-  border: '2px solid #ccc',
-  borderRadius: '8px',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-  margin: '0 auto',
-  position: 'relative'
-}))
+const canvasStyle = computed(() => {
+  const { width: wireframeWidth, height: wireframeHeight } = wireframeDimensions.value
+  return {
+    width: `${wireframeWidth}px`,
+    height: `${wireframeHeight}px`,
+    backgroundColor: '#fff8f0',
+    border: '2px solid #ccc',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    margin: '0 auto',
+    position: 'relative'
+  }
+})
 
 // Card outline style
 const cardOutlineStyle = computed(() => ({
@@ -997,7 +1030,10 @@ function clampToBounds(pos, size) {
     y: Math.max(0, Math.min(maxY, pos.y))
   }
   
-  console.log('[CLAMP]', { input: pos, size, cardWidthMm, cardHeightMm, maxX, maxY, output: clamped })
+  // Only log in development mode to reduce console spam
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[CLAMP]', { input: pos, size, cardWidthMm, cardHeightMm, maxX, maxY, output: clamped })
+  }
   return clamped
 }
 
@@ -1239,14 +1275,16 @@ function onPointerMove(event) {
     const mouseX = event.clientX - canvasRect.left - dragOffset.value.x
     const mouseY = event.clientY - canvasRect.top - dragOffset.value.y
 
-    console.log('[DRAG MOVE]', {
-      dragging: currentDragId.value,
-      clientX: event.clientX,
-      clientY: event.clientY,
-      canvasRect: { left: canvasRect.left, top: canvasRect.top },
-      mouseRelativeToCanvas: { x: mouseX, y: mouseY },
-      dragOffset: dragOffset.value
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[DRAG MOVE]', {
+        dragging: currentDragId.value,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        canvasRect: { left: canvasRect.left, top: canvasRect.top },
+        mouseRelativeToCanvas: { x: mouseX, y: mouseY },
+        dragOffset: dragOffset.value
+      })
+    }
 
     // Convert from wireframe coordinates to mm coordinates
     const mouseXRelativeToCard = mouseX - cardPosition.value.left
@@ -1266,13 +1304,17 @@ function onPointerMove(event) {
       size = photo ? photo.size : { width: 200, height: 150 }
     }
     
-    console.log('[DRAG MOVE] Before clampToBounds:', { newX, newY, size })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[DRAG MOVE] Before clampToBounds:', { newX, newY, size })
+    }
     let newPos = clampToBounds({ x: newX, y: newY }, size)
     
     // Apply snapping if enabled
     if (snapEnabled.value) {
       newPos = snapToGrid(newPos)
-      console.log('[DRAG MOVE] After snapToGrid:', { newPos })
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[DRAG MOVE] After snapToGrid:', { newPos })
+      }
     }
     
     // Update the box position in layoutData
@@ -1285,7 +1327,9 @@ function onPointerMove(event) {
       }
     }
     
-    console.log('[DRAG MOVE] Updated position:', { currentDragId: currentDragId.value, newPos })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[DRAG MOVE] Updated position:', { currentDragId: currentDragId.value, newPos })
+    }
   } else if (isResizing.value && currentResizeId.value) {
     // Handle resizing
     const deltaX = event.clientX - resizeStart.value.x
@@ -1823,11 +1867,11 @@ function openJsonDialog() {
       units: { position: 'mm', size: 'mm', fontSize: 'pt' },
       cardWidthMm: layoutData.cardWidthMm,
       cardHeightMm: layoutData.cardHeightMm,
-      story: {
+      story: layoutData.story ? {
         position: { ...layoutData.story.position },
         size: { ...layoutData.story.size },
         fontSizePt: layoutData.story.fontSizePt || 12
-      },
+      } : null,
       photos: layoutData.photos.map(photo => ({
         id: photo.id,
         position: { ...photo.position },
@@ -1857,11 +1901,11 @@ function getCurrentLayoutJson() {
       units: { position: 'mm', size: 'mm', fontSize: 'pt' },
       cardWidthMm: layoutData.cardWidthMm,
       cardHeightMm: layoutData.cardHeightMm,
-      story: {
+      story: layoutData.story ? {
         position: { ...layoutData.story.position },
         size: { ...layoutData.story.size },
         fontSizePt: layoutData.story.fontSizePt || 12
-      },
+      } : null,
       photos: layoutData.photos.map(photo => ({
         id: photo.id,
         position: { ...photo.position },
@@ -1899,13 +1943,14 @@ function applyJsonChanges() {
       : editableJsonContent.value
     
     // Ensure it's a valid layout structure
-    if (!parsedJson || !parsedJson.name || !parsedJson.units || !parsedJson.orientation || !parsedJson.story || !parsedJson.photos) {
-      alert('Invalid JSON structure. Please ensure it includes "name", "units", "orientation", "story", and "photos".')
+    if (!parsedJson || !parsedJson.name || !parsedJson.units || !parsedJson.cardWidthMm || !parsedJson.cardHeightMm || !parsedJson.photos) {
+      alert('Invalid JSON structure. Please ensure it includes "name", "units", "cardWidthMm", "cardHeightMm", and "photos".')
       return
     }
 
     // Update layoutData with the new JSON
-    layoutData.orientation = parsedJson.orientation
+    layoutData.cardWidthMm = parsedJson.cardWidthMm
+    layoutData.cardHeightMm = parsedJson.cardHeightMm
     
     // Update story data
     if (parsedJson.story) {
@@ -1958,13 +2003,14 @@ function saveJsonChanges() {
       : editableJsonContent.value
     
     // Ensure it's a valid layout structure
-    if (!parsedJson || !parsedJson.name || !parsedJson.units || !parsedJson.orientation || !parsedJson.story || !parsedJson.photos) {
-      alert('Invalid JSON structure. Please ensure it includes "name", "units", "orientation", "story", and "photos".')
+    if (!parsedJson || !parsedJson.name || !parsedJson.units || !parsedJson.cardWidthMm || !parsedJson.cardHeightMm || !parsedJson.photos) {
+      alert('Invalid JSON structure. Please ensure it includes "name", "units", "cardWidthMm", "cardHeightMm", and "photos".')
       return
     }
 
     // Update layoutData with the new JSON
-    layoutData.orientation = parsedJson.orientation
+    layoutData.cardWidthMm = parsedJson.cardWidthMm
+    layoutData.cardHeightMm = parsedJson.cardHeightMm
     
     // Update story data
     if (parsedJson.story) {
@@ -2002,6 +2048,7 @@ function saveJsonChanges() {
     editableJsonContent.value = getCurrentLayoutJson()
     
     console.log('[JSON SAVED]', parsedJson)
+    alert("JSON saved")
   } catch (error) {
     console.error('Error saving JSON changes:', error)
     alert('❌ Failed to save JSON changes. Please check the JSON format.')
