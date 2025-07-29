@@ -191,7 +191,8 @@ export async function renderTextToImage(text, width, height, options = {}) {
     padding = 2, // Reduced from 8 to 2 for much tighter margins
     color = '#2D1810',
     dpi = 1200, // Ultra high-quality DPI for embedded fonts
-    scale = 16   // High scale for embedded font quality
+    scale = 16,  // High scale for embedded font quality
+    backgroundColor = 'transparent' // Background color (default transparent for stories)
   } = options
   
   try {
@@ -239,8 +240,18 @@ export async function renderTextToImage(text, width, height, options = {}) {
             font-display: block;
           }
         </style>
+        ${backgroundColor !== 'transparent' ? `
+        <radialGradient id="vignette" cx="0.5" cy="0.5" r="0.8">
+          <stop offset="0%" style="stop-color:${backgroundColor};stop-opacity:0.5" />
+          <stop offset="70%" style="stop-color:${backgroundColor};stop-opacity:0.5" />
+          <stop offset="100%" style="stop-color:${backgroundColor};stop-opacity:0.2" />
+        </radialGradient>
+        ` : ''}
       </defs>
-      <rect width="${scaledWidth}" height="${scaledHeight}" fill="transparent"/>
+      ${backgroundColor !== 'transparent' ? 
+        `<rect width="${scaledWidth}" height="${scaledHeight}" fill="url(#vignette)" rx="${scaledPadding * 2}" ry="${scaledPadding * 2}" stroke="#E5E5E5" stroke-width="1"/>` :
+        `<rect width="${scaledWidth}" height="${scaledHeight}" fill="${backgroundColor}"/>`
+      }
       ${(() => {
         // Calculate total text height
         const totalTextHeight = lines.length * scaledFontSize * lineHeight
@@ -251,7 +262,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
           const y = startY + (i * scaledFontSize * lineHeight)
           const escapedLine = escapeXml(line)
           console.log(`📝 Line ${i + 1}: "${line}" → "${escapedLine}" (y: ${y})`)
-          return `<text x="${scaledPadding}" y="${y}" class="text" font-size="${scaledFontSize}" font-weight="400" font-style="italic">${escapedLine}</text>`
+          return `<text x="${scaledWidth / 2}" y="${y}" class="text" font-size="${scaledFontSize}" font-weight="400" font-style="italic" text-anchor="middle">${escapedLine}</text>`
         }).join('')
       })()}
     </svg>`
@@ -287,26 +298,35 @@ export async function renderTextToImage(text, width, height, options = {}) {
  * @param {number} maxWidth - Maximum width in pixels
  * @param {number} maxHeight - Maximum height in pixels
  * @param {Object} options - Rendering options
- * @returns {Promise<Buffer>} - PNG image buffer
+ * @returns {Promise<Object>} - Object with buffer, width, and height
  */
 export async function createCaptionImage(captionText, maxWidth, maxHeight, options = {}) {
   const {
     startFontSize = 12, // Smaller font for captions
     lineHeight = 1.3,   // Tighter line height for captions
-    padding = 6,         // Smaller padding for captions
+    padding = 8,         // Slightly more padding for captions with background
     color = '#2D1810',
     dpi = 1200,         // Ultra high-quality DPI
-    scale = 16          // High scale for embedded font quality
+    scale = 16,         // High scale for embedded font quality
+    backgroundColor = '#FFFFFF' // White background for captions
   } = options
   
-  return await renderTextToImage(captionText, maxWidth, maxHeight, {
+  const buffer = await renderTextToImage(captionText, maxWidth, maxHeight, {
     startFontSize,
     lineHeight,
     padding,
     color,
     dpi,
-    scale
+    scale,
+    backgroundColor // Pass the white background option
   })
+  
+  // Return object with buffer, width, and height
+  return {
+    buffer,
+    width: maxWidth,
+    height: maxHeight
+  }
 }
 
 /**

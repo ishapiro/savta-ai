@@ -1946,6 +1946,15 @@ export default defineEventHandler(async (event) => {
                 const captionX = imgX + (imgDisplayWidth - captionImage.width) / 2;
                 const captionY = imgY + 5; // 5px margin from bottom of actual photo
                 
+                // Add defensive logging to catch any NaN values
+                console.log('Caption positioning (main):', { captionX, captionY, imgX, imgY, imgDisplayWidth, captionImageWidth: captionImage.width, captionImageHeight: captionImage.height });
+                
+                // Validate coordinates before drawing
+                if (isNaN(captionX) || isNaN(captionY) || isNaN(captionImage.width) || isNaN(captionImage.height)) {
+                  console.error('❌ Invalid caption coordinates (main):', { captionX, captionY, width: captionImage.width, height: captionImage.height });
+                  throw new Error('Invalid caption coordinates in main section');
+                }
+                
                 page.drawImage(pdfCaptionImage, {
                   x: captionX,
                   y: captionY,
@@ -1981,6 +1990,12 @@ export default defineEventHandler(async (event) => {
             }
             
             if (captionText) {
+              // Define fallback dimensions for caption positioning
+              const imgDisplayWidth = drawWidth * 0.8; // Use 80% of cell width
+              const imgDisplayHeight = drawHeight * 0.8; // Use 80% of cell height
+              const imgX = x + (drawWidth - imgDisplayWidth) / 2;
+              const imgY = y + (drawHeight - imgDisplayHeight) / 2;
+              
               // Create caption image using sharp and SVG
               const maxCaptionHeight = Math.min(imgDisplayHeight * 0.4, 80); // Cap at 80px or 40% of photo height
               const captionWidth = Math.round(imgDisplayWidth * 0.9); // Use 90% of photo width
@@ -2001,6 +2016,15 @@ export default defineEventHandler(async (event) => {
                 // For shaped photos, this ensures the caption appears within the visible photo area
                 const captionX = imgX + (imgDisplayWidth - captionImage.width) / 2;
                 const captionY = imgY + 5; // 5px margin from bottom of actual photo
+                
+                // Add defensive logging to catch any NaN values
+                console.log('Caption positioning (fallback):', { captionX, captionY, imgX, imgY, imgDisplayWidth, captionImageWidth: captionImage.width, captionImageHeight: captionImage.height });
+                
+                // Validate coordinates before drawing
+                if (isNaN(captionX) || isNaN(captionY) || isNaN(captionImage.width) || isNaN(captionImage.height)) {
+                  console.error('❌ Invalid caption coordinates (fallback):', { captionX, captionY, width: captionImage.width, height: captionImage.height });
+                  throw new Error('Invalid caption coordinates in fallback');
+                }
                 
                 page.drawImage(pdfCaptionImage, {
                   x: captionX,
