@@ -28,30 +28,28 @@ export default defineEventHandler(async (event) => {
     console.log('🔍 Analyzing image for faces:', imageUrl)
     
     // Construct prompt for face detection
-    const prompt = `Analyze this image and identify all human faces. For each face detected, provide the following information in JSON format:
+    const prompt = `DETECT ALL HUMAN FACES IN THIS IMAGE. RETURN ONLY A JSON OBJECT WITH THIS EXACT STRUCTURE:
 
 {
   "faces": [
     {
-      "x": <center_x_as_percentage_0_to_100>,
-      "y": <center_y_as_percentage_0_to_100>,
-      "width": <face_width_as_percentage_0_to_100>,
-      "height": <face_height_as_percentage_0_to_100>,
-      "confidence": <confidence_score_0_to_1>
+      "x": 50,
+      "y": 40,
+      "width": 10,
+      "height": 10,
+      "confidence": 0.95
     }
   ],
-  "total_faces": <number_of_faces_detected>
+  "total_faces": 1
 }
 
-Important guidelines:
-- x and y should be the center coordinates of the face
-- width and height should be the face dimensions
-- All coordinates should be percentages (0-100) relative to image dimensions
-- If no faces are detected, return {"faces": [], "total_faces": 0}
-- Be precise with face boundaries
-- Include all visible faces, even partially visible ones
-- Confidence should be between 0 and 1 (1 = very confident)`
+WHERE:
+- x, y are center coordinates as percentages (0-100)
+- width, height are face dimensions as percentages (0-100)
+- confidence is 0-1
+- total_faces is the count
 
+RETURN ONLY THE JSON. NO OTHER TEXT. NO EXPLANATIONS.`
     // Call OpenAI Vision API
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -62,6 +60,10 @@ Important guidelines:
       body: JSON.stringify({
         model: 'gpt-4o',
         messages: [
+          {
+            role: 'system',
+            content: 'You are a face detection API. Respond with ONLY valid JSON. No explanations or text.'
+          },
           {
             role: 'user',
             content: [
@@ -79,7 +81,7 @@ Important guidelines:
           }
         ],
         max_tokens: 500,
-        temperature: 0.1
+        temperature: 0.0
       })
     })
     
@@ -100,6 +102,11 @@ Important guidelines:
     // Parse the JSON response
     let faceData
     try {
+      // Check if response is null or empty
+      if (!analysisText || analysisText === 'null' || analysisText.trim() === '') {
+        throw new Error('Empty or null response from OpenAI')
+      }
+      
       // Extract JSON from the response (in case there's extra text)
       const jsonMatch = analysisText.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
@@ -109,10 +116,14 @@ Important guidelines:
       }
     } catch (parseError) {
       console.error('❌ Failed to parse face detection response:', parseError)
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to parse face detection response'
-      })
+      console.log('🤖 Raw response was:', analysisText)
+      // Return empty faces instead of throwing an error
+      console.log('🔄 Returning empty faces for graceful fallback')
+      return {
+        success: true,
+        faces: [],
+        total_faces: 0
+      }
     }
     
     console.log('✅ Face detection completed:', faceData)
