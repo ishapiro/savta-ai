@@ -629,6 +629,16 @@ export default defineEventHandler(async (event) => {
           const currentWidth = maxX - minX
           const currentHeight = maxY - minY
           
+          console.log('🎯 Face detection crop calculation:', {
+            targetAspectRatio: targetAspectRatio.toFixed(3),
+            currentWidth: currentWidth.toFixed(1),
+            currentHeight: currentHeight.toFixed(1),
+            minX: minX.toFixed(1),
+            minY: minY.toFixed(1),
+            maxX: maxX.toFixed(1),
+            maxY: maxY.toFixed(1)
+          })
+          
           // Calculate the maximum possible crop area that includes all faces
           let finalWidth, finalHeight
           let finalX, finalY
@@ -738,6 +748,12 @@ export default defineEventHandler(async (event) => {
             height: Math.floor(finalHeight)
           }
           
+          // Ensure all values are positive integers (handle any remaining decimals)
+          cropArea.x = Math.max(0, Math.floor(cropArea.x))
+          cropArea.y = Math.max(0, Math.floor(cropArea.y))
+          cropArea.width = Math.max(1, Math.floor(cropArea.width))
+          cropArea.height = Math.max(1, Math.floor(cropArea.height))
+          
           console.log('🎯 Face-based crop area (maximized):', cropArea)
         } else {
           // No faces detected, use smartcrop fallback
@@ -806,6 +822,13 @@ export default defineEventHandler(async (event) => {
                 width: Math.floor(finalWidth),
                 height: Math.floor(finalHeight)
               }
+              
+              // Ensure all values are positive integers (handle any remaining decimals)
+              cropArea.x = Math.max(0, Math.floor(cropArea.x))
+              cropArea.y = Math.max(0, Math.floor(cropArea.y))
+              cropArea.width = Math.max(1, Math.floor(cropArea.width))
+              cropArea.height = Math.max(1, Math.floor(cropArea.height))
+              
               console.log('🎯 Smartcrop fallback crop area (maximized):', cropArea)
             } else {
               throw new Error('Smartcrop failed to return valid crop area')
@@ -876,6 +899,12 @@ export default defineEventHandler(async (event) => {
               }
             }
             
+            // Ensure all values are positive integers (handle any remaining decimals)
+            cropArea.x = Math.max(0, Math.floor(cropArea.x))
+            cropArea.y = Math.max(0, Math.floor(cropArea.y))
+            cropArea.width = Math.max(1, Math.floor(cropArea.width))
+            cropArea.height = Math.max(1, Math.floor(cropArea.height))
+            
             console.log('🎯 Orientation-based fallback crop area (maximized):', cropArea)
           }
         }
@@ -897,8 +926,8 @@ export default defineEventHandler(async (event) => {
         return croppedImage
       } catch (error) {
         console.warn('⚠️ OpenAI face detection crop failed, using fallback:', error.message)
-        // Fallback to regular resize
-        return await sharp(workingImageBuffer)
+        // Fallback to regular resize using original imageBuffer
+        return await sharp(imageBuffer)
           .resize(targetWidth, targetHeight, { fit: 'cover' })
           .withMetadata() // Preserve original orientation
           .png()
@@ -1321,30 +1350,34 @@ export default defineEventHandler(async (event) => {
               console.log(`📐 Image orientation: ${isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'}`)
               console.log(`📏 Original dimensions: ${imageMetadata.width}x${imageMetadata.height}`)
               
-              // Standardize sizes for rounded photos based on orientation
+              // Preserve original aspect ratio for rounded photos
+              const originalAspectRatio = imageMetadata.width / imageMetadata.height
+              console.log(`📐 Original aspect ratio: ${originalAspectRatio.toFixed(3)}`)
+              
+              // Calculate dimensions that preserve aspect ratio while fitting within target bounds
               let standardizedWidth, standardizedHeight
               
-              if (isPortrait) {
-                // Standard portrait size: 177x315 (from the logs)
-                standardizedWidth = 177
-                standardizedHeight = 315
-                console.log('📐 Standardizing portrait photo to 177x315')
-              } else if (isLandscape) {
-                // Standard landscape size: 315x177 (same proportions, rotated)
-                standardizedWidth = 315
-                standardizedHeight = 177
-                console.log('📐 Standardizing landscape photo to 315x177')
+              if (originalAspectRatio > 1) {
+                // Landscape: fit width to target, calculate height
+                standardizedWidth = targetWidth
+                standardizedHeight = targetWidth / originalAspectRatio
+                console.log(`📐 Landscape: preserving aspect ratio ${originalAspectRatio.toFixed(3)} -> ${standardizedWidth}x${Math.round(standardizedHeight)}`)
+              } else if (originalAspectRatio < 1) {
+                // Portrait: fit height to target, calculate width
+                standardizedHeight = targetHeight
+                standardizedWidth = targetHeight * originalAspectRatio
+                console.log(`📐 Portrait: preserving aspect ratio ${originalAspectRatio.toFixed(3)} -> ${Math.round(standardizedWidth)}x${standardizedHeight}`)
               } else {
-                // Square photo: use the smaller dimension as base
+                // Square: use smaller dimension
                 const baseSize = Math.min(targetWidth, targetHeight)
                 standardizedWidth = baseSize
                 standardizedHeight = baseSize
-                console.log(`📐 Standardizing square photo to ${baseSize}x${baseSize}`)
+                console.log(`📐 Square: using ${baseSize}x${baseSize}`)
               }
               
               // Scale up for high quality processing
-              const highResWidth = standardizedWidth * 2
-              const highResHeight = standardizedHeight * 2
+              const highResWidth = Math.floor(standardizedWidth * 2)
+              const highResHeight = Math.floor(standardizedHeight * 2)
               
               let resizedImage
               if (isMagicMemory || book.layout_type === 'theme') {
