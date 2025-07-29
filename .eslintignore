@@ -1,0 +1,17 @@
+# Ignore CSS files
+*.css
+assets/css/*.css
+
+# Ignore build outputs
+.nuxt/
+.output/
+dist/
+
+# Ignore node modules
+node_modules/
+
+# Ignore other files that don't need linting
+*.md
+*.txt
+*.sql
+*.log 

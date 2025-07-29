@@ -30,7 +30,7 @@
 // Set the layout for this page
 definePageMeta({
   layout: 'default',
-  middleware: ['auth', 'editor']
+  middleware: ['auth', 'admin']
 })
 
 import { useToast } from 'primevue/usetoast'

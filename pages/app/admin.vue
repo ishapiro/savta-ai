@@ -945,7 +945,7 @@
 // Set the layout for this page
 definePageMeta({
   layout: 'default',
-  middleware: ['auth', 'editor']
+  middleware: ['admin']
 })
 
 import { useToast } from 'primevue/usetoast'
@@ -1255,10 +1255,36 @@ const filteredBooks = computed(() => {
 
 // Load data
 onMounted(async () => {
+  console.log('[Admin Page] onMounted started')
+  
+  // Check authentication on client side
+  const user = useSupabaseUser()
+  if (!user.value) {
+    console.log('[Admin Page] No authenticated user, redirecting to login')
+    await navigateTo('/app/login')
+    return
+  }
+  
+  console.log('[Admin Page] User authenticated, loading data...')
 
-  await loadThemes()
-  await loadStats()
-  await loadUserProfile() // Load user profile for admin checks
+  try {
+    console.log('[Admin Page] Loading themes...')
+    await loadThemes()
+    console.log('[Admin Page] Themes loaded')
+    
+    console.log('[Admin Page] Loading stats...')
+    await loadStats()
+    console.log('[Admin Page] Stats loaded')
+    
+    console.log('[Admin Page] Loading user profile...')
+    await loadUserProfile() // Load user profile for admin checks
+    console.log('[Admin Page] User profile loaded')
+    
+    console.log('[Admin Page] All data loaded successfully')
+  } catch (error) {
+    console.error('[Admin Page] Error loading data:', error)
+    // Continue loading even if there's an error
+  }
   
   // Display role-based toast after profile is loaded
   if (userProfile.value) {

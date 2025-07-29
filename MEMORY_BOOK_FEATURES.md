@@ -303,7 +303,7 @@ All user actions are logged in the `activity_log` table:
 - `pages/app/admin.vue` - Admin interface
 - `middleware/auth.js` - Authentication middleware
 - `middleware/admin.js` - Admin access control
-- `middleware/editor.js` - Editor access control
+- `middleware/admin.js` - Admin access control
 
 ### Database Schema
 The complete database schema is defined in `supabase/schema.sql` with:

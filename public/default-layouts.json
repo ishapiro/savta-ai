@@ -441,7 +441,18 @@
       "height": 0
     },
     "orientation": "portrait",
-    "story": null,
+    "story": {
+      "position": {
+        "x": 20,
+        "y": 394
+      },
+      "size": {
+        "width": 408,
+        "height": 167
+      },
+      "fontSizePt": 12,
+      "align": "center"
+    },
     "photos": [
       {
         "id": "1",
@@ -458,12 +469,12 @@
       {
         "id": "2",
         "position": {
-          "x": 234,
+          "x": 235,
           "y": 20
         },
         "size": {
-          "width": 194,
-          "height": 167
+          "width": 195,
+          "height": 170
         },
         "borderRadius": 12
       },
@@ -471,43 +482,19 @@
         "id": "3",
         "position": {
           "x": 20,
-          "y": 207
+          "y": 205
         },
         "size": {
-          "width": 194,
-          "height": 167
+          "width": 200,
+          "height": 160
         },
         "borderRadius": 12
       },
       {
         "id": "4",
         "position": {
-          "x": 234,
-          "y": 207
-        },
-        "size": {
-          "width": 194,
-          "height": 167
-        },
-        "borderRadius": 12
-      },
-      {
-        "id": "photo-1",
-        "position": {
-          "x": 20,
-          "y": 395
-        },
-        "size": {
-          "width": 194,
-          "height": 167
-        },
-        "borderRadius": 12
-      },
-      {
-        "id": "photo-2",
-        "position": {
           "x": 235,
-          "y": 395
+          "y": 205
         },
         "size": {
           "width": 194,

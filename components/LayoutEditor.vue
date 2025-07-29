@@ -1,38 +1,54 @@
 <template>
   <div>
-    <!-- Info button for instructions -->
-    <div class="mb-2 flex items-center justify-between gap-4">
-      <button
-        @click="showInstructionsDialog = true"
-        class="flex items-center gap-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
-      >
-        <i class="pi pi-info-circle text-lg"></i>
-        <span class="text-sm font-medium">Instructions</span>
-      </button>
-      
-      <!-- Card Size Info -->
-      <div class="flex items-center gap-4 text-sm">
-        <span class="text-gray-700">
-          <strong>{{ sizeDimensions.width }}"×{{ sizeDimensions.height }}"</strong>
-          <span class="text-xs text-gray-500 ml-1">({{ Math.round(sizeDimensions.width * 25.4) }}×{{ Math.round(sizeDimensions.height * 25.4) }}mm)</span>
-        </span>
-        <span class="text-gray-700">
-          <strong>{{ cardDimensions.width }}×{{ cardDimensions.height }}px</strong>
-          <span class="text-xs text-gray-500 ml-1">({{ SCALE_FACTOR.toFixed(2) }}x)</span>
-        </span>
+    <!-- Professional Header -->
+    <div class="mb-3 flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+      <!-- Instructions Button and Snap Controls -->
+      <div class="flex items-center gap-3">
+        <button
+          @click="showInstructionsDialog = true"
+          class="flex items-center gap-1.5 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-xs font-medium transition-colors"
+        >
+          <i class="pi pi-info-circle text-sm"></i>
+          <span>Help</span>
+        </button>
+        
+        <!-- Snap Controls -->
+        <div class="flex items-center gap-2">
+          <Checkbox
+            v-model="snapEnabled"
+            :binary="true"
+            inputId="snap-checkbox"
+            class="border-0 text-black"
+          />
+          <label for="snap-checkbox" class="text-gray-600 text-xs font-medium">
+            Snap to grid*
+          </label>
+          
+          <!-- Grid Size Input -->
+          <div class="flex items-center gap-1">
+            <label class="text-gray-600 text-xs font-medium">Grid Size:</label>
+            <InputText
+              v-model="gridSize"
+              type="number"
+              min="5"
+              max="100"
+              class="w-12 h-6 text-xs px-1"
+              @input="updateGridSize"
+            />
+          </div>
+        </div>
       </div>
       
-      <!-- Snap Controls -->
-      <div class="flex items-center gap-2">
-        <Checkbox
-          v-model="snapEnabled"
-          :binary="true"
-          inputId="snap-checkbox"
-          class="snap-checkbox"
-        />
-        <label for="snap-checkbox" class="text-gray-700 text-sm">
-          Snap to 5mm grid
-        </label>
+      <!-- Card Size Info -->
+      <div class="flex items-center gap-3 text-xs text-gray-600">
+        <span class="bg-white px-2 py-1 rounded border">
+          <strong>{{ sizeDimensions.width }}"×{{ sizeDimensions.height }}"</strong>
+          <span class="text-gray-500 ml-1">({{ Math.round(sizeDimensions.width * 25.4) }}×{{ Math.round(sizeDimensions.height * 25.4) }}mm)</span>
+        </span>
+        <span class="bg-white px-2 py-1 rounded border">
+          <strong>{{ cardDimensions.width }}×{{ cardDimensions.height }}px</strong>
+          <span class="text-gray-500 ml-1">({{ SCALE_FACTOR.toFixed(2) }}x)</span>
+        </span>
       </div>
     </div>
 
@@ -98,92 +114,115 @@
     </div>
 
     <!-- Edit Defaults Mode Indicator -->
-    <div v-if="isEditDefaultsMode" class="mb-2 p-3 bg-yellow-50 border border-yellow-300 rounded text-sm">
-      <div class="text-yellow-800">
-        <strong>⚠️ Edit Defaults Mode Active</strong> - Editing default layout for size: <span class="font-semibold">{{ props.size }}</span>
+    <div v-if="isEditDefaultsMode" class="mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs">
+      <div class="flex items-center gap-2 text-amber-800">
+        <i class="pi pi-exclamation-triangle text-amber-600"></i>
+        <span class="font-medium">Edit Defaults Mode</span>
+        <span class="text-amber-600">•</span>
+        <span>Editing default layout for size: <strong>{{ props.size }}</strong></span>
       </div>
     </div>
 
-    <!-- Buttons right above layout area -->
-    <div class="mb-2 space-y-2">
-      <!-- First row of buttons -->
-      <div class="flex flex-wrap gap-2">
-        <button @click="addPhoto" class="px-2 py-1 bg-green-600 text-white rounded text-sm">Add Photo</button>
+    <!-- Professional Toolbar -->
+    <div class="mb-3 space-y-2">
+      <!-- Primary Actions -->
+      <div class="flex flex-wrap gap-1.5">
+        <button @click="addPhoto" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition-colors">
+          <i class="pi pi-image text-xs mr-1"></i>Add Photo
+        </button>
         <button 
           @click="addStory" 
           :disabled="!!layoutData.story"
-          class="px-2 py-1 bg-blue-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Add Story
+          <i class="pi pi-file-edit text-xs mr-1"></i>Add Story
         </button>
         <button 
           v-if="layoutData.story"
           @click="deleteStory" 
-          class="px-2 py-1 bg-red-600 text-white rounded text-sm"
+          class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition-colors"
         >
-          Remove Story
+          <i class="pi pi-trash text-xs mr-1"></i>Remove Story
         </button>
-        <button @click="resetLayout" class="px-2 py-1 bg-orange-600 text-white rounded text-sm">Reset</button>
-        <button @click="saveLayout" class="px-2 py-1 bg-blue-600 text-white rounded text-sm">Save Layout</button>
+        <button @click="resetLayout" class="px-2 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-medium transition-colors">
+          <i class="pi pi-refresh text-xs mr-1"></i>Reset
+        </button>
+        <button @click="saveLayout" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors">
+          <i class="pi pi-save text-xs mr-1"></i>Save
+        </button>
         <button
           @click="showPasswordDialog = true"
-          class="px-2 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded text-sm transition-colors"
+          class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium transition-colors"
         >
-          Edit Defaults
+          <i class="pi pi-cog text-xs mr-1"></i>Defaults
         </button>
         <button
-          @click="showJsonDialog = true"
-          class="px-2 py-1 bg-teal-600 text-white rounded text-sm hover:bg-teal-700"
+          @click="openJsonDialog"
+          class="px-2 py-1 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-medium transition-colors"
         >
-          Show JSON
+          <i class="pi pi-code text-xs mr-1"></i>JSON
         </button>
       </div>
       
-      <!-- Second row of buttons -->
-      <div class="flex flex-wrap gap-2">
+      <!-- Selection Tools -->
+      <div class="flex flex-wrap gap-1.5">
         <button 
           @click="clearSelection" 
           :disabled="selectedBoxes.length === 0"
-          class="px-2 py-1 bg-gray-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-2 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Clear Selection ({{ selectedBoxes.length }})
+          <i class="pi pi-times text-xs mr-1"></i>Clear ({{ selectedBoxes.length }})
         </button>
         <button 
           @click="makeSameSize" 
           :disabled="selectedBoxes.length < 2"
-          class="px-2 py-1 bg-indigo-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Same Size & Distribute
+          <i class="pi pi-th-large text-xs mr-1"></i>Same Size
         </button>
         <button 
           @click="copySelectedBoxes" 
           :disabled="selectedBoxes.length === 0"
-          class="px-2 py-1 bg-blue-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Copy ({{ selectedBoxes.length }})
+          <i class="pi pi-copy text-xs mr-1"></i>Copy ({{ selectedBoxes.length }})
         </button>
         <button 
           @click="pasteCopiedBoxes" 
           :disabled="copiedBoxes.length === 0"
-          class="px-2 py-1 bg-green-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Paste ({{ copiedBoxes.length }})
+          <i class="pi pi-paste text-xs mr-1"></i>Paste ({{ copiedBoxes.length }})
+        </button>
+        <button 
+          @click="alignVertical" 
+          :disabled="selectedBoxes.length < 2"
+          class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-align-left text-xs mr-1"></i>Align V
+        </button>
+        <button 
+          @click="alignHorizontal" 
+          :disabled="selectedBoxes.length < 2"
+          class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-align-center text-xs mr-1"></i>Align H
         </button>
         
-        <!-- Edit Defaults Mode Buttons (only show in edit mode) -->
+        <!-- Edit Defaults Mode Buttons -->
         <button
           v-if="isEditDefaultsMode"
           @click="exitEditMode"
-          class="px-2 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
+          class="px-2 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-xs font-medium transition-colors"
         >
-          Exit Edit Mode
+          <i class="pi pi-sign-out text-xs mr-1"></i>Exit Edit
         </button>
         <button
           v-if="isEditDefaultsMode"
           @click="saveEditedDefaults"
-          class="px-2 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700"
+          class="px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-xs font-medium transition-colors"
         >
-          Save as Default
+          <i class="pi pi-check text-xs mr-1"></i>Save Default
         </button>
       </div>
     </div>
@@ -231,33 +270,55 @@
 
     <!-- JSON Dialog -->
     <div v-if="showJsonDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 shadow-xl max-h-[80vh] overflow-y-auto border-2 border-gray-200">
+      <div class="bg-white rounded-lg p-6 w-full max-w-5xl mx-4 shadow-xl border-2 border-gray-200 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-brand-secondary">Current Layout JSON</h3>
+          <h3 class="text-lg font-semibold text-brand-secondary">Edit Layout JSON</h3>
           <button
-            @click="showJsonDialog = false"
+            @click="cancelJsonEdit"
             class="text-gray-500 hover:text-gray-700"
           >
             <i class="pi pi-times text-xl"></i>
           </button>
         </div>
         
-        <div class="bg-gray-100 p-4 rounded-lg border border-gray-300">
-          <pre class="text-sm text-gray-800 whitespace-pre-wrap overflow-x-auto">{{ getCurrentLayoutJson() }}</pre>
+        <div class="space-y-4">
+          <div class="text-sm text-gray-600">
+            <p>Edit the JSON below to modify the layout. The layout will be updated when you save.</p>
+            <p class="text-xs text-gray-500 mt-1">Format: {"name": "Layout Name", "units": {...}, "orientation": "portrait", "story": {...}, "photos": [...]}</p>
+          </div>
+          
+          <div class="border border-gray-300 rounded p-4 bg-gray-50">
+            <textarea
+              v-model="editableJsonContent"
+              class="w-full h-96 p-3 border border-gray-300 rounded font-mono text-sm resize-none"
+              placeholder="Enter JSON layout data..."
+            ></textarea>
+          </div>
+          
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>JSON Editor - Edit the layout structure above</span>
+            <span>{{ editableJsonContent.length }} characters</span>
+          </div>
         </div>
         
         <div class="mt-6 flex justify-end gap-3">
           <button
+            @click="cancelJsonEdit"
+            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+          >
+            Cancel
+          </button>
+          <button
             @click="copyJsonToClipboard"
-            class="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded text-sm transition-colors"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
           >
             Copy to Clipboard
           </button>
           <button
-            @click="showJsonDialog = false"
-            class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+            @click="saveJsonChanges"
+            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
           >
-            Close
+            Save Changes
           </button>
         </div>
       </div>
@@ -324,9 +385,9 @@
     </div>
 
     <div 
-      class="relative overflow-auto bg-gray-100 rounded-lg p-4" 
-      :class="{ 'border-4 border-yellow-400 bg-yellow-50': isEditDefaultsMode }"
-      style="height: calc(100vh - 180px);"
+      class="relative overflow-auto bg-gray-50 rounded-lg border border-gray-200 p-4" 
+      :class="{ 'border-2 border-amber-400 bg-amber-50': isEditDefaultsMode }"
+      style="height: calc(100vh - 200px);"
     >
       <div 
         class="relative" 
@@ -336,19 +397,19 @@
         <!-- Card Outline -->
         <div :style="cardOutlineStyle"></div>
         
-        <!-- 5mm Grid Lines (within card boundaries) -->
+        <!-- Dynamic Grid Lines (within card boundaries) -->
         <div v-if="snapEnabled" class="absolute pointer-events-none" :style="cardOutlineStyle">
-          <!-- Vertical 5mm grid lines -->
+          <!-- Vertical grid lines -->
           <div
-            v-for="x in fiveMmGridLines.x"
-            :key="`5mm-v-${x}`"
+            v-for="x in dynamicGridLines.x"
+            :key="`grid-v-${x}`"
             class="absolute top-0 bottom-0 w-px bg-gray-200 opacity-30"
             :style="{ left: `${x}px` }"
           ></div>
-          <!-- Horizontal 5mm grid lines -->
+          <!-- Horizontal grid lines -->
           <div
-            v-for="y in fiveMmGridLines.y"
-            :key="`5mm-h-${y}`"
+            v-for="y in dynamicGridLines.y"
+            :key="`grid-h-${y}`"
             class="absolute left-0 right-0 h-px bg-gray-200 opacity-30"
             :style="{ top: `${y}px` }"
           ></div>
@@ -415,6 +476,16 @@
 
 <script setup>
 import { computed, onMounted, reactive, watch } from 'vue'
+// Temporarily use textarea instead of JsonEditor due to import issues
+// const JsonEditor = defineAsyncComponent({
+//   loader: () => import('vue-json-editor'),
+//   errorComponent: {
+//     template: '<div class="p-4 text-red-600">JSON Editor failed to load. Please refresh the page.</div>'
+//   },
+//   loadingComponent: {
+//     template: '<div class="p-4 text-gray-600">Loading JSON Editor...</div>'
+//   }
+// })
 
 const props = defineProps({
   initialLayout: {
@@ -455,10 +526,33 @@ const resizeDialogData = ref({
 const copiedBoxes = ref([])
 const nextPhotoId = ref(1)
 
+// JSON editing functionality
+const editableJsonContent = ref('')
+
+// JSON Editor configuration - removed due to import issues
+// const jsonEditorOptions = ref({
+//   mode: 'tree',
+//   modes: ['tree', 'code', 'text'],
+//   search: true,
+//   navigationBar: true,
+//   statusBar: true,
+//   colorPicker: true,
+//   sortObjectKeys: false,
+//   history: true
+// })
+
 // Snap functionality
 const snapEnabled = ref(false)
-const snapGridSize = 5 // 5mm in pixels (assuming 1mm = 1px for simplicity)
+const gridSize = ref(10) // Default grid size in mm
+const snapGridSize = computed(() => gridSize.value) // Grid size in pixels
 const gridLineInterval = 50 // 50mm intervals for grid lines
+
+// Update grid size function
+function updateGridSize() {
+  // Ensure grid size is within bounds (5-100)
+  if (gridSize.value < 5) gridSize.value = 5
+  if (gridSize.value > 100) gridSize.value = 100
+}
 
 // Multi-select functionality
 const selectedBoxes = ref([])
@@ -535,10 +629,10 @@ function makeSameSize() {
     
     // Apply snapping if enabled
     if (snapEnabled.value) {
-      x = Math.round(x / snapGridSize) * snapGridSize
-      y = Math.round(y / snapGridSize) * snapGridSize
-      width = Math.round(width / snapGridSize) * snapGridSize
-      height = Math.round(height / snapGridSize) * snapGridSize
+      x = Math.round(x / snapGridSize.value) * snapGridSize.value
+      y = Math.round(y / snapGridSize.value) * snapGridSize.value
+      width = Math.round(width / snapGridSize.value) * snapGridSize.value
+      height = Math.round(height / snapGridSize.value) * snapGridSize.value
     }
     
     if (boxId === 'story') {
@@ -579,8 +673,8 @@ const gridLines = computed(() => {
   return { x: xLines, y: yLines }
 })
 
-// Calculate 5mm grid lines positions (within card boundaries)
-const fiveMmGridLines = computed(() => {
+// Calculate dynamic grid lines positions (within card boundaries)
+const dynamicGridLines = computed(() => {
   if (!snapEnabled.value) return { x: [], y: [] }
   
   const xLines = []
@@ -588,13 +682,13 @@ const fiveMmGridLines = computed(() => {
   const cardWidth = cardDimensions.value.width
   const cardHeight = cardDimensions.value.height
   
-  // Calculate vertical 5mm lines (x positions) within card
-  for (let x = snapGridSize; x < cardWidth; x += snapGridSize) {
+  // Calculate vertical grid lines (x positions) within card
+  for (let x = snapGridSize.value; x < cardWidth; x += snapGridSize.value) {
     xLines.push(x)
   }
   
-  // Calculate horizontal 5mm lines (y positions) within card
-  for (let y = snapGridSize; y < cardHeight; y += snapGridSize) {
+  // Calculate horizontal grid lines (y positions) within card
+  for (let y = snapGridSize.value; y < cardHeight; y += snapGridSize.value) {
     yLines.push(y)
   }
   
@@ -606,22 +700,26 @@ function snapToGrid(position) {
   if (!snapEnabled.value) return position
   
   return {
-    x: Math.round(position.x / snapGridSize) * snapGridSize,
-    y: Math.round(position.y / snapGridSize) * snapGridSize
+    x: Math.round(position.x / snapGridSize.value) * snapGridSize.value,
+    y: Math.round(position.y / snapGridSize.value) * snapGridSize.value
   }
 }
 
-// Plain JavaScript variables for drag state
-let isDragging = false
-let currentDragId = null
-let isResizing = false
-let currentResizeId = null
-let resizeStart = { x: 0, y: 0, width: 0, height: 0 }
+// Drag state
+const isDragging = ref(false)
+const currentDragId = ref(null)
+const dragStart = ref({ x: 0, y: 0 })
+const dragOffset = ref({ x: 0, y: 0 })
 
-// Multi-box drag state
-let isMultiDragging = false
-let multiDragStart = { x: 0, y: 0 }
-let selectedBoxRelativePositions = []
+// Multi-drag state
+const isMultiDragging = ref(false)
+const multiDragStart = ref({ x: 0, y: 0 })
+const selectedBoxRelativePositions = ref([])
+
+// Resize state
+const isResizing = ref(false)
+const currentResizeId = ref(null)
+const resizeStart = ref({ x: 0, y: 0, width: 0, height: 0 })
 
 // Reactive object for layout data - simplified
 const layoutData = reactive({
@@ -860,7 +958,7 @@ const cardOutlineStyle = computed(() => ({
   width: `${cardDimensions.value.width}px`,
   height: `${cardDimensions.value.height}px`,
   border: '2px dashed #666',
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  backgroundColor: 'transparent',
   pointerEvents: 'none'
 }))
 
@@ -1006,19 +1104,19 @@ function startDrag(id, event) {
   // Check if we should do multi-drag (if the dragged box is selected and there are other selected boxes)
   if (selectedBoxes.value.includes(id) && selectedBoxes.value.length > 1) {
     // Start multi-drag
-    isMultiDragging = true
-    isDragging = false
-    currentDragId = null
+    isMultiDragging.value = true
+    isDragging.value = false
+    currentDragId.value = null
     
     const canvas = document.getElementById('canvas')
     const canvasRect = canvas.getBoundingClientRect()
-    multiDragStart = {
+    multiDragStart.value = {
       x: event.clientX - canvasRect.left,
       y: event.clientY - canvasRect.top
     }
     
     // Calculate relative positions of all selected boxes
-    selectedBoxRelativePositions = selectedBoxes.value.map(boxId => {
+    selectedBoxRelativePositions.value = selectedBoxes.value.map(boxId => {
       let position
       if (boxId === 'story') {
         position = { ...layoutData.story.position }
@@ -1029,21 +1127,31 @@ function startDrag(id, event) {
       
       return {
         id: boxId,
-        relativeX: position.x - multiDragStart.x,
-        relativeY: position.y - multiDragStart.y
+        relativeX: position.x - multiDragStart.value.x,
+        relativeY: position.y - multiDragStart.value.y
       }
     })
     
     console.log('[MULTI DRAG START]', { 
       selectedBoxes: selectedBoxes.value, 
-      multiDragStart, 
-      relativePositions: selectedBoxRelativePositions 
+      multiDragStart: multiDragStart.value, 
+      relativePositions: selectedBoxRelativePositions.value 
     })
   } else {
     // Single box drag (original behavior)
-    isDragging = true
-    isMultiDragging = false
-    currentDragId = id
+    isDragging.value = true
+    isMultiDragging.value = false
+    currentDragId.value = id
+    
+    // Calculate the offset from the drag handle to the mouse position
+    const dragHandle = event.currentTarget
+    const dragHandleRect = dragHandle.getBoundingClientRect()
+    dragOffset.value = {
+      x: event.clientX - dragHandleRect.left,
+      y: event.clientY - dragHandleRect.top
+    }
+    
+    console.log('[DRAG START] Drag offset:', dragOffset.value)
   }
 
   const dragHandle = event.currentTarget
@@ -1066,7 +1174,7 @@ function startDrag(id, event) {
 function onPointerMove(event) {
   event.preventDefault()
 
-  if (isMultiDragging) {
+  if (isMultiDragging.value) {
     // Handle multi-box dragging
     const canvas = document.getElementById('canvas')
     const canvasRect = canvas.getBoundingClientRect()
@@ -1076,7 +1184,7 @@ function onPointerMove(event) {
     console.log('[MULTI DRAG MOVE]', { mouseX, mouseY })
     
     // Move all selected boxes maintaining their relative positions
-    selectedBoxRelativePositions.forEach(({ id, relativeX, relativeY }) => {
+    selectedBoxRelativePositions.value.forEach(({ id, relativeX, relativeY }) => {
       let newX = mouseX + relativeX
       let newY = mouseY + relativeY
       
@@ -1114,21 +1222,22 @@ function onPointerMove(event) {
       
       console.log('[MULTI DRAG MOVE] Updated box:', { id, finalPos })
     })
-  } else if (isDragging && currentDragId) {
+  } else if (isDragging.value && currentDragId.value) {
     // Handle single box dragging
     const canvas = document.getElementById('canvas')
     const canvasRect = canvas.getBoundingClientRect()
 
-    // Get mouse position relative to canvas
-    const mouseX = event.clientX - canvasRect.left
-    const mouseY = event.clientY - canvasRect.top
+    // Get mouse position relative to canvas, accounting for drag offset
+    const mouseX = event.clientX - canvasRect.left - dragOffset.value.x
+    const mouseY = event.clientY - canvasRect.top - dragOffset.value.y
 
     console.log('[DRAG MOVE]', {
-      dragging: currentDragId,
+      dragging: currentDragId.value,
       clientX: event.clientX,
       clientY: event.clientY,
       canvasRect: { left: canvasRect.left, top: canvasRect.top },
-      mouseRelativeToCanvas: { x: mouseX, y: mouseY }
+      mouseRelativeToCanvas: { x: mouseX, y: mouseY },
+      dragOffset: dragOffset.value
     })
 
     // Convert from wireframe coordinates to card coordinates
@@ -1137,10 +1246,10 @@ function onPointerMove(event) {
 
     // Get the appropriate size based on the element type
     let size
-    if (currentDragId === 'story') {
+    if (currentDragId.value === 'story') {
       size = layoutData.story.size
     } else {
-      const photo = layoutData.photos.find(p => p.id === currentDragId)
+      const photo = layoutData.photos.find(p => p.id === currentDragId.value)
       size = photo ? photo.size : { width: 200, height: 150 }
     }
     
@@ -1154,23 +1263,23 @@ function onPointerMove(event) {
     }
     
     // Update the box position in layoutData
-    if (currentDragId === 'story') {
+    if (currentDragId.value === 'story') {
       layoutData.story.position = newPos
     } else {
-      const photo = layoutData.photos.find(p => p.id === currentDragId)
+      const photo = layoutData.photos.find(p => p.id === currentDragId.value)
       if (photo) {
         photo.position = newPos
       }
     }
     
-    console.log('[DRAG MOVE] Updated position:', { currentDragId, newPos })
-  } else if (isResizing && currentResizeId) {
+    console.log('[DRAG MOVE] Updated position:', { currentDragId: currentDragId.value, newPos })
+  } else if (isResizing.value && currentResizeId.value) {
     // Handle resizing
-    const deltaX = event.clientX - resizeStart.x
-    const deltaY = event.clientY - resizeStart.y
+    const deltaX = event.clientX - resizeStart.value.x
+    const deltaY = event.clientY - resizeStart.value.y
     
-    let newWidth = resizeStart.width + deltaX
-    let newHeight = resizeStart.height + deltaY
+    let newWidth = resizeStart.value.width + deltaX
+    let newHeight = resizeStart.value.height + deltaY
     
     // Ensure minimum size
     newWidth = Math.max(50, newWidth)
@@ -1178,16 +1287,16 @@ function onPointerMove(event) {
     
     // Apply snapping if enabled
     if (snapEnabled.value) {
-      newWidth = Math.round(newWidth / snapGridSize) * snapGridSize
-      newHeight = Math.round(newHeight / snapGridSize) * snapGridSize
+      newWidth = Math.round(newWidth / snapGridSize.value) * snapGridSize.value
+      newHeight = Math.round(newHeight / snapGridSize.value) * snapGridSize.value
     }
     
     // Update the box size
-    if (currentResizeId === 'story') {
+    if (currentResizeId.value === 'story') {
       layoutData.story.size.width = newWidth
       layoutData.story.size.height = newHeight
     } else {
-      const photo = layoutData.photos.find(p => p.id === currentResizeId)
+      const photo = layoutData.photos.find(p => p.id === currentResizeId.value)
       if (photo) {
         photo.size.width = newWidth
         photo.size.height = newHeight
@@ -1197,27 +1306,27 @@ function onPointerMove(event) {
 }
 
 function stopInteraction() {
-  console.log('[DRAG STOP]', { dragging: currentDragId, resizing: currentResizeId, multiDragging: isMultiDragging })
+  console.log('[DRAG STOP]', { dragging: currentDragId.value, resizing: currentResizeId.value, multiDragging: isMultiDragging.value })
   
   // If we were multi-dragging, sync all final positions back to data
-  if (isMultiDragging) {
+  if (isMultiDragging.value) {
     console.log('[MULTI DRAG STOP] Syncing final positions for all selected boxes')
     
     // All positions are already synced in the onPointerMove function
     // Just clear the multi-drag state
-    isMultiDragging = false
-    selectedBoxRelativePositions = []
+    isMultiDragging.value = false
+    selectedBoxRelativePositions.value = []
   }
   // If we were dragging, sync the final position back to data
-  else if (isDragging && currentDragId) {
-    const boxId = currentDragId === 'story' ? 'box-story' : `box-${currentDragId}`
+  else if (isDragging.value && currentDragId.value) {
+    const boxId = currentDragId.value === 'story' ? 'box-story' : `box-${currentDragId.value}`
     const box = document.getElementById(boxId)
     
     if (box) {
       const finalX = parseInt(box.style.left)
       const finalY = parseInt(box.style.top)
       
-      console.log('[DRAG STOP] Syncing final position to data:', { currentDragId, finalX, finalY })
+      console.log('[DRAG STOP] Syncing final position to data:', { currentDragId: currentDragId.value, finalX, finalY })
       
       // Convert from wireframe coordinates back to card coordinates
       const cardX = finalX - cardPosition.value.left
@@ -1225,10 +1334,10 @@ function stopInteraction() {
       
       // Get the appropriate size for clamping
       let size
-      if (currentDragId === 'story') {
+      if (currentDragId.value === 'story') {
         size = layoutData.story.size
       } else {
-        const photo = layoutData.photos.find(p => p.id === currentDragId)
+        const photo = layoutData.photos.find(p => p.id === currentDragId.value)
         size = photo ? photo.size : { width: 200, height: 150 }
       }
       
@@ -1247,31 +1356,31 @@ function stopInteraction() {
       }
       
       // Sync position back to layoutData
-      if (currentDragId === 'story') {
+      if (currentDragId.value === 'story') {
         layoutData.story.position = finalPos
       } else {
-        const photo = layoutData.photos.find(p => p.id === currentDragId)
+        const photo = layoutData.photos.find(p => p.id === currentDragId.value)
         if (photo) {
           photo.position = finalPos
         }
       }
       
-      console.log('[DRAG STOP] Position synced to layoutData:', { currentDragId, finalPos })
+      console.log('[DRAG STOP] Position synced to layoutData:', { currentDragId: currentDragId.value, finalPos })
     }
   }
   
-  isDragging = false
-  currentDragId = null
-  isResizing = false
-  currentResizeId = null
+  isDragging.value = false
+  currentDragId.value = null
+  isResizing.value = false
+  currentResizeId.value = null
   document.removeEventListener('pointermove', onPointerMove)
   document.removeEventListener('pointerup', stopInteraction)
 }
 
 function startResize(id, event) {
   event.preventDefault()
-  isResizing = true
-  currentResizeId = id
+  isResizing.value = true
+  currentResizeId.value = id
   
   // Get the current size from layoutData
   let currentSize
@@ -1283,7 +1392,7 @@ function startResize(id, event) {
   }
   
   // Store the initial mouse position and current size
-  resizeStart = {
+  resizeStart.value = {
     x: event.clientX,
     y: event.clientY,
     width: currentSize.width,
@@ -1315,8 +1424,8 @@ function applyResize() {
 
   // Apply snapping if enabled
   if (snapEnabled.value) {
-    newWidthPx = Math.round(newWidthPx / snapGridSize) * snapGridSize
-    newHeightPx = Math.round(newHeightPx / snapGridSize) * snapGridSize
+    newWidthPx = Math.round(newWidthPx / snapGridSize.value) * snapGridSize.value
+    newHeightPx = Math.round(newHeightPx / snapGridSize.value) * snapGridSize.value
   }
 
   // Update the box size in layoutData
@@ -1430,6 +1539,78 @@ function pasteCopiedBoxes() {
   selectedBoxes.value = newSelectedBoxes
   
   console.log('[PASTE] Pasted boxes:', newSelectedBoxes)
+}
+
+// Align selected boxes vertically (left edge)
+function alignVertical() {
+  if (selectedBoxes.value.length < 2) {
+    alert('Please select at least 2 boxes to align.')
+    return
+  }
+  
+  // Find the leftmost position among selected boxes
+  let leftmostX = Infinity
+  
+  selectedBoxes.value.forEach(boxId => {
+    let position
+    if (boxId === 'story') {
+      position = layoutData.story.position
+    } else {
+      const photo = layoutData.photos.find(p => p.id === boxId)
+      position = photo ? photo.position : { x: 0, y: 0 }
+    }
+    leftmostX = Math.min(leftmostX, position.x)
+  })
+  
+  // Align all selected boxes to the leftmost position
+  selectedBoxes.value.forEach(boxId => {
+    if (boxId === 'story') {
+      layoutData.story.position.x = leftmostX
+    } else {
+      const photo = layoutData.photos.find(p => p.id === boxId)
+      if (photo) {
+        photo.position.x = leftmostX
+      }
+    }
+  })
+  
+  console.log('[ALIGN VERTICAL] Aligned boxes to x:', leftmostX)
+}
+
+// Align selected boxes horizontally (top edge)
+function alignHorizontal() {
+  if (selectedBoxes.value.length < 2) {
+    alert('Please select at least 2 boxes to align.')
+    return
+  }
+  
+  // Find the topmost position among selected boxes
+  let topmostY = Infinity
+  
+  selectedBoxes.value.forEach(boxId => {
+    let position
+    if (boxId === 'story') {
+      position = layoutData.story.position
+    } else {
+      const photo = layoutData.photos.find(p => p.id === boxId)
+      position = photo ? photo.position : { x: 0, y: 0 }
+    }
+    topmostY = Math.min(topmostY, position.y)
+  })
+  
+  // Align all selected boxes to the topmost position
+  selectedBoxes.value.forEach(boxId => {
+    if (boxId === 'story') {
+      layoutData.story.position.y = topmostY
+    } else {
+      const photo = layoutData.photos.find(p => p.id === boxId)
+      if (photo) {
+        photo.position.y = topmostY
+      }
+    }
+  })
+  
+  console.log('[ALIGN HORIZONTAL] Aligned boxes to y:', topmostY)
 }
 
 function addPhoto() {
@@ -1574,51 +1755,68 @@ onMounted(() => {
   }
 })
 
-// Function to get current layout data as JSON string
-function getCurrentLayoutJson() {
+// Function to open JSON dialog with populated content
+function openJsonDialog() {
   try {
-    const jsonLayout = JSON.parse(JSON.stringify(layoutData))
-    
-    // Ensure we have valid data
-    if (!jsonLayout || !layoutData) {
-      return JSON.stringify({ error: "No layout data available" }, null, 2)
-    }
-    
-    // Add card size information
-    jsonLayout.cardSizeString = sizeDimensions.value ? 
-      `${sizeDimensions.value.width}x${sizeDimensions.value.height}` : 
-      "unknown"
-    
-    // Remove internal fields that shouldn't be in the output
-    delete jsonLayout.cardWidth
-    delete jsonLayout.cardHeight
-    
-    // Handle story data
-    if (jsonLayout.story && layoutData.story) {
-      // Keep original coordinates (they're already in card coordinates)
-      jsonLayout.story.position = { ...layoutData.story.position }
-      jsonLayout.story.size = { ...layoutData.story.size }
-    }
-
-    // Handle photos
-    if (layoutData.photos && Array.isArray(layoutData.photos)) {
-      jsonLayout.photos = layoutData.photos.map(photo => ({
-        ...photo,
+    const jsonLayout = {
+      name: `Layout for ${props.size}`,
+      units: { position: 'px', size: 'px', fontSize: 'pt' },
+      orientation: layoutData.orientation,
+      cardSizeString: `${sizeDimensions.value.width}x${sizeDimensions.value.height}`,
+      story: {
+        position: { ...layoutData.story.position },
+        size: { ...layoutData.story.size },
+        fontSizePt: layoutData.story.fontSizePt || 12
+      },
+      photos: layoutData.photos.map(photo => ({
+        id: photo.id,
         position: { ...photo.position },
         size: { ...photo.size },
-        borderRadius: photo.borderRadius
+        borderRadius: photo.borderRadius || 0
       }))
-    } else {
-      jsonLayout.photos = []
     }
     
-    return JSON.stringify(jsonLayout, null, 2)
+    // Populate the editable content
+    editableJsonContent.value = JSON.stringify(jsonLayout, null, 2)
+    
+    // Open the dialog
+    showJsonDialog.value = true
+    
+    console.log('[JSON DIALOG] Opened with content:', editableJsonContent.value.length, 'characters')
+  } catch (error) {
+    console.error('Error opening JSON dialog:', error)
+    alert('Error preparing JSON content. Please try again.')
+  }
+}
+
+// Function to get current layout as JSON
+function getCurrentLayoutJson() {
+  try {
+    const jsonLayout = {
+      name: `Layout for ${props.size}`,
+      units: { position: 'px', size: 'px', fontSize: 'pt' },
+      orientation: layoutData.orientation,
+      cardSizeString: `${sizeDimensions.value.width}x${sizeDimensions.value.height}`,
+      story: {
+        position: { ...layoutData.story.position },
+        size: { ...layoutData.story.size },
+        fontSizePt: layoutData.story.fontSizePt || 12
+      },
+      photos: layoutData.photos.map(photo => ({
+        id: photo.id,
+        position: { ...photo.position },
+        size: { ...photo.size },
+        borderRadius: photo.borderRadius || 0
+      }))
+    }
+    
+    // Populate the editable content when getting JSON
+    editableJsonContent.value = JSON.stringify(jsonLayout, null, 2)
+    
+    return jsonLayout
   } catch (error) {
     console.error('Error generating JSON:', error)
-    return JSON.stringify({ 
-      error: "Failed to generate layout JSON", 
-      details: error.message 
-    }, null, 2)
+    return '{}'
   }
 }
 
@@ -1632,6 +1830,138 @@ function copyJsonToClipboard() {
     alert('Failed to copy JSON to clipboard.')
   })
 }
+
+// Function to apply changes from the editable JSON textarea
+function applyJsonChanges() {
+  try {
+    const parsedJson = typeof editableJsonContent.value === 'string' 
+      ? JSON.parse(editableJsonContent.value) 
+      : editableJsonContent.value
+    
+    // Ensure it's a valid layout structure
+    if (!parsedJson || !parsedJson.name || !parsedJson.units || !parsedJson.orientation || !parsedJson.story || !parsedJson.photos) {
+      alert('Invalid JSON structure. Please ensure it includes "name", "units", "orientation", "story", and "photos".')
+      return
+    }
+
+    // Update layoutData with the new JSON
+    layoutData.orientation = parsedJson.orientation
+    
+    // Update story data
+    if (parsedJson.story) {
+      layoutData.story.position = { ...parsedJson.story.position }
+      layoutData.story.size = { ...parsedJson.story.size }
+      layoutData.story.fontSizePt = parsedJson.story.fontSizePt || 12
+    }
+    
+    // Update photos data
+    if (parsedJson.photos && Array.isArray(parsedJson.photos)) {
+      layoutData.photos = parsedJson.photos.map(photo => ({
+        id: photo.id,
+        position: { ...photo.position },
+        size: { ...photo.size },
+        borderRadius: photo.borderRadius || 0
+      }))
+      
+      // Update nextPhotoId to avoid conflicts
+      if (layoutData.photos.length > 0) {
+        const maxId = Math.max(...layoutData.photos.map(p => {
+          const match = p.id.match(/photo-(\d+)/)
+          return match ? parseInt(match[1]) : 0
+        }))
+        nextPhotoId.value = maxId + 1
+      }
+    }
+    
+    // Clear any selections
+    selectedBoxes.value = []
+    
+    alert('✅ Layout updated from JSON!')
+    console.log('[JSON APPLIED]', parsedJson)
+  } catch (error) {
+    console.error('Error applying JSON changes:', error)
+    alert('❌ Failed to apply JSON changes. Please check the JSON format.')
+  }
+}
+
+// Function to cancel JSON editing
+function cancelJsonEdit() {
+  showJsonDialog.value = false
+  // Reset the editable content to the current layout
+  editableJsonContent.value = getCurrentLayoutJson()
+}
+
+// Function to save JSON changes
+function saveJsonChanges() {
+  try {
+    const parsedJson = typeof editableJsonContent.value === 'string' 
+      ? JSON.parse(editableJsonContent.value) 
+      : editableJsonContent.value
+    
+    // Ensure it's a valid layout structure
+    if (!parsedJson || !parsedJson.name || !parsedJson.units || !parsedJson.orientation || !parsedJson.story || !parsedJson.photos) {
+      alert('Invalid JSON structure. Please ensure it includes "name", "units", "orientation", "story", and "photos".')
+      return
+    }
+
+    // Update layoutData with the new JSON
+    layoutData.orientation = parsedJson.orientation
+    
+    // Update story data
+    if (parsedJson.story) {
+      layoutData.story.position = { ...parsedJson.story.position }
+      layoutData.story.size = { ...parsedJson.story.size }
+      layoutData.story.fontSizePt = parsedJson.story.fontSizePt || 12
+    }
+    
+    // Update photos data
+    if (parsedJson.photos && Array.isArray(parsedJson.photos)) {
+      layoutData.photos = parsedJson.photos.map(photo => ({
+        id: photo.id,
+        position: { ...photo.position },
+        size: { ...photo.size },
+        borderRadius: photo.borderRadius || 0
+      }))
+      
+      // Update nextPhotoId to avoid conflicts
+      if (layoutData.photos.length > 0) {
+        const maxId = Math.max(...layoutData.photos.map(p => {
+          const match = p.id.match(/photo-(\d+)/)
+          return match ? parseInt(match[1]) : 0
+        }))
+        nextPhotoId.value = maxId + 1
+      }
+    }
+    
+    // Clear any selections
+    selectedBoxes.value = []
+    
+    // Close the dialog
+    showJsonDialog.value = false
+    
+    // Refresh the JSON content in the editor
+    editableJsonContent.value = getCurrentLayoutJson()
+    
+    alert('✅ Layout updated from JSON!')
+    console.log('[JSON SAVED]', parsedJson)
+  } catch (error) {
+    console.error('Error saving JSON changes:', error)
+    alert('❌ Failed to save JSON changes. Please check the JSON format.')
+  }
+}
+
+// JSON Editor event handlers - removed due to import issues
+// function onJsonEditorChange(value) {
+//   editableJsonContent.value = value
+// }
+
+// function onJsonEditorError(error) {
+//   console.error('JSON Editor Error:', error)
+// }
+
+// function onJsonEditorHasError(error) {
+//   console.error('JSON Editor Has Error:', error)
+// }
 
 // Function to handle double-click on boxes
 function handleBoxDoubleClick(id, event) {
@@ -1733,101 +2063,105 @@ function generateDefaultLayout(size) {
 <style scoped>
 .box {
   position: relative;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
   cursor: move;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .story-box {
-  background: #cfe8ff;
-  border: 1px dashed #3b82f6;
-  color: #1d4ed8;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 1px solid #3b82f6;
+  color: #1e40af;
 }
 
 .photo-box {
-  background-color: #d1fae5;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
   border: 1px solid #10b981;
   color: #065f46;
 }
 
 .drag-handle {
   position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 20px;
-  height: 20px;
-  background: #3b82f6;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border-radius: 50%;
   cursor: move;
   z-index: 10;
-  border: 2px solid #1d4ed8;
+  border: 1px solid #1e40af;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+}
+
+.drag-handle:hover {
+  transform: scale(1.1);
 }
 
 .resize-handle {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 10px;
-  height: 10px;
-  background: #555;
+  right: 2px;
+  bottom: 2px;
+  width: 8px;
+  height: 8px;
+  background: #6b7280;
   cursor: nwse-resize;
-  border-radius: 2px;
+  border-radius: 1px;
+  border: 1px solid #374151;
+  transition: background-color 0.1s ease;
+}
+
+.resize-handle:hover {
+  background: #4b5563;
 }
 
 .box button {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 16px;
-  height: 16px;
-  background: #dc2626;
+  top: 3px;
+  right: 3px;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 20;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .box button:hover {
-  background: #b91c1c;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: scale(1.1);
 }
 
 .selected {
   border: 2px solid #3b82f6 !important;
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+  transform: scale(1.02);
 }
 
 .selection-indicator {
   position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
   border: 2px solid #3b82f6;
-  border-radius: 6px;
+  border-radius: 8px;
   pointer-events: none;
   z-index: 5;
+  background: rgba(59, 130, 246, 0.05);
 }
 
-/* Fix checkbox visibility */
-.snap-checkbox .p-checkbox-box {
-  background-color: #ffffff !important;
-  border: 2px solid #6b7280 !important;
-  border-radius: 4px !important;
-}
-
-.snap-checkbox .p-checkbox-box.p-highlight {
-  background-color: #3b82f6 !important;
-  border-color: #3b82f6 !important;
-}
-
-.snap-checkbox .p-checkbox-icon {
-  color: #ffffff !important;
-}
 </style>

@@ -1,3 +1,4 @@
+/* eslint-disable */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -119,6 +120,21 @@
   /* Allow borders on elements that explicitly have border classes */
   [class*="border-"] {
     border-style: solid !important;
+  }
+
+  /* Allow borders on checkboxes and their containers */
+  .p-checkbox-box,
+  .p-checkbox,
+  .snap-checkbox .p-checkbox-box {
+    border-style: solid !important;
+    border-width: 1px !important;
+  }
+
+  /* Allow border-0 to override checkbox borders */
+  .p-checkbox-box.border-0,
+  .p-checkbox.border-0,
+  .snap-checkbox .p-checkbox-box.border-0 {
+    border: none !important;
   }
 
 
