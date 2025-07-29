@@ -623,16 +623,6 @@ export default defineEventHandler(async (event) => {
           maxX = Math.min(workingMetadata.width, maxX + paddingX)
           maxY = Math.min(workingMetadata.height, maxY + paddingY)
           
-          // For landscape images, prioritize top 1/3rd
-          if (isLandscape) {
-            const topThirdHeight = Math.floor(workingMetadata.height / 3)
-            if (maxY > topThirdHeight) {
-              console.log('🎯 Adjusting landscape crop to prioritize top 1/3rd')
-              maxY = topThirdHeight
-              minY = Math.max(0, minY)
-            }
-          }
-          
           // Calculate the largest possible crop area that maintains target aspect ratio
           // Start with the face bounding box and expand to maximize area
           const targetAspectRatio = targetWidth / targetHeight
