@@ -1,54 +1,168 @@
 <template>
   <div>
-    <!-- Professional Header -->
-    <div class="mb-3 flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
-      <!-- Instructions Button and Snap Controls -->
-      <div class="flex items-center gap-3">
-        <button
-          @click="showInstructionsDialog = true"
-          class="flex items-center gap-1.5 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-xs font-medium transition-colors"
-        >
-          <i class="pi pi-info-circle text-sm"></i>
-          <span>Help</span>
-        </button>
-        
-        <!-- Snap Controls -->
-        <div class="flex items-center gap-2">
-          <Checkbox
-            v-model="snapEnabled"
-            :binary="true"
-            inputId="snap-checkbox"
-            class="border-0 text-black"
-          />
-          <label for="snap-checkbox" class="text-gray-600 text-xs font-medium">
-            Snap to grid*
-          </label>
+    <!-- Combined Header and Toolbar -->
+    <div class="mb-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 overflow-hidden">
+      <!-- Top Row: Controls and Info -->
+      <div class="flex items-center justify-between mb-2">
+        <!-- Left: Instructions Button and Snap Controls -->
+        <div class="flex items-center gap-3">
+          <button
+            @click="showInstructionsDialog = true"
+            class="flex items-center gap-1.5 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-xs font-medium transition-colors"
+          >
+            <i class="pi pi-info-circle text-sm"></i>
+            <span>Help</span>
+          </button>
           
-          <!-- Grid Size Input -->
-          <div class="flex items-center gap-1">
-            <label class="text-gray-600 text-xs font-medium">Grid Size:</label>
-            <InputText
-              v-model="gridSize"
-              type="number"
-              min="5"
-              max="100"
-              class="w-12 h-6 text-xs px-1"
-              @input="updateGridSize"
+          <!-- Snap Controls -->
+          <div class="flex items-center gap-2">
+            <Checkbox
+              v-model="snapEnabled"
+              :binary="true"
+              inputId="snap-checkbox"
+              class="border-0 text-black"
             />
+            <label for="snap-checkbox" class="text-gray-600 text-xs font-medium">
+              Snap to grid
+            </label>
+            
+            <!-- Grid Size Input -->
+            <div class="flex items-center gap-1">
+              <label class="text-gray-600 text-xs font-medium">Grid Size:</label>
+              <InputText
+                v-model="gridSize"
+                type="number"
+                min="5"
+                max="100"
+                class="w-12 h-6 text-xs px-1"
+                @input="updateGridSize"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right: Card Size Info and Edit Defaults Mode -->
+        <div class="flex items-center gap-3">
+          <!-- Card Size Info -->
+          <div class="flex items-center gap-3 text-xs text-gray-600">
+            <span class="bg-white px-2 py-1 rounded border">
+              <strong>{{ sizeDimensions.width }}"×{{ sizeDimensions.height }}"</strong>
+              <span class="text-gray-500 ml-1">({{ Math.round(sizeDimensions.width * 25.4) }}×{{ Math.round(sizeDimensions.height * 25.4) }}mm)</span>
+            </span>
+            <span class="bg-white px-2 py-1 rounded border">
+              <strong>{{ cardDimensions.width }}×{{ cardDimensions.height }}px</strong>
+              <span class="text-gray-500 ml-1">({{ SCALE_FACTOR.toFixed(2) }}x)</span>
+            </span>
+          </div>
+          
+          <!-- Edit Defaults Mode Indicator -->
+          <div v-if="isEditDefaultsMode" class="flex items-center gap-2 text-xs text-amber-800 bg-amber-100 px-2 py-1 rounded border border-amber-200">
+            <i class="pi pi-exclamation-triangle text-amber-600"></i>
+            <span class="font-medium">Edit Defaults Mode</span>
+            <span class="text-amber-600">•</span>
+            <span>Size: <strong>{{ props.size }}</strong></span>
           </div>
         </div>
       </div>
-      
-      <!-- Card Size Info -->
-      <div class="flex items-center gap-3 text-xs text-gray-600">
-        <span class="bg-white px-2 py-1 rounded border">
-          <strong>{{ sizeDimensions.width }}"×{{ sizeDimensions.height }}"</strong>
-          <span class="text-gray-500 ml-1">({{ Math.round(sizeDimensions.width * 25.4) }}×{{ Math.round(sizeDimensions.height * 25.4) }}mm)</span>
-        </span>
-        <span class="bg-white px-2 py-1 rounded border">
-          <strong>{{ cardDimensions.width }}×{{ cardDimensions.height }}px</strong>
-          <span class="text-gray-500 ml-1">({{ SCALE_FACTOR.toFixed(2) }}x)</span>
-        </span>
+
+      <!-- Bottom Row: Action Buttons -->
+      <div class="flex flex-wrap gap-1.5">
+        <!-- Primary Actions -->
+        <button @click="addPhoto" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition-colors">
+          <i class="pi pi-image text-xs mr-1"></i>Add Photo
+        </button>
+        <button 
+          @click="addStory" 
+          :disabled="!!layoutData.story"
+          class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-file-edit text-xs mr-1"></i>Add Story
+        </button>
+        <button 
+          v-if="layoutData.story"
+          @click="deleteStory" 
+          class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition-colors"
+        >
+          <i class="pi pi-trash text-xs mr-1"></i>Remove Story
+        </button>
+        <button @click="resetLayout" class="px-2 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-medium transition-colors">
+          <i class="pi pi-refresh text-xs mr-1"></i>Reset
+        </button>
+        <button @click="saveLayout" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors">
+          <i class="pi pi-save text-xs mr-1"></i>Save
+        </button>
+        <button
+          @click="showPasswordDialog = true"
+          class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium transition-colors"
+        >
+          <i class="pi pi-cog text-xs mr-1"></i>Defaults
+        </button>
+        <button
+          @click="openJsonDialog"
+          class="px-2 py-1 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-medium transition-colors"
+        >
+          <i class="pi pi-code text-xs mr-1"></i>JSON
+        </button>
+        
+        <!-- Selection Tools -->
+        <button 
+          @click="clearSelection" 
+          :disabled="selectedBoxes.length === 0"
+          class="px-2 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-times text-xs mr-1"></i>Clear ({{ selectedBoxes.length }})
+        </button>
+        <button 
+          @click="makeSameSize" 
+          :disabled="selectedBoxes.length < 2"
+          class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-th-large text-xs mr-1"></i>Same Size
+        </button>
+        <button 
+          @click="copySelectedBoxes" 
+          :disabled="selectedBoxes.length === 0"
+          class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-copy text-xs mr-1"></i>Copy ({{ selectedBoxes.length }})
+        </button>
+        <button 
+          @click="pasteCopiedBoxes" 
+          :disabled="copiedBoxes.length === 0"
+          class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-paste text-xs mr-1"></i>Paste ({{ copiedBoxes.length }})
+        </button>
+        <button 
+          @click="alignVertical" 
+          :disabled="selectedBoxes.length < 2"
+          class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-align-left text-xs mr-1"></i>Align V
+        </button>
+        <button 
+          @click="alignHorizontal" 
+          :disabled="selectedBoxes.length < 2"
+          class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <i class="pi pi-align-center text-xs mr-1"></i>Align H
+        </button>
+        
+        <!-- Edit Defaults Mode Buttons -->
+        <button
+          v-if="isEditDefaultsMode"
+          @click="exitEditMode"
+          class="px-2 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-xs font-medium transition-colors"
+        >
+          <i class="pi pi-sign-out text-xs mr-1"></i>Exit Edit
+        </button>
+        <button
+          v-if="isEditDefaultsMode"
+          @click="saveEditedDefaults"
+          class="px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-xs font-medium transition-colors"
+        >
+          <i class="pi pi-check text-xs mr-1"></i>Save Default
+        </button>
       </div>
     </div>
 
@@ -113,119 +227,7 @@
       </div>
     </div>
 
-    <!-- Edit Defaults Mode Indicator -->
-    <div v-if="isEditDefaultsMode" class="mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs">
-      <div class="flex items-center gap-2 text-amber-800">
-        <i class="pi pi-exclamation-triangle text-amber-600"></i>
-        <span class="font-medium">Edit Defaults Mode</span>
-        <span class="text-amber-600">•</span>
-        <span>Editing default layout for size: <strong>{{ props.size }}</strong></span>
-      </div>
-    </div>
-
-    <!-- Professional Toolbar -->
-    <div class="mb-3 space-y-2">
-      <!-- Primary Actions -->
-      <div class="flex flex-wrap gap-1.5">
-        <button @click="addPhoto" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition-colors">
-          <i class="pi pi-image text-xs mr-1"></i>Add Photo
-        </button>
-        <button 
-          @click="addStory" 
-          :disabled="!!layoutData.story"
-          class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <i class="pi pi-file-edit text-xs mr-1"></i>Add Story
-        </button>
-        <button 
-          v-if="layoutData.story"
-          @click="deleteStory" 
-          class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition-colors"
-        >
-          <i class="pi pi-trash text-xs mr-1"></i>Remove Story
-        </button>
-        <button @click="resetLayout" class="px-2 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-medium transition-colors">
-          <i class="pi pi-refresh text-xs mr-1"></i>Reset
-        </button>
-        <button @click="saveLayout" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors">
-          <i class="pi pi-save text-xs mr-1"></i>Save
-        </button>
-        <button
-          @click="showPasswordDialog = true"
-          class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium transition-colors"
-        >
-          <i class="pi pi-cog text-xs mr-1"></i>Defaults
-        </button>
-        <button
-          @click="openJsonDialog"
-          class="px-2 py-1 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-medium transition-colors"
-        >
-          <i class="pi pi-code text-xs mr-1"></i>JSON
-        </button>
-      </div>
-      
-      <!-- Selection Tools -->
-      <div class="flex flex-wrap gap-1.5">
-        <button 
-          @click="clearSelection" 
-          :disabled="selectedBoxes.length === 0"
-          class="px-2 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <i class="pi pi-times text-xs mr-1"></i>Clear ({{ selectedBoxes.length }})
-        </button>
-        <button 
-          @click="makeSameSize" 
-          :disabled="selectedBoxes.length < 2"
-          class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <i class="pi pi-th-large text-xs mr-1"></i>Same Size
-        </button>
-        <button 
-          @click="copySelectedBoxes" 
-          :disabled="selectedBoxes.length === 0"
-          class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <i class="pi pi-copy text-xs mr-1"></i>Copy ({{ selectedBoxes.length }})
-        </button>
-        <button 
-          @click="pasteCopiedBoxes" 
-          :disabled="copiedBoxes.length === 0"
-          class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <i class="pi pi-paste text-xs mr-1"></i>Paste ({{ copiedBoxes.length }})
-        </button>
-        <button 
-          @click="alignVertical" 
-          :disabled="selectedBoxes.length < 2"
-          class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <i class="pi pi-align-left text-xs mr-1"></i>Align V
-        </button>
-        <button 
-          @click="alignHorizontal" 
-          :disabled="selectedBoxes.length < 2"
-          class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <i class="pi pi-align-center text-xs mr-1"></i>Align H
-        </button>
-        
-        <!-- Edit Defaults Mode Buttons -->
-        <button
-          v-if="isEditDefaultsMode"
-          @click="exitEditMode"
-          class="px-2 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-xs font-medium transition-colors"
-        >
-          <i class="pi pi-sign-out text-xs mr-1"></i>Exit Edit
-        </button>
-        <button
-          v-if="isEditDefaultsMode"
-          @click="saveEditedDefaults"
-          class="px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-xs font-medium transition-colors"
-        >
-          <i class="pi pi-check text-xs mr-1"></i>Save Default
-        </button>
-      </div>
-    </div>
+    <!-- Password Dialog -->
 
     <!-- Password Dialog -->
     <div v-if="showPasswordDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -385,17 +387,17 @@
     </div>
 
     <div 
-      class="relative overflow-auto bg-gray-50 rounded-lg border border-gray-200 p-4" 
+      class="relative overflow-hidden bg-gray-50 rounded-lg border border-gray-200 p-4 h-full" 
       :class="{ 'border-2 border-amber-400 bg-amber-50': isEditDefaultsMode }"
-      style="height: calc(100vh - 200px);"
     >
       <div 
         class="relative" 
         :style="canvasStyle" 
         id="canvas"
+        @click="handleCanvasClick"
       >
         <!-- Card Outline -->
-        <div :style="cardOutlineStyle"></div>
+        <div :style="cardOutlineStyle" class="card-outline"></div>
         
         <!-- Grid Lines (within card boundaries) -->
         <div v-if="snapEnabled" class="absolute pointer-events-none" :style="cardOutlineStyle">
@@ -450,9 +452,6 @@
         </div>
       </div>
     </div>
-
-    <!-- 5mm spacing below editor area -->
-    <div class="h-5"></div>
   </div>
 </template>
 
@@ -477,6 +476,10 @@ const props = defineProps({
   size: {
     type: String,
     default: '7x5'
+  },
+  editDefaultsMode: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -486,7 +489,7 @@ const emit = defineEmits(['save'])
 const showPasswordDialog = ref(false)
 const password = ref('')
 const passwordError = ref('')
-const isEditDefaultsMode = ref(false)
+const isEditDefaultsMode = computed(() => props.editDefaultsMode)
 
 // Instructions dialog
 const showInstructionsDialog = ref(false)
@@ -561,16 +564,25 @@ function clearSelection() {
   selectedBoxes.value = []
 }
 
+// Handle clicks on the canvas (outside of boxes)
+function handleCanvasClick(event) {
+  // Only clear selection if clicking directly on the canvas, not on boxes or their children
+  if (event.target.id === 'canvas' || event.target.classList.contains('card-outline')) {
+    selectedBoxes.value = []
+  }
+}
+
 // Make selected boxes the same size and distribute them horizontally
 function makeSameSize() {
   if (selectedBoxes.value.length < 2) return
   
   const boxes = selectedBoxes.value
-  const canvasWidth = layoutData.canvasSize.width
+  // Get card dimensions in mm
+  const cardWidthMm = layoutData.cardWidthMm
   const margin = 10 // 10mm margin on each side
   const spacing = 10 // 10mm spacing between boxes
   const totalSpacing = (boxes.length - 1) * spacing
-  const availableWidth = canvasWidth - (margin * 2) - totalSpacing
+  const availableWidth = cardWidthMm - (margin * 2) - totalSpacing
   const boxWidth = Math.floor(availableWidth / boxes.length)
   
   // Find the highest box to determine the height and vertical position
@@ -609,12 +621,13 @@ function makeSameSize() {
     let width = boxWidth
     let height = boxHeight
     
-    // Apply snapping if enabled
+    // Apply snapping if enabled (snap to grid in mm)
     if (snapEnabled.value) {
-      x = Math.round(x / snapGridSize.value) * snapGridSize.value
-      y = Math.round(y / snapGridSize.value) * snapGridSize.value
-      width = Math.round(width / snapGridSize.value) * snapGridSize.value
-      height = Math.round(height / snapGridSize.value) * snapGridSize.value
+      const gridSizeMm = gridSize.value
+      x = Math.round(x / gridSizeMm) * gridSizeMm
+      y = Math.round(y / gridSizeMm) * gridSizeMm
+      width = Math.round(width / gridSizeMm) * gridSizeMm
+      height = Math.round(height / gridSizeMm) * gridSizeMm
     }
     
     if (boxId === 'story') {
@@ -642,13 +655,16 @@ const gridLines = computed(() => {
   const cardWidth = cardDimensions.value.width
   const cardHeight = cardDimensions.value.height
   
+  // Convert grid size from mm to pixels
+  const gridSizePx = Math.round(gridSize.value * SCALE_FACTOR.value)
+  
   // Calculate vertical lines (x positions) within card
-  for (let x = gridLineInterval.value; x < cardWidth; x += gridLineInterval.value) {
+  for (let x = gridSizePx; x < cardWidth; x += gridSizePx) {
     xLines.push(x)
   }
   
   // Calculate horizontal lines (y positions) within card
-  for (let y = gridLineInterval.value; y < cardHeight; y += gridLineInterval.value) {
+  for (let y = gridSizePx; y < cardHeight; y += gridSizePx) {
     yLines.push(y)
   }
   
@@ -661,9 +677,12 @@ const gridLines = computed(() => {
 function snapToGrid(position) {
   if (!snapEnabled.value) return position
   
+  // Convert grid size from pixels to mm
+  const gridSizeMm = gridSize.value
+  
   return {
-    x: Math.round(position.x / snapGridSize.value) * snapGridSize.value,
-    y: Math.round(position.y / snapGridSize.value) * snapGridSize.value
+    x: Math.round(position.x / gridSizeMm) * gridSizeMm,
+    y: Math.round(position.y / gridSizeMm) * gridSizeMm
   }
 }
 
@@ -686,21 +705,20 @@ const resizeStart = ref({ x: 0, y: 0, width: 0, height: 0 })
 // Reactive object for layout data - simplified
 const layoutData = reactive({
   name: 'Four Photo Portrait with Story',
-  units: { position: 'px', size: 'px', fontSize: 'pt' },
-  cardWidth: 0, // Will be set based on size
-  cardHeight: 0, // Will be set based on size
-  orientation: 'portrait',
+  units: { position: 'mm', size: 'mm', fontSize: 'pt' },
+  cardWidthMm: 0, // Will be set based on size
+  cardHeightMm: 0, // Will be set based on size
   story: {
-    position: { x: 70, y: 420 },
-    size: { width: 700, height: 120 },
+    position: { x: 20, y: 120 },
+    size: { width: 200, height: 30 },
     fontSizePt: 10,
     align: 'center'
   },
   photos: [
-    { id: '1', position: { x: 35, y: 35 }, size: { width: 350, height: 180 }, borderRadius: 12 },
-    { id: '2', position: { x: 455, y: 35 }, size: { width: 350, height: 180 }, borderRadius: 12 },
-    { id: '3', position: { x: 35, y: 240 }, size: { width: 350, height: 180 }, borderRadius: 12 },
-    { id: '4', position: { x: 455, y: 240 }, size: { width: 350, height: 180 }, borderRadius: 12 }
+    { id: '1', position: { x: 10, y: 10 }, size: { width: 100, height: 50 }, borderRadius: 3 },
+    { id: '2', position: { x: 120, y: 10 }, size: { width: 100, height: 50 }, borderRadius: 3 },
+    { id: '3', position: { x: 10, y: 70 }, size: { width: 100, height: 50 }, borderRadius: 3 },
+    { id: '4', position: { x: 120, y: 70 }, size: { width: 100, height: 50 }, borderRadius: 3 }
   ]
 })
 
@@ -763,21 +781,19 @@ async function loadDefaultLayouts() {
       defaultLayouts = {
         '7x5': {
           name: 'Medium Landscape Layout',
-          units: { position: 'px', size: 'px', fontSize: 'pt' },
-          canvasSize: { width: 0, height: 0 },
-          cardSize: { width: 0, height: 0 },
+          units: { position: 'mm', size: 'mm', fontSize: 'pt' },
           orientation: 'landscape',
           story: {
-            position: { x: 533, y: 50 },
-            size: { width: 267, height: 500 },
+            position: { x: 90, y: 10 },
+            size: { width: 45, height: 120 },
             fontSizePt: 9,
             align: 'center'
           },
           photos: [
-            { id: '1', position: { x: 50, y: 50 }, size: { width: 220, height: 220 }, borderRadius: 10 },
-            { id: '2', position: { x: 290, y: 50 }, size: { width: 220, height: 220 }, borderRadius: 10 },
-            { id: '3', position: { x: 50, y: 290 }, size: { width: 220, height: 220 }, borderRadius: 10 },
-            { id: '4', position: { x: 290, y: 290 }, size: { width: 220, height: 220 }, borderRadius: 10 }
+            { id: '1', position: { x: 10, y: 10 }, size: { width: 35, height: 35 }, borderRadius: 3 },
+            { id: '2', position: { x: 50, y: 10 }, size: { width: 35, height: 35 }, borderRadius: 3 },
+            { id: '3', position: { x: 10, y: 50 }, size: { width: 35, height: 35 }, borderRadius: 3 },
+            { id: '4', position: { x: 50, y: 50 }, size: { width: 35, height: 35 }, borderRadius: 3 }
           ]
         }
       }
@@ -797,13 +813,16 @@ async function saveEditedDefaults() {
   try {
     const layouts = await loadDefaultLayouts()
     
-    // Create a clean copy of the current layout data
+    // Create a clean copy of the current layout data with mm units
     const layoutToSave = {
       name: layoutData.name,
-      units: { ...layoutData.units },
-      canvasSize: { width: 0, height: 0 }, // Always 0, calculated by watcher
-      cardSize: { width: 0, height: 0 },
-      orientation: layoutData.orientation,
+      units: {
+        position: 'mm',
+        size: 'mm',
+        fontSize: 'pt'
+      },
+      cardWidthMm: layoutData.cardWidthMm,
+      cardHeightMm: layoutData.cardHeightMm,
       story: layoutData.story ? { ...layoutData.story } : null,
       photos: layoutData.photos.map(photo => ({ ...photo }))
     }
@@ -826,8 +845,6 @@ async function saveEditedDefaults() {
       defaultLayouts = null
       await loadDefaultLayouts()
       
-      // Show success message
-      alert(`✅ Default layout for ${props.size} saved successfully!`)
     } else {
       console.error('[SAVE DEFAULTS] Failed to save defaults:', response.statusText)
       alert('❌ Failed to save default layout. Please try again.')
@@ -856,9 +873,9 @@ const SCALE_FACTOR = computed(() => {
   const cardWidthMm = cardWidthInches * 25.4
   const cardHeightMm = cardHeightInches * 25.4
   
-  // Calculate scale to fit in wireframe with borders
-  const availableWidth = WIREFRAME_WIDTH - (BORDER_MM * 2)
-  const availableHeight = WIREFRAME_HEIGHT - (BORDER_MM * 2)
+  // Calculate scale to fit in wireframe with minimal borders
+  const availableWidth = WIREFRAME_WIDTH - 100 // 50px border on each side
+  const availableHeight = WIREFRAME_HEIGHT - 100 // 50px border on each side
   
   const scaleX = availableWidth / cardWidthMm
   const scaleY = availableHeight / cardHeightMm
@@ -867,7 +884,7 @@ const SCALE_FACTOR = computed(() => {
   const scale = Math.min(scaleX, scaleY)
   
   // Ensure we have a reasonable scale (not zero or negative)
-  return Math.max(scale, 0.5) // Increased minimum scale
+  return Math.max(scale, 2.5) // Increased minimum scale for better visibility
 })
 
 // Calculate card dimensions in wireframe pixels
@@ -925,41 +942,62 @@ const cardOutlineStyle = computed(() => ({
 }))
 
 function boxStyle(position, size) {
-  // Convert card coordinates to wireframe coordinates
-  const cardX = cardPosition.value.left + position.x
-  const cardY = cardPosition.value.top + position.y
+  // Convert mm coordinates to wireframe pixels
+  const scale = SCALE_FACTOR.value
+  
+  // Convert position from mm to pixels
+  const xMm = position.x
+  const yMm = position.y
+  const xPx = Math.round(xMm * scale)
+  const yPx = Math.round(yMm * scale)
+  
+  // Convert size from mm to pixels
+  const widthMm = size.width
+  const heightMm = size.height
+  const widthPx = Math.round(widthMm * scale)
+  const heightPx = Math.round(heightMm * scale)
+  
+  // Position relative to card center
+  const cardX = cardPosition.value.left + xPx
+  const cardY = cardPosition.value.top + yPx
   
   return {
     position: 'absolute',
     left: `${cardX}px`,
     top: `${cardY}px`,
-    width: `${size.width}px`,
-    height: `${size.height}px`,
+    width: `${widthPx}px`,
+    height: `${heightPx}px`,
     padding: '4px',
     userSelect: 'none'
   }
 }
 
 function photoBoxStyle(photo) {
+  // Convert border radius from mm to pixels for display
+  const scale = SCALE_FACTOR.value
+  const borderRadiusPx = Math.round(photo.borderRadius * scale)
+  
   return {
     ...boxStyle(photo.position, photo.size),
-    borderRadius: `${photo.borderRadius}px`
+    borderRadius: `${borderRadiusPx}px`
   }
 }
 
 function clampToBounds(pos, size) {
-  const cardWidth = cardDimensions.value.width
-  const cardHeight = cardDimensions.value.height
+  // Use stored card dimensions in mm
+  const cardWidthMm = layoutData.cardWidthMm
+  const cardHeightMm = layoutData.cardHeightMm
   
-  const maxX = cardWidth - size.width
-  const maxY = cardHeight - size.height
+  // Calculate max positions in mm
+  const maxX = cardWidthMm - size.width
+  const maxY = cardHeightMm - size.height
   
   const clamped = {
     x: Math.max(0, Math.min(maxX, pos.x)),
     y: Math.max(0, Math.min(maxY, pos.y))
   }
   
-  console.log('[CLAMP]', { input: pos, size, cardDimensions: cardDimensions.value, output: clamped })
+  console.log('[CLAMP]', { input: pos, size, cardWidthMm, cardHeightMm, maxX, maxY, output: clamped })
   return clamped
 }
 
@@ -1063,6 +1101,9 @@ function startDrag(id, event) {
   event.preventDefault()
   console.log('[DRAG START]', { id, eventType: event.type })
 
+  // Clear any existing selection when starting to drag
+  selectedBoxes.value = []
+
   // Check if we should do multi-drag (if the dragged box is selected and there are other selected boxes)
   if (selectedBoxes.value.includes(id) && selectedBoxes.value.length > 1) {
     // Start multi-drag
@@ -1150,9 +1191,14 @@ function onPointerMove(event) {
       let newX = mouseX + relativeX
       let newY = mouseY + relativeY
       
-      // Convert from wireframe coordinates to card coordinates
-      newX -= cardPosition.value.left
-      newY -= cardPosition.value.top
+      // Convert from wireframe coordinates to mm coordinates
+      const mouseXRelativeToCard = mouseX - cardPosition.value.left
+      const mouseYRelativeToCard = mouseY - cardPosition.value.top
+      
+      // Convert pixels to mm
+      const scale = SCALE_FACTOR.value
+      newX = Math.round(mouseXRelativeToCard / scale)
+      newY = Math.round(mouseYRelativeToCard / scale)
       
       // Get the box size for clamping
       let size
@@ -1160,7 +1206,7 @@ function onPointerMove(event) {
         size = layoutData.story.size
       } else {
         const photo = layoutData.photos.find(p => p.id === id)
-        size = photo ? photo.size : { width: 200, height: 150 }
+        size = photo ? photo.size : { width: 50, height: 40 }
       }
       
       // Apply clamping to bounds
@@ -1202,9 +1248,14 @@ function onPointerMove(event) {
       dragOffset: dragOffset.value
     })
 
-    // Convert from wireframe coordinates to card coordinates
-    let newX = mouseX - cardPosition.value.left
-    let newY = mouseY - cardPosition.value.top
+    // Convert from wireframe coordinates to mm coordinates
+    const mouseXRelativeToCard = mouseX - cardPosition.value.left
+    const mouseYRelativeToCard = mouseY - cardPosition.value.top
+    
+    // Convert pixels to mm
+    const scale = SCALE_FACTOR.value
+    const newX = Math.round(mouseXRelativeToCard / scale)
+    const newY = Math.round(mouseYRelativeToCard / scale)
 
     // Get the appropriate size based on the element type
     let size
@@ -1240,28 +1291,36 @@ function onPointerMove(event) {
     const deltaX = event.clientX - resizeStart.value.x
     const deltaY = event.clientY - resizeStart.value.y
     
-    let newWidth = resizeStart.value.width + deltaX
-    let newHeight = resizeStart.value.height + deltaY
+    // Convert pixel delta to mm delta
+    const scale = SCALE_FACTOR.value
+    const deltaXmm = deltaX / scale
+    const deltaYmm = deltaY / scale
     
-    // Ensure minimum size
-    newWidth = Math.max(50, newWidth)
-    newHeight = Math.max(50, newHeight)
+    // Calculate new size in mm
+    let newWidthMm = resizeStart.value.width + deltaXmm
+    let newHeightMm = resizeStart.value.height + deltaYmm
     
-    // Apply snapping if enabled
+    // Ensure minimum size in mm
+    const minSizeMm = 5 // 5mm minimum
+    newWidthMm = Math.max(minSizeMm, newWidthMm)
+    newHeightMm = Math.max(minSizeMm, newHeightMm)
+    
+    // Apply snapping if enabled (snap to grid in mm)
     if (snapEnabled.value) {
-      newWidth = Math.round(newWidth / snapGridSize.value) * snapGridSize.value
-      newHeight = Math.round(newHeight / snapGridSize.value) * snapGridSize.value
+      const gridSizeMm = gridSize.value
+      newWidthMm = Math.round(newWidthMm / gridSizeMm) * gridSizeMm
+      newHeightMm = Math.round(newHeightMm / gridSizeMm) * gridSizeMm
     }
     
-    // Update the box size
+    // Update the box size in mm
     if (currentResizeId.value === 'story') {
-      layoutData.story.size.width = newWidth
-      layoutData.story.size.height = newHeight
+      layoutData.story.size.width = newWidthMm
+      layoutData.story.size.height = newHeightMm
     } else {
       const photo = layoutData.photos.find(p => p.id === currentResizeId.value)
       if (photo) {
-        photo.size.width = newWidth
-        photo.size.height = newHeight
+        photo.size.width = newWidthMm
+        photo.size.height = newHeightMm
       }
     }
   }
@@ -1290,9 +1349,14 @@ function stopInteraction() {
       
       console.log('[DRAG STOP] Syncing final position to data:', { currentDragId: currentDragId.value, finalX, finalY })
       
-      // Convert from wireframe coordinates back to card coordinates
-      const cardX = finalX - cardPosition.value.left
-      const cardY = finalY - cardPosition.value.top
+      // Convert from wireframe coordinates back to mm coordinates
+      const finalXRelativeToCard = finalX - cardPosition.value.left
+      const finalYRelativeToCard = finalY - cardPosition.value.top
+      
+      // Convert pixels to mm
+      const scale = SCALE_FACTOR.value
+      const cardX = Math.round(finalXRelativeToCard / scale)
+      const cardY = Math.round(finalYRelativeToCard / scale)
       
       // Get the appropriate size for clamping
       let size
@@ -1300,7 +1364,7 @@ function stopInteraction() {
         size = layoutData.story.size
       } else {
         const photo = layoutData.photos.find(p => p.id === currentDragId.value)
-        size = photo ? photo.size : { width: 200, height: 150 }
+        size = photo ? photo.size : { width: 50, height: 40 }
       }
       
       // Apply clamping to bounds
@@ -1310,8 +1374,12 @@ function stopInteraction() {
       if (snapEnabled.value) {
         finalPos = snapToGrid(finalPos)
         // Update the DOM element with the snapped position
-        const snappedX = cardPosition.value.left + finalPos.x
-        const snappedY = cardPosition.value.top + finalPos.y
+        let snappedX = finalPos.x
+        let snappedY = finalPos.y
+        if (!props.editDefaultsMode) {
+          snappedX += cardPosition.value.left
+          snappedY += cardPosition.value.top
+        }
         box.style.left = `${snappedX}px`
         box.style.top = `${snappedY}px`
         console.log('[DRAG STOP] Final snapped position:', finalPos)
@@ -1331,6 +1399,9 @@ function stopInteraction() {
     }
   }
   
+  // Clear any selection after drag
+  selectedBoxes.value = []
+  
   isDragging.value = false
   currentDragId.value = null
   isResizing.value = false
@@ -1344,21 +1415,21 @@ function startResize(id, event) {
   isResizing.value = true
   currentResizeId.value = id
   
-  // Get the current size from layoutData
+  // Get the current size from layoutData (already in mm)
   let currentSize
   if (id === 'story') {
     currentSize = layoutData.story.size
   } else {
     const photo = layoutData.photos.find(p => p.id === id)
-    currentSize = photo ? photo.size : { width: 200, height: 150 }
+    currentSize = photo ? photo.size : { width: 50, height: 40 } // Default in mm
   }
   
-  // Store the initial mouse position and current size
+  // Store the initial mouse position and current size in mm
   resizeStart.value = {
     x: event.clientX,
     y: event.clientY,
-    width: currentSize.width,
-    height: currentSize.height
+    width: currentSize.width, // Already in mm
+    height: currentSize.height // Already in mm
   }
   
   document.addEventListener('pointermove', onPointerMove)
@@ -1375,35 +1446,34 @@ function applyResize() {
     return
   }
 
-  // Convert mm to pixels using the scale factor
-  const scale = SCALE_FACTOR.value
-  let newWidthPx = Math.round(newWidthMm * scale)
-  let newHeightPx = Math.round(newHeightMm * scale)
+  // Ensure minimum size in mm
+  const minSizeMm = 5 // 5mm minimum
+  const finalWidthMm = Math.max(minSizeMm, newWidthMm)
+  const finalHeightMm = Math.max(minSizeMm, newHeightMm)
 
-  // Ensure minimum size
-  newWidthPx = Math.max(50, newWidthPx)
-  newHeightPx = Math.max(50, newHeightPx)
-
-  // Apply snapping if enabled
+  // Apply snapping if enabled (snap to grid in mm)
+  let finalWidth = finalWidthMm
+  let finalHeight = finalHeightMm
+  
   if (snapEnabled.value) {
-    newWidthPx = Math.round(newWidthPx / snapGridSize.value) * snapGridSize.value
-    newHeightPx = Math.round(newHeightPx / snapGridSize.value) * snapGridSize.value
+    const gridSizeMm = gridSize.value
+    finalWidth = Math.round(finalWidth / gridSizeMm) * gridSizeMm
+    finalHeight = Math.round(finalHeight / gridSizeMm) * gridSizeMm
   }
 
-  // Update the box size in layoutData
+  // Update the box size in layoutData (store in mm)
   if (id === 'story') {
-    layoutData.story.size.width = newWidthPx
-    layoutData.story.size.height = newHeightPx
+    layoutData.story.size.width = finalWidth
+    layoutData.story.size.height = finalHeight
   } else {
     const photo = layoutData.photos.find(p => p.id === id)
     if (photo) {
-      photo.size.width = newWidthPx
-      photo.size.height = newHeightPx
+      photo.size.width = finalWidth
+      photo.size.height = finalHeight
     }
   }
 
   showResizeDialog.value = false
-  alert(`✅ Element resized to ${newWidthMm}mm × ${newHeightMm}mm`)
 }
 
 // Copy selected boxes
@@ -1453,7 +1523,7 @@ function pasteCopiedBoxes() {
     return
   }
   
-  const offset = 20 // Offset in pixels for pasted boxes
+  const offset = 10 // Offset in mm for pasted boxes
   const newSelectedBoxes = []
   
   copiedBoxes.value.forEach(copiedBox => {
@@ -1579,9 +1649,9 @@ function addPhoto() {
   const newId = String(Date.now())
   const newPhoto = {
     id: newId,
-    position: { x: 70, y: 70 },
-    size: { width: 200, height: 150 },
-    borderRadius: 10
+    position: { x: 20, y: 20 },
+    size: { width: 50, height: 40 },
+    borderRadius: 3
   }
   
   layoutData.photos.push(newPhoto)
@@ -1590,8 +1660,8 @@ function addPhoto() {
 
 function addStory() {
   layoutData.story = {
-    position: { x: 70, y: 420 },
-    size: { width: 700, height: 120 },
+    position: { x: 20, y: 120 },
+    size: { width: 200, height: 30 },
     fontSizePt: 10,
     align: 'center'
   }
@@ -1622,7 +1692,6 @@ async function resetLayout() {
     layoutData.photos = defaultLayout.photos
     
     console.log('[RESET] Layout reset successfully:', defaultLayout)
-    alert('✅ Layout reset to default for current size!')
   } catch (error) {
     console.error('[RESET] Error resetting layout:', error)
     alert('❌ Error resetting layout. Please try again.')
@@ -1630,32 +1699,49 @@ async function resetLayout() {
 }
 
 function saveLayout() {
+  // If in edit defaults mode, save to defaults
+  if (props.editDefaultsMode) {
+    saveEditedDefaults()
+    return
+  }
+
   // Create a deep copy of the layout data
   const jsonLayout = JSON.parse(JSON.stringify(layoutData))
-  jsonLayout.cardSize = layoutData.cardSize
+  
+  // Update units to use mm and pt
+  jsonLayout.units = {
+    position: 'mm',
+    size: 'mm',
+    fontSize: 'pt'
+  }
+
+  // Add card dimensions in mm
+  jsonLayout.cardWidthMm = layoutData.cardWidthMm
+  jsonLayout.cardHeightMm = layoutData.cardHeightMm
 
   if (jsonLayout.story) {
+    // Story position and size are already in mm
     jsonLayout.story.position = {
-      x: Math.round(layoutData.story.position.x * SCALE_FACTOR),
-      y: Math.round(layoutData.story.position.y * SCALE_FACTOR)
+      x: layoutData.story.position.x,
+      y: layoutData.story.position.y
     }
     jsonLayout.story.size = {
-      width: Math.round(layoutData.story.size.width * SCALE_FACTOR),
-      height: Math.round(layoutData.story.size.height * SCALE_FACTOR)
+      width: layoutData.story.size.width,
+      height: layoutData.story.size.height
     }
   }
 
   jsonLayout.photos = layoutData.photos.map(photo => ({
     ...photo,
     position: {
-      x: Math.round(photo.position.x * SCALE_FACTOR),
-      y: Math.round(photo.position.y * SCALE_FACTOR)
+      x: photo.position.x,
+      y: photo.position.y
     },
     size: {
-      width: Math.round(photo.size.width * SCALE_FACTOR),
-      height: Math.round(photo.size.height * SCALE_FACTOR)
+      width: photo.size.width,
+      height: photo.size.height
     },
-    borderRadius: Math.round(photo.borderRadius * SCALE_FACTOR)
+    borderRadius: photo.borderRadius
   }))
 
   delete jsonLayout.canvasSize
@@ -1669,17 +1755,15 @@ let hasExistingLayout = false
 watch(() => props.size, (newSize) => {
   const dimensions = calculateSizeDimensions(newSize)
   
-  // Update card dimensions
-  layoutData.cardWidth = dimensions.width
-  layoutData.cardHeight = dimensions.height
-  layoutData.orientation = dimensions.aspectRatio > 1 ? 'landscape' : 'portrait'
+  // Update card dimensions in mm
+  layoutData.cardWidthMm = Math.round(dimensions.width * 25.4)
+  layoutData.cardHeightMm = Math.round(dimensions.height * 25.4)
   
   // Only reposition boxes if this is a new theme (no existing layout)
   if (!hasExistingLayout) {
     // Generate a proper default layout instead of loading from JSON
     const defaultLayout = generateDefaultLayout(newSize)
     layoutData.name = defaultLayout.name
-    layoutData.orientation = defaultLayout.orientation
     layoutData.story = defaultLayout.story
     layoutData.photos = defaultLayout.photos
   }
@@ -1694,9 +1778,23 @@ watch(() => props.size, (newSize) => {
 }, { immediate: true })
 
 // Initialize boxes when component mounts
-onMounted(() => {
-  // If initial layout is provided, use it to initialize the layout data
-  if (props.initialLayout) {
+onMounted(async () => {
+  // If in edit defaults mode, load the actual default layout from JSON
+  if (props.editDefaultsMode) {
+    console.log('[MOUNTED] Loading default layout for editing:', props.size)
+    try {
+      const defaultLayout = await getDefaultLayout(props.size)
+      Object.assign(layoutData, defaultLayout)
+      hasExistingLayout = true
+      console.log('[MOUNTED] Loaded default layout:', defaultLayout)
+    } catch (error) {
+      console.error('[MOUNTED] Error loading default layout:', error)
+      // Fallback to generated default
+      const generatedDefault = generateDefaultLayout(props.size)
+      Object.assign(layoutData, generatedDefault)
+      hasExistingLayout = false
+    }
+  } else if (props.initialLayout) {
     console.log('[MOUNTED] Initializing with provided layout:', props.initialLayout)
     Object.assign(layoutData, props.initialLayout)
     hasExistingLayout = true
@@ -1722,9 +1820,9 @@ function openJsonDialog() {
   try {
     const jsonLayout = {
       name: `Layout for ${props.size}`,
-      units: { position: 'px', size: 'px', fontSize: 'pt' },
-      orientation: layoutData.orientation,
-      cardSizeString: `${sizeDimensions.value.width}x${sizeDimensions.value.height}`,
+      units: { position: 'mm', size: 'mm', fontSize: 'pt' },
+      cardWidthMm: layoutData.cardWidthMm,
+      cardHeightMm: layoutData.cardHeightMm,
       story: {
         position: { ...layoutData.story.position },
         size: { ...layoutData.story.size },
@@ -1756,9 +1854,9 @@ function getCurrentLayoutJson() {
   try {
     const jsonLayout = {
       name: `Layout for ${props.size}`,
-      units: { position: 'px', size: 'px', fontSize: 'pt' },
-      orientation: layoutData.orientation,
-      cardSizeString: `${sizeDimensions.value.width}x${sizeDimensions.value.height}`,
+      units: { position: 'mm', size: 'mm', fontSize: 'pt' },
+      cardWidthMm: layoutData.cardWidthMm,
+      cardHeightMm: layoutData.cardHeightMm,
       story: {
         position: { ...layoutData.story.position },
         size: { ...layoutData.story.size },
@@ -1838,7 +1936,6 @@ function applyJsonChanges() {
     // Clear any selections
     selectedBoxes.value = []
     
-    alert('✅ Layout updated from JSON!')
     console.log('[JSON APPLIED]', parsedJson)
   } catch (error) {
     console.error('Error applying JSON changes:', error)
@@ -1904,7 +2001,6 @@ function saveJsonChanges() {
     // Refresh the JSON content in the editor
     editableJsonContent.value = getCurrentLayoutJson()
     
-    alert('✅ Layout updated from JSON!')
     console.log('[JSON SAVED]', parsedJson)
   } catch (error) {
     console.error('Error saving JSON changes:', error)
@@ -1930,7 +2026,7 @@ function handleBoxDoubleClick(id, event) {
   event.preventDefault()
   event.stopPropagation()
   
-  // Get current dimensions
+  // Get current dimensions (already in mm)
   let currentWidth, currentHeight
   if (id === 'story') {
     currentWidth = layoutData.story.size.width
@@ -1942,10 +2038,9 @@ function handleBoxDoubleClick(id, event) {
     currentHeight = photo.size.height
   }
   
-  // Convert pixels to mm using the scale factor
-  const scale = SCALE_FACTOR.value
-  const widthMm = Math.round(currentWidth / scale)
-  const heightMm = Math.round(currentHeight / scale)
+  // Dimensions are already in mm, no conversion needed
+  const widthMm = Math.round(currentWidth)
+  const heightMm = Math.round(currentHeight)
   
   // Set up dialog data
   resizeDialogData.value = {
@@ -1962,60 +2057,64 @@ function handleBoxDoubleClick(id, event) {
 // Generate proper default layout for a given size
 function generateDefaultLayout(size) {
   const dimensions = calculateSizeDimensions(size)
-  const cardWidthPx = cardDimensions.value.width
-  const cardHeightPx = cardDimensions.value.height
   
-  // Calculate margins and spacing in pixels (scaled appropriately)
-  const marginPx = Math.round(20) // 20px margin
-  const spacingPx = Math.round(20) // 20px spacing
+  // Convert card dimensions to mm
+  const cardWidthMm = Math.round(dimensions.width * 25.4)
+  const cardHeightMm = Math.round(dimensions.height * 25.4)
+  
+  // Calculate margins and spacing in mm
+  const marginMm = 10 // 10mm margin
+  const spacingMm = 10 // 10mm spacing
   
   // Calculate available area
-  const availableWidth = cardWidthPx - (marginPx * 2)
-  const availableHeight = cardHeightPx - (marginPx * 2)
+  const availableWidth = cardWidthMm - (marginMm * 2)
+  const availableHeight = cardHeightMm - (marginMm * 2)
   
-  // Generate layout based on orientation
+  // Generate layout based on aspect ratio
   if (dimensions.aspectRatio > 1) {
     // Landscape layout
-    const photoWidth = Math.round((availableWidth - spacingPx) / 2)
-    const photoHeight = Math.round((availableHeight - spacingPx) / 2)
+    const photoWidth = (availableWidth - spacingMm) / 2
+    const photoHeight = (availableHeight - spacingMm) / 2
     
     return {
       name: `${size} Landscape Layout`,
-      units: { position: 'px', size: 'px', fontSize: 'pt' },
-      orientation: 'landscape',
+      units: { position: 'mm', size: 'mm', fontSize: 'pt' },
+      cardWidthMm: cardWidthMm,
+      cardHeightMm: cardHeightMm,
       story: {
-        position: { x: marginPx + photoWidth + spacingPx, y: marginPx },
+        position: { x: marginMm + photoWidth + spacingMm, y: marginMm },
         size: { width: photoWidth, height: availableHeight },
         fontSizePt: 12,
         align: 'center'
       },
       photos: [
-        { id: '1', position: { x: marginPx, y: marginPx }, size: { width: photoWidth, height: photoHeight }, borderRadius: 12 },
-        { id: '2', position: { x: marginPx, y: marginPx + photoHeight + spacingPx }, size: { width: photoWidth, height: photoHeight }, borderRadius: 12 },
-        { id: '3', position: { x: marginPx + photoWidth + spacingPx, y: marginPx + photoHeight + spacingPx }, size: { width: photoWidth, height: photoHeight }, borderRadius: 12 },
-        { id: '4', position: { x: marginPx + photoWidth + spacingPx, y: marginPx + photoHeight + spacingPx }, size: { width: photoWidth, height: photoHeight }, borderRadius: 12 }
+        { id: '1', position: { x: marginMm, y: marginMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
+        { id: '2', position: { x: marginMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
+        { id: '3', position: { x: marginMm + photoWidth + spacingMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
+        { id: '4', position: { x: marginMm + photoWidth + spacingMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 }
       ]
     }
   } else {
     // Portrait layout
-    const photoWidth = Math.round((availableWidth - spacingPx) / 2)
-    const photoHeight = Math.round((availableHeight - spacingPx * 2) / 3)
+    const photoWidth = (availableWidth - spacingMm) / 2
+    const photoHeight = (availableHeight - spacingMm * 2) / 3
     
     return {
       name: `${size} Portrait Layout`,
-      units: { position: 'px', size: 'px', fontSize: 'pt' },
-      orientation: 'portrait',
+      units: { position: 'mm', size: 'mm', fontSize: 'pt' },
+      cardWidthMm: cardWidthMm,
+      cardHeightMm: cardHeightMm,
       story: {
-        position: { x: marginPx, y: marginPx + photoHeight * 2 + spacingPx * 2 },
+        position: { x: marginMm, y: marginMm + photoHeight * 2 + spacingMm * 2 },
         size: { width: availableWidth, height: photoHeight },
         fontSizePt: 12,
         align: 'center'
       },
       photos: [
-        { id: '1', position: { x: marginPx, y: marginPx }, size: { width: photoWidth, height: photoHeight }, borderRadius: 12 },
-        { id: '2', position: { x: marginPx + photoWidth + spacingPx, y: marginPx }, size: { width: photoWidth, height: photoHeight }, borderRadius: 12 },
-        { id: '3', position: { x: marginPx, y: marginPx + photoHeight + spacingPx }, size: { width: photoWidth, height: photoHeight }, borderRadius: 12 },
-        { id: '4', position: { x: marginPx + photoWidth + spacingPx, y: marginPx + photoHeight + spacingPx }, size: { width: photoWidth, height: photoHeight }, borderRadius: 12 }
+        { id: '1', position: { x: marginMm, y: marginMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
+        { id: '2', position: { x: marginMm + photoWidth + spacingMm, y: marginMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
+        { id: '3', position: { x: marginMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
+        { id: '4', position: { x: marginMm + photoWidth + spacingMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 }
       ]
     }
   }

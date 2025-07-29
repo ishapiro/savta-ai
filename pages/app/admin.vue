@@ -287,6 +287,12 @@
                   @click="showCreateThemeModal = true"
                   class="bg-brand-dialog-save p-4 border-0"
                 />
+                <Button
+                  label="Edit Layout Defaults"
+                  icon="pi pi-palette"
+                  @click="showLayoutDefaultsModal = true"
+                  class="bg-brand-dialog-edit p-4 border-0"
+                />
               </div>
             </div>
 
@@ -934,9 +940,89 @@
         <LayoutEditor 
           :initial-layout="getInitialLayout()"
           :size="newTheme.size"
+          :edit-defaults-mode="newTheme.editDefaultsMode"
           @save="handleLayoutSave" 
         />
       </div>
+    </Dialog>
+
+    <!-- Layout Defaults Modal -->
+    <Dialog
+      v-model:visible="showLayoutDefaultsModal"
+      modal
+      header="Edit Layout Defaults"
+      :style="{ width: '600px' }"
+    >
+      <div class="space-y-4">
+        <div class="mb-4">
+          <p class="text-sm text-brand-primary/70 mb-3">
+            Select a layout default to edit. Changes will be saved to the default layouts file.
+          </p>
+          
+          <!-- Password Protection -->
+          <div v-if="!isEditDefaultsMode" class="space-y-3">
+            <div class="field">
+              <label class="block text-sm font-medium text-brand-primary mb-1">Password</label>
+              <Password
+                v-model="password"
+                :feedback="false"
+                placeholder="Enter password"
+                class="w-full"
+                @keyup.enter="checkPassword"
+              />
+              <small v-if="passwordError" class="text-red-600 text-xs">{{ passwordError }}</small>
+            </div>
+            <div class="flex gap-2">
+              <Button
+                label="Continue"
+                @click="checkPassword"
+                class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0"
+              />
+              <Button
+                label="Cancel"
+                @click="cancelPassword"
+                class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0"
+              />
+            </div>
+          </div>
+
+          <!-- Layout Selection (only show after password) -->
+          <div v-if="isEditDefaultsMode" class="space-y-3">
+            <div class="field">
+              <label class="block text-sm font-medium text-brand-primary mb-1">Select Layout Default</label>
+              <Dropdown
+                v-model="selectedLayoutDefault"
+                :options="layoutDefaultOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Choose a layout default..."
+                class="w-full"
+              />
+            </div>
+            
+            <div v-if="selectedLayoutDefault" class="text-sm text-brand-primary/70">
+              <p><strong>Size:</strong> {{ selectedLayoutDefault }}</p>
+              <p><strong>Name:</strong> {{ getLayoutDefaultName(selectedLayoutDefault) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            v-if="isEditDefaultsMode && selectedLayoutDefault"
+            label="Edit Layout"
+            @click="openLayoutEditorForDefault"
+            class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0"
+          />
+          <Button
+            label="Close"
+            @click="closeLayoutDefaultsModal"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0"
+          />
+        </div>
+      </template>
     </Dialog>
   </div>
 </template>
@@ -1001,7 +1087,8 @@ const newTheme = ref({
   signature_font_color: '',
   layout_config: '',
   rounded: false,
-  size: '8.5x11'
+  size: '8.5x11',
+  editDefaultsMode: false
 })
 
 // Font options for EBGaramond fonts
@@ -1054,6 +1141,28 @@ const userRoleOptions = ref([
   { label: 'User', value: 'user' },
   { label: 'Editor', value: 'editor' },
   { label: 'Admin', value: 'admin' }
+])
+
+// Layout Defaults Modal
+const showLayoutDefaultsModal = ref(false)
+const isEditDefaultsMode = ref(false)
+const password = ref('')
+const passwordError = ref('')
+const selectedLayoutDefault = ref(null)
+
+// Layout default options
+const layoutDefaultOptions = ref([
+  { label: '3x5 inches - Small Portrait Layout', value: '3x5' },
+  { label: '5x3 inches - Small Landscape Layout', value: '5x3' },
+  { label: '5x7 inches - Medium Portrait Layout', value: '5x7' },
+  { label: '7x5 inches - Medium Landscape Layout', value: '7x5' },
+  { label: '8x10 inches - Large Portrait Layout', value: '8x10' },
+  { label: '10x8 inches - Large Landscape Layout', value: '10x8' },
+  { label: '8.5x11 inches - Letter Portrait Layout', value: '8.5x11' },
+  { label: '11x8.5 inches - Letter Landscape Layout', value: '11x8.5' },
+  { label: '11x14 inches - Extra Large Portrait Layout', value: '11x14' },
+  { label: '14x11 inches - Extra Large Landscape Layout', value: '14x11' },
+  { label: '12x12 inches - Square Layout', value: '12x12' }
 ])
 
 // Computed properties for user management
@@ -1780,7 +1889,10 @@ const createTheme = async () => {
       header_font_color: '',
       body_font_color: '',
       signature_font_color: '',
-      layout_config: ''
+      layout_config: '',
+      rounded: false,
+      size: '8.5x11',
+      editDefaultsMode: false
     }
     showCreateThemeModal.value = false
     
@@ -1988,15 +2100,25 @@ const saveLayoutToTheme = () => {
 const handleLayoutSave = (layoutJson) => {
   console.log('Saved layout:', layoutJson)
   
-  // Save the layout JSON to the theme's layout_config field
-  newTheme.value.layout_config = JSON.stringify(layoutJson, null, 2)
-  
-  toast.add({
-    severity: 'success',
-    summary: 'Layout Saved',
-    detail: 'Layout configuration saved to theme',
-    life: 3000
-  })
+  // If editing defaults, the save is handled by the LayoutEditor component
+  // If editing a theme, save the layout JSON to the theme's layout_config field
+  if (!newTheme.value.editDefaultsMode) {
+    newTheme.value.layout_config = JSON.stringify(layoutJson, null, 2)
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Layout Saved',
+      detail: 'Layout configuration saved to theme',
+      life: 3000
+    })
+  } else {
+    toast.add({
+      severity: 'success',
+      summary: 'Default Saved',
+      detail: 'Default layout saved successfully',
+      life: 3000
+    })
+  }
   
   // Close the dialog after saving
   showLayoutEditorDialog.value = false
@@ -2061,6 +2183,68 @@ const getRoleSeverity = (role) => {
     'admin': 'danger'
   }
   return severityMap[role] || 'secondary'
+}
+
+// Layout Defaults Functions
+const checkPassword = () => {
+  if (password.value === 'edventions') {
+    isEditDefaultsMode.value = true
+    password.value = ''
+    passwordError.value = ''
+  } else {
+    passwordError.value = 'Incorrect password. Please try again.'
+  }
+}
+
+const cancelPassword = () => {
+  showLayoutDefaultsModal.value = false
+  isEditDefaultsMode.value = false
+  password.value = ''
+  passwordError.value = ''
+  selectedLayoutDefault.value = null
+}
+
+const closeLayoutDefaultsModal = () => {
+  showLayoutDefaultsModal.value = false
+  isEditDefaultsMode.value = false
+  password.value = ''
+  passwordError.value = ''
+  selectedLayoutDefault.value = null
+}
+
+const getLayoutDefaultName = (size) => {
+  const layoutNames = {
+    '3x5': 'Small Portrait Layout',
+    '5x3': 'Small Landscape Layout',
+    '5x7': 'Medium Portrait Layout',
+    '7x5': 'Medium Landscape Layout',
+    '8x10': 'Large Portrait Layout',
+    '10x8': 'Large Landscape Layout',
+    '8.5x11': '8.5x11 Portrait Layout',
+    '11x8.5': 'Letter Landscape Layout',
+    '11x14': 'Extra Large Portrait Layout',
+    '14x11': 'Extra Large Landscape Layout',
+    '12x12': 'Square Layout'
+  }
+  return layoutNames[size] || 'Unknown Layout'
+}
+
+const openLayoutEditorForDefault = () => {
+  if (!selectedLayoutDefault.value) return
+  
+  // Set the theme size to the selected layout default
+  newTheme.value.size = selectedLayoutDefault.value
+  newTheme.value.editDefaultsMode = true
+  
+  // Close the layout defaults modal
+  showLayoutDefaultsModal.value = false
+  isEditDefaultsMode.value = false
+  password.value = ''
+  passwordError.value = ''
+  selectedLayoutDefault.value = null
+  
+  // Open the layout editor dialog
+  showLayoutEditorDialog.value = true
 }
 </script>
 

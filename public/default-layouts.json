@@ -2,19 +2,20 @@
   "3x5": {
     "name": "Small Portrait Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "portrait",
+    "cardWidthMm": 76,
+    "cardHeightMm": 127,
     "story": {
       "position": {
-        "x": 50,
-        "y": 500
+        "x": 10,
+        "y": 100
       },
       "size": {
-        "width": 500,
-        "height": 80
+        "width": 60,
+        "height": 15
       },
       "fontSizePt": 8,
       "align": "center"
@@ -23,69 +24,70 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 240,
-          "height": 200
+          "width": 25,
+          "height": 20
         },
-        "borderRadius": 8
+        "borderRadius": 2
       },
       {
         "id": "2",
         "position": {
-          "x": 310,
-          "y": 50
+          "x": 40,
+          "y": 10
         },
         "size": {
-          "width": 240,
-          "height": 200
+          "width": 25,
+          "height": 20
         },
-        "borderRadius": 8
+        "borderRadius": 2
       },
       {
         "id": "3",
         "position": {
-          "x": 50,
-          "y": 270
+          "x": 10,
+          "y": 35
         },
         "size": {
-          "width": 240,
-          "height": 200
+          "width": 25,
+          "height": 20
         },
-        "borderRadius": 8
+        "borderRadius": 2
       },
       {
         "id": "4",
         "position": {
-          "x": 310,
-          "y": 270
+          "x": 40,
+          "y": 35
         },
         "size": {
-          "width": 240,
-          "height": 200
+          "width": 25,
+          "height": 20
         },
-        "borderRadius": 8
+        "borderRadius": 2
       }
     ]
   },
   "5x3": {
     "name": "Small Landscape Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "landscape",
+    "cardWidthMm": 127,
+    "cardHeightMm": 76,
     "story": {
       "position": {
-        "x": 533,
-        "y": 40
+        "x": 70,
+        "y": 10
       },
       "size": {
-        "width": 267,
-        "height": 400
+        "width": 35,
+        "height": 60
       },
       "fontSizePt": 8,
       "align": "center"
@@ -94,69 +96,70 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 25,
+          "height": 15
         },
-        "borderRadius": 8
+        "borderRadius": 2
       },
       {
         "id": "2",
         "position": {
-          "x": 290,
-          "y": 50
+          "x": 40,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 25,
+          "height": 15
         },
-        "borderRadius": 8
+        "borderRadius": 2
       },
       {
         "id": "3",
         "position": {
-          "x": 50,
-          "y": 220
+          "x": 10,
+          "y": 30
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 25,
+          "height": 15
         },
-        "borderRadius": 8
+        "borderRadius": 2
       },
       {
         "id": "4",
         "position": {
-          "x": 290,
-          "y": 220
+          "x": 40,
+          "y": 30
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 25,
+          "height": 15
         },
-        "borderRadius": 8
+        "borderRadius": 2
       }
     ]
   },
   "5x7": {
     "name": "Medium Portrait Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "portrait",
+    "cardWidthMm": 127,
+    "cardHeightMm": 178,
     "story": {
       "position": {
-        "x": 50,
-        "y": 600
+        "x": 10,
+        "y": 150
       },
       "size": {
-        "width": 500,
-        "height": 100
+        "width": 120,
+        "height": 20
       },
       "fontSizePt": 9,
       "align": "center"
@@ -165,140 +168,142 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 240,
-          "height": 180
+          "width": 55,
+          "height": 40
         },
-        "borderRadius": 10
+        "borderRadius": 3
       },
       {
         "id": "2",
         "position": {
-          "x": 310,
-          "y": 50
+          "x": 75,
+          "y": 10
         },
         "size": {
-          "width": 240,
-          "height": 180
+          "width": 55,
+          "height": 40
         },
-        "borderRadius": 10
+        "borderRadius": 3
       },
       {
         "id": "3",
         "position": {
-          "x": 50,
-          "y": 250
+          "x": 10,
+          "y": 60
         },
         "size": {
-          "width": 240,
-          "height": 180
+          "width": 55,
+          "height": 40
         },
-        "borderRadius": 10
+        "borderRadius": 3
       },
       {
         "id": "4",
         "position": {
-          "x": 310,
-          "y": 250
+          "x": 75,
+          "y": 60
         },
         "size": {
-          "width": 240,
-          "height": 180
+          "width": 55,
+          "height": 40
         },
-        "borderRadius": 10
+        "borderRadius": 3
       }
     ]
   },
   "7x5": {
     "name": "Medium Landscape Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "landscape",
+    "cardWidthMm": 178,
+    "cardHeightMm": 127,
     "story": {
       "position": {
-        "x": 533,
-        "y": 50
+        "x": 114,
+        "y": 5
       },
       "size": {
-        "width": 267,
-        "height": 500
+        "width": 58.18481249999999,
+        "height": 115.8648203125
       },
       "fontSizePt": 9,
       "align": "center"
     },
     "photos": [
       {
-        "id": "1",
+        "id": "photo-1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 61,
+          "y": 5
         },
         "size": {
-          "width": 220,
-          "height": 220
+          "width": 45,
+          "height": 55
         },
-        "borderRadius": 10
+        "borderRadius": 3
       },
       {
-        "id": "2",
+        "id": "photo-3",
         "position": {
-          "x": 290,
-          "y": 50
+          "x": 60,
+          "y": 67
         },
         "size": {
-          "width": 220,
-          "height": 220
+          "width": 45,
+          "height": 55
         },
-        "borderRadius": 10
+        "borderRadius": 3
       },
       {
-        "id": "3",
+        "id": "photo-4",
         "position": {
-          "x": 50,
-          "y": 290
+          "x": 8,
+          "y": 5
         },
         "size": {
-          "width": 220,
-          "height": 220
+          "width": 45,
+          "height": 55
         },
-        "borderRadius": 10
+        "borderRadius": 3
       },
       {
-        "id": "4",
+        "id": "photo-5",
         "position": {
-          "x": 290,
-          "y": 290
+          "x": 8,
+          "y": 67
         },
         "size": {
-          "width": 220,
-          "height": 220
+          "width": 45,
+          "height": 55
         },
-        "borderRadius": 10
+        "borderRadius": 3
       }
     ]
   },
   "8x10": {
     "name": "Large Portrait Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "portrait",
+    "cardWidthMm": 203,
+    "cardHeightMm": 254,
     "story": {
       "position": {
-        "x": 50,
-        "y": 600
+        "x": 10,
+        "y": 200
       },
       "size": {
-        "width": 500,
-        "height": 120
+        "width": 190,
+        "height": 25
       },
       "fontSizePt": 10,
       "align": "center"
@@ -307,69 +312,70 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 200
+          "width": 85,
+          "height": 60
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "2",
         "position": {
-          "x": 290,
-          "y": 50
+          "x": 105,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 200
+          "width": 85,
+          "height": 60
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "3",
         "position": {
-          "x": 50,
-          "y": 270
+          "x": 10,
+          "y": 80
         },
         "size": {
-          "width": 220,
-          "height": 200
+          "width": 85,
+          "height": 60
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "4",
         "position": {
-          "x": 290,
-          "y": 270
+          "x": 105,
+          "y": 80
         },
         "size": {
-          "width": 220,
-          "height": 200
+          "width": 85,
+          "height": 60
         },
-        "borderRadius": 12
+        "borderRadius": 3
       }
     ]
   },
   "10x8": {
     "name": "Large Landscape Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "landscape",
+    "cardWidthMm": 254,
+    "cardHeightMm": 203,
     "story": {
       "position": {
-        "x": 533,
-        "y": 60
+        "x": 120,
+        "y": 10
       },
       "size": {
-        "width": 267,
-        "height": 520
+        "width": 60,
+        "height": 190
       },
       "fontSizePt": 10,
       "align": "center"
@@ -378,77 +384,70 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 50,
+          "height": 35
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "2",
         "position": {
-          "x": 290,
-          "y": 50
+          "x": 70,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 50,
+          "height": 35
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "3",
         "position": {
-          "x": 50,
-          "y": 220
+          "x": 10,
+          "y": 55
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 50,
+          "height": 35
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "4",
         "position": {
-          "x": 290,
-          "y": 220
+          "x": 70,
+          "y": 55
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 50,
+          "height": 35
         },
-        "borderRadius": 12
+        "borderRadius": 3
       }
     ]
   },
   "8.5x11": {
     "name": "8.5x11 Portrait Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "canvasSize": {
-      "width": 0,
-      "height": 0
-    },
-    "cardSize": {
-      "width": 0,
-      "height": 0
-    },
-    "orientation": "portrait",
+    "cardWidthMm": 216,
+    "cardHeightMm": 279,
     "story": {
       "position": {
-        "x": 20,
-        "y": 394
+        "x": 10,
+        "y": 250
       },
       "size": {
-        "width": 408,
-        "height": 167
+        "width": 200,
+        "height": 30
       },
       "fontSizePt": 12,
       "align": "center"
@@ -457,69 +456,70 @@
       {
         "id": "1",
         "position": {
-          "x": 20,
-          "y": 20
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 194,
-          "height": 167
+          "width": 95,
+          "height": 70
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "2",
         "position": {
-          "x": 235,
-          "y": 20
+          "x": 115,
+          "y": 10
         },
         "size": {
-          "width": 195,
-          "height": 170
+          "width": 95,
+          "height": 70
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "3",
         "position": {
-          "x": 20,
-          "y": 205
+          "x": 10,
+          "y": 90
         },
         "size": {
-          "width": 200,
-          "height": 160
+          "width": 95,
+          "height": 70
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "4",
         "position": {
-          "x": 235,
-          "y": 205
+          "x": 115,
+          "y": 90
         },
         "size": {
-          "width": 194,
-          "height": 167
+          "width": 95,
+          "height": 70
         },
-        "borderRadius": 12
+        "borderRadius": 3
       }
     ]
   },
   "11x8.5": {
     "name": "Letter Landscape Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "landscape",
+    "cardWidthMm": 279,
+    "cardHeightMm": 216,
     "story": {
       "position": {
-        "x": 533,
-        "y": 70
+        "x": 150,
+        "y": 10
       },
       "size": {
-        "width": 267,
-        "height": 540
+        "width": 75,
+        "height": 250
       },
       "fontSizePt": 10,
       "align": "center"
@@ -528,69 +528,70 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 60,
+          "height": 40
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "2",
         "position": {
-          "x": 290,
-          "y": 50
+          "x": 80,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 60,
+          "height": 40
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "3",
         "position": {
-          "x": 50,
-          "y": 220
+          "x": 10,
+          "y": 60
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 60,
+          "height": 40
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "4",
         "position": {
-          "x": 290,
-          "y": 220
+          "x": 80,
+          "y": 60
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 60,
+          "height": 40
         },
-        "borderRadius": 12
+        "borderRadius": 3
       }
     ]
   },
   "11x14": {
     "name": "Extra Large Portrait Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "portrait",
+    "cardWidthMm": 279,
+    "cardHeightMm": 356,
     "story": {
       "position": {
-        "x": 50,
-        "y": 600
+        "x": 10,
+        "y": 300
       },
       "size": {
-        "width": 500,
-        "height": 120
+        "width": 250,
+        "height": 35
       },
       "fontSizePt": 11,
       "align": "center"
@@ -599,69 +600,70 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 240,
-          "height": 200
+          "width": 115,
+          "height": 85
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "2",
         "position": {
-          "x": 310,
-          "y": 50
+          "x": 135,
+          "y": 10
         },
         "size": {
-          "width": 240,
-          "height": 200
+          "width": 115,
+          "height": 85
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "3",
         "position": {
-          "x": 50,
-          "y": 270
+          "x": 10,
+          "y": 105
         },
         "size": {
-          "width": 240,
-          "height": 200
+          "width": 115,
+          "height": 85
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "4",
         "position": {
-          "x": 310,
-          "y": 270
+          "x": 135,
+          "y": 105
         },
         "size": {
-          "width": 240,
-          "height": 200
+          "width": 115,
+          "height": 85
         },
-        "borderRadius": 12
+        "borderRadius": 3
       }
     ]
   },
   "14x11": {
     "name": "Extra Large Landscape Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "landscape",
+    "cardWidthMm": 356,
+    "cardHeightMm": 279,
     "story": {
       "position": {
-        "x": 533,
-        "y": 80
+        "x": 200,
+        "y": 10
       },
       "size": {
-        "width": 267,
-        "height": 560
+        "width": 100,
+        "height": 300
       },
       "fontSizePt": 11,
       "align": "center"
@@ -670,69 +672,70 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 80,
+          "height": 55
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "2",
         "position": {
-          "x": 290,
-          "y": 50
+          "x": 100,
+          "y": 10
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 80,
+          "height": 55
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "3",
         "position": {
-          "x": 50,
-          "y": 220
+          "x": 10,
+          "y": 75
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 80,
+          "height": 55
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "4",
         "position": {
-          "x": 290,
-          "y": 220
+          "x": 100,
+          "y": 75
         },
         "size": {
-          "width": 220,
-          "height": 150
+          "width": 80,
+          "height": 55
         },
-        "borderRadius": 12
+        "borderRadius": 3
       }
     ]
   },
   "12x12": {
     "name": "Square Layout",
     "units": {
-      "position": "px",
-      "size": "px",
+      "position": "mm",
+      "size": "mm",
       "fontSize": "pt"
     },
-    "orientation": "square",
+    "cardWidthMm": 305,
+    "cardHeightMm": 305,
     "story": {
       "position": {
-        "x": 50,
-        "y": 600
+        "x": 10,
+        "y": 280
       },
       "size": {
-        "width": 500,
-        "height": 120
+        "width": 280,
+        "height": 30
       },
       "fontSizePt": 10,
       "align": "center"
@@ -741,50 +744,50 @@
       {
         "id": "1",
         "position": {
-          "x": 50,
-          "y": 50
+          "x": 10,
+          "y": 10
         },
         "size": {
-          "width": 240,
-          "height": 240
+          "width": 130,
+          "height": 130
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "2",
         "position": {
-          "x": 310,
-          "y": 50
+          "x": 150,
+          "y": 10
         },
         "size": {
-          "width": 240,
-          "height": 240
+          "width": 130,
+          "height": 130
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "3",
         "position": {
-          "x": 50,
-          "y": 310
+          "x": 10,
+          "y": 150
         },
         "size": {
-          "width": 240,
-          "height": 240
+          "width": 130,
+          "height": 130
         },
-        "borderRadius": 12
+        "borderRadius": 3
       },
       {
         "id": "4",
         "position": {
-          "x": 310,
-          "y": 310
+          "x": 150,
+          "y": 150
         },
         "size": {
-          "width": 240,
-          "height": 240
+          "width": 130,
+          "height": 130
         },
-        "borderRadius": 12
+        "borderRadius": 3
       }
     ]
   }
