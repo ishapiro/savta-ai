@@ -50,10 +50,6 @@ export function wrapText(text, maxWidth, fontSize) {
   const lines = []
   let currentLine = ''
   
-  console.log(`🔍 wrapText called with maxWidth: ${maxWidth}px, fontSize: ${fontSize}px`)
-  console.log(`🔍 Text to wrap: "${text}"`)
-  console.log(`🔍 Words count: ${words.length}`)
-  
   // Improved character width estimation for EB Garamond font
   const getCharWidth = (char) => {
     // Narrow characters
@@ -78,30 +74,18 @@ export function wrapText(text, maxWidth, fontSize) {
     const testLine = currentLine ? currentLine + ' ' + word : word
     const width = measureTextWidth(testLine)
     
-    console.log(`🔍 Testing: "${testLine}" - width: ${width.toFixed(1)}px, maxWidth: ${maxWidth}px`)
-    
     if (width <= maxWidth) {
       currentLine = testLine
-      console.log(`✅ Line fits, continuing: "${currentLine}"`)
     } else {
       if (currentLine) {
         lines.push(currentLine)
-        console.log(`📝 Added line: "${currentLine}"`)
       }
       currentLine = word
-      console.log(`🔄 Starting new line with: "${currentLine}"`)
     }
   }
   if (currentLine) {
     lines.push(currentLine)
-    console.log(`📝 Added final line: "${currentLine}"`)
   }
-  
-  console.log(`📊 wrapText result: ${lines.length} lines`)
-  lines.forEach((line, i) => {
-    const lineWidth = measureTextWidth(line)
-    console.log(`📝 Line ${i + 1}: "${line}" (${line.length} chars, ${lineWidth.toFixed(1)}px)`)
-  })
   
   return lines
 }
@@ -119,9 +103,6 @@ export function autoSizeText(text, maxWidth, maxHeight, startFontSize = 16, line
   // Clean the input text to ensure it's a single string with no line breaks
   const cleanText = text.replace(/\n/g, ' ').replace(/\r/g, ' ').replace(/\s+/g, ' ').trim()
   
-  console.log(`📝 Auto-sizing text: "${cleanText.substring(0, 50)}..."`)
-  console.log(`📏 Available space: ${maxWidth}x${maxHeight}px`)
-  
   let bestFontSize = startFontSize
   let bestLines = []
   let wasTruncated = false
@@ -134,13 +115,10 @@ export function autoSizeText(text, maxWidth, maxHeight, startFontSize = 16, line
     // Calculate total height needed
     const totalHeight = lines.length * fontSize * lineHeight
     
-    console.log(`🔄 Font ${fontSize}px: ${lines.length} lines, ${totalHeight}px height`)
-    
     // Check if this font size fits
     if (totalHeight <= maxHeight * 0.9) {
       bestFontSize = fontSize
       bestLines = lines
-      console.log(`✅ Found good fit at ${fontSize}px font size`)
       break
     }
   }
@@ -165,13 +143,9 @@ export function autoSizeText(text, maxWidth, maxHeight, startFontSize = 16, line
         const charsToRemove = Math.min(3, lastLine.length)
         const truncatedLine = lastLine.substring(0, lastLine.length - charsToRemove)
         bestLines[bestLines.length - 1] = truncatedLine + '...'
-        console.log(`✂️ Truncated last line to: "${bestLines[bestLines.length - 1]}"`)
       }
     }
   }
-  
-  const finalHeight = bestLines.length * bestFontSize * lineHeight
-  console.log(`📊 Final result: ${bestFontSize}px font, ${bestLines.length} lines, ${finalHeight}px height${wasTruncated ? ' (truncated)' : ''}`)
   
   return { lines: bestLines, fontSize: bestFontSize, wasTruncated }
 }
@@ -196,8 +170,6 @@ export async function renderTextToImage(text, width, height, options = {}) {
   } = options
   
   try {
-    console.log('🎨 Rendering ultra high-quality text at 1200 DPI with Sharp and embedded fonts...')
-    
     // Validate input dimensions
     if (!width || !height || width <= 0 || height <= 0) {
       throw new Error(`Invalid dimensions: width=${width}, height=${height}`)
@@ -207,12 +179,8 @@ export async function renderTextToImage(text, width, height, options = {}) {
     const maxWidth = width - (padding * 2)
     const maxHeight = height - (padding * 2)
     
-    console.log(`📏 Text rendering dimensions: ${width}x${height}, available: ${maxWidth}x${maxHeight}, padding: ${padding}`)
-    
     // Auto-adjust font size to fit
     const { lines, fontSize, wasTruncated } = autoSizeText(text, maxWidth, maxHeight, startFontSize, lineHeight)
-    
-    console.log(`📏 Auto-sized text: ${fontSize}px font, ${lines.length} lines${wasTruncated ? ' (truncated)' : ''}`)
     
     // Create ultra high-resolution image for 600 DPI
     const scaledWidth = width * scale
@@ -261,13 +229,10 @@ export async function renderTextToImage(text, width, height, options = {}) {
         return lines.map((line, i) => {
           const y = startY + (i * scaledFontSize * lineHeight)
           const escapedLine = escapeXml(line)
-          console.log(`📝 Line ${i + 1}: "${line}" → "${escapedLine}" (y: ${y})`)
           return `<text x="${scaledWidth / 2}" y="${y}" class="text" font-size="${scaledFontSize}" font-weight="400" font-style="italic" text-anchor="middle">${escapedLine}</text>`
         }).join('')
       })()}
     </svg>`
-    
-    console.log(`🎨 Creating optimized SVG with ${lines.length} lines, font size: ${scaledFontSize}px, dimensions: ${scaledWidth}x${scaledHeight}`)
     
     // Create the image with optimized settings for web fonts
     const buffer = await sharp(Buffer.from(svgContent))
@@ -283,7 +248,6 @@ export async function renderTextToImage(text, width, height, options = {}) {
       })
       .toBuffer()
     
-    console.log('✅ Ultra high-quality text rendered successfully at 1200 DPI with Sharp and embedded fonts')
     return buffer
     
   } catch (error) {

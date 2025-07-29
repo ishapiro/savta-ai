@@ -1577,6 +1577,234 @@ export default defineEventHandler(async (event) => {
       await updatePdfStatus(supabase, book.id, user.id, '✨ Your Magic Memory is ready! ✨')
       return { success: true, downloadUrl: pdfStorageUrl }
     }
+
+    // Handle theme layout PDF generation
+    if (book.layout_type === 'theme') {
+      console.log('🎨 Starting theme-based PDF generation')
+      
+      // Fetch the theme again to ensure we have the latest data
+      const { data: theme, error: themeError } = await supabase
+        .from('themes')
+        .select('*')
+        .eq('id', book.theme)
+        .eq('deleted', false)
+        .single()
+
+      if (themeError || !theme) {
+        console.error('❌ Theme not found during PDF generation:', themeError)
+        throw createError({
+          statusCode: 404,
+          statusMessage: 'Selected theme not found'
+        })
+      }
+
+      // Parse layout_config
+      const layoutConfig = typeof theme.layout_config === 'string' 
+        ? JSON.parse(theme.layout_config) 
+        : theme.layout_config
+
+      if (!layoutConfig || !layoutConfig.photos) {
+        console.error('❌ Invalid layout_config in theme')
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Invalid theme layout configuration'
+        })
+      }
+
+      // Convert theme size to PDF dimensions
+      let pageWidth, pageHeight
+      switch (theme.size) {
+        case '3x5': pageWidth = 216; pageHeight = 360; break
+        case '5x3': pageWidth = 360; pageHeight = 216; break
+        case '5x7': pageWidth = 360; pageHeight = 504; break
+        case '7x5': pageWidth = 504; pageHeight = 360; break
+        case '8x10': pageWidth = 576; pageHeight = 720; break
+        case '10x8': pageWidth = 720; pageHeight = 576; break
+        case '8.5x11': pageWidth = 612; pageHeight = 792; break
+        case '11x8.5': pageWidth = 792; pageHeight = 612; break
+        case '11x14': pageWidth = 792; pageHeight = 1008; break
+        case '14x11': pageWidth = 1008; pageHeight = 792; break
+        case '12x12': pageWidth = 864; pageHeight = 864; break
+        default: pageWidth = 612; pageHeight = 792;
+      }
+      console.log(`📐 Theme PDF dimensions: ${pageWidth}x${pageHeight} points (${theme.size})`)
+
+      // Create PDF document
+      const pdfDoc = await PDFDocument.create()
+      const page = pdfDoc.addPage([pageWidth, pageHeight])
+
+      // Apply background color with opacity
+      if (theme.background_color) {
+        console.log('🎨 Applying theme background color:', theme.background_color)
+        const hexColor = theme.background_color.replace('#', '')
+        const opacity = (theme.background_opacity || 100) / 100
+        if (/^[0-9A-Fa-f]{6}$/.test(hexColor)) {
+          const r = parseInt(hexColor.substr(0, 2), 16) / 255
+          const g = parseInt(hexColor.substr(2, 2), 16) / 255
+          const b = parseInt(hexColor.substr(4, 2), 16) / 255
+          const blendedR = r * opacity + (1 - opacity)
+          const blendedG = g * opacity + (1 - opacity)
+          const blendedB = b * opacity + (1 - opacity)
+          page.drawRectangle({ x: 0, y: 0, width: pageWidth, height: pageHeight, color: rgb(blendedR, blendedG, blendedB) })
+          console.log(`🎨 Background applied: ${theme.background_color} with ${theme.background_opacity}% opacity`)
+        }
+      }
+
+      // Convert mm to points for layout positioning
+      const mmToPoints = 72 / 25.4
+      const cardWidthMm = layoutConfig.cardWidthMm || 178
+      const cardHeightMm = layoutConfig.cardHeightMm || 127
+      const cardWidthPoints = cardWidthMm * mmToPoints
+      const cardHeightPoints = cardHeightMm * mmToPoints
+      const cardX = (pageWidth - cardWidthPoints) / 2
+      const cardY = (pageHeight - cardHeightPoints) / 2
+      console.log(`📐 Card dimensions: ${cardWidthPoints}x${cardHeightPoints} points (${cardWidthMm}x${cardHeightMm}mm)`)
+
+      // Process photos from layout_config
+      const photoCount = layoutConfig.photos.length
+      console.log(`📸 Processing ${photoCount} photos from theme layout`)
+
+      // Fetch all assets for the book using created_from_assets (like magic layout)
+      const { data: assets, error: assetsError } = await supabase
+        .from('assets')
+        .select('*')
+        .in('id', book.created_from_assets || [])
+        .eq('approved', true)
+        .eq('deleted', false)
+      if (assetsError || !assets || assets.length === 0) {
+        console.error('❌ No assets found for theme layout:', assetsError)
+        throw createError({ statusCode: 404, statusMessage: 'No assets found for theme layout' })
+      }
+
+      let selectedAssets = assets
+      let aiStory = book.magic_story || null
+      // If not enough assets, or no story, call AI and update book (like magic layout)
+      if (assets.length < photoCount || !aiStory) {
+        const photos = assets.map(asset => ({
+          id: asset.id,
+          url: asset.storage_url,
+          caption: asset.user_caption || asset.ai_caption || '',
+          tags: asset.tags || [],
+          user_tags: asset.user_tags || [],
+          city: asset.city || null,
+          state: asset.state || null,
+          country: asset.country || null,
+          zip_code: asset.zip_code || null,
+          asset_date: asset.asset_date || null,
+          fingerprint: asset.fingerprint
+        }))
+        const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            photos: photos,
+            title: book.title,
+            memory_event: book.memory_event,
+            theme: book.theme || 'classic',
+            photo_count: photoCount,
+            background_type: book.background_type || 'white',
+            background_color: book.background_color
+          })
+        })
+        if (magicRes.ok) {
+          const magicData = await magicRes.json()
+          // Use selected_photo_ids (array of asset IDs) from AI response
+          if (magicData.selected_photo_ids && Array.isArray(magicData.selected_photo_ids)) {
+            selectedAssets = assets.filter(a => magicData.selected_photo_ids.includes(a.id))
+          }
+          aiStory = magicData.story
+          // Update the book with the new story and asset IDs
+          await supabase.from('memory_books').update({
+            magic_story: aiStory,
+            created_from_assets: selectedAssets.map(a => a.id)
+          }).eq('id', book.id)
+        }
+      }
+
+      // Process each photo according to layout_config
+      for (let i = 0; i < Math.min(selectedAssets.length, photoCount); i++) {
+        const asset = selectedAssets[i]
+        const photoConfig = layoutConfig.photos[i]
+        if (!photoConfig || !photoConfig.position || !photoConfig.size) continue
+        try {
+          const imageRes = await fetch(asset.storage_url)
+          if (!imageRes.ok) throw new Error(`Failed to fetch image: ${imageRes.status}`)
+          const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+          const photoX = cardX + (photoConfig.position.x * mmToPoints)
+          const photoY = cardY + (cardHeightPoints - (photoConfig.position.y + photoConfig.size.height) * mmToPoints)
+          const photoWidth = photoConfig.size.width * mmToPoints
+          const photoHeight = photoConfig.size.height * mmToPoints
+          const targetWidth = Math.round(photoWidth * 2)
+          const targetHeight = Math.round(photoHeight * 2)
+          let finalImageBuffer
+          try {
+            finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight)
+          } catch (smartCropError) {
+            finalImageBuffer = await sharp(imageBuffer)
+              .resize(targetWidth, targetHeight, { fit: 'cover' })
+              .png()
+              .toBuffer()
+          }
+          const borderRadius = photoConfig.borderRadius || (theme.rounded ? 5 : 0)
+          if (borderRadius > 0) {
+            const borderRadiusPixels = Math.round(borderRadius * 3.779527559)
+            try {
+              const roundedSvg = `<svg width="${targetWidth}" height="${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" fill="white"/></svg>`
+              finalImageBuffer = await sharp(finalImageBuffer)
+                .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
+                .png()
+                .toBuffer()
+            } catch (roundError) {}
+          }
+          const pdfImage = await pdfDoc.embedPng(finalImageBuffer)
+          page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
+        } catch (err) {}
+      }
+
+      // Process story if layout_config includes story area
+      if (layoutConfig.story) {
+        let story = aiStory || 'A special family story.'
+        const storyX = cardX + (layoutConfig.story.position.x * mmToPoints)
+        const storyY = cardY + (cardHeightPoints - (layoutConfig.story.position.y + layoutConfig.story.size.height) * mmToPoints)
+        const storyWidth = layoutConfig.story.size.width * mmToPoints
+        const storyHeight = layoutConfig.story.size.height * mmToPoints
+        try {
+          const pointsToPixels = 96 / 72
+          const storyWidthPixels = Math.round(storyWidth * pointsToPixels)
+          const storyHeightPixels = Math.round(storyHeight * pointsToPixels)
+          const fontColor = theme.body_font_color || '#2D1810'
+          const storyTextBuffer = await renderTextToImage(story, storyWidthPixels, storyHeightPixels, { color: fontColor })
+          const storyTextImage = await pdfDoc.embedPng(storyTextBuffer)
+          page.drawImage(storyTextImage, { x: storyX, y: storyY, width: storyWidth, height: storyHeight })
+        } catch (textError) {
+          page.drawText(story.substring(0, 200) + '...', { x: storyX + 10, y: storyY + storyHeight - 20, size: 12, color: rgb(0.2, 0.2, 0.2) })
+        }
+      }
+
+      // Save and upload PDF
+      await updatePdfStatus(supabase, book.id, user.id, '🎨 Theme PDF created!')
+      const pdfBytes = await pdfDoc.save()
+      const pdfFileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.pdf`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('assets')
+        .upload(pdfFileName, pdfBytes, { contentType: 'application/pdf', upsert: true })
+      if (uploadError) {
+        throw createError({ statusCode: 500, statusMessage: 'Failed to upload PDF: ' + uploadError.message })
+      }
+      const { data: pdfUrlData } = supabase.storage
+        .from('assets')
+        .getPublicUrl(pdfFileName)
+      const pdfStorageUrl = pdfUrlData?.publicUrl
+      if (!pdfStorageUrl) {
+        throw createError({ statusCode: 500, statusMessage: 'Failed to get public URL for PDF' })
+      }
+      await supabase.from('memory_books').update({ pdf_url: pdfStorageUrl, status: 'ready', generated_at: new Date().toISOString() }).eq('id', book.id)
+      await updatePdfStatus(supabase, book.id, user.id, '🎨 Your themed memory is ready!')
+      return { success: true, downloadUrl: pdfStorageUrl }
+    }
     
     // 4. Layout assets into pages (using grid_layout from book settings)
     const gridLayout = book.grid_layout || '2x2'
@@ -1616,31 +1844,31 @@ export default defineEventHandler(async (event) => {
     console.log('📄 PDF generation parameters:', { printSize })
     
     // Calculate page dimensions based on print size
-    let pageWidth, pageHeight
+    let regularPageWidth, regularPageHeight
     switch (printSize) {
       case '7x5':
-        pageWidth = 504 // 7x5 inches in points (7 * 72)
-        pageHeight = 360 // 5 inches in points (5 * 72)
+        regularPageWidth = 504 // 7x5 inches in points (7 * 72)
+        regularPageHeight = 360 // 5 inches in points (5 * 72)
         break
       case '8x10':
-        pageWidth = 595 // A4 width in points
-        pageHeight = 842 // A4 height in points
+        regularPageWidth = 595 // A4 width in points
+        regularPageHeight = 842 // A4 height in points
         break
       case '11x14':
-        pageWidth = 792 // 11x14 inches in points (11 * 72)
-        pageHeight = 1008 // 14 inches in points (14 * 72)
+        regularPageWidth = 792 // 11x14 inches in points (11 * 72)
+        regularPageHeight = 1008 // 14 inches in points (14 * 72)
         break
       case '12x12':
-        pageWidth = 864 // 12x12 inches in points (12 * 72)
-        pageHeight = 864 // 12 inches in points (12 * 72)
+        regularPageWidth = 864 // 12x12 inches in points (12 * 72)
+        regularPageHeight = 864 // 12 inches in points (12 * 72)
         break
       case 'a4':
-        pageWidth = 595 // A4 width in points
-        pageHeight = 842 // A4 height in points
+        regularPageWidth = 595 // A4 width in points
+        regularPageHeight = 842 // A4 height in points
         break
       default:
-        pageWidth = 595 // Default to A4
-        pageHeight = 842
+        regularPageWidth = 595 // Default to A4
+        regularPageHeight = 842
     }
     
     // Use assets with fingerprints for regular PDF generation
@@ -1668,7 +1896,7 @@ export default defineEventHandler(async (event) => {
       const pageAssets = regularAssetsWithFingerprints.slice(startIndex, startIndex + assetsPerPage)
       
       // Add page to PDF with calculated dimensions
-      const page = pdfDoc.addPage([pageWidth, pageHeight])
+      const page = pdfDoc.addPage([regularPageWidth, regularPageHeight])
       const { width, height } = page.getSize()
       
       console.log(`📐 Page ${pageIndex + 1} dimensions: ${width}x${height} points (${(width/72).toFixed(2)}x${(height/72).toFixed(2)} inches)`)

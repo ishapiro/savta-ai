@@ -79,7 +79,11 @@
               option-value="value"
               placeholder="Select size"
               class="w-full"
+              :disabled="form.layoutType === 'theme'"
             />
+            <small v-if="form.layoutType === 'theme'" class="text-brand-primary/70 text-xs mt-1 block">
+              Print size is determined by the selected theme
+            </small>
           </div>
           
           <!-- Quality -->
@@ -128,7 +132,7 @@
       </div>
 
       <!-- Grid & Shape Section -->
-      <div class="bg-gradient-to-r from-brand-secondary/10 to-brand-accent/10 rounded-lg p-4 border border-brand-secondary/30">
+      <div v-if="form.layoutType !== 'theme'" class="bg-gradient-to-r from-brand-secondary/10 to-brand-accent/10 rounded-lg p-4 border border-brand-secondary/30">
         <h3 class="text-lg font-semibold text-brand-primary mb-4 flex items-center gap-2">
           <i class="pi pi-th-large text-brand-secondary"></i>
           Grid & Shape
@@ -291,7 +295,18 @@
                     {{ selectedAssets.length }} memories selected
                   </p>
                   <p class="text-xs text-brand-primary/70">
-                    {{ selectedAssets.length === 0 ? 'No memories selected' : `Will create approximately ${calculatedPageCount} pages` }}
+                    <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount">
+                      Savta will select {{ selectedThemePhotoCount }} photos from this theme.
+                    </span>
+                    <span v-else-if="form.layoutType === 'theme' && !selectedThemePhotoCount">
+                      Please select a theme to see photo count.
+                    </span>
+                    <span v-else-if="selectedAssets.length === 0">
+                      No memories selected
+                    </span>
+                    <span v-else>
+                      Will create approximately {{ calculatedPageCount }} pages
+                    </span>
                   </p>
                 </div>
               </div>
@@ -984,7 +999,7 @@ const fetchThemes = async () => {
     loadingThemes.value = true
     const { data, error } = await supabase
       .from('themes')
-      .select('id, name, description, is_active')
+      .select('id, name, description, is_active, layout_config')
       .eq('is_active', true)
       .eq('deleted', false)
       .order('name')
@@ -995,11 +1010,28 @@ const fetchThemes = async () => {
     }
     
     // Transform themes for dropdown
-    themeOptions.value = data.map(theme => ({
-      label: theme.name,
-      value: theme.id,
-      description: theme.description
-    }))
+    themeOptions.value = data.map(theme => {
+      let photoCount = 0
+      try {
+        const layoutConfig = typeof theme.layout_config === 'string' 
+          ? JSON.parse(theme.layout_config) 
+          : theme.layout_config
+        
+        if (layoutConfig && layoutConfig.photos && Array.isArray(layoutConfig.photos)) {
+          photoCount = layoutConfig.photos.length
+        }
+      } catch (error) {
+        console.error('Error parsing theme layout config:', error)
+      }
+      
+      return {
+        label: photoCount > 0 ? `${theme.name} (${photoCount} photos)` : theme.name,
+        value: theme.id,
+        description: theme.description,
+        layoutConfig: theme.layout_config,
+        photoCount: photoCount
+      }
+    })
     
     console.log('[MEMORY-BOOK-DIALOG] Fetched themes:', themeOptions.value)
   } catch (error) {
@@ -1105,6 +1137,16 @@ const calculatedPageCount = computed(() => {
   const totalPages = Math.ceil(selectedAssets.value.length / memoriesPerPage)
   
   return totalPages
+})
+
+// Get selected theme's photo count
+const selectedThemePhotoCount = computed(() => {
+  if (form.value.layoutType !== 'theme' || !form.value.theme) return null
+  
+  const selectedTheme = themeOptions.value.find(theme => theme.value === form.value.theme)
+  if (!selectedTheme) return null
+  
+  return selectedTheme.photoCount || null
 })
 
 // Watch for initial data changes

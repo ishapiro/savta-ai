@@ -67,7 +67,7 @@ export default {
           navigation: ' #e4e4e7;', // light grey
           highlight: '#41706C', // H3 - darker teal -- was #7BAAA7
           accent: '#F1B8B8', // H4 - blush
-          warm: '#F4E4D6', // warm cream color
+          warm: '#F4E4D6', // warm cream color #F4E4D6
           card: '#F6E7D8', // light tan
           'dialog-cancel': 'rgba(130, 130, 130, 0.44)', 
           'dialog-cancel-hover': 'rgba(100, 100, 100, 0.6)',
