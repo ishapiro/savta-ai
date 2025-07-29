@@ -79,7 +79,7 @@
             <h4 class="font-semibold text-brand-primary mb-2">Grid and Snapping</h4>
             <ul class="space-y-2 text-sm">
               <li>• Enable <span class="font-semibold">snap to 5mm grid</span> to align elements precisely</li>
-              <li>• Grid lines appear at 5mm and 50mm intervals when snap is enabled</li>
+              <li>• Grid lines appear at the specified interval when snap is enabled</li>
               <li>• Snapping works for both moving and resizing elements</li>
             </ul>
           </div>
@@ -397,38 +397,20 @@
         <!-- Card Outline -->
         <div :style="cardOutlineStyle"></div>
         
-        <!-- Dynamic Grid Lines (within card boundaries) -->
+        <!-- Grid Lines (within card boundaries) -->
         <div v-if="snapEnabled" class="absolute pointer-events-none" :style="cardOutlineStyle">
           <!-- Vertical grid lines -->
           <div
-            v-for="x in dynamicGridLines.x"
+            v-for="x in gridLines.x"
             :key="`grid-v-${x}`"
-            class="absolute top-0 bottom-0 w-px bg-gray-200 opacity-30"
+            class="absolute top-0 bottom-0 w-px bg-gray-400 opacity-60"
             :style="{ left: `${x}px` }"
           ></div>
           <!-- Horizontal grid lines -->
           <div
-            v-for="y in dynamicGridLines.y"
-            :key="`grid-h-${y}`"
-            class="absolute left-0 right-0 h-px bg-gray-200 opacity-30"
-            :style="{ top: `${y}px` }"
-          ></div>
-        </div>
-
-        <!-- 50mm Grid Lines (within card boundaries) -->
-        <div v-if="snapEnabled" class="absolute pointer-events-none" :style="cardOutlineStyle">
-          <!-- Vertical grid lines at 50mm intervals -->
-          <div
-            v-for="x in gridLines.x"
-            :key="`v-${x}`"
-            class="absolute top-0 bottom-0 w-px bg-red-300 opacity-50"
-            :style="{ left: `${x}px` }"
-          ></div>
-          <!-- Horizontal grid lines at 50mm intervals -->
-          <div
             v-for="y in gridLines.y"
-            :key="`h-${y}`"
-            class="absolute left-0 right-0 h-px bg-red-300 opacity-50"
+            :key="`grid-h-${y}`"
+            class="absolute left-0 right-0 h-px bg-gray-400 opacity-60"
             :style="{ top: `${y}px` }"
           ></div>
         </div>
@@ -544,8 +526,8 @@ const editableJsonContent = ref('')
 // Snap functionality
 const snapEnabled = ref(false)
 const gridSize = ref(10) // Default grid size in mm
-const snapGridSize = computed(() => gridSize.value) // Grid size in pixels
-const gridLineInterval = 50 // 50mm intervals for grid lines
+const snapGridSize = computed(() => gridSize.value * SCALE_FACTOR.value) // Convert mm to pixels
+const gridLineInterval = computed(() => gridSize.value * SCALE_FACTOR.value) // Convert mm to pixels
 
 // Update grid size function
 function updateGridSize() {
@@ -661,39 +643,19 @@ const gridLines = computed(() => {
   const cardHeight = cardDimensions.value.height
   
   // Calculate vertical lines (x positions) within card
-  for (let x = gridLineInterval; x < cardWidth; x += gridLineInterval) {
+  for (let x = gridLineInterval.value; x < cardWidth; x += gridLineInterval.value) {
     xLines.push(x)
   }
   
   // Calculate horizontal lines (y positions) within card
-  for (let y = gridLineInterval; y < cardHeight; y += gridLineInterval) {
+  for (let y = gridLineInterval.value; y < cardHeight; y += gridLineInterval.value) {
     yLines.push(y)
   }
   
   return { x: xLines, y: yLines }
 })
 
-// Calculate dynamic grid lines positions (within card boundaries)
-const dynamicGridLines = computed(() => {
-  if (!snapEnabled.value) return { x: [], y: [] }
-  
-  const xLines = []
-  const yLines = []
-  const cardWidth = cardDimensions.value.width
-  const cardHeight = cardDimensions.value.height
-  
-  // Calculate vertical grid lines (x positions) within card
-  for (let x = snapGridSize.value; x < cardWidth; x += snapGridSize.value) {
-    xLines.push(x)
-  }
-  
-  // Calculate horizontal grid lines (y positions) within card
-  for (let y = snapGridSize.value; y < cardHeight; y += snapGridSize.value) {
-    yLines.push(y)
-  }
-  
-  return { x: xLines, y: yLines }
-})
+
 
 // Snap position to grid
 function snapToGrid(position) {
