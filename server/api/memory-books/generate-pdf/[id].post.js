@@ -1879,8 +1879,9 @@ export default defineEventHandler(async (event) => {
           const targetWidth = Math.round(photoWidth * 2)
           const targetHeight = Math.round(photoHeight * 2)
           let finalImageBuffer
+          console.log(`🔍 Debug: Asset ${i + 1} storage_url:`, asset.storage_url)
           try {
-            finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight)
+            finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight, asset.storage_url)
           } catch (smartCropError) {
             finalImageBuffer = await sharp(imageBuffer)
               .resize(targetWidth, targetHeight, { fit: 'cover' })
