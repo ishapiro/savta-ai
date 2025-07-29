@@ -1087,6 +1087,41 @@ export const useDatabase = () => {
       return data
     },
 
+    // Update an existing theme (editor only)
+    updateTheme: async (themeId, theme) => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'editor' && profile?.role !== 'admin') {
+        throw new Error('Editor access required')
+      }
+      // Only update allowed fields
+      const updateData = {
+        name: theme.name,
+        description: theme.description,
+        preview_image_url: theme.preview_image_url || null,
+        is_active: theme.is_active !== undefined ? theme.is_active : true,
+        background_color: theme.background_color || '#fffbe9',
+        background_opacity: theme.background_opacity || 100,
+        header_font: theme.header_font || null,
+        body_font: theme.body_font || null,
+        signature_font: theme.signature_font || null,
+        header_font_color: theme.header_font_color || null,
+        body_font_color: theme.body_font_color || null,
+        signature_font_color: theme.signature_font_color || null,
+        layout_config: theme.layout_config || null,
+        rounded: theme.rounded || false,
+        size: theme.size || '8.5x11'
+      }
+      const { data, error } = await supabase
+        .from('themes')
+        .update(updateData)
+        .eq('id', themeId)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+
     // Deactivate a theme (editor only)
     deactivateTheme: async (themeId) => {
       if (!user.value) throw new Error('User not authenticated')
@@ -1136,6 +1171,21 @@ export const useDatabase = () => {
         .single()
       if (error) throw error
       return data
+    },
+
+    // Permanently delete a theme (admin only)
+    permanentDeleteTheme: async (themeId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      const profile = await getCurrentProfile()
+      if (profile?.role !== 'admin') {
+        throw new Error('Admin access required')
+      }
+      const { error } = await supabase
+        .from('themes')
+        .delete()
+        .eq('id', themeId)
+      if (error) throw error
+      return { success: true }
     },
 
     // Get stats for editor dashboard (efficient count only)

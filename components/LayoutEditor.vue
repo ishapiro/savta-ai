@@ -16,15 +16,15 @@
           
           <!-- Snap Controls -->
           <div class="flex items-center gap-2">
-            <Checkbox
-              v-model="snapEnabled"
-              :binary="true"
-              inputId="snap-checkbox"
-              class="border-0 text-black"
-            />
-            <label for="snap-checkbox" class="text-gray-600 text-xs font-medium">
-              Snap to grid
-            </label>
+            <div class="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  id="snapToGrid" 
+                  v-model="snapEnabled"
+                      class="w-4 h-4 text-red-500 bg-white rounded ring-2 ring-brand-primary focus:ring-brand-success focus:ring-2 checked:bg-red-500 checked:border-red-500"
+                />
+                <label for="snapToGrid" class="text-sm text-brand-primary/70 cursor-pointer pl-2">Snap to Grid</label>
+            </div>
             
             <!-- Grid Size Input -->
             <div class="flex items-center gap-1">

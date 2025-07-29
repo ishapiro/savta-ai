@@ -271,27 +271,30 @@
               <div class="flex items-center gap-4">
                 <!-- Show Deleted Themes Toggle -->
                 <div class="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    id="showDeletedThemes" 
-                    v-model="showDeletedThemes"
-                    @change="loadDeletedThemes"
-                    class="w-4 h-4 text-brand-success bg-white border-2 border-brand-primary rounded ring-2 ring-brand-primary focus:ring-brand-success focus:ring-2 checked:bg-brand-success checked:border-brand-success"
-                  />
-                  <label for="showDeletedThemes" class="text-sm text-brand-primary/70 cursor-pointer">Show deleted themes</label>
+                  <div class="relative">
+                    <input 
+                      type="checkbox" 
+                      id="showDeletedThemes" 
+                      v-model="showDeletedThemes"
+                      @change="loadDeletedThemes"
+                      class="w-4 h-4 text-red-500 bg-white rounded ring-2 ring-brand-primary focus:ring-brand-success focus:ring-2 checked:bg-red-500 checked:border-red-500"
+                    />
+                    <label for="showDeletedThemes" class="text-sm text-brand-primary/70 cursor-pointer pl-2">Display Trash</label>
+                  </div>
+                  
                 </div>
 
                 <Button
                   label="Create New Theme"
                   icon="pi pi-plus"
                   @click="showCreateThemeModal = true"
-                  class="bg-brand-dialog-save p-4 border-0"
+                  class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 py-2"
                 />
                 <Button
                   label="Edit Layout Defaults"
                   icon="pi pi-palette"
                   @click="showLayoutDefaultsModal = true"
-                  class="bg-brand-dialog-edit p-4 border-0"
+                  class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 px-3 py-2"
                 />
               </div>
             </div>
@@ -304,15 +307,7 @@
                 class="bg-white p-4 rounded-lg shadow border relative"
                 :class="{ 'opacity-75 border-brand-primary/30': !theme.is_active, 'border-brand-success': theme.is_active }"
               >
-                <!-- Delete Icon for Admin Users -->
-                <button
-                  v-if="userProfile && userProfile.role === 'admin'"
-                  @click="deleteTheme(theme.id)"
-                  class="bg-brand-dialog-delete absolute top-2 right-2 p-1 text-brand-danger hover:text-brand-danger/70 hover:bg-brand-danger/10 rounded-full transition-colors"
-                  title="Delete Theme"
-                >
-                  <i class="pi pi-trash text-sm"></i>
-                </button>
+
                 
                 <div class="flex items-center justify-between mb-3">
                   <h4 class="font-semibold text-brand-primary">{{ theme.name }}</h4>
@@ -324,28 +319,40 @@
                 <p class="text-sm text-brand-primary/70 mb-3">{{ theme.description || 'No description' }}</p>
                 <div class="flex items-center space-x-2">
                   <Button
+                    label="Edit"
+                    class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 text-xs px-2 py-1"
+                    @click="editTheme(theme)"
+                  />
+                  <Button
+                    label="Duplicate"
+                    class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 text-xs px-2 py-1"
+                    @click="duplicateTheme(theme)"
+                  />
+                  <Button
                     v-if="!theme.is_active"
                     label="Activate"
-                    severity="success"
-                    size="small"
-                    class="bg-brand-dialog-save text-xs px-2 py-1"
+                    class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 text-xs px-2 py-1"
                     @click="activateTheme(theme.id)"
                   />
                   <Button
                     v-else
                     label="Deactivate"
-                    severity="warning"
-                    size="small"
-                    class="bg-brand-dialog-cancel text-xs px-2 py-1"
+                    class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 text-xs px-2 py-1"
                     @click="deactivateTheme(theme.id)"
+                  />
+                  <Button
+                    v-if="userProfile && userProfile.role === 'admin'"
+                    label="Trash"
+                    class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 text-xs px-2 py-1"
+                    @click="confirmDeleteTheme(theme)"
                   />
                 </div>
               </div>
             </div>
 
-            <!-- Deleted Themes Grid -->
+            <!-- Trash Themes Grid -->
             <div v-if="showDeletedThemes && deletedThemes.length > 0" class="space-y-4">
-              <h4 class="text-lg font-semibold text-brand-primary/70 border-b border-brand-primary/20 pb-2">Deleted Themes</h4>
+              <h4 class="text-lg font-semibold text-brand-primary/70 border-b border-brand-primary/20 pb-2">Trash</h4>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div
                   v-for="theme in deletedThemes"
@@ -362,12 +369,21 @@
                   <p class="text-sm text-brand-primary/70 mb-3">{{ theme.description || 'No description' }}</p>
                   <div class="flex items-center space-x-2">
                     <Button
+                      label="Duplicate"
+                      class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 text-xs px-2 py-1"
+                      @click="duplicateTheme(theme)"
+                    />
+                    <Button
                       v-if="userProfile && userProfile.role === 'admin'"
                       label="Restore"
-                      severity="success"
-                      size="small"
-                      class="bg-brand-dialog-save text-xs px-2 py-1"
+                      class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 text-xs px-2 py-1"
                       @click="restoreTheme(theme.id)"
+                    />
+                    <Button
+                      v-if="userProfile && userProfile.role === 'admin'"
+                      label="Permanent Delete"
+                      class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 text-xs px-2 py-1"
+                      @click="confirmPermanentDeleteTheme(theme)"
                     />
                   </div>
                 </div>
@@ -850,6 +866,239 @@
               </template>
     </Dialog>
 
+    <!-- Edit Theme Modal -->
+    <Dialog
+      v-model:visible="showEditThemeModal"
+      modal
+      header="Edit Theme"
+      :style="{ width: '800px' }"
+    >
+      <div class="space-y-3">
+        <!-- Basic Theme Info -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="field">
+            <label class="block text-xs font-medium text-brand-primary mb-1">Theme Name</label>
+            <InputText
+              v-model="editingTheme.name"
+              placeholder="Enter theme name"
+              class="w-full text-xs"
+            />
+          </div>
+          <div class="field">
+            <label class="block text-xs font-medium text-brand-primary mb-1">Preview Image URL</label>
+            <InputText
+              v-model="editingTheme.preview_image_url"
+              placeholder="Paste preview image URL"
+              class="w-full text-xs"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="block text-xs font-medium text-brand-primary mb-1">Description</label>
+          <Textarea
+            v-model="editingTheme.description"
+            placeholder="Enter theme description"
+            rows="1"
+            class="w-full text-xs"
+          />
+        </div>
+
+        <!-- Background Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Background</h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Color</label>
+              <div class="flex gap-2">
+                <ColorPicker
+                  v-model="editingTheme.background_color"
+                  :default-color="editingTheme.background_color || '#fffbe9'"
+                  class="w-8 h-8"
+                />
+                <InputText
+                  v-model="editingTheme.background_color"
+                  placeholder="#fffbe9"
+                  class="flex-1 text-xs"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Opacity</label>
+              <InputText
+                v-model.number="editingTheme.background_opacity"
+                type="number"
+                min="0"
+                max="100"
+                placeholder="100"
+                class="w-full text-xs"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Font Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Fonts</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Header</label>
+              <Dropdown
+                v-model="editingTheme.header_font"
+                :options="fontOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select header font"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Body</label>
+              <Dropdown
+                v-model="editingTheme.body_font"
+                :options="fontOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select body font"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Signature</label>
+              <Dropdown
+                v-model="editingTheme.signature_font"
+                :options="fontOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select signature font"
+                class="w-full text-xs"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Font Colors -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Font Colors</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Header</label>
+              <div class="flex gap-2">
+                <ColorPicker
+                  v-model="editingTheme.header_font_color"
+                  :default-color="editingTheme.header_font_color || '#000000'"
+                  class="w-8 h-8"
+                />
+                <InputText
+                  v-model="editingTheme.header_font_color"
+                  placeholder="#000000"
+                  class="flex-1 text-xs"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Body</label>
+              <div class="flex gap-2">
+                <ColorPicker
+                  v-model="editingTheme.body_font_color"
+                  :default-color="editingTheme.body_font_color || '#333333'"
+                  class="w-8 h-8"
+                />
+                <InputText
+                  v-model="editingTheme.body_font_color"
+                  placeholder="#333333"
+                  class="flex-1 text-xs"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Signature</label>
+              <div class="flex gap-2">
+                <ColorPicker
+                  v-model="editingTheme.signature_font_color"
+                  :default-color="editingTheme.signature_font_color || '#666666'"
+                  class="w-8 h-8"
+                />
+                <InputText
+                  v-model="editingTheme.signature_font_color"
+                  placeholder="#666666"
+                  class="flex-1 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Size and Shape Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Size & Shape</h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Size</label>
+              <Dropdown
+                v-model="editingTheme.size"
+                :options="sizeOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Select size"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Rounded Corners</label>
+              <div class="flex items-center gap-2">
+                <div 
+                  @click="editingTheme.rounded = !editingTheme.rounded"
+                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
+                  :class="editingTheme.rounded ? 'bg-brand-success border-brand-success' : 'bg-white'"
+                >
+                  <span v-if="editingTheme.rounded" class="text-blue-600 text-xs font-bold">×</span>
+                </div>
+                <label @click="editingTheme.rounded = !editingTheme.rounded" class="text-xs text-brand-primary/70 cursor-pointer">
+                  Use rounded corners for memory shapes
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Configuration -->
+        <div class="border-t border-gray-200 pt-2">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-semibold text-brand-primary">Layout Configuration</h4>
+            <Button
+              label="Layout Editor"
+              icon="pi pi-palette"
+              class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
+              @click="openLayoutEditorForEditTheme"
+            />
+          </div>
+          <Textarea
+            v-model="editingTheme.layout_config"
+            placeholder='{"example": "JSON configuration"}'
+            rows="2"
+            class="w-full text-xs"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+            @click="showEditThemeModal = false"
+          />
+          <Button
+            label="Update Theme"
+            :loading="updatingTheme"
+            class="bg-brand-dialog-primary hover:bg-brand-dialog-primary-hover text-white border-0 px-3 py-1 text-xs"
+            @click="updateTheme"
+          />
+        </div>
+      </template>
+    </Dialog>
+
     <!-- User Details Modal -->
     <Dialog
       v-model:visible="showUserModal"
@@ -939,8 +1188,8 @@
       <div class="h-full">
         <LayoutEditor 
           :initial-layout="getInitialLayout()"
-          :size="newTheme.size"
-          :edit-defaults-mode="newTheme.editDefaultsMode"
+          :size="getCurrentThemeSize()"
+          :edit-defaults-mode="getCurrentEditDefaultsMode()"
           @save="handleLayoutSave" 
         />
       </div>
@@ -976,12 +1225,12 @@
               <Button
                 label="Continue"
                 @click="checkPassword"
-                class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0"
+                class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 py-1 text-xs"
               />
               <Button
                 label="Cancel"
                 @click="cancelPassword"
-                class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0"
+                class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
               />
             </div>
           </div>
@@ -1014,12 +1263,86 @@
             v-if="isEditDefaultsMode && selectedLayoutDefault"
             label="Edit Layout"
             @click="openLayoutEditorForDefault"
-            class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0"
+            class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 px-3 py-1 text-xs"
           />
           <Button
             label="Close"
             @click="closeLayoutDefaultsModal"
-            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Move to Trash Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showDeleteConfirmDialog"
+      modal
+      header="Move Theme to Trash"
+      :style="{ width: '400px' }"
+    >
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-exclamation-triangle text-amber-500 text-xl"></i>
+          <div>
+            <p class="text-sm text-brand-primary/70">
+              Are you sure you want to move the theme <strong>"{{ themeToDelete?.name }}"</strong> to trash?
+            </p>
+            <p class="text-xs text-brand-primary/50 mt-1">
+              The theme will be moved to trash and can be restored later.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+            @click="showDeleteConfirmDialog = false"
+          />
+          <Button
+            label="Move to Trash"
+            class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-3 py-1 text-xs"
+            @click="deleteThemeConfirmed"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Permanent Delete Theme Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showPermanentDeleteConfirmDialog"
+      modal
+      header="Confirm Permanent Delete"
+      :style="{ width: '400px' }"
+    >
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-exclamation-triangle text-red-500 text-xl"></i>
+          <div>
+            <p class="text-sm text-brand-primary/70">
+              Are you sure you want to <strong>permanently delete</strong> the theme <strong>"{{ themeToPermanentDelete?.name }}"</strong>?
+            </p>
+            <p class="text-xs text-red-500 mt-1 font-medium">
+              ⚠️ WARNING: This action cannot be undone. The theme will be permanently removed from the database.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+            @click="showPermanentDeleteConfirmDialog = false"
+          />
+          <Button
+            label="Permanently Delete"
+            class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-3 py-1 text-xs"
+            @click="permanentDeleteThemeConfirmed"
           />
         </div>
       </template>
@@ -1068,11 +1391,36 @@ const bookStatusFilter = ref('all')
 
 // Theme management
 const showCreateThemeModal = ref(false)
+const showEditThemeModal = ref(false)
+const showDeleteConfirmDialog = ref(false)
+const showPermanentDeleteConfirmDialog = ref(false)
+const themeToDelete = ref(null)
+const themeToPermanentDelete = ref(null)
 const creatingTheme = ref(false)
+const updatingTheme = ref(false)
 const showDeletedThemes = ref(false)
 const deletedThemes = ref([])
 const showLayoutEditorDialog = ref(false)
 const newTheme = ref({
+  name: '',
+  description: '',
+  preview_image_url: '',
+  is_active: true,
+  background_color: '#fffbe9',
+  background_opacity: 100,
+  header_font: '',
+  body_font: '',
+  signature_font: '',
+  header_font_color: '',
+  body_font_color: '',
+  signature_font_color: '',
+  layout_config: '',
+  rounded: false,
+  size: '8.5x11',
+  editDefaultsMode: false
+})
+const editingTheme = ref({
+  id: '',
   name: '',
   description: '',
   preview_image_url: '',
@@ -1451,6 +1799,16 @@ watch(activeTabIndex, async (newIndex) => {
     console.log('[Tab Change] Loading users for admin user')
     await loadUsers()
   }
+})
+
+// Watch for newTheme size changes
+watch(() => newTheme.value.size, (newSize) => {
+  console.log('[newTheme] Size changed to:', newSize)
+})
+
+// Watch for editingTheme size changes
+watch(() => editingTheme.value.size, (newSize) => {
+  console.log('[editingTheme] Size changed to:', newSize)
 })
 
 // Load themes
@@ -1922,6 +2280,133 @@ const createTheme = async () => {
   }
 }
 
+const editTheme = (theme) => {
+  console.log('[EDIT THEME] Opening edit modal for theme:', theme)
+  
+  // Copy theme data to editing form
+  editingTheme.value = {
+    id: theme.id,
+    name: theme.name || '',
+    description: theme.description || '',
+    preview_image_url: theme.preview_image_url || '',
+    is_active: theme.is_active,
+    background_color: theme.background_color || '#fffbe9',
+    background_opacity: theme.background_opacity || 100,
+    header_font: theme.header_font || '',
+    body_font: theme.body_font || '',
+    signature_font: theme.signature_font || '',
+    header_font_color: theme.header_font_color || '',
+    body_font_color: theme.body_font_color || '',
+    signature_font_color: theme.signature_font_color || '',
+    layout_config: typeof theme.layout_config === 'object' ? JSON.stringify(theme.layout_config, null, 2) : (theme.layout_config || ''),
+    rounded: theme.rounded || false,
+    size: theme.size || '8.5x11',
+    editDefaultsMode: false
+  }
+  
+  showEditThemeModal.value = true
+}
+
+const updateTheme = async () => {
+  console.log('[UPDATE THEME] ===== FUNCTION CALLED =====')
+  console.log('[UPDATE THEME] Starting theme update...')
+  console.log('[UPDATE THEME] Theme data:', editingTheme.value)
+  
+  if (!editingTheme.value.name) {
+    console.log('[UPDATE THEME] No theme name provided')
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Theme name is required',
+      life: 3000
+    })
+    return
+  }
+
+  // Check if theme name already exists (excluding current theme)
+  const existingTheme = themes.value.find(theme => 
+    theme.id !== editingTheme.value.id && 
+    theme.name.toLowerCase() === editingTheme.value.name.toLowerCase()
+  )
+  
+  if (existingTheme) {
+    toast.add({
+      severity: 'error',
+      summary: 'Duplicate Name',
+      detail: 'A theme with this name already exists. Please choose a different name.',
+      life: 5000
+    })
+    return
+  }
+
+  updatingTheme.value = true
+
+  try {
+    const themeToUpdate = { ...editingTheme.value }
+    console.log('[UPDATE THEME] Theme to update:', themeToUpdate)
+    
+    if (themeToUpdate.layout_config && typeof themeToUpdate.layout_config === 'string') {
+      try {
+        themeToUpdate.layout_config = JSON.parse(themeToUpdate.layout_config)
+        console.log('[UPDATE THEME] Parsed layout config:', themeToUpdate.layout_config)
+      } catch (e) {
+        console.error('[UPDATE THEME] JSON parse error:', e)
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Layout config must be valid JSON',
+          life: 3000
+        })
+        updatingTheme.value = false
+        return
+      }
+    }
+    
+    console.log('[UPDATE THEME] Calling database updateTheme...')
+    const updatedTheme = await db.editor.updateTheme(themeToUpdate.id, themeToUpdate)
+    console.log('[UPDATE THEME] Database response:', updatedTheme)
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Updated',
+      detail: 'Theme updated successfully',
+      life: 3000
+    })
+    
+    // Close modal
+    showEditThemeModal.value = false
+    
+    // Reload themes
+    await loadThemes()
+  } catch (error) {
+    console.error('[UPDATE THEME] Error updating theme:', error)
+    
+    // Handle specific error types
+    let errorMessage = 'Failed to update theme'
+    
+    if (error.code === '23505' && error.message.includes('themes_name_key')) {
+      errorMessage = 'A theme with this name already exists. Please choose a different name.'
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+    
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: errorMessage,
+      life: 5000
+    })
+  } finally {
+    updatingTheme.value = false
+    console.log('[UPDATE THEME] Theme update completed')
+  }
+}
+
+const openLayoutEditorForEditTheme = () => {
+  console.log('[Layout Editor] Opening layout editor for editing theme')
+  showLayoutEditorDialog.value = true
+}
+
 const activateTheme = async (themeId) => {
   try {
     await db.editor.activateTheme(themeId)
@@ -1967,6 +2452,133 @@ const deactivateTheme = async (themeId) => {
       detail: 'Failed to deactivate theme',
       life: 3000
     })
+  }
+}
+
+const confirmDeleteTheme = (theme) => {
+  themeToDelete.value = theme
+  showDeleteConfirmDialog.value = true
+}
+
+const confirmPermanentDeleteTheme = (theme) => {
+  themeToPermanentDelete.value = theme
+  showPermanentDeleteConfirmDialog.value = true
+}
+
+const duplicateTheme = async (theme) => {
+  try {
+    // Create a copy of the theme with " - copy" suffix
+    const duplicatedTheme = {
+      name: theme.name + ' - copy',
+      description: theme.description,
+      preview_image_url: theme.preview_image_url,
+      is_active: false, // Duplicated themes start as inactive
+      background_color: theme.background_color,
+      background_opacity: theme.background_opacity,
+      header_font: theme.header_font,
+      body_font: theme.body_font,
+      signature_font: theme.signature_font,
+      header_font_color: theme.header_font_color,
+      body_font_color: theme.body_font_color,
+      signature_font_color: theme.signature_font_color,
+      layout_config: theme.layout_config,
+      rounded: theme.rounded,
+      size: theme.size
+    }
+    
+    // Check if the duplicated name already exists
+    const existingTheme = themes.value.find(t => 
+      t.name.toLowerCase() === duplicatedTheme.name.toLowerCase()
+    )
+    
+    if (existingTheme) {
+      toast.add({
+        severity: 'error',
+        summary: 'Duplicate Name',
+        detail: 'A theme with this name already exists. Please rename the original theme first.',
+        life: 5000
+      })
+      return
+    }
+    
+    // Create the duplicated theme
+    const createdTheme = await db.editor.createTheme(duplicatedTheme)
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Duplicated',
+      detail: 'Theme duplicated successfully',
+      life: 3000
+    })
+    
+    // Reload themes
+    await loadThemes()
+  } catch (error) {
+    console.error('Error duplicating theme:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to duplicate theme',
+      life: 3000
+    })
+  }
+}
+
+const deleteThemeConfirmed = async () => {
+  if (!themeToDelete.value) return
+  
+  try {
+    await db.editor.deleteTheme(themeToDelete.value.id)
+    toast.add({
+      severity: 'success',
+      summary: 'Moved to Trash',
+      detail: 'Theme moved to trash successfully',
+      life: 3000
+    })
+    await loadThemes()
+    if (showDeletedThemes.value) {
+      await loadDeletedThemes()
+    }
+  } catch (error) {
+    console.error('Error deleting theme:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to move theme to trash',
+      life: 3000
+    })
+  } finally {
+    showDeleteConfirmDialog.value = false
+    themeToDelete.value = null
+  }
+}
+
+const permanentDeleteThemeConfirmed = async () => {
+  if (!themeToPermanentDelete.value) return
+  
+  try {
+    await db.editor.permanentDeleteTheme(themeToPermanentDelete.value.id)
+    toast.add({
+      severity: 'success',
+      summary: 'Permanently Deleted',
+      detail: 'Theme has been permanently removed from the database',
+      life: 3000
+    })
+    await loadThemes()
+    if (showDeletedThemes.value) {
+      await loadDeletedThemes()
+    }
+  } catch (error) {
+    console.error('Error permanently deleting theme:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to permanently delete theme',
+      life: 3000
+    })
+  } finally {
+    showPermanentDeleteConfirmDialog.value = false
+    themeToPermanentDelete.value = null
   }
 }
 
@@ -2034,15 +2646,58 @@ const openLayoutEditor = () => {
 
 const openLayoutEditorForTheme = () => {
   console.log('[Layout Editor] Opening layout editor for theme')
+  console.log('[Layout Editor] Current newTheme size:', newTheme.value.size)
+  console.log('[Layout Editor] Current newTheme layout_config:', newTheme.value.layout_config)
   showLayoutEditorDialog.value = true
 }
 
+const getCurrentThemeSize = () => {
+  // If we're editing a theme, use the editing theme's size
+  if (showEditThemeModal.value && editingTheme.value.id) {
+    console.log('[getCurrentThemeSize] Editing theme size:', editingTheme.value.size)
+    return editingTheme.value.size || '8.5x11'
+  }
+  // Otherwise use the new theme's size
+  console.log('[getCurrentThemeSize] New theme size:', newTheme.value.size)
+  return newTheme.value.size || '8.5x11'
+}
+
+const getCurrentEditDefaultsMode = () => {
+  // If we're editing a theme, use the editing theme's editDefaultsMode
+  if (showEditThemeModal.value && editingTheme.value.id) {
+    return editingTheme.value.editDefaultsMode || false
+  }
+  // Otherwise use the new theme's editDefaultsMode
+  return newTheme.value.editDefaultsMode || false
+}
+
 const getInitialLayout = () => {
-  // Ensure theme has a size, default to 7x5 if not set
-  if (!newTheme.value.size) {
-    newTheme.value.size = '7x5'
+  // If we're editing a theme, use the editing theme's layout config
+  if (showEditThemeModal.value && editingTheme.value.id) {
+    const layoutConfig = editingTheme.value.layout_config
+    if (!layoutConfig) {
+      return null
+    }
+    
+    try {
+      // If it's already an object, return it
+      if (typeof layoutConfig === 'object') {
+        return layoutConfig
+      }
+      
+      // If it's a string, parse it
+      if (typeof layoutConfig === 'string') {
+        return JSON.parse(layoutConfig)
+      }
+      
+      return null
+    } catch (error) {
+      console.error('[Layout Editor] Error parsing layout config:', error)
+      return null
+    }
   }
   
+  // Otherwise use the new theme's layout config
   if (!newTheme.value.layout_config) {
     return null
   }
@@ -2101,21 +2756,25 @@ const handleLayoutSave = (layoutJson) => {
   console.log('Saved layout:', layoutJson)
   
   // If editing defaults, the save is handled by the LayoutEditor component
-  // If editing a theme, save the layout JSON to the theme's layout_config field
-  if (!newTheme.value.editDefaultsMode) {
-    newTheme.value.layout_config = JSON.stringify(layoutJson, null, 2)
+  if (getCurrentEditDefaultsMode()) {
+    toast.add({
+      severity: 'success',
+      summary: 'Default Saved',
+      detail: 'Default layout saved successfully',
+      life: 3000
+    })
+  } else {
+    // If editing a theme, save the layout JSON to the correct theme's layout_config field
+    if (showEditThemeModal.value && editingTheme.value.id) {
+      editingTheme.value.layout_config = JSON.stringify(layoutJson, null, 2)
+    } else {
+      newTheme.value.layout_config = JSON.stringify(layoutJson, null, 2)
+    }
     
     toast.add({
       severity: 'success',
       summary: 'Layout Saved',
       detail: 'Layout configuration saved to theme',
-      life: 3000
-    })
-  } else {
-    toast.add({
-      severity: 'success',
-      summary: 'Default Saved',
-      detail: 'Default layout saved successfully',
       life: 3000
     })
   }
