@@ -273,6 +273,28 @@
               </div>
             </div>
           </div>
+          
+          <!-- Auto Enhance Option -->
+          <div class="bg-white rounded-lg p-4 border border-brand-primary/20">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-brand-accent/20 to-brand-secondary/20 rounded-full flex items-center justify-center">
+                  <i class="pi pi-magic text-brand-accent text-sm"></i>
+                </div>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <Checkbox
+                      v-model="form.autoEnhance"
+                      :binary="true"
+                      input-id="autoEnhance"
+                    />
+                    <label for="autoEnhance" class="text-sm font-semibold text-brand-primary">Auto Enhance</label>
+                  </div>
+                  <p class="text-xs text-brand-primary/70 mt-1">Automatically enhance photos with brightness, saturation, and sharpness improvements</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -920,6 +942,7 @@ const form = ref({
   backgroundType: 'white',
   backgroundOpacity: 30,
   includeCaptions: true,
+  autoEnhance: false,
   gridLayout: '2x2',
   memoryShape: 'original'
 })
@@ -1165,6 +1188,7 @@ watch(() => props.initialData, (val) => {
       backgroundType: 'white',
       backgroundOpacity: 30,
       includeCaptions: true,
+      autoEnhance: false,
       gridLayout: '2x2',
       memoryShape: 'original',
       ...val // Override with initial data

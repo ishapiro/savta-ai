@@ -117,6 +117,7 @@ create table if not exists memory_books (
   include_captions boolean default true,
   include_tags boolean default true,
   ai_background boolean default true,
+  auto_enhance boolean default false,
   memory_event text
 );
 

@@ -6,6 +6,7 @@ import sharp from 'sharp'
 
 import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
+import { enhanceImage } from '../../../utils/image-enhancer.js'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -524,8 +525,40 @@ export default defineEventHandler(async (event) => {
         const isPortrait = metadata.height > metadata.width
         const isLandscape = metadata.width > metadata.height
         
+        // Handle EXIF orientation to prevent automatic rotation
+        let processedImageBuffer = imageBuffer
+        if (metadata.orientation && metadata.orientation !== 1) {
+          console.log(`🔄 Correcting EXIF orientation: ${metadata.orientation}`)
+          // Create a new Sharp instance that will handle the orientation
+          const sharpInstance = sharp(imageBuffer)
+          
+          // Apply the correct rotation based on EXIF orientation
+          switch (metadata.orientation) {
+            case 3: // 180 degrees
+              processedImageBuffer = await sharpInstance.rotate(180).toBuffer()
+              break
+            case 6: // 90 degrees clockwise
+              processedImageBuffer = await sharpInstance.rotate(90).toBuffer()
+              break
+            case 8: // 90 degrees counter-clockwise
+              processedImageBuffer = await sharpInstance.rotate(-90).toBuffer()
+              break
+            default:
+              // For other orientations, let Sharp handle it
+              processedImageBuffer = await sharpInstance.withMetadata().toBuffer()
+          }
+          
+          // Get updated metadata after rotation
+          const updatedMetadata = await sharp(processedImageBuffer).metadata()
+          console.log(`📐 Updated dimensions after orientation correction: ${updatedMetadata.width}x${updatedMetadata.height}`)
+        }
+        
         console.log(`📐 Image orientation: ${isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'}`)
         console.log(`📏 Original dimensions: ${metadata.width}x${metadata.height}`)
+        
+        // Use the processed image buffer for all operations
+        const workingImageBuffer = processedImageBuffer || imageBuffer
+        const workingMetadata = await sharp(workingImageBuffer).metadata()
         
         // Try OpenAI face detection first
         let faces = []
@@ -568,10 +601,10 @@ export default defineEventHandler(async (event) => {
           let maxY = 0
           
           faces.forEach(face => {
-            const x = face.x / 100 * metadata.width
-            const y = face.y / 100 * metadata.height
-            const width = face.width / 100 * metadata.width
-            const height = face.height / 100 * metadata.height
+            const x = face.x / 100 * workingMetadata.width
+            const y = face.y / 100 * workingMetadata.height
+            const width = face.width / 100 * workingMetadata.width
+            const height = face.height / 100 * workingMetadata.height
             
             minX = Math.min(minX, x - width / 2)
             minY = Math.min(minY, y - height / 2)
@@ -587,12 +620,12 @@ export default defineEventHandler(async (event) => {
           
           minX = Math.max(0, minX - paddingX)
           minY = Math.max(0, minY - paddingY)
-          maxX = Math.min(metadata.width, maxX + paddingX)
-          maxY = Math.min(metadata.height, maxY + paddingY)
+          maxX = Math.min(workingMetadata.width, maxX + paddingX)
+          maxY = Math.min(workingMetadata.height, maxY + paddingY)
           
           // For landscape images, prioritize top 1/3rd
           if (isLandscape) {
-            const topThirdHeight = Math.floor(metadata.height / 3)
+            const topThirdHeight = Math.floor(workingMetadata.height / 3)
             if (maxY > topThirdHeight) {
               console.log('🎯 Adjusting landscape crop to prioritize top 1/3rd')
               maxY = topThirdHeight
@@ -613,80 +646,98 @@ export default defineEventHandler(async (event) => {
           if (isLandscape) {
             // For landscape, prioritize using full width when possible
             // Start with the full width and calculate height
-            finalWidth = metadata.width
+            finalWidth = workingMetadata.width
             finalHeight = finalWidth / targetAspectRatio
             
             // If height exceeds image bounds, reduce width
-            if (finalHeight > metadata.height) {
-              finalHeight = metadata.height
+            if (finalHeight > workingMetadata.height) {
+              finalHeight = workingMetadata.height
               finalWidth = finalHeight * targetAspectRatio
             }
             
             // Center the crop horizontally, but ensure faces are included
-            const centerX = Math.floor((metadata.width - finalWidth) / 2)
+            const centerX = Math.floor((workingMetadata.width - finalWidth) / 2)
             finalX = Math.max(0, Math.min(centerX, minX))
             
             // Ensure the crop includes all faces
             if (finalX + finalWidth < maxX) {
-              finalX = Math.min(metadata.width - finalWidth, maxX - finalWidth)
+              finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
             }
             
-            // For landscape, prioritize top 1/3rd
-            const topThirdHeight = Math.floor(metadata.height / 3)
-            finalY = Math.max(0, Math.min(minY, topThirdHeight - finalHeight))
+            // For landscape with faces detected, center around faces instead of forcing top 1/3rd
+            // Only apply top-1/3rd rule if no faces were detected
+            if (faces.length === 0) {
+              const topThirdHeight = Math.floor(workingMetadata.height / 3)
+              finalY = Math.max(0, Math.min(minY, topThirdHeight - finalHeight))
+            } else {
+              // With faces detected, center the crop around the face bounding box
+              // Calculate the center of the face bounding box
+              const faceCenterY = (minY + maxY) / 2
+              // Center the crop around the face, but ensure it fits within image bounds
+              finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
+            }
           } else if (isPortrait) {
             // For portrait, prioritize using full height when possible
             // Start with the full height and calculate width
-            finalHeight = metadata.height
+            finalHeight = workingMetadata.height
             finalWidth = finalHeight * targetAspectRatio
             
             // If width exceeds image bounds, reduce height
-            if (finalWidth > metadata.width) {
-              finalWidth = metadata.width
+            if (finalWidth > workingMetadata.width) {
+              finalWidth = workingMetadata.width
               finalHeight = finalWidth / targetAspectRatio
             }
             
             // Center the crop horizontally, but ensure faces are included
-            const centerX = Math.floor((metadata.width - finalWidth) / 2)
+            const centerX = Math.floor((workingMetadata.width - finalWidth) / 2)
             finalX = Math.max(0, Math.min(centerX, minX))
             
             // Ensure the crop includes all faces
             if (finalX + finalWidth < maxX) {
-              finalX = Math.min(metadata.width - finalWidth, maxX - finalWidth)
+              finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
             }
             
-            // For portrait, prioritize top half
-            const topHalfHeight = Math.floor(metadata.height / 2)
-            finalY = Math.max(0, Math.min(minY, topHalfHeight - finalHeight))
+            // For portrait with faces detected, center around faces instead of forcing top half
+            // Only apply top-half rule if no faces were detected
+            if (faces.length === 0) {
+              const topHalfHeight = Math.floor(workingMetadata.height / 2)
+              finalY = Math.max(0, Math.min(minY, topHalfHeight - finalHeight))
+            } else {
+              // With faces detected, center the crop around the face bounding box
+              // Calculate the center of the face bounding box
+              const faceCenterY = (minY + maxY) / 2
+              // Center the crop around the face, but ensure it fits within image bounds
+              finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
+            }
           } else {
             // For square, use the largest possible square that includes all faces
-            const maxSize = Math.min(metadata.width, metadata.height)
+            const maxSize = Math.min(workingMetadata.width, workingMetadata.height)
             finalWidth = maxSize
             finalHeight = maxSize
             
             // Center the crop, but ensure faces are included
-            const centerX = Math.floor((metadata.width - finalWidth) / 2)
-            const centerY = Math.floor((metadata.height - finalHeight) / 2)
+            const centerX = Math.floor((workingMetadata.width - finalWidth) / 2)
+            const centerY = Math.floor((workingMetadata.height - finalHeight) / 2)
             
             finalX = Math.max(0, Math.min(centerX, minX))
             finalY = Math.max(0, Math.min(centerY, minY))
             
             // Ensure the crop includes all faces
             if (finalX + finalWidth < maxX) {
-              finalX = Math.min(metadata.width - finalWidth, maxX - finalWidth)
+              finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
             }
             if (finalY + finalHeight < maxY) {
-              finalY = Math.min(metadata.height - finalHeight, maxY - finalHeight)
+              finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
             }
           }
           
           // Ensure the crop fits within image bounds
-          if (finalX + finalWidth > metadata.width) {
-            finalWidth = metadata.width - finalX
+          if (finalX + finalWidth > workingMetadata.width) {
+            finalWidth = workingMetadata.width - finalX
             finalHeight = finalWidth / targetAspectRatio
           }
-          if (finalY + finalHeight > metadata.height) {
-            finalHeight = metadata.height - finalY
+          if (finalY + finalHeight > workingMetadata.height) {
+            finalHeight = workingMetadata.height - finalY
             finalWidth = finalHeight * targetAspectRatio
           }
           
@@ -840,7 +891,7 @@ export default defineEventHandler(async (event) => {
         }
         
         // Apply the crop
-        const croppedImage = await sharp(imageBuffer)
+        const croppedImage = await sharp(workingImageBuffer)
           .extract({
             left: cropArea.x,
             top: cropArea.y,
@@ -848,6 +899,7 @@ export default defineEventHandler(async (event) => {
             height: cropArea.height
           })
           .resize(targetWidth, targetHeight, { fit: 'cover' })
+          .withMetadata() // Preserve original orientation
           .png()
           .toBuffer()
         
@@ -856,8 +908,9 @@ export default defineEventHandler(async (event) => {
       } catch (error) {
         console.warn('⚠️ OpenAI face detection crop failed, using fallback:', error.message)
         // Fallback to regular resize
-        return await sharp(imageBuffer)
+        return await sharp(workingImageBuffer)
           .resize(targetWidth, targetHeight, { fit: 'cover' })
+          .withMetadata() // Preserve original orientation
           .png()
           .toBuffer()
       }
@@ -1996,15 +2049,88 @@ export default defineEventHandler(async (event) => {
         }
       }
 
-      // Process each photo according to layout_config
-      for (let i = 0; i < Math.min(selectedAssets.length, photoCount); i++) {
-        const asset = selectedAssets[i]
+      // Match photos to positions based on aspect ratio to minimize cropping
+      console.log('🎯 Matching photos to positions based on aspect ratio...')
+      
+      // Calculate aspect ratios for each position
+      const positionAspectRatios = layoutConfig.photos.map((photo, index) => ({
+        index,
+        aspectRatio: photo.size.width / photo.size.height,
+        config: photo
+      }))
+      
+      // Get aspect ratios for selected assets (we'll need to fetch metadata)
+      const assetAspectRatios = []
+      for (const asset of selectedAssets) {
+        try {
+          const imageRes = await fetch(asset.storage_url)
+          if (imageRes.ok) {
+            const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+            const metadata = await sharp(imageBuffer).metadata()
+            
+            // Respect original orientation - use the actual dimensions as they appear
+            // Don't swap width/height based on EXIF orientation
+            const aspectRatio = metadata.width / metadata.height
+            const orientation = metadata.orientation || 1
+            
+            assetAspectRatios.push({
+              asset,
+              aspectRatio,
+              width: metadata.width,
+              height: metadata.height,
+              orientation
+            })
+            console.log(`📐 Asset ${asset.id}: ${metadata.width}x${metadata.height} (aspect: ${aspectRatio.toFixed(3)}, orientation: ${orientation})`)
+          }
+        } catch (error) {
+          console.warn(`⚠️ Failed to get metadata for asset ${asset.id}:`, error.message)
+          // Use default aspect ratio if we can't get metadata
+          assetAspectRatios.push({
+            asset,
+            aspectRatio: 1.0, // Default to square
+            width: 1000,
+            height: 1000,
+            orientation: 1
+          })
+        }
+      }
+      
+      // Sort positions by aspect ratio (landscape to portrait)
+      positionAspectRatios.sort((a, b) => b.aspectRatio - a.aspectRatio)
+      
+      // Sort assets by aspect ratio (landscape to portrait)
+      assetAspectRatios.sort((a, b) => b.aspectRatio - a.aspectRatio)
+      
+      console.log('📐 Position aspect ratios:', positionAspectRatios.map(p => `${p.index}: ${p.aspectRatio.toFixed(3)}`))
+      console.log('📐 Asset aspect ratios:', assetAspectRatios.map(a => `${a.asset.id}: ${a.aspectRatio.toFixed(3)}`))
+      
+      // Match assets to positions based on aspect ratio similarity
+      const matchedAssets = []
+      for (let i = 0; i < Math.min(assetAspectRatios.length, positionAspectRatios.length); i++) {
+        const position = positionAspectRatios[i]
+        const asset = assetAspectRatios[i]
+        matchedAssets[position.index] = asset.asset
+        console.log(`🎯 Matched asset ${asset.asset.id} (${asset.aspectRatio.toFixed(3)}) to position ${position.index} (${position.aspectRatio.toFixed(3)})`)
+      }
+      
+      // Process each photo according to layout_config with matched assets
+      for (let i = 0; i < Math.min(matchedAssets.length, photoCount); i++) {
+        const asset = matchedAssets[i]
         const photoConfig = layoutConfig.photos[i]
-        if (!photoConfig || !photoConfig.position || !photoConfig.size) continue
+        if (!asset || !photoConfig || !photoConfig.position || !photoConfig.size) continue
         try {
           const imageRes = await fetch(asset.storage_url)
           if (!imageRes.ok) throw new Error(`Failed to fetch image: ${imageRes.status}`)
-          const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+          let imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+          // Auto-enhance if enabled
+          if (book.auto_enhance) {
+            try {
+              imageBuffer = await enhanceImage(imageBuffer)
+              console.log('✨ Auto-enhanced image for asset', asset.id)
+            } catch (enhanceErr) {
+              console.warn('⚠️ Failed to auto-enhance image for asset', asset.id, enhanceErr)
+            }
+          }
           const photoX = cardX + (photoConfig.position.x * mmToPoints)
           const photoY = cardY + (cardHeightPoints - (photoConfig.position.y + photoConfig.size.height) * mmToPoints)
           const photoWidth = photoConfig.size.width * mmToPoints
@@ -2018,6 +2144,7 @@ export default defineEventHandler(async (event) => {
           } catch (smartCropError) {
             finalImageBuffer = await sharp(imageBuffer)
               .resize(targetWidth, targetHeight, { fit: 'cover' })
+              .withMetadata() // Preserve original orientation
               .png()
               .toBuffer()
           }
