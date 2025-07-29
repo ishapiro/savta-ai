@@ -4,7 +4,6 @@
 import { PDFDocument, rgb } from 'pdf-lib'
 import sharp from 'sharp'
 
-import smartcrop from 'smartcrop-sharp'
 import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
 
@@ -515,9 +514,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Helper function to perform smart cropping
-    async function smartCropImage(imageBuffer, targetWidth, targetHeight) {
+    async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null) {
       try {
-        console.log('🧠 Performing smart crop...')
+        console.log('🧠 Performing OpenAI face detection crop...')
         console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
         
         // Get image metadata to determine orientation
@@ -528,64 +527,201 @@ export default defineEventHandler(async (event) => {
         console.log(`📐 Image orientation: ${isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'}`)
         console.log(`📏 Original dimensions: ${metadata.width}x${metadata.height}`)
         
-        // Configure boost areas based on orientation
-        let boostAreas = []
-        
-        if (isPortrait) {
-          console.log('🎯 Portrait image - prioritizing top half for faces')
-          boostAreas = [
-            { x: 0, y: 0, width: 1, height: 0.5, weight: 2.5 }, // Boost top half (faces)
-            { x: 0.25, y: 0.25, width: 0.5, height: 0.5, weight: 2.0 }, // Boost center area
-            { x: 0, y: 0, width: 1, height: 1, weight: 1.0 } // Boost entire image
-          ]
-        } else if (isLandscape) {
-          console.log('🎯 Landscape image - prioritizing center area for faces')
-          boostAreas = [
-            { x: 0.25, y: 0.25, width: 0.5, height: 0.5, weight: 2.5 }, // Boost center area (faces)
-            { x: 0, y: 0, width: 1, height: 1, weight: 1.0 } // Boost entire image
-          ]
+        // Try OpenAI face detection first
+        let faces = []
+        if (storageUrl) {
+          try {
+            console.log('🔍 Using OpenAI face detection with storage URL:', storageUrl)
+            
+            // Call our face detection endpoint
+            const faceRes = await fetch(`${config.public.siteUrl}/api/ai/detect-faces`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                imageUrl: storageUrl
+              })
+            })
+            
+            if (faceRes.ok) {
+              const faceData = await faceRes.json()
+              faces = faceData.faces || []
+              console.log(`👥 OpenAI detected ${faces.length} faces`)
+            } else {
+              console.warn('⚠️ OpenAI face detection failed, using fallback')
+            }
+          } catch (faceError) {
+            console.warn('⚠️ OpenAI face detection error:', faceError.message)
+          }
         } else {
-          // Square image - use balanced approach
-          console.log('🎯 Square image - using balanced face prioritization')
-          boostAreas = [
-            { x: 0.25, y: 0.25, width: 0.5, height: 0.5, weight: 2.0 }, // Boost center area
-            { x: 0, y: 0, width: 1, height: 1, weight: 1.0 } // Boost entire image
-          ]
+          console.log('⚠️ No storage URL provided, using fallback')
         }
         
-        // Use smartcrop-sharp to find the best crop area with orientation-aware face prioritization
-        const crop = await smartcrop.crop(imageBuffer, {
-          width: targetWidth,
-          height: targetHeight,
-          ruleOfThirds: true,
-          boost: boostAreas
-        })
+        let cropArea = null
         
-        console.log('🎯 Smart crop result:', {
-          x: crop.topCrop.x,
-          y: crop.topCrop.y,
-          width: crop.topCrop.width,
-          height: crop.topCrop.height,
-          score: crop.topCrop.score,
-          orientation: isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'
-        })
+        if (faces.length > 0) {
+          // Calculate crop area that includes all detected faces
+          let minX = 100
+          let minY = 100
+          let maxX = 0
+          let maxY = 0
+          
+          faces.forEach(face => {
+            const x = face.x / 100 * metadata.width
+            const y = face.y / 100 * metadata.height
+            const width = face.width / 100 * metadata.width
+            const height = face.height / 100 * metadata.height
+            
+            minX = Math.min(minX, x - width / 2)
+            minY = Math.min(minY, y - height / 2)
+            maxX = Math.max(maxX, x + width / 2)
+            maxY = Math.max(maxY, y + height / 2)
+          })
+          
+          // Add padding around faces (30% of face area)
+          const faceWidth = maxX - minX
+          const faceHeight = maxY - minY
+          const paddingX = faceWidth * 0.3
+          const paddingY = faceHeight * 0.3
+          
+          minX = Math.max(0, minX - paddingX)
+          minY = Math.max(0, minY - paddingY)
+          maxX = Math.min(metadata.width, maxX + paddingX)
+          maxY = Math.min(metadata.height, maxY + paddingY)
+          
+          // For landscape images, prioritize top 1/3rd
+          if (isLandscape) {
+            const topThirdHeight = Math.floor(metadata.height / 3)
+            if (maxY > topThirdHeight) {
+              console.log('🎯 Adjusting landscape crop to prioritize top 1/3rd')
+              maxY = topThirdHeight
+              minY = Math.max(0, minY)
+            }
+          }
+          
+          // Calculate the largest possible crop area that maintains target aspect ratio
+          const targetAspectRatio = targetWidth / targetHeight
+          const currentWidth = maxX - minX
+          const currentHeight = maxY - minY
+          const currentAspectRatio = currentWidth / currentHeight
+          
+          let finalWidth, finalHeight
+          
+          if (currentAspectRatio > targetAspectRatio) {
+            // Current crop is too wide, expand height
+            finalWidth = currentWidth
+            finalHeight = currentWidth / targetAspectRatio
+          } else {
+            // Current crop is too tall, expand width
+            finalHeight = currentHeight
+            finalWidth = currentHeight * targetAspectRatio
+          }
+          
+          // Ensure the expanded crop fits within image bounds
+          if (minX + finalWidth > metadata.width) {
+            finalWidth = metadata.width - minX
+            finalHeight = finalWidth / targetAspectRatio
+          }
+          if (minY + finalHeight > metadata.height) {
+            finalHeight = metadata.height - minY
+            finalWidth = finalHeight * targetAspectRatio
+          }
+          
+          cropArea = {
+            x: Math.floor(minX),
+            y: Math.floor(minY),
+            width: Math.floor(finalWidth),
+            height: Math.floor(finalHeight)
+          }
+          
+          console.log('🎯 Face-based crop area (maximized):', cropArea)
+        } else {
+          // No faces detected, use orientation-based fallback
+          console.log('👥 No faces detected, using orientation-based fallback')
+          
+          // Fallback to orientation-based cropping with maximized area
+          const targetAspectRatio = targetWidth / targetHeight
+          
+          if (isLandscape) {
+            // For landscape, use the largest possible area that fits the target aspect ratio
+            // Start with the full width and calculate height
+            let cropWidth = metadata.width
+            let cropHeight = cropWidth / targetAspectRatio
+            
+            // If height exceeds image bounds, reduce width
+            if (cropHeight > metadata.height) {
+              cropHeight = metadata.height
+              cropWidth = cropHeight * targetAspectRatio
+            }
+            
+            // Center the crop horizontally, prioritize top 1/3rd vertically
+            const topThirdHeight = Math.floor(metadata.height / 3)
+            const maxCropHeight = Math.min(cropHeight, topThirdHeight)
+            const centerX = Math.floor((metadata.width - cropWidth) / 2)
+            
+            cropArea = {
+              x: Math.max(0, centerX),
+              y: 0,
+              width: Math.floor(cropWidth),
+              height: Math.floor(maxCropHeight)
+            }
+          } else if (isPortrait) {
+            // For portrait, use the largest possible area that fits the target aspect ratio
+            // Start with the full height and calculate width
+            let cropHeight = metadata.height
+            let cropWidth = cropHeight * targetAspectRatio
+            
+            // If width exceeds image bounds, reduce height
+            if (cropWidth > metadata.width) {
+              cropWidth = metadata.width
+              cropHeight = cropWidth / targetAspectRatio
+            }
+            
+            // Center the crop horizontally, prioritize top half vertically
+            const topHalfHeight = Math.floor(metadata.height / 2)
+            const maxCropHeight = Math.min(cropHeight, topHalfHeight)
+            const centerX = Math.floor((metadata.width - cropWidth) / 2)
+            
+            cropArea = {
+              x: Math.max(0, centerX),
+              y: 0,
+              width: Math.floor(cropWidth),
+              height: Math.floor(maxCropHeight)
+            }
+          } else {
+            // For square, use the largest possible square that fits
+            const maxSize = Math.min(metadata.width, metadata.height)
+            const centerX = Math.floor((metadata.width - maxSize) / 2)
+            const centerY = Math.floor((metadata.height - maxSize) / 2)
+            
+            cropArea = {
+              x: centerX,
+              y: centerY,
+              width: maxSize,
+              height: maxSize
+            }
+          }
+          
+          console.log('🎯 Orientation-based fallback crop area (maximized):', cropArea)
+        }
         
-        // Apply the smart crop
+        // Apply the crop
         const croppedImage = await sharp(imageBuffer)
           .extract({
-            left: crop.topCrop.x,
-            top: crop.topCrop.y,
-            width: crop.topCrop.width,
-            height: crop.topCrop.height
+            left: cropArea.x,
+            top: cropArea.y,
+            width: cropArea.width,
+            height: cropArea.height
           })
           .resize(targetWidth, targetHeight, { fit: 'cover' })
           .png()
           .toBuffer()
         
-        console.log('✅ Smart crop completed successfully with orientation-aware prioritization')
+        console.log('✅ OpenAI face detection crop completed successfully')
         return croppedImage
       } catch (error) {
-        console.warn('⚠️ Smart crop failed, using fallback:', error.message)
+        console.warn('⚠️ OpenAI face detection crop failed, using fallback:', error.message)
         // Fallback to regular resize
         return await sharp(imageBuffer)
           .resize(targetWidth, targetHeight, { fit: 'cover' })
@@ -600,6 +736,7 @@ export default defineEventHandler(async (event) => {
         console.log(`🔄 Processing image shape: ${shape}`)
         console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
         console.log(`🎯 Shape type: ${shape}`)
+        console.log(`🔍 Debug: imageUrl in processImageShape:`, imageUrl)
         let processedImage
         
         // Get AI analysis for shape recommendation and intelligent cropping
@@ -1034,11 +1171,12 @@ export default defineEventHandler(async (event) => {
               const highResHeight = standardizedHeight * 2
               
               let resizedImage
-              if (isMagicMemory) {
-                console.log('🧠 Magic memory detected - using smart cropping for rounded shape')
+              if (isMagicMemory || book.layout_type === 'theme') {
+                console.log('🧠 Smart cropping detected - using smart cropping for rounded shape')
                 console.log('🎯 Smart crop will prioritize faces in center area')
+                console.log('🔍 Debug: imageUrl for smartCropImage:', imageUrl)
                 // First apply smart cropping to ensure subject is properly positioned
-                const smartCroppedImage = await smartCropImage(imageBuffer, highResWidth, highResHeight)
+                const smartCroppedImage = await smartCropImage(imageBuffer, highResWidth, highResHeight, imageUrl)
                 resizedImage = smartCroppedImage
               } else {
                 console.log('📚 Regular memory book - using standard resize for rounded shape')
@@ -1332,6 +1470,7 @@ export default defineEventHandler(async (event) => {
       // Draw photos based on layout type
       for (let i = 0; i < photoAssets.length; i++) {
         const asset = photoAssets[i]
+        console.log(`🔍 Debug: Asset ${i + 1} storage_url:`, asset.storage_url)
         try {
           const imageRes = await fetch(asset.storage_url)
           if (!imageRes.ok) throw new Error('Failed to fetch image')
