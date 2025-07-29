@@ -601,36 +601,98 @@ export default defineEventHandler(async (event) => {
           }
           
           // Calculate the largest possible crop area that maintains target aspect ratio
+          // Start with the face bounding box and expand to maximize area
           const targetAspectRatio = targetWidth / targetHeight
           const currentWidth = maxX - minX
           const currentHeight = maxY - minY
-          const currentAspectRatio = currentWidth / currentHeight
           
+          // Calculate the maximum possible crop area that includes all faces
           let finalWidth, finalHeight
+          let finalX, finalY
           
-          if (currentAspectRatio > targetAspectRatio) {
-            // Current crop is too wide, expand height
-            finalWidth = currentWidth
-            finalHeight = currentWidth / targetAspectRatio
+          if (isLandscape) {
+            // For landscape, prioritize using full width when possible
+            // Start with the full width and calculate height
+            finalWidth = metadata.width
+            finalHeight = finalWidth / targetAspectRatio
+            
+            // If height exceeds image bounds, reduce width
+            if (finalHeight > metadata.height) {
+              finalHeight = metadata.height
+              finalWidth = finalHeight * targetAspectRatio
+            }
+            
+            // Center the crop horizontally, but ensure faces are included
+            const centerX = Math.floor((metadata.width - finalWidth) / 2)
+            finalX = Math.max(0, Math.min(centerX, minX))
+            
+            // Ensure the crop includes all faces
+            if (finalX + finalWidth < maxX) {
+              finalX = Math.min(metadata.width - finalWidth, maxX - finalWidth)
+            }
+            
+            // For landscape, prioritize top 1/3rd
+            const topThirdHeight = Math.floor(metadata.height / 3)
+            finalY = Math.max(0, Math.min(minY, topThirdHeight - finalHeight))
+          } else if (isPortrait) {
+            // For portrait, prioritize using full height when possible
+            // Start with the full height and calculate width
+            finalHeight = metadata.height
+            finalWidth = finalHeight * targetAspectRatio
+            
+            // If width exceeds image bounds, reduce height
+            if (finalWidth > metadata.width) {
+              finalWidth = metadata.width
+              finalHeight = finalWidth / targetAspectRatio
+            }
+            
+            // Center the crop horizontally, but ensure faces are included
+            const centerX = Math.floor((metadata.width - finalWidth) / 2)
+            finalX = Math.max(0, Math.min(centerX, minX))
+            
+            // Ensure the crop includes all faces
+            if (finalX + finalWidth < maxX) {
+              finalX = Math.min(metadata.width - finalWidth, maxX - finalWidth)
+            }
+            
+            // For portrait, prioritize top half
+            const topHalfHeight = Math.floor(metadata.height / 2)
+            finalY = Math.max(0, Math.min(minY, topHalfHeight - finalHeight))
           } else {
-            // Current crop is too tall, expand width
-            finalHeight = currentHeight
-            finalWidth = currentHeight * targetAspectRatio
+            // For square, use the largest possible square that includes all faces
+            const maxSize = Math.min(metadata.width, metadata.height)
+            finalWidth = maxSize
+            finalHeight = maxSize
+            
+            // Center the crop, but ensure faces are included
+            const centerX = Math.floor((metadata.width - finalWidth) / 2)
+            const centerY = Math.floor((metadata.height - finalHeight) / 2)
+            
+            finalX = Math.max(0, Math.min(centerX, minX))
+            finalY = Math.max(0, Math.min(centerY, minY))
+            
+            // Ensure the crop includes all faces
+            if (finalX + finalWidth < maxX) {
+              finalX = Math.min(metadata.width - finalWidth, maxX - finalWidth)
+            }
+            if (finalY + finalHeight < maxY) {
+              finalY = Math.min(metadata.height - finalHeight, maxY - finalHeight)
+            }
           }
           
-          // Ensure the expanded crop fits within image bounds
-          if (minX + finalWidth > metadata.width) {
-            finalWidth = metadata.width - minX
+          // Ensure the crop fits within image bounds
+          if (finalX + finalWidth > metadata.width) {
+            finalWidth = metadata.width - finalX
             finalHeight = finalWidth / targetAspectRatio
           }
-          if (minY + finalHeight > metadata.height) {
-            finalHeight = metadata.height - minY
+          if (finalY + finalHeight > metadata.height) {
+            finalHeight = metadata.height - finalY
             finalWidth = finalHeight * targetAspectRatio
           }
           
           cropArea = {
-            x: Math.floor(minX),
-            y: Math.floor(minY),
+            x: Math.floor(finalX),
+            y: Math.floor(finalY),
             width: Math.floor(finalWidth),
             height: Math.floor(finalHeight)
           }
