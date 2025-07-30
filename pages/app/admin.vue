@@ -829,6 +829,43 @@
           </div>
         </div>
 
+        <!-- Card Wizard Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Card Wizard Settings</h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Default for Card Wizard</label>
+              <div class="flex items-center gap-2">
+                <div 
+                  @click="handleCardDefaultChange(true)"
+                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
+                  :class="newTheme.card_default ? 'bg-brand-success border-brand-success' : 'bg-white'"
+                >
+                  <span v-if="newTheme.card_default" class="text-blue-600 text-xs font-bold">×</span>
+                </div>
+                <label @click="handleCardDefaultChange(true)" class="text-xs text-brand-primary/70 cursor-pointer">
+                  Set as default layout for magic card wizard
+                </label>
+              </div>
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Show in Card Wizard</label>
+              <div class="flex items-center gap-2">
+                <div 
+                  @click="newTheme.card_wizard = !newTheme.card_wizard"
+                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
+                  :class="newTheme.card_wizard ? 'bg-brand-success border-brand-success' : 'bg-white'"
+                >
+                  <span v-if="newTheme.card_wizard" class="text-blue-600 text-xs font-bold">×</span>
+                </div>
+                <label @click="newTheme.card_wizard = !newTheme.card_wizard" class="text-xs text-brand-primary/70 cursor-pointer">
+                  Display this layout in the card wizard
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Layout Configuration -->
         <div class="border-t border-gray-200 pt-2">
           <div class="flex items-center justify-between mb-2">
@@ -1056,6 +1093,43 @@
                 </div>
                 <label @click="editingTheme.rounded = !editingTheme.rounded" class="text-xs text-brand-primary/70 cursor-pointer">
                   Use rounded corners for memory shapes
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Wizard Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Card Wizard Settings</h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Default for Card Wizard</label>
+              <div class="flex items-center gap-2">
+                <div 
+                  @click="handleCardDefaultChange(false)"
+                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
+                  :class="editingTheme.card_default ? 'bg-brand-success border-brand-success' : 'bg-white'"
+                >
+                  <span v-if="editingTheme.card_default" class="text-blue-600 text-xs font-bold">×</span>
+                </div>
+                <label @click="handleCardDefaultChange(false)" class="text-xs text-brand-primary/70 cursor-pointer">
+                  Set as default layout for magic card wizard
+                </label>
+              </div>
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Show in Card Wizard</label>
+              <div class="flex items-center gap-2">
+                <div 
+                  @click="editingTheme.card_wizard = !editingTheme.card_wizard"
+                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
+                  :class="editingTheme.card_wizard ? 'bg-brand-success border-brand-success' : 'bg-white'"
+                >
+                  <span v-if="editingTheme.card_wizard" class="text-blue-600 text-xs font-bold">×</span>
+                </div>
+                <label @click="editingTheme.card_wizard = !editingTheme.card_wizard" class="text-xs text-brand-primary/70 cursor-pointer">
+                  Display this layout in the card wizard
                 </label>
               </div>
             </div>
@@ -1347,6 +1421,46 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- Card Default Warning Dialog -->
+    <Dialog
+      v-model:visible="showCardDefaultWarningDialog"
+      modal
+      header="Card Default Warning"
+      :style="{ width: '500px' }"
+    >
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-exclamation-triangle text-amber-500 text-xl"></i>
+          <div>
+            <p class="text-sm text-brand-primary/70">
+              <strong>Important:</strong> Only one theme can be set as the default for the magic card wizard.
+            </p>
+            <p class="text-xs text-brand-primary/50 mt-2">
+              If you set this theme as the default, any other theme currently set as default will be automatically unchecked.
+            </p>
+            <p class="text-xs text-amber-600 mt-1 font-medium">
+              ⚠️ This field is required for the magic card wizard to function properly.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+            @click="showCardDefaultWarningDialog = false"
+          />
+          <Button
+            label="Set as Default"
+            class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 py-1 text-xs"
+            @click="confirmCardDefaultChange"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -1394,8 +1508,10 @@ const showCreateThemeModal = ref(false)
 const showEditThemeModal = ref(false)
 const showDeleteConfirmDialog = ref(false)
 const showPermanentDeleteConfirmDialog = ref(false)
+const showCardDefaultWarningDialog = ref(false)
 const themeToDelete = ref(null)
 const themeToPermanentDelete = ref(null)
+const pendingCardDefaultChange = ref({ isNewTheme: false, value: false })
 const creatingTheme = ref(false)
 const updatingTheme = ref(false)
 const showDeletedThemes = ref(false)
@@ -1417,6 +1533,8 @@ const newTheme = ref({
   layout_config: '',
   rounded: false,
   size: '8.5x11',
+  card_default: false,
+  card_wizard: false,
   editDefaultsMode: false
 })
 const editingTheme = ref({
@@ -1436,6 +1554,8 @@ const editingTheme = ref({
   layout_config: '',
   rounded: false,
   size: '8.5x11',
+  card_default: false,
+  card_wizard: false,
   editDefaultsMode: false
 })
 
@@ -2250,6 +2370,8 @@ const createTheme = async () => {
       layout_config: '',
       rounded: false,
       size: '8.5x11',
+      card_default: false,
+      card_wizard: false,
       editDefaultsMode: false
     }
     showCreateThemeModal.value = false
@@ -2301,10 +2423,70 @@ const editTheme = (theme) => {
     layout_config: typeof theme.layout_config === 'object' ? JSON.stringify(theme.layout_config, null, 2) : (theme.layout_config || ''),
     rounded: theme.rounded || false,
     size: theme.size || '8.5x11',
+    card_default: theme.card_default || false,
+    card_wizard: theme.card_wizard || false,
     editDefaultsMode: false
   }
   
   showEditThemeModal.value = true
+}
+
+// Card default change handling functions
+const handleCardDefaultChange = (isNewTheme) => {
+  const currentValue = isNewTheme ? newTheme.value.card_default : editingTheme.value.card_default
+  
+  if (!currentValue) {
+    // If trying to set as default, show warning dialog
+    pendingCardDefaultChange.value = { isNewTheme, value: true }
+    showCardDefaultWarningDialog.value = true
+  } else {
+    // If trying to unset as default, just do it
+    if (isNewTheme) {
+      newTheme.value.card_default = false
+    } else {
+      editingTheme.value.card_default = false
+    }
+  }
+}
+
+const confirmCardDefaultChange = async () => {
+  const { isNewTheme, value } = pendingCardDefaultChange.value
+  
+  try {
+    // First, unset any existing default themes
+    const existingDefaultThemes = themes.value.filter(theme => theme.card_default)
+    for (const theme of existingDefaultThemes) {
+      await db.editor.updateTheme(theme.id, { ...theme, card_default: false })
+    }
+    
+    // Then set the new default
+    if (isNewTheme) {
+      newTheme.value.card_default = value
+    } else {
+      editingTheme.value.card_default = value
+    }
+    
+    // Reload themes to reflect changes
+    await loadThemes()
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Default Updated',
+      detail: 'Card wizard default theme has been updated',
+      life: 3000
+    })
+  } catch (error) {
+    console.error('Error updating card default:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to update card wizard default',
+      life: 3000
+    })
+  } finally {
+    showCardDefaultWarningDialog.value = false
+    pendingCardDefaultChange.value = { isNewTheme: false, value: false }
+  }
 }
 
 const updateTheme = async () => {

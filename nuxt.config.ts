@@ -40,6 +40,12 @@ export default defineNuxtConfig({
     compatibilityDate: '2025-07-01',
     externals: {
       external: ['@supabase/ssr', 'cookie']
+    },
+    minify: {
+      css: {
+        // Disable CSS minification to avoid issues with CSS custom properties
+        enabled: false
+      }
     }
   },
   ssr: true,
@@ -67,6 +73,15 @@ export default defineNuxtConfig({
     },
     ssr: {
       noExternal: ['primevue']
+    },
+    css: {
+      postcss: {
+        plugins: [
+          require('autoprefixer'),
+          require('tailwindcss'),
+          require('postcss-import')
+        ]
+      }
     }
   },
   runtimeConfig: {

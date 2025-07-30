@@ -1076,7 +1076,11 @@ export const useDatabase = () => {
         header_font_color: theme.header_font_color || null,
         body_font_color: theme.body_font_color || null,
         signature_font_color: theme.signature_font_color || null,
-        layout_config: theme.layout_config || null
+        layout_config: theme.layout_config || null,
+        rounded: theme.rounded || false,
+        size: theme.size || '8.5x11',
+        card_default: theme.card_default || false,
+        card_wizard: theme.card_wizard || false
       }
       const { data, error } = await supabase
         .from('themes')
@@ -1110,7 +1114,9 @@ export const useDatabase = () => {
         signature_font_color: theme.signature_font_color || null,
         layout_config: theme.layout_config || null,
         rounded: theme.rounded || false,
-        size: theme.size || '8.5x11'
+        size: theme.size || '8.5x11',
+        card_default: theme.card_default || false,
+        card_wizard: theme.card_wizard || false
       }
       const { data, error } = await supabase
         .from('themes')

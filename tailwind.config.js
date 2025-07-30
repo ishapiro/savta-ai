@@ -64,7 +64,7 @@ export default {
           background: '#F9F6F2', // cream #F9F6F2
           primary: '#333333', // text - darker gray was #5A5752
           secondary: '#6E4B63', // H2 - plum
-          navigation: ' #e4e4e7;', // light grey
+          navigation: '#e4e4e7', // light grey
           highlight: '#41706C', // H3 - darker teal -- was #7BAAA7
           accent: '#F1B8B8', // H4 - blush
           warm: '#F4E4D6', // warm cream color #F4E4D6
@@ -128,7 +128,6 @@ export default {
   plugins: [
     require('@tailwindcss/typography'),
     require('@tailwindcss/forms'),
-    require('@tailwindcss/line-clamp'),
   ],
   // Ensure Tailwind classes take precedence over PrimeVue styles
   important: true,

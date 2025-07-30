@@ -154,6 +154,8 @@ create table if not exists themes (
   layout_config jsonb,
   rounded boolean default false,
   size text default '8.5x11' check (size in ('3x5', '5x3', '5x7', '7x5', '8x10', '10x8', '8.5x11', '11x8.5', '11x14', '14x11', '12x12')),
+  card_default boolean default false,
+  card_wizard boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false
@@ -493,6 +495,54 @@ BEGIN
       CHECK (role in ('user', 'editor', 'admin'));
   END IF;
 END $$; 
+
+-- Add new columns to themes table (safe to rerun)
+DO $$
+BEGIN
+  -- Add card_default column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'themes' 
+      AND column_name = 'card_default'
+  ) THEN
+    ALTER TABLE themes ADD COLUMN card_default boolean DEFAULT false;
+  END IF;
+  
+  -- Add card_wizard column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'themes' 
+      AND column_name = 'card_wizard'
+  ) THEN
+    ALTER TABLE themes ADD COLUMN card_wizard boolean DEFAULT false;
+  END IF;
+END $$; 
+
+-- Add new columns to themes table (safe to rerun)
+DO $$
+BEGIN
+  -- Add card_default column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'themes' 
+      AND column_name = 'card_default'
+  ) THEN
+    ALTER TABLE themes ADD COLUMN card_default boolean DEFAULT false;
+  END IF;
+  
+  -- Add card_wizard column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'themes' 
+      AND column_name = 'card_wizard'
+  ) THEN
+    ALTER TABLE themes ADD COLUMN card_wizard boolean DEFAULT false;
+  END IF;
+END $$;
 
 -- Add new columns for AI data (safe to rerun)
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS ai_objects jsonb DEFAULT '[]'::jsonb;
