@@ -127,12 +127,12 @@ const openMagicMemoryDialog = async (buttonType = 'quick') => {
       if (books && books.length > 0) {
         await navigateTo('/app/dashboard')
       } else {
-        // No memory books, open dialog as before
-        openMagicMemoryDialog('quick')
+        // No memory books, navigate to memory books page
+        await navigateTo('/app/memory-books?openDialog=quick')
       }
     } catch (error) {
-      // Fallback: open dialog if error
-      openMagicMemoryDialog('quick')
+      // Fallback: navigate to memory books page if error
+      await navigateTo('/app/memory-books?openDialog=quick')
     }
   }
 }

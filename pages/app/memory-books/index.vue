@@ -3933,7 +3933,15 @@ async function onMagicMemoryContinue() {
       selectedAssets = availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
       console.log('🔍 [onMagicMemoryContinue] Manual selection - selected assets count:', selectedAssets.length)
     } else {
-      // For automatic selection, use the photo selection pool
+      // For automatic selection, ensure we have all the assets from the photo selection pool
+      // If availableAssets doesn't contain all the assets we need, reload them
+      const missingAssetIds = photoSelectionPool.filter(id => !availableAssets.value.some(a => a.id === id))
+      if (missingAssetIds.length > 0) {
+        console.log('🔍 [onMagicMemoryContinue] Missing assets in availableAssets, reloading...')
+        const allApprovedAssets = await db.assets.getAssets({ approved: true })
+        availableAssets.value = allApprovedAssets || []
+      }
+      
       selectedAssets = availableAssets.value.filter(a => photoSelectionPool.includes(a.id))
       console.log('🔍 [onMagicMemoryContinue] Automatic selection - selected assets count:', selectedAssets.length)
       console.log('🔍 [onMagicMemoryContinue] Automatic selection - selected asset IDs:', selectedAssets.map(a => a.id))
@@ -4410,14 +4418,13 @@ const populatePhotoSelectionPool = () => {
             const sortedMatchingAssets = matchingAssets
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
             
-            // Check if we have fewer than 20 total images available
-            if (filteredAssets.length < 25) {
-              console.log(`🔍 [populatePhotoSelectionPool] Only ${filteredAssets.length} total images available, returning all images`)
-              // Return all available images, sorted by most recent
-              filteredAssets = filteredAssets
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            } else if (sortedMatchingAssets.length < 25) {
-              console.log(`🔍 [populatePhotoSelectionPool] Only ${sortedMatchingAssets.length} matching photos found, supplementing with recent photos to reach minimum of 10`)
+            // If we have 25 or more matching photos, take top 25
+            if (sortedMatchingAssets.length >= 25) {
+              filteredAssets = sortedMatchingAssets.slice(0, 25)
+              console.log('🔍 [populatePhotoSelectionPool] Savta picks - selected 25 most recent matching photos')
+            } else {
+              // Supplement with recent non-matching assets to reach 25
+              console.log(`🔍 [populatePhotoSelectionPool] Only ${sortedMatchingAssets.length} matching photos found, supplementing with recent photos to reach 25`)
               
               // Get all assets sorted by most recent
               const allAssetsSorted = filteredAssets
@@ -4428,7 +4435,7 @@ const populatePhotoSelectionPool = () => {
                 !sortedMatchingAssets.some(matchingAsset => matchingAsset.id === asset.id)
               )
               
-              // Take enough recent non-matching assets to reach at least 10 total
+              // Take enough recent non-matching assets to reach exactly 25
               const additionalNeeded = 25 - sortedMatchingAssets.length
               const additionalAssets = nonMatchingAssets.slice(0, additionalNeeded)
               
@@ -4436,40 +4443,28 @@ const populatePhotoSelectionPool = () => {
               filteredAssets = [...sortedMatchingAssets, ...additionalAssets]
               
               console.log(`🔍 [populatePhotoSelectionPool] Savta picks - selected ${sortedMatchingAssets.length} matching photos + ${additionalAssets.length} recent photos = ${filteredAssets.length} total`)
-            } else {
-              // We have 25 or more matching photos, take top 25
-              filteredAssets = sortedMatchingAssets.slice(0, 25)
-              console.log('🔍 [populatePhotoSelectionPool] Savta picks - selected 20 most recent matching photos')
             }
           } else {
-            // Check if we have fewer than 10 total images available
-            if (filteredAssets.length < 25) {
-              console.log(`🔍 [populatePhotoSelectionPool] No matches found, but only ${filteredAssets.length} total images available, returning all images`)
-              // Return all available images, sorted by most recent
-              filteredAssets = filteredAssets
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            } else {
-              console.log('🔍 [populatePhotoSelectionPool] No matches found, falling back to most recent 25 photos')
-              // No matches found, fall back to most recent 50 photos
-              filteredAssets = filteredAssets
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                .slice(0, 25)
-            }
+            // No matches found, use most recent 25 photos
+            console.log('🔍 [populatePhotoSelectionPool] No matches found, using most recent 25 photos')
+            filteredAssets = filteredAssets
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              .slice(0, 25)
           }
-         } else {
-           console.log('🔍 [populatePhotoSelectionPool] No meaningful search words, using most recent 25 photos')
-           // No meaningful search words, use most recent 50 photos
-           filteredAssets = filteredAssets
-             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-             .slice(0, 25)
-         }
-       } else {
-         console.log('🔍 [populatePhotoSelectionPool] No user input, using most recent 25 photos')
-         // No user input, use most recent 50 photos
-         filteredAssets = filteredAssets
-           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-           .slice(0, 25)
-       }
+        } else {
+          // No meaningful search words, use most recent 25 photos
+          console.log('🔍 [populatePhotoSelectionPool] No meaningful search words, using most recent 25 photos')
+          filteredAssets = filteredAssets
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 25)
+        }
+      } else {
+        // No user input, use most recent 25 photos
+        console.log('🔍 [populatePhotoSelectionPool] No user input, using most recent 25 photos')
+        filteredAssets = filteredAssets
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 25)
+      }
       
       console.log('🔍 [populatePhotoSelectionPool] Savta picks method - final filtered assets count:', filteredAssets.length)
       console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
@@ -4505,7 +4500,10 @@ const populatePhotoSelectionPool = () => {
         console.log('🔍 [populatePhotoSelectionPool] Geo code method - before filter:', beforeFilter, 'after filter:', filteredAssets.length)
         console.log('🔍 [populatePhotoSelectionPool] Geo code method - matching assets:', filteredAssets.map(a => ({ id: a.id, country: a.country, state: a.state, city: a.city })))
       } else {
-        console.log('🔍 [populatePhotoSelectionPool] Geo code method - no location selected, returning all assets')
+        console.log('🔍 [populatePhotoSelectionPool] Geo code method - no location selected, using most recent 25 photos')
+        filteredAssets = filteredAssets
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 25)
       }
       break
       
@@ -4520,6 +4518,11 @@ const populatePhotoSelectionPool = () => {
         })
         console.log('🔍 [populatePhotoSelectionPool] Date range method - filtered assets count:', filteredAssets.length)
         console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
+      } else {
+        console.log('🔍 [populatePhotoSelectionPool] Date range method - no date range selected, using most recent 25 photos')
+        filteredAssets = filteredAssets
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 25)
       }
       break
       
@@ -4538,7 +4541,10 @@ const populatePhotoSelectionPool = () => {
         console.log('🔍 [populatePhotoSelectionPool] Tags method - before filter:', beforeFilter, 'after filter:', filteredAssets.length)
         console.log('🔍 [populatePhotoSelectionPool] Tags method - matching assets:', filteredAssets.map(a => ({ id: a.id, tags: a.tags })))
       } else {
-        console.log('🔍 [populatePhotoSelectionPool] Tags method - no tags selected, returning all assets')
+        console.log('🔍 [populatePhotoSelectionPool] Tags method - no tags selected, using most recent 25 photos')
+        filteredAssets = filteredAssets
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 25)
       }
       break
       
@@ -4557,12 +4563,33 @@ const populatePhotoSelectionPool = () => {
       break
   }
   
-  // Final check: if we have fewer than 25 total images, return all of them
+  // Final supplementation: ensure we always return exactly 25 assets (or all available if less than 25)
   if (filteredAssets.length < 25) {
-    console.log(`🔍 [populatePhotoSelectionPool] Final check: Only ${filteredAssets.length} total images available, returning all images`)
-    // Return all available images, sorted by most recent
+    console.log(`🔍 [populatePhotoSelectionPool] Final supplementation: Only ${filteredAssets.length} filtered assets, supplementing with recent assets to reach 25`)
+    
+    // Get all assets sorted by most recent
+    const allAssetsSorted = availableAssets.value
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    
+    // Find assets that are not already in filtered assets
+    const additionalAssets = allAssetsSorted.filter(asset => 
+      !filteredAssets.some(filteredAsset => filteredAsset.id === asset.id)
+    )
+    
+    // Take enough recent additional assets to reach exactly 25
+    const additionalNeeded = 25 - filteredAssets.length
+    const assetsToAdd = additionalAssets.slice(0, additionalNeeded)
+    
+    // Combine filtered assets with additional recent assets
+    filteredAssets = [...filteredAssets, ...assetsToAdd]
+    
+    console.log(`🔍 [populatePhotoSelectionPool] Final supplementation - added ${assetsToAdd.length} recent assets = ${filteredAssets.length} total`)
+  } else if (filteredAssets.length > 25) {
+    // If we have more than 25, take the most recent 25
+    console.log(`🔍 [populatePhotoSelectionPool] Final trimming: ${filteredAssets.length} assets found, taking most recent 25`)
     filteredAssets = filteredAssets
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 25)
   }
   
   const result = filteredAssets.map(asset => asset.id)

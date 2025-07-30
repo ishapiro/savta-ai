@@ -581,7 +581,7 @@ export default defineEventHandler(async (event) => {
               const faceData = await faceRes.json()
               faces = faceData.faces || []
               console.log(`👥 OpenAI detected ${faces.length} faces`)
-            } else {
+        } else {
               console.warn('⚠️ OpenAI face detection failed, using fallback')
             }
           } catch (faceError) {
@@ -1729,8 +1729,8 @@ export default defineEventHandler(async (event) => {
             const photoCellHeight = photoLayout.photoCellHeight
             
             // Use the exact cell dimensions for processing and placement
-            finalWidth = photoCellWidth
-            finalHeight = photoCellHeight
+              finalWidth = photoCellWidth
+                finalHeight = photoCellHeight
             
             // Center image in cell
             imgX = photoLayout.positions[i].x

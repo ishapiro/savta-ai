@@ -24,8 +24,8 @@
                       class="w-4 h-4 text-red-500 bg-white rounded ring-2 ring-brand-primary focus:ring-brand-success focus:ring-2 checked:bg-red-500 checked:border-red-500"
                 />
                 <label for="snapToGrid" class="text-sm text-brand-primary/70 cursor-pointer pl-2">Snap to Grid</label>
-            </div>
-            
+    </div>
+    
             <!-- Grid Size Input -->
             <div class="flex items-center gap-1">
               <label class="text-gray-600 text-xs font-medium">Grid Size:</label>
@@ -71,20 +71,20 @@
         <button @click="addPhoto" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition-colors">
           <i class="pi pi-image text-xs mr-1"></i>Add Photo
         </button>
-        <button 
-          @click="addStory" 
-          :disabled="!!layoutData.story"
+      <button 
+        @click="addStory" 
+        :disabled="!!layoutData.story"
           class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
+      >
           <i class="pi pi-file-edit text-xs mr-1"></i>Add Story
-        </button>
-        <button 
-          v-if="layoutData.story"
-          @click="deleteStory" 
+      </button>
+      <button 
+        v-if="layoutData.story"
+        @click="deleteStory" 
           class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition-colors"
-        >
+      >
           <i class="pi pi-trash text-xs mr-1"></i>Remove Story
-        </button>
+      </button>
         <button @click="resetLayout" class="px-2 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-medium transition-colors">
           <i class="pi pi-refresh text-xs mr-1"></i>Reset
         </button>
@@ -105,7 +105,7 @@
         </button>
         
         <!-- Selection Tools -->
-        <button 
+      <button
           @click="clearSelection" 
           :disabled="selectedBoxes.length === 0"
           class="px-2 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -146,8 +146,8 @@
           class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <i class="pi pi-align-center text-xs mr-1"></i>Align H
-        </button>
-        
+      </button>
+
         <!-- Edit Defaults Mode Buttons -->
         <button
           v-if="isEditDefaultsMode"
@@ -156,13 +156,13 @@
         >
           <i class="pi pi-sign-out text-xs mr-1"></i>Exit Edit
         </button>
-        <button
-          v-if="isEditDefaultsMode"
-          @click="saveEditedDefaults"
+      <button
+        v-if="isEditDefaultsMode"
+        @click="saveEditedDefaults"
           class="px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-xs font-medium transition-colors"
-        >
+      >
           <i class="pi pi-check text-xs mr-1"></i>Save Default
-        </button>
+      </button>
       </div>
     </div>
 
@@ -177,7 +177,7 @@
           >
             <i class="pi pi-times text-xl"></i>
           </button>
-        </div>
+      </div>
         
         <div class="text-gray-700 space-y-4">
           <div>
@@ -187,16 +187,16 @@
               <li>• <span class="font-semibold text-red-600">Click the red X</span> to delete an element</li>
               <li>• Use the <span class="font-semibold">Reset button</span> to restore default layout for current size</li>
             </ul>
-          </div>
-          
+    </div>
+
           <div>
             <h4 class="font-semibold text-brand-primary mb-2">Grid and Snapping</h4>
             <ul class="space-y-2 text-sm">
               <li>• Enable <span class="font-semibold">snap to 5mm grid</span> to align elements precisely</li>
               <li>• Grid lines appear at the specified interval when snap is enabled</li>
               <li>• Snapping works for both moving and resizing elements</li>
-            </ul>
-          </div>
+        </ul>
+      </div>
           
           <div>
             <h4 class="font-semibold text-brand-primary mb-2">Multi-Select Features</h4>
@@ -205,8 +205,8 @@
               <li>• <span class="font-semibold text-indigo-600">Drag any selected box</span> to move all selected boxes together</li>
               <li>• Use <span class="font-semibold">"Same Size & Distribute"</span> to make selected boxes equal size and distribute horizontally with 10mm spacing</li>
             </ul>
-          </div>
-          
+    </div>
+
           <div>
             <h4 class="font-semibold text-brand-primary mb-2">Layout Management</h4>
             <ul class="space-y-2 text-sm">
@@ -390,10 +390,10 @@
       class="relative overflow-hidden bg-gray-50 rounded-lg border border-gray-200 p-4 h-full" 
       :class="{ 'border-2 border-amber-400 bg-amber-50': isEditDefaultsMode }"
     >
-      <div 
-        class="relative" 
-        :style="canvasStyle" 
-        id="canvas"
+    <div 
+      class="relative" 
+      :style="canvasStyle" 
+      id="canvas"
         @click="handleCanvasClick"
       >
         <!-- Card Outline -->
@@ -417,37 +417,37 @@
           ></div>
         </div>
 
-        <!-- Original boxes restored -->
-        <div
-          v-if="layoutData.story"
-          class="box story-box"
+      <!-- Original boxes restored -->
+      <div
+        v-if="layoutData.story"
+        class="box story-box"
           :class="{ 'selected': selectedBoxes.includes('story') }"
-          :id="`box-story`"
-          :style="boxStyle(layoutData.story.position, layoutData.story.size)"
+        :id="`box-story`"
+        :style="boxStyle(layoutData.story.position, layoutData.story.size)"
           @click="toggleSelection('story', $event)"
           @dblclick="handleBoxDoubleClick('story', $event)"
-        >
-          <div class="drag-handle" :id="`drag-story`" @pointerdown="startDrag('story', $event)"></div>
-          <span>Story ({{ layoutData.story.fontSizePt }}pt)</span>
-          <button @click.stop="deleteStory">×</button>
-          <div class="resize-handle" @pointerdown.stop.prevent="startResize('story', $event)"></div>
+      >
+        <div class="drag-handle" :id="`drag-story`" @pointerdown="startDrag('story', $event)"></div>
+        <span>Story ({{ layoutData.story.fontSizePt }}pt)</span>
+        <button @click.stop="deleteStory">×</button>
+        <div class="resize-handle" @pointerdown.stop.prevent="startResize('story', $event)"></div>
           <div v-if="selectedBoxes.includes('story')" class="selection-indicator"></div>
-        </div>
+      </div>
 
-        <div
-          v-for="photo in layoutData.photos"
-          :key="photo.id"
-          class="box photo-box"
+      <div
+        v-for="photo in layoutData.photos"
+        :key="photo.id"
+        class="box photo-box"
           :class="{ 'selected': selectedBoxes.includes(photo.id) }"
-          :id="`box-${photo.id}`"
-          :style="photoBoxStyle(photo)"
+        :id="`box-${photo.id}`"
+        :style="photoBoxStyle(photo)"
           @click="toggleSelection(photo.id, $event)"
           @dblclick="handleBoxDoubleClick(photo.id, $event)"
-        >
-          <div class="drag-handle" :id="`drag-${photo.id}`" @pointerdown="startDrag(photo.id, $event)"></div>
-          <span>Photo {{ photo.id }}</span>
-          <button @click.stop="deletePhoto(photo.id)">×</button>
-          <div class="resize-handle" @pointerdown.stop.prevent="startResize(photo.id, $event)"></div>
+      >
+        <div class="drag-handle" :id="`drag-${photo.id}`" @pointerdown="startDrag(photo.id, $event)"></div>
+        <span>Photo {{ photo.id }}</span>
+        <button @click.stop="deletePhoto(photo.id)">×</button>
+        <div class="resize-handle" @pointerdown.stop.prevent="startResize(photo.id, $event)"></div>
           <div v-if="selectedBoxes.includes(photo.id)" class="selection-indicator"></div>
         </div>
       </div>
@@ -953,7 +953,7 @@ const canvasStyle = computed(() => {
   return {
     width: `${wireframeWidth}px`,
     height: `${wireframeHeight}px`,
-    backgroundColor: '#fff8f0',
+  backgroundColor: '#fff8f0',
     border: '2px solid #ccc',
     borderRadius: '8px',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
@@ -1219,7 +1219,7 @@ function onPointerMove(event) {
     const canvasRect = canvas.getBoundingClientRect()
     const mouseX = event.clientX - canvasRect.left
     const mouseY = event.clientY - canvasRect.top
-    
+
     console.log('[MULTI DRAG MOVE]', { mouseX, mouseY })
     
     // Move all selected boxes maintaining their relative positions
@@ -1276,11 +1276,11 @@ function onPointerMove(event) {
     const mouseY = event.clientY - canvasRect.top - dragOffset.value.y
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[DRAG MOVE]', {
+    console.log('[DRAG MOVE]', {
         dragging: currentDragId.value,
-        clientX: event.clientX,
-        clientY: event.clientY,
-        canvasRect: { left: canvasRect.left, top: canvasRect.top },
+      clientX: event.clientX,
+      clientY: event.clientY,
+      canvasRect: { left: canvasRect.left, top: canvasRect.top },
         mouseRelativeToCanvas: { x: mouseX, y: mouseY },
         dragOffset: dragOffset.value
       })
@@ -1295,15 +1295,15 @@ function onPointerMove(event) {
     const newX = Math.round(mouseXRelativeToCard / scale)
     const newY = Math.round(mouseYRelativeToCard / scale)
 
-    // Get the appropriate size based on the element type
-    let size
+      // Get the appropriate size based on the element type
+      let size
     if (currentDragId.value === 'story') {
-      size = layoutData.story.size
-    } else {
+        size = layoutData.story.size
+      } else {
       const photo = layoutData.photos.find(p => p.id === currentDragId.value)
-      size = photo ? photo.size : { width: 200, height: 150 }
-    }
-    
+        size = photo ? photo.size : { width: 200, height: 150 }
+      }
+      
     if (process.env.NODE_ENV === 'development') {
       console.log('[DRAG MOVE] Before clampToBounds:', { newX, newY, size })
     }
@@ -1725,16 +1725,16 @@ function deletePhoto(id) {
 async function resetLayout() {
   try {
     console.log('[RESET] Resetting layout for size:', props.size)
-    
+  
     // Generate a fresh default layout
     const defaultLayout = generateDefaultLayout(props.size)
     
     // Update layout data
-    layoutData.name = defaultLayout.name
-    layoutData.orientation = defaultLayout.orientation
-    layoutData.story = defaultLayout.story
-    layoutData.photos = defaultLayout.photos
-    
+  layoutData.name = defaultLayout.name
+  layoutData.orientation = defaultLayout.orientation
+  layoutData.story = defaultLayout.story
+  layoutData.photos = defaultLayout.photos
+  
     console.log('[RESET] Layout reset successfully:', defaultLayout)
   } catch (error) {
     console.error('[RESET] Error resetting layout:', error)
@@ -1807,9 +1807,9 @@ watch(() => props.size, (newSize) => {
   if (!hasExistingLayout) {
     // Generate a proper default layout instead of loading from JSON
     const defaultLayout = generateDefaultLayout(newSize)
-    layoutData.name = defaultLayout.name
-    layoutData.story = defaultLayout.story
-    layoutData.photos = defaultLayout.photos
+      layoutData.name = defaultLayout.name
+      layoutData.story = defaultLayout.story
+      layoutData.photos = defaultLayout.photos
   }
   
   console.log('[SIZE CHANGE]', { 

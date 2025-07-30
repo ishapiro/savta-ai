@@ -379,8 +379,9 @@ TASK: Create a 1-2 sentence story that connects the selected photos into a cohes
 
 RESTRICTIONS:
 - Keep the story PG
-- Never use the location "West Ridge" 
 - Do not say "young ones" or "youngsters" use "kids" or "children"
+- Do not make up places, cities, locations or people names.  Only user names found in the photo metadats or the title
+- Never make up people names
 
 STYLE REQUIREMENTS:
 - Warm, fun, and lighthearted tone like a hip grandma
