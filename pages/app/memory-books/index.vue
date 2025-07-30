@@ -730,7 +730,13 @@
                 <i class="pi pi-images text-brand-accent text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Assets</span>
               </div>
-              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.created_from_assets.length }}</p>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">
+                {{ selectedBook.created_from_assets.length }}
+                <span v-if="selectedBook.photo_selection_pool && selectedBook.photo_selection_pool.length > 0" class="text-gray-500">
+                  ({{ selectedBook.photo_selection_pool.length }} in pool)
+                </span>
+              </p>
+              <p class="text-xs text-gray-500">{{ approvedAssetsCount }} total</p>
             </div>
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
@@ -755,7 +761,7 @@
                 <i class="pi pi-palette text-brand-primary text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Theme</span>
               </div>
-              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme || 'classic' }}</p>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme?.name || 'Classic' }}</p>
             </div>
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">

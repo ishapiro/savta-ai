@@ -599,6 +599,33 @@ export const useDatabase = () => {
         return []
       }
       
+      // If we have memory books with themes, fetch the theme data
+      if (data && data.length > 0) {
+        const booksWithThemes = data.filter(book => book.theme)
+        if (booksWithThemes.length > 0) {
+          const themeIds = [...new Set(booksWithThemes.map(book => book.theme))]
+          
+          const { data: themesData, error: themesError } = await supabase
+            .from('themes')
+            .select('id, name, description, background_color, header_font, body_font, signature_font, header_font_color, body_font_color, signature_font_color, layout_config, rounded, size')
+            .in('id', themeIds)
+          
+          if (!themesError && themesData) {
+            const themesMap = themesData.reduce((acc, theme) => {
+              acc[theme.id] = theme
+              return acc
+            }, {})
+            
+            // Attach theme data to memory books
+            data.forEach(book => {
+              if (book.theme && themesMap[book.theme]) {
+                book.theme = themesMap[book.theme]
+              }
+            })
+          }
+        }
+      }
+      
       return data || []
     },
 
@@ -687,6 +714,20 @@ export const useDatabase = () => {
         console.error('Error fetching memory book:', error)
         return null
       }
+      
+      // If the memory book has a theme, fetch the theme data
+      if (data && data.theme) {
+        const { data: themeData, error: themeError } = await supabase
+          .from('themes')
+          .select('id, name, description, background_color, header_font, body_font, signature_font, header_font_color, body_font_color, signature_font_color, layout_config, rounded, size')
+          .eq('id', data.theme)
+          .single()
+        
+        if (!themeError && themeData) {
+          data.theme = themeData
+        }
+      }
+      
       return data
     }
   }
