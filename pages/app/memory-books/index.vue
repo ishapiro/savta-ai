@@ -195,14 +195,14 @@
         <div class="h-0.5 w-full bg-brand-primary/10"></div>
         <!-- Card Body (center) -->
         <div class="flex-1 flex flex-col p-5 pb-3 min-h-[160px] bg-brand-card rounded-b-xl sm:rounded-b-2xl">
-                      <div v-if="book.ui === 'wizard' && book.magic_story" class="text-brand-secondary text-xs magic-story animate-fade-in mb-3 relative leading-relaxed">
+                      <div v-if="book.magic_story" class="text-brand-secondary text-xs magic-story animate-fade-in mb-3 relative leading-relaxed">
             <div class="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
               <Sparkle class="w-4 h-4 text-yellow-400 absolute left-0 top-0" />
               <span class="ml-6">{{ book.magic_story.length > 115 ? book.magic_story.slice(0, 115) + '...' : book.magic_story }}</span>
             </div>
           </div>
           <!-- Regular Memory Thumbnail -->
-                      <div v-if="book.ui === 'form' && getFirstAssetThumbnail(book)" class="mb-3">
+                      <div v-if="!book.magic_story && getFirstAssetThumbnail(book)" class="mb-3">
             <div class="relative w-full h-24 rounded-lg overflow-hidden border border-gray-200">
               <img 
                 :src="getFirstAssetThumbnail(book)" 
@@ -240,7 +240,7 @@
         <div
           :class="[
             'rounded-b-xl sm:rounded-b-2xl px-4 py-3 flex items-center justify-between gap-2 border-t shadow-sm h-20',
-            book.layout_type === 'magic'
+            book.magic_story
               ? 'bg-brand-header/20 border-brand-header/20'
               : 'bg-brand-secondary/20 border-brand-secondary/20'
           ]"
@@ -251,43 +251,43 @@
               <i class="pi pi-external-link text-lg sm:text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-green-700 mt-1 font-medium">View</span>
             </div>
-            <!-- Generate Button (only for draft, not magic) -->
-            <div v-if="book.status === 'draft' && book.ui === 'form'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
+            <!-- Generate Button (for draft books without story) -->
+            <div v-if="book.status === 'draft' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
               <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-brand-header group-hover:scale-125 transition-transform" />
               <span class="border-0 text-[10px] sm:text-[11px] text-brand-header mt-1 font-medium">Compose</span>
             </div>
-            <!-- Magic Generate Button (for draft magic books) -->
-            <div v-if="book.status === 'draft' && book.ui === 'wizard'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
+            <!-- Generate Button (for draft books with story) -->
+            <div v-if="book.status === 'draft' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
               <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 group-hover:scale-125 transition-transform" />
-              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Create Recipe</span>
+              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Create Story</span>
             </div>
-            <!-- Regenerate Button (for ready or background_ready, not magic) -->
-            <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.ui === 'form'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
+            <!-- Regenerate Button (for ready or background_ready books without story) -->
+            <div v-if="(book.status === 'ready' || book.status === 'background_ready') && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
               <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
             </div>
-            <!-- Magic Regenerate Button (for ready magic books) -->
-            <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.ui === 'wizard'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
+            <!-- Regenerate Button (for ready or background_ready books with story) -->
+            <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
               <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
             </div>
-            <!-- Approve Button (not magic) -->
-            <div v-if="book.status === 'ready' && book.ui === 'form'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
+            <!-- Approve Button (books without story) -->
+            <div v-if="book.status === 'ready' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
               <i class="pi pi-check text-lg sm:text-xl text-brand-header group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-brand-header mt-1 font-medium">Approve</span>
             </div>
-            <!-- Magic Approve Button -->
-            <div v-if="book.status === 'ready' && book.ui === 'wizard'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
+            <!-- Approve Button (books with story) -->
+            <div v-if="book.status === 'ready' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
               <i class="pi pi-check text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Approve</span>
             </div>
-            <!-- Unapprove Button (not magic) -->
-            <div v-if="book.status === 'approved' && book.ui === 'form'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
+            <!-- Unapprove Button (books without story) -->
+            <div v-if="book.status === 'approved' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
               <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
             </div>
-            <!-- Magic Unapprove Button -->
-            <div v-if="book.status === 'approved' && book.ui === 'wizard'" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
+            <!-- Unapprove Button (books with story) -->
+            <div v-if="book.status === 'approved' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
               <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
             </div>
@@ -792,8 +792,8 @@
 
         <!-- Content Section -->
         <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
-          <!-- Magic Story Section (for Magic Memories) -->
-          <div v-if="selectedBook.layout_type === 'magic' && selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
+                  <!-- Story Section (for Story-based Memories) -->
+        <div v-if="selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-highlight/20 to-brand-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
                 <i class="pi pi-sparkles text-brand-highlight text-sm sm:text-base"></i>
@@ -1429,7 +1429,7 @@
             <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How many photos should I choose for you?</h3>
-          <p class="text-sm sm:text-base text-gray-600">Select how many photos I should pick from your memory collection to create your magic story - trust me, this will be amazing!</p>
+          <p class="text-sm sm:text-base text-gray-600">Select how many photos I should pick from your memory collection to create your special story - trust me, this will be amazing!</p>
         </div>
         <div class="grid grid-cols-3 gap-3 mt-2 w-full max-w-xs mx-auto sm:gap-4 sm:max-w-[520px] sm:mx-auto">
           <div
@@ -1859,7 +1859,7 @@
           <i class="pi pi-sparkles text-lg sm:text-2xl text-yellow-400 animate-bounce"></i>
           <div>
             <h3 class="text-base sm:text-lg font-bold text-brand-header mb-1">Choose your photos for "{{ magicMemoryTitle }}"</h3>
-            <p class="text-xs sm:text-sm text-gray-700">Select up to 12 photos that you'd like me to consider for your Magic Memory story. I'll select the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your choices!</p>
+                          <p class="text-xs sm:text-sm text-gray-700">Select up to 12 photos that you'd like me to consider for your special story. I'll select the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your choices!</p>
           </div>
         </div>
         <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 max-w-xs w-full mx-auto">
@@ -2431,7 +2431,7 @@ const loadMemoryBooks = async () => {
     // Load thumbnails for regular memory books
     if (books && books.length > 0) {
       console.log('📚 All books:', books.map(b => ({ id: b.id, layout_type: b.layout_type, created_from_assets: b.created_from_assets })))
-              const regularBooks = books.filter(book => book.ui === 'form' && book.created_from_assets && book.created_from_assets.length > 0)
+              const regularBooks = books.filter(book => !book.magic_story && book.created_from_assets && book.created_from_assets.length > 0)
       console.log('🖼️ Loading thumbnails for', regularBooks.length, 'regular memory books')
       
       for (const book of regularBooks) {
@@ -2797,9 +2797,9 @@ const generatePDF = async (book) => {
   console.log('generatePDF called for book:', book.id)
   
   // Check if the book has assets
-  // For magic memories, check photo_selection_pool (user's original selection) for regeneration
+  // For books with stories, check photo_selection_pool (user's original selection) for regeneration
   // For regular memories, check created_from_assets (user's selected photos)
-          const hasAssets = book.ui === 'wizard' 
+          const hasAssets = book.magic_story
     ? (book.photo_selection_pool && book.photo_selection_pool.length > 0)
     : (book.created_from_assets && book.created_from_assets.length > 0)
   
@@ -2837,9 +2837,9 @@ const generatePDF = async (book) => {
           status: 'draft'
         }
         
-        // If this is a magic memory book, ensure we preserve the magic story
-        if (book.ui === 'wizard') {
-          console.log('✨ Preserving magic memory layout and story for regeneration')
+        // If this is a book with a story, ensure we preserve the story
+        if (book.magic_story) {
+          console.log('✨ Preserving story-based memory layout and story for regeneration')
           // Keep the magic_story and layout_type intact
         }
         
@@ -3348,13 +3348,13 @@ const getAssetThumbnail = (assetId) => {
 
 // Get first asset thumbnail for regular memory book
 const getFirstAssetThumbnail = (book) => {
-          if (book.ui === 'form' && book.created_from_assets && book.created_from_assets.length > 0) {
+          if (!book.magic_story && book.created_from_assets && book.created_from_assets.length > 0) {
     const firstAssetId = book.created_from_assets[0]
     const thumbnail = getAssetThumbnail(firstAssetId)
     console.log('🖼️ Getting thumbnail for book:', book.id, 'first asset:', firstAssetId, 'thumbnail:', thumbnail)
     return thumbnail
   }
-          console.log('🖼️ No thumbnail for book:', book.id, 'ui:', book.ui, 'created_from_assets:', book.created_from_assets)
+          console.log('🖼️ No thumbnail for book:', book.id, 'magic_story:', book.magic_story, 'created_from_assets:', book.created_from_assets)
   return null
 }
 
@@ -4014,7 +4014,7 @@ async function onMagicMemoryContinue() {
     // Create a book object for the progress dialog with proper asset references
     const book = {
       id: dbRes.book_id,
-      layout_type: magicSelectedTheme.value ? 'theme' : 'magic',
+      layout_type: 'theme',
       ui: 'wizard',
       status: 'draft',
       photo_selection_pool: photoSelectionPool,
@@ -4158,7 +4158,7 @@ const retryMagicMemory = async () => {
     // Create a book object for the progress dialog with proper asset references
     const book = {
       id: dbRes.book_id,
-      layout_type: config.selectedTheme ? 'theme' : 'magic',
+      layout_type: 'theme',
       ui: 'wizard',
       status: 'draft',
       photo_selection_pool: config.photoSelectionPool,

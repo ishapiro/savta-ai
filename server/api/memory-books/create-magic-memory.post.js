@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
       .insert({
         user_id: user.id,
         title: title || 'Magic Memory',
-        layout_type: theme ? 'theme' : 'magic',
+        layout_type: 'theme',
         created_from_assets: asset_ids,
         photo_selection_pool: photo_selection_pool || asset_ids,
         magic_story: story,
