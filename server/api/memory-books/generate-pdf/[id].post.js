@@ -1379,6 +1379,10 @@ export default defineEventHandler(async (event) => {
               const highResWidth = Math.floor(standardizedWidth * 2)
               const highResHeight = Math.floor(standardizedHeight * 2)
               
+              console.log(`📐 ASPECT RATIO DEBUG - Original: ${imageMetadata.width}x${imageMetadata.height} (${originalAspectRatio.toFixed(3)})`)
+              console.log(`📐 ASPECT RATIO DEBUG - Standardized: ${standardizedWidth.toFixed(1)}x${standardizedHeight.toFixed(1)}`)
+              console.log(`📐 ASPECT RATIO DEBUG - High Res: ${highResWidth}x${highResHeight}`)
+              
               let resizedImage
               if (isMagicMemory || book.layout_type === 'theme') {
                 console.log('🧠 Smart cropping detected - using smart cropping for rounded shape')
@@ -1720,29 +1724,17 @@ export default defineEventHandler(async (event) => {
             
             console.log(`📸 Single photo layout: ${finalWidth}x${finalHeight} in ${photoArea.width}x${photoArea.height} area`)
           } else {
-            // Grid layout: fit image inside cell, preserving aspect ratio
+            // Grid layout: use exact cell dimensions for processing (like theme layout)
             const photoCellWidth = photoLayout.photoCellWidth
             const photoCellHeight = photoLayout.photoCellHeight
             
-            if (aspectRatio > 1) {
-              finalWidth = photoCellWidth
-              finalHeight = photoCellWidth / aspectRatio
-              if (finalHeight > photoCellHeight) {
-                finalHeight = photoCellHeight
-                finalWidth = photoCellHeight * aspectRatio
-              }
-            } else {
-              finalHeight = photoCellHeight
-              finalWidth = photoCellHeight * aspectRatio
-              if (finalWidth > photoCellWidth) {
-                finalWidth = photoCellWidth
-                finalHeight = photoCellWidth / aspectRatio
-              }
-            }
+            // Use the exact cell dimensions for processing and placement
+            finalWidth = photoCellWidth
+            finalHeight = photoCellHeight
             
             // Center image in cell
-            imgX = photoLayout.positions[i].x + (photoCellWidth - finalWidth) / 2
-            imgY = photoLayout.positions[i].y + (photoCellHeight - finalHeight) / 2
+            imgX = photoLayout.positions[i].x
+            imgY = photoLayout.positions[i].y
           }
           
           // Process image orientation first, then shape
@@ -1750,11 +1742,15 @@ export default defineEventHandler(async (event) => {
           const processedImageBuffer = await processImageOrientation(imageBuffer, isPng ? 'png' : 'jpeg')
           console.log(`🔄 After orientation processing, size:`, processedImageBuffer.length, 'bytes')
           
-          // Process image at higher resolution for quality
+          // Process image to the exact dimensions needed for placement
+          // This ensures the processed image matches the placement dimensions perfectly
           const targetWidth = Math.round(finalWidth * 2)
           const targetHeight = Math.round(finalHeight * 2)
           const processedImage = await processImageShape(processedImageBuffer, book.memory_shape || 'original', targetWidth, targetHeight, asset.storage_url)
           const pdfImage = await pdfDoc.embedPng(processedImage)
+          
+          // Use the exact same dimensions for placement as were used for processing
+          // This ensures no aspect ratio distortion - same approach as theme layout
           page.drawImage(pdfImage, {
             x: imgX,
             y: imgY,
@@ -1766,6 +1762,7 @@ export default defineEventHandler(async (event) => {
           // Border is now added directly to the image using Sharp, no need to draw borders in PDF
           
           console.log(`✅ Photo ${i + 1} processed: ${finalWidth}x${finalHeight} (${photoLayout.type} layout)`)
+          console.log(`📐 PDF PLACEMENT DEBUG - Photo ${i + 1}: processed at ${targetWidth}x${targetHeight}, placed at ${finalWidth}x${finalHeight}`)
         } catch (err) {
           console.warn(`⚠️ Failed to process photo ${i + 1}:`, err.message)
           // Draw placeholder if image fails
