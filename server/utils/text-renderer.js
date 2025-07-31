@@ -170,21 +170,24 @@ export async function renderTextToImage(text, width, height, options = {}) {
   } = options
   
   try {
-    // Validate input dimensions
-    if (!width || !height || width <= 0 || height <= 0) {
-      throw new Error(`Invalid dimensions: width=${width}, height=${height}`)
+    // Validate input dimensions and ensure they are integers
+    const intWidth = Math.round(width)
+    const intHeight = Math.round(height)
+    
+    if (!intWidth || !intHeight || intWidth <= 0 || intHeight <= 0) {
+      throw new Error(`Invalid dimensions: width=${intWidth}, height=${intHeight}`)
     }
     
     // Calculate dimensions
-    const maxWidth = width - (padding * 2)
-    const maxHeight = height - (padding * 2)
+    const maxWidth = intWidth - (padding * 2)
+    const maxHeight = intHeight - (padding * 2)
     
     // Auto-adjust font size to fit
     const { lines, fontSize, wasTruncated } = autoSizeText(text, maxWidth, maxHeight, startFontSize, lineHeight)
     
     // Create ultra high-resolution image for 600 DPI
-    const scaledWidth = width * scale
-    const scaledHeight = height * scale
+    const scaledWidth = intWidth * scale
+    const scaledHeight = intHeight * scale
     const scaledFontSize = fontSize * scale
     const scaledPadding = padding * scale
     
@@ -236,7 +239,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
     
     // Create the image with optimized settings for web fonts
     const buffer = await sharp(Buffer.from(svgContent))
-      .resize(width, height, { 
+      .resize(Math.round(width), Math.round(height), { 
         kernel: 'mitchell',
         fit: 'fill'
       })

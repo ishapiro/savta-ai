@@ -2705,6 +2705,10 @@ export default defineEventHandler(async (event) => {
       const cellWidth = width / gridCols
       const cellHeight = availableHeight / gridRows
       
+      // Calculate grid margins to center the grid
+      const gridMarginX = (width - (cellWidth * gridCols)) / 2
+      const gridMarginY = (availableHeight - (cellHeight * gridRows)) / 2
+      
       for (let i = 0; i < pageAssets.length; i++) {
         const asset = pageAssets[i]
         processedPhotos++
@@ -2714,9 +2718,9 @@ export default defineEventHandler(async (event) => {
         const col = i % gridCols
         const row = Math.floor(i / gridCols)
         
-        const x = col * cellWidth + cellWidth * 0.1
+        const x = gridMarginX + col * cellWidth + cellWidth * 0.1
         // Y is measured from the top, so subtract row*cellHeight from top
-        const y = height - gridYOffset - (row + 1) * cellHeight + cellHeight * 0.1
+        const y = height - gridYOffset - gridMarginY - (row + 1) * cellHeight + cellHeight * 0.1
         const drawWidth = cellWidth * 0.8
         const drawHeight = cellHeight * 0.8
         

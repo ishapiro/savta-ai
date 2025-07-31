@@ -1076,7 +1076,7 @@
     >
       <div class="flex flex-col h-full w-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
         <!-- PDF Viewer - Mobile (with overflow) -->
-        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto sm:hidden px-0">
+        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto sm:hidden px-0 pb-4">
           <ClientOnly>
             <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
@@ -1087,7 +1087,7 @@
         </div>
         
         <!-- PDF Viewer - Desktop (without overflow) -->
-        <div class="hidden sm:flex flex-1 min-h-0 w-full items-start justify-center pt-2">
+        <div class="hidden sm:flex flex-1 min-h-0 w-full items-center justify-center pt-2 pb-4">
           <ClientOnly>
             <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
@@ -4711,6 +4711,12 @@ async function createMemoryBookFromDialog(data) {
     
     // Close the create dialog after successful creation
     showCreateModal.value = false
+    
+    // Skip the success dialog and directly start book generation
+    if (newlyCreatedBook.value) {
+      console.log('🔧 [createMemoryBookFromDialog] Starting direct book generation...')
+      await composeNewlyCreatedMemory()
+    }
   } catch (error) {
     console.error('❌ [createMemoryBookFromDialog] Error:', error)
     throw error

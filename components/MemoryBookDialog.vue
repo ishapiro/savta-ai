@@ -399,7 +399,7 @@
         />
         <Button
           type="submit"
-          :label="isEditing ? 'Update' : 'Create'"
+          :label="isEditing ? 'Update' : 'Compose Memory Book'"
           icon="pi pi-check"
           :loading="loading"
           :disabled="loading || selectedAssets.length === 0"
@@ -995,9 +995,6 @@ const dateRange = ref({
 // Options for dropdowns
 const layoutOptions = ref([
   { label: 'Grid Layout', value: 'grid' },
-  { label: 'Timeline Layout', value: 'timeline' },
-  { label: 'Story Layout', value: 'story' },
-  { label: 'Album Layout', value: 'album' },
   { label: 'Theme Layout', value: 'theme' }
 ])
 

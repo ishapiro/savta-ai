@@ -3,10 +3,10 @@
     <div class="relative w-full h-full bg-brand-navigation">
       <!-- PDF Document -->
       <div class="w-full h-full overflow-auto pb-16">
-        <div class="w-full h-full flex items-center justify-center p-4 mb-2">
+        <div class="w-full h-full flex items-center justify-center p-4 mb-4">
           <div 
             ref="pdfContainer"
-            class="mb-2"
+            class="mb-4 flex items-center justify-center"
             :style="pdfContainerStyle"
           >
             <VuePdfEmbed
@@ -91,7 +91,7 @@ const pdfContainerStyle = computed(() => {
 
   const pdfAspectRatio = pdfDimensions.value.width / pdfDimensions.value.height
   
-  // Use smaller maximum size to ensure PDF fits completely
+  // Use consistent maximum size to ensure PDF fits completely and maintains consistent centering
   // Since we're using scale=0.8, we can use larger container dimensions
   const maxWidth = 600
   const maxHeight = 400
