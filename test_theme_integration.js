@@ -80,9 +80,9 @@ async function testThemeIntegration() {
     
     // Apply the theme retrieval logic
     if (books && books.length > 0) {
-      const booksWithThemes = books.filter(book => book.theme)
+      const booksWithThemes = books.filter(book => book.theme_id)
       if (booksWithThemes.length > 0) {
-        const themeIds = [...new Set(booksWithThemes.map(book => book.theme))]
+        const themeIds = [...new Set(booksWithThemes.map(book => book.theme_id))]
         
         console.log('Theme IDs found:', themeIds)
         
@@ -101,8 +101,8 @@ async function testThemeIntegration() {
           
           // Attach theme data to memory books
           books.forEach(book => {
-            if (book.theme && themesMap[book.theme]) {
-              book.theme = themesMap[book.theme]
+            if (book.theme_id && themesMap[book.theme_id]) {
+              book.theme = themesMap[book.theme_id]
               console.log(`Book ${book.id} now has theme:`, book.theme.name)
             }
           })

@@ -116,7 +116,7 @@
           <div v-if="form.layoutType === 'theme'">
             <label class="block text-sm font-medium text-brand-primary mb-2">Theme</label>
             <Dropdown
-              v-model="form.theme"
+              v-model="form.theme_id"
               :options="themeOptions"
               option-label="label"
               option-value="value"
@@ -1164,9 +1164,9 @@ const calculatedPageCount = computed(() => {
 
 // Get selected theme's photo count
 const selectedThemePhotoCount = computed(() => {
-  if (form.value.layoutType !== 'theme' || !form.value.theme) return null
+  if (form.value.layoutType !== 'theme' || !form.value.theme_id) return null
   
-  const selectedTheme = themeOptions.value.find(theme => theme.value === form.value.theme)
+  const selectedTheme = themeOptions.value.find(theme => theme.value === form.value.theme_id)
   if (!selectedTheme) return null
   
   return selectedTheme.photoCount || null
@@ -1182,7 +1182,7 @@ watch(() => props.initialData, (val) => {
       printSize: '8x10',
       quality: 'standard',
       medium: 'digital',
-      theme: '', // Will be set when themes are loaded
+      theme_id: null, // Will be set when themes are loaded
       memoryEvent: '',
       customMemoryEvent: '',
       backgroundType: 'white',
@@ -1199,7 +1199,7 @@ watch(() => props.initialData, (val) => {
 // Watch for layout type changes to reset theme when not using theme layout
 watch(() => form.value.layoutType, (newLayoutType) => {
   if (newLayoutType !== 'theme') {
-    form.value.theme = ''
+    form.value.theme_id = null
   }
 })
 

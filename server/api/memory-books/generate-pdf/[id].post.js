@@ -267,7 +267,7 @@ export default defineEventHandler(async (event) => {
             photos: photos,
             title: book.title,
             memory_event: book.memory_event,
-            theme: book.theme || 'classic',
+            theme: book.theme_id || null,
             photo_count: photoCount,
             background_type: book.background_type || 'white',
             background_color: book.background_color
@@ -1931,7 +1931,7 @@ export default defineEventHandler(async (event) => {
       const { data: theme, error: themeError } = await supabase
         .from('themes')
         .select('*')
-        .eq('id', book.theme)
+        .eq('id', book.theme_id)
         .eq('deleted', false)
         .single()
 
@@ -2049,7 +2049,7 @@ export default defineEventHandler(async (event) => {
           photos: photos,
           title: book.title,
           memory_event: book.memory_event,
-          theme: book.theme || 'classic',
+          theme: book.theme_id || null,
           photo_count: photoCount,
           background_type: book.background_type || 'white',
           background_color: book.background_color

@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { asset_ids, photo_selection_pool, story, title, background_type = 'white', background_color, photo_count = 4, theme } = body
+    const { asset_ids, photo_selection_pool, story, title, background_type = 'white', background_color, photo_count = 4, theme_id } = body
     if (!asset_ids || !Array.isArray(asset_ids) || asset_ids.length < 1 || asset_ids.length > 6 || !story) {
       throw createError({ statusCode: 400, statusMessage: '1-6 asset_ids and story are required' })
     }
@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
         magic_story: story,
         background_type: background_type,
         background_color: background_color,
-        theme: theme || null,
+        theme_id: theme_id || null,
         status: 'draft',
         grid_layout: gridLayout,
         print_size: '7x5',

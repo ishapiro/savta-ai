@@ -381,6 +381,7 @@ RESTRICTIONS:
 - Keep the story PG
 - Do not say "young ones" or "youngsters" use "kids" or "children"
 - Do not make up places, cities, locations or people names.  Only user names found in the photo metadats or the title
+- Do not reference locations, cities, states, countries, or zip codes unless all of the photos selected have the same location
 - Never make up people names
 
 STYLE REQUIREMENTS:

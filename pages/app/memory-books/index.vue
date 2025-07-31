@@ -761,7 +761,7 @@
                 <i class="pi pi-palette text-brand-primary text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Theme</span>
               </div>
-              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme?.name || 'Classic' }}</p>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme?.name || 'Default' }}</p>
             </div>
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
@@ -2193,7 +2193,7 @@ const newBook = ref({
   printSize: '8x10',
   quality: 'standard',
   medium: 'digital',
-  theme: 'classic',
+  theme_id: null,
   gridLayout: '2x2',
   memoryShape: 'original',
   includeCaptions: true,
@@ -2230,7 +2230,7 @@ const resetCreateModal = () => {
     printSize: '8x10',
     quality: 'standard',
     medium: 'digital',
-    theme: 'classic',
+    theme_id: null,
     gridLayout: '2x2',
     memoryShape: 'original',
     includeCaptions: true,
@@ -2551,7 +2551,7 @@ const createMemoryBook = async () => {
       print_size: newBook.value.printSize,
       quality: newBook.value.quality,
       medium: newBook.value.medium,
-      theme: newBook.value.theme,
+              theme_id: newBook.value.theme_id,
       grid_layout: newBook.value.gridLayout,
       memory_shape: newBook.value.memoryShape,
       include_captions: newBook.value.includeCaptions,
@@ -3441,7 +3441,7 @@ const openEditSettings = async (book) => {
       printSize: book.print_size || book.printSize || '8x10',
       quality: book.quality || 'standard',
       medium: book.medium || 'digital',
-      theme: book.theme || 'classic',
+              theme_id: book.theme_id || null,
       gridLayout: book.grid_layout || '2x2',
       memoryShape: book.memory_shape || 'original',
       includeCaptions: book.include_captions ?? book.includeCaptions ?? true,
@@ -3487,7 +3487,7 @@ const saveEditBook = async () => {
       print_size: editBook.value.printSize,
       quality: editBook.value.quality,
       medium: editBook.value.medium,
-      theme: editBook.value.theme,
+              theme_id: editBook.value.theme_id,
       grid_layout: editBook.value.gridLayout,
       memory_shape: editBook.value.memoryShape,
       include_captions: editBook.value.includeCaptions,
@@ -3974,7 +3974,7 @@ async function onMagicMemoryContinue() {
       photo_count: magicPhotoCount.value,
       background_type: magicBackgroundType.value,
       background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
-      theme: magicSelectedTheme.value || 'classic' // Use selected theme or default to classic
+              theme_id: magicSelectedTheme.value || null // Use selected theme or default to null
     }
     if (photos.length <= magicPhotoCount.value) {
       aiBody.forceAll = true
@@ -4013,7 +4013,7 @@ async function onMagicMemoryContinue() {
         background_type: aiRes.background_type || magicBackgroundType.value,
         background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
         photo_count: magicPhotoCount.value,
-        theme: magicSelectedTheme.value || 'classic'
+        theme_id: magicSelectedTheme.value || null
       },
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -4115,7 +4115,7 @@ const retryMagicMemory = async () => {
       memory_event: config.memoryEvent,
       photo_count: config.photoCount,
       background_type: config.backgroundType,
-      theme: config.selectedTheme || 'classic'
+              theme_id: config.selectedTheme || null
     }
     
     if (photos.length <= config.photoCount) {
@@ -4156,7 +4156,7 @@ const retryMagicMemory = async () => {
         memory_event: config.memoryEvent,
         background_type: aiRes.background_type || config.backgroundType,
         photo_count: config.photoCount,
-        theme: config.selectedTheme || 'classic'
+        theme_id: config.selectedTheme || null
       },
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -4663,7 +4663,7 @@ async function createMemoryBookFromDialog(data) {
       printSize: data.printSize,
       quality: data.quality,
       medium: data.medium,
-      theme: data.theme,
+      theme_id: data.theme_id,
       gridLayout: data.gridLayout,
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,
@@ -4709,7 +4709,7 @@ async function saveEditBookFromDialog(data) {
       printSize: data.printSize,
       quality: data.quality,
       medium: data.medium,
-      theme: data.theme,
+      theme_id: data.theme_id,
       gridLayout: data.gridLayout,
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,

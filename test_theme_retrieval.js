@@ -41,9 +41,9 @@ async function testThemeRetrieval() {
     
     // Test the theme retrieval logic
     if (memoryBooks && memoryBooks.length > 0) {
-      const booksWithThemes = memoryBooks.filter(book => book.theme)
+      const booksWithThemes = memoryBooks.filter(book => book.theme_id)
       if (booksWithThemes.length > 0) {
-        const themeIds = [...new Set(booksWithThemes.map(book => book.theme))]
+        const themeIds = [...new Set(booksWithThemes.map(book => book.theme_id))]
         
         console.log('Theme IDs found:', themeIds)
         
@@ -62,8 +62,8 @@ async function testThemeRetrieval() {
           
           // Attach theme data to memory books
           memoryBooks.forEach(book => {
-            if (book.theme && themesMap[book.theme]) {
-              book.theme = themesMap[book.theme]
+            if (book.theme_id && themesMap[book.theme_id]) {
+              book.theme = themesMap[book.theme_id]
               console.log(`Book ${book.id} now has theme:`, book.theme.name)
             }
           })

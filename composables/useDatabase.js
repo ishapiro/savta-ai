@@ -601,9 +601,9 @@ export const useDatabase = () => {
       
       // If we have memory books with themes, fetch the theme data
       if (data && data.length > 0) {
-        const booksWithThemes = data.filter(book => book.theme)
+        const booksWithThemes = data.filter(book => book.theme_id)
         if (booksWithThemes.length > 0) {
-          const themeIds = [...new Set(booksWithThemes.map(book => book.theme))]
+          const themeIds = [...new Set(booksWithThemes.map(book => book.theme_id))]
           
           const { data: themesData, error: themesError } = await supabase
             .from('themes')
@@ -618,8 +618,8 @@ export const useDatabase = () => {
             
             // Attach theme data to memory books
             data.forEach(book => {
-              if (book.theme && themesMap[book.theme]) {
-                book.theme = themesMap[book.theme]
+              if (book.theme_id && themesMap[book.theme_id]) {
+                book.theme = themesMap[book.theme_id]
               }
             })
           }
@@ -716,11 +716,11 @@ export const useDatabase = () => {
       }
       
       // If the memory book has a theme, fetch the theme data
-      if (data && data.theme) {
+      if (data && data.theme_id) {
         const { data: themeData, error: themeError } = await supabase
           .from('themes')
           .select('id, name, description, background_color, header_font, body_font, signature_font, header_font_color, body_font_color, signature_font_color, layout_config, rounded, size')
-          .eq('id', data.theme)
+          .eq('id', data.theme_id)
           .single()
         
         if (!themeError && themeData) {

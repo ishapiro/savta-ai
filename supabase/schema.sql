@@ -102,7 +102,7 @@ create table if not exists memory_books (
   print_size text default '8.5x11' check (print_size in ('3x5', '5x3', '5x7', '7x5', '8x10', '10x8', '8.5x11', '11x8.5', '11x14', '14x11', '12x12')),
   quality text,
   medium text,
-  theme text,
+  theme_id text,
   status text default 'draft' check (status in ('draft', 'ready', 'background_ready', 'approved', 'distributed')),
   pdf_url text check (pdf_url is null or length(pdf_url) <= 1000),
   background_url text check (background_url is null or length(background_url) <= 1000),
