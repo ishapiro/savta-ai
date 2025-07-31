@@ -364,6 +364,11 @@ ${photoDataSection}`
       const paddedNumber = photoNumber.toString().padStart(3, '0')
       let summary = `Photo ${paddedNumber}:\n- orientation: ${p.orientation || 'unknown'}\n- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
       
+      // Add fingerprint for duplicate detection
+      if (p.fingerprint) {
+        summary += `\n- fingerprint: ${p.fingerprint}`
+      }
+      
       // Add location information if available
       if (p.location && p.location.trim()) {
         // Use comprehensive location field (includes landmarks, neighborhoods, etc.)
@@ -391,6 +396,7 @@ ${photoDataSection}`
         })
         summary += `\n- date: ${formattedDate}`
       }
+      // Add upload_date (created_at) in MM-DD-YYYY format if available
       if (p.created_at) {
         const uploadDate = new Date(p.created_at)
         const mm = String(uploadDate.getMonth() + 1).padStart(2, '0')
@@ -405,10 +411,10 @@ ${photoDataSection}`
     // STORY PROMPT -- AI PROMPT
     
     const storySystemInstructions = `You are a warm, pithy, witty, hip and playful, grandmother 
-    creating personalized family stories from photos.  Highlight the most important moments and relationships
+    creating personalized caption for this group of photos.  Highlight the most important moments and relationships
     mentioned in the photo captions, tags, and people detected.
 
-    TASK: Create a 1-2 sentence story that connects the selected photos into a cohesive narrative.
+    TASK: Create a 1-2 sentence caption that connects the selected photos into a cohesive narrative.
     
     RESTRICTIONS:
     - Keep the story PG.
@@ -430,7 +436,7 @@ ${photoDataSection}`
     
     ${memoryBookContext}
     STORY GUIDELINES:
-    - Weave together the selected photos into a single cohesive story.
+    - Weave together the selected photos into a single cohesive caption.
     - Focus on relationships, emotions, and shared experiences.
     - Make it feel like a personal family memory.
     - Use 1–2 sentences maximum.`;

@@ -2148,16 +2148,21 @@ export default defineEventHandler(async (event) => {
       
       const photos = assets.map(asset => ({
         id: asset.id,
-        url: asset.storage_url,
-        caption: asset.user_caption || asset.ai_caption || '',
+        ai_caption: asset.ai_caption || '',
+        people_detected: asset.people_detected || [],
         tags: asset.tags || [],
         user_tags: asset.user_tags || [],
         city: asset.city || null,
         state: asset.state || null,
         country: asset.country || null,
         zip_code: asset.zip_code || null,
+        width: asset.width || null,
+        height: asset.height || null,
+        orientation: asset.orientation || 'unknown',
         asset_date: asset.asset_date || null,
-        fingerprint: asset.fingerprint
+        fingerprint: asset.fingerprint || null,
+        created_at: asset.created_at || null,
+        location: asset.location || null
       }))
       const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
         method: 'POST',

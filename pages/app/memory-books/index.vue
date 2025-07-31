@@ -822,7 +822,12 @@
               </div>
               <div class="min-w-0 flex-1">
                 <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Assets</h3>
-                <p class="text-xs sm:text-sm text-gray-600">{{ selectedBook.created_from_assets.length }} memories included</p>
+                <p class="text-xs sm:text-sm text-gray-600">
+                  {{ selectedBook.created_from_assets.length }} memories included
+                  <span v-if="selectedBook.photo_selection_pool && selectedBook.photo_selection_pool.length > 0" class="text-gray-500">
+                    (from {{ selectedBook.photo_selection_pool.length }} in pool)
+                  </span>
+                </p>
               </div>
             </div>
             <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1 sm:gap-2">
@@ -3966,7 +3971,10 @@ async function onMagicMemoryContinue() {
       width: a.width || null,
       height: a.height || null,
       orientation: a.orientation || 'unknown',
-      asset_date: a.asset_date || null
+      asset_date: a.asset_date || null,
+      fingerprint: a.fingerprint || null,
+      created_at: a.created_at || null,
+      location: a.location || null
     }))
     let aiBody = { 
       photos,
@@ -4107,7 +4115,10 @@ const retryMagicMemory = async () => {
       width: a.width || null,
       height: a.height || null,
       orientation: a.orientation || 'unknown',
-      asset_date: a.asset_date || null
+      asset_date: a.asset_date || null,
+      fingerprint: a.fingerprint || null,
+      created_at: a.created_at || null,
+      location: a.location || null
     }))
     
     let aiBody = { 
