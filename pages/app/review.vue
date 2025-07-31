@@ -283,6 +283,51 @@
                   />
                 </div>
               </div>
+
+              <!-- Location Data (read-only) -->
+              <div>
+                <label class="block text-sm font-semibold text-brand-primary mb-2">Location Data</label>
+                <div class="space-y-2">
+                  <!-- Comprehensive Location -->
+                  <div v-if="editingAsset.location">
+                    <label class="block text-xs font-medium text-brand-primary/70 mb-1">Full Location</label>
+                    <div class="text-sm text-brand-primary bg-brand-navigation/20 rounded p-2 border border-brand-primary/20">
+                      {{ editingAsset.location }}
+                    </div>
+                  </div>
+                  
+                  <!-- Individual Location Components -->
+                  <div v-if="editingAsset.city || editingAsset.state || editingAsset.country || editingAsset.zip_code">
+                    <label class="block text-xs font-medium text-brand-primary/70 mb-1">Location Components</label>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div v-if="editingAsset.city">
+                        <label class="block text-xs text-brand-primary/60">City</label>
+                        <div class="text-sm text-brand-primary bg-brand-highlight/10 rounded p-2">{{ editingAsset.city }}</div>
+                      </div>
+                      <div v-if="editingAsset.state">
+                        <label class="block text-xs text-brand-primary/60">State/Province</label>
+                        <div class="text-sm text-brand-primary bg-brand-secondary/10 rounded p-2">{{ editingAsset.state }}</div>
+                      </div>
+                      <div v-if="editingAsset.country">
+                        <label class="block text-xs text-brand-primary/60">Country</label>
+                        <div class="text-sm text-brand-primary bg-brand-header/10 rounded p-2">{{ editingAsset.country }}</div>
+                      </div>
+                      <div v-if="editingAsset.zip_code">
+                        <label class="block text-xs text-brand-primary/60">ZIP/Postal Code</label>
+                        <div class="text-sm text-brand-primary bg-brand-accent/10 rounded p-2">{{ editingAsset.zip_code }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- No Location Data Message -->
+                  <div v-if="!editingAsset.location && !editingAsset.city && !editingAsset.state && !editingAsset.country && !editingAsset.zip_code">
+                    <div class="text-sm text-brand-primary/50 italic bg-brand-navigation/20 rounded p-2 border border-brand-primary/20">
+                      <i class="pi pi-map-marker text-brand-primary/40 mr-1"></i>
+                      No location data available
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -351,12 +396,26 @@
               <Chip v-for="person in detailsAsset.user_people || []" :key="`user-${person}`" :label="person" class="text-xs bg-brand-accent/20 text-brand-accent px-2 py-1" />
             </div>
           </div>
-          <div v-if="detailsAsset.city || detailsAsset.state || detailsAsset.country">
+          <div v-if="detailsAsset.location || detailsAsset.city || detailsAsset.state || detailsAsset.country || detailsAsset.zip_code">
             <label class="block text-sm font-semibold text-brand-primary mb-1">Location</label>
             <div class="flex flex-wrap gap-1">
-              <Chip v-if="detailsAsset.city" :label="detailsAsset.city" class="text-xs bg-brand-highlight/20 text-brand-highlight px-2 py-1" />
-              <Chip v-if="detailsAsset.state" :label="detailsAsset.state" class="text-xs bg-brand-secondary/20 text-brand-secondary px-2 py-1" />
-              <Chip v-if="detailsAsset.country" :label="detailsAsset.country" class="text-xs bg-brand-header/20 text-brand-header px-2 py-1" />
+              <!-- Show comprehensive location if available -->
+              <Chip v-if="detailsAsset.location" :label="detailsAsset.location" class="text-xs bg-brand-highlight/20 text-brand-highlight px-2 py-1" />
+              <!-- Show individual location components -->
+              <template v-else>
+                <Chip v-if="detailsAsset.city" :label="detailsAsset.city" class="text-xs bg-brand-highlight/20 text-brand-highlight px-2 py-1" />
+                <Chip v-if="detailsAsset.state" :label="detailsAsset.state" class="text-xs bg-brand-secondary/20 text-brand-secondary px-2 py-1" />
+                <Chip v-if="detailsAsset.country" :label="detailsAsset.country" class="text-xs bg-brand-header/20 text-brand-header px-2 py-1" />
+                <Chip v-if="detailsAsset.zip_code" :label="detailsAsset.zip_code" class="text-xs bg-brand-accent/20 text-brand-accent px-2 py-1" />
+              </template>
+            </div>
+          </div>
+          <!-- Show message when no location data is available -->
+          <div v-else>
+            <label class="block text-sm font-semibold text-brand-primary mb-1">Location</label>
+            <div class="text-sm text-brand-primary/50 italic bg-brand-navigation/20 rounded p-2 border border-brand-primary/20">
+              <i class="pi pi-map-marker text-brand-primary/40 mr-1"></i>
+              No location data available
             </div>
           </div>
         </div>

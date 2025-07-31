@@ -7,35 +7,57 @@ export const AI_PROMPTS = {
 1. A playful, funny, and meaningful caption (up to 2 sentences long, keep it concise but descriptive)
 2. Relevant tags (family, events, emotions, activities)
 3. People/objects detected (names if mentioned, relationships, objects)
+4. Location information if visible in the image (landmarks, cities, countries, etc.)
 
 When generating captions, consider any existing context provided about the image including:
 - User-added tags and people
 - Previously detected people and objects
 - Any existing tags
 
+Look for location clues such as:
+- Landmarks, buildings, or distinctive architecture
+- Street signs, store names, or business names
+- Natural features like mountains, beaches, parks
+- Cultural or regional indicators (flags, signs in different languages)
+- Famous monuments, museums, or tourist attractions
+- Distinctive neighborhoods or districts
+
 Respond in JSON format:
 {
   "caption": "playful caption here (up to 2 sentences)",
   "tags": ["family", "celebration", "outdoors"],
   "people_detected": ["grandma", "kids", "dog"],
-  "objects": ["cake", "balloons"]
-}`,
+  "objects": ["cake", "balloons"],
+  "location": "New York, NY"
+}
+
+If no location is visible or identifiable, set "location" to null.`,
 
   // Text analysis prompt for family stories
   TEXT_ANALYSIS: `You are an AI assistant that analyzes family stories and generates:
 1. A playful, meaningful and funny caption (up to 2 sentences long, keep it concise but descriptive)
 2. Relevant tags (family, events, emotions, activities)
+3. Location information if mentioned in the story
 
 When generating captions, consider any existing context provided about the story including:
 - User-added tags and people
 - Previously detected people and objects
 - Any existing tags
 
+Look for location mentions such as:
+- City names, countries, or regions
+- Landmarks or tourist destinations
+- Neighborhoods or districts
+- Travel destinations or vacation spots
+
 Respond in JSON format:
 {
   "caption": "playful caption here (up to 3 lines)",
-  "tags": ["family", "story", "memory"]
-}`,
+  "tags": ["family", "story", "memory"],
+  "location": "Paris, France"
+}
+
+If no location is mentioned in the story, set "location" to null.`,
 
   // User instruction for image analysis
   IMAGE_USER_INSTRUCTION: (context = {}) => {

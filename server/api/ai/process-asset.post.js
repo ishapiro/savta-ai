@@ -145,13 +145,7 @@ export default defineEventHandler(async (event) => {
     
     const supabase = createClient(
       config.public.supabaseUrl,
-      config.supabaseServiceRoleKey || config.public.supabaseKey,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
+      config.supabaseServiceRoleKey || config.public.supabaseKey
     )
     
     let updatedAsset = null;
@@ -178,16 +172,61 @@ export default defineEventHandler(async (event) => {
           ai_caption: aiResults.ai_caption,
           tags: aiResults.tags,
           people_detected: aiResults.people_detected,
-          ai_objects: aiResults.ai_objects,
-          ai_raw: aiResults.ai_raw,
+          ai_objects: aiResults.ai_objects || [],
+          ai_raw: aiResults.ai_raw || null,
           ai_processed: true
         };
+
+        // Handle location information from AI caption processing
+        if (aiResults.ai_location) {
+          console.log(`📍 AI caption processing found location: ${aiResults.ai_location}`)
+          
+          // Get current asset to check existing location
+          const { data: currentAsset, error: fetchError } = await supabase
+            .from('assets')
+            .select('location, city, state, country, zip_code')
+            .eq('id', assetId)
+            .single()
+          
+          if (!fetchError && currentAsset) {
+            let newLocation = aiResults.ai_location
+            
+            // If there's existing location data, append the AI location
+            if (currentAsset.location && currentAsset.location.trim()) {
+              console.log(`📍 Existing location found: ${currentAsset.location}`)
+              console.log(`📍 Appending AI location: ${aiResults.ai_location}`)
+              newLocation = `${currentAsset.location}, ${aiResults.ai_location}`
+            } else if (currentAsset.city || currentAsset.state || currentAsset.country) {
+              // If we have individual location components, combine them with AI location
+              const existingParts = []
+              if (currentAsset.city) existingParts.push(currentAsset.city)
+              if (currentAsset.state) existingParts.push(currentAsset.state)
+              if (currentAsset.country) existingParts.push(currentAsset.country)
+              if (currentAsset.zip_code) existingParts.push(currentAsset.zip_code)
+              
+              if (existingParts.length > 0) {
+                const existingLocation = existingParts.join(', ')
+                console.log(`📍 Existing location components: ${existingLocation}`)
+                newLocation = `${existingLocation}, ${aiResults.ai_location}`
+              }
+            }
+            
+            console.log(`📍 Final combined location: ${newLocation}`)
+            aiUpdate.location = newLocation
+          } else {
+            // No existing location data, use AI location directly
+            console.log(`📍 No existing location data, using AI location: ${aiResults.ai_location}`)
+            aiUpdate.location = aiResults.ai_location
+          }
+        }
 
         // If preserving user data, keep user-added tags and people
         if (preserveUserData) {
           aiUpdate.user_tags = userTags || []
           aiUpdate.user_people = userPeople || []
         }
+        console.log('Updating asset with AI results:', { assetId, aiUpdate })
+        
         const { data, error } = await supabase
           .from('assets')
           .update(aiUpdate)
@@ -196,6 +235,7 @@ export default defineEventHandler(async (event) => {
           .single();
 
         if (error) {
+          console.error('Database update error:', error)
           throw createError({
             statusCode: 500,
             statusMessage: `Failed to update asset with AI results: ${error.message}`
@@ -217,6 +257,7 @@ export default defineEventHandler(async (event) => {
     }
 
   } catch (error) {
+    console.error('AI processing error:', error)
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage: error.statusMessage || 'AI processing failed'
@@ -299,7 +340,8 @@ async function analyzeImage(imageUrl, apiKey, context = {}) {
       tags: parsed.tags || ['family', 'memory'],
       people_detected: parsed.people_detected || [],
       ai_objects: parsed.objects || [],
-      ai_raw: parsed // Store the full parsed object
+      ai_raw: parsed, // Store the full parsed object
+      ai_location: parsed.location || null // Extract location from caption processing
     };
 
     return finalResults
@@ -334,7 +376,7 @@ async function analyzeText(text, apiKey, context = {}) {
           },
           {
             role: 'user',
-            content: prompts.userInstruction(text, context)
+            content: prompts.userInstruction(context)
           }
         ],
         max_tokens: 1000
@@ -372,7 +414,8 @@ async function analyzeText(text, apiKey, context = {}) {
       tags: parsed.tags || ['family', 'story'],
       people_detected: [],
       ai_objects: [],
-      ai_raw: parsed
+      ai_raw: parsed,
+      ai_location: parsed.location || null // Extract location from text processing
     };
 
     return finalResults

@@ -81,7 +81,10 @@ export default defineEventHandler(async (event) => {
       background_url: book.background_url ? 'exists' : 'none',
       layout_type: book.layout_type,
       memory_shape: book.memory_shape,
-      status: book.status
+      status: book.status,
+      photo_selection_pool_count: book.photo_selection_pool?.length || 0,
+      created_from_assets_count: book.created_from_assets?.length || 0,
+      theme_id: book.theme_id || 'none'
     })
     
     // Check if this is a magic memory book
@@ -111,10 +114,19 @@ export default defineEventHandler(async (event) => {
       await updatePdfStatus(supabase, book.id, user.id, '✨ Crafting your magical story... ✨')
       
       // Fetch the photos from the user's selection pool
-      // For existing books without photo_selection_pool, fall back to created_from_assets
+      // Always use photo_selection_pool if available, even for regeneration
+      // Only fall back to created_from_assets if photo_selection_pool is completely empty
       const photoPool = book.photo_selection_pool && book.photo_selection_pool.length > 0 
         ? book.photo_selection_pool 
         : book.created_from_assets || []
+      
+      // Log photo selection pool details
+      console.log('📸 PHOTO SELECTION POOL DEBUG:')
+      console.log(`   - photo_selection_pool count: ${book.photo_selection_pool?.length || 0}`)
+      console.log(`   - created_from_assets count: ${book.created_from_assets?.length || 0}`)
+      console.log(`   - Final photoPool count: ${photoPool.length}`)
+      console.log(`   - Using photo_selection_pool: ${book.photo_selection_pool && book.photo_selection_pool.length > 0}`)
+      console.log(`   - Fallback to created_from_assets: ${!book.photo_selection_pool || book.photo_selection_pool.length === 0}`)
       
       // Update status for photo selection
       await updatePdfStatus(supabase, book.id, user.id, 'Savta is selecting photos for you...')
@@ -275,8 +287,16 @@ export default defineEventHandler(async (event) => {
       // This follows the original pipeline: user selects pool, AI selects best ones from pool
       const photoCount = Math.min(assets.length, 4) // Default to 4, but could be 1 or 6 based on user preference
 
+      // Log final selected assets before sending to AI
+      console.log('🤖 AI CALL DEBUG - Before sending to magic-memory API:')
+      console.log(`   - Final selected assets count: ${selectedAssets.length}`)
+      console.log(`   - Photo count to send to AI: ${photoCount}`)
+      console.log(`   - First 3 asset IDs: ${selectedAssets.slice(0, 3).map(a => a.id).join(', ')}`)
+      console.log(`   - Book title: "${book.title}"`)
+      console.log(`   - Theme ID: ${book.theme_id || 'none'}`)
+      
       // Always generate a new magic story for magic memory books
-              const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
+      const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2103,11 +2123,17 @@ export default defineEventHandler(async (event) => {
       const photoCount = layoutConfig.photos.length
       console.log(`📸 Processing ${photoCount} photos from theme layout`)
 
-      // Fetch all assets for the book using created_from_assets (like magic layout)
+      // Fetch all assets for the book using photo_selection_pool if available, otherwise created_from_assets
+      const assetIds = book.photo_selection_pool && book.photo_selection_pool.length > 0 
+        ? book.photo_selection_pool 
+        : book.created_from_assets || []
+      
+      console.log(`📸 Theme PDF - Asset pool: photo_selection_pool=${book.photo_selection_pool?.length || 0}, created_from_assets=${book.created_from_assets?.length || 0}, using ${assetIds.length} assets`)
+      
       const { data: assets, error: assetsError } = await supabase
         .from('assets')
         .select('*')
-        .in('id', book.created_from_assets || [])
+        .in('id', assetIds)
         .eq('approved', true)
         .eq('deleted', false)
       if (assetsError || !assets || assets.length === 0) {

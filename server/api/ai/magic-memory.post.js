@@ -1,4 +1,5 @@
 // Magic Memory AI endpoint
+// Includes the photo selection and story generation in two separate AI calls
 // Receives photo metadata, selects photos, and generates a story in two separate AI calls
 
 export default defineEventHandler(async (event) => {
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
     // Build memory book context string
     let memoryBookContext = ''
     if (title && title.trim()) {
-      memoryBookContext += `Title: "${title.trim()}"\n`
+      memoryBookContext += `User selection prompt: "${title.trim()}"\n`
     }
     if (memory_event && memory_event.trim()) {
       memoryBookContext += `Event: ${memory_event.trim()}\n`
@@ -56,14 +57,21 @@ export default defineEventHandler(async (event) => {
         
         // Add location information if available
         let locationInfo = ''
-        const locationParts = []
-        if (p.city && p.city.trim()) locationParts.push(p.city.trim())
-        if (p.state && p.state.trim()) locationParts.push(p.state.trim())
-        if (p.country && p.country.trim()) locationParts.push(p.country.trim())
-        if (p.zip_code && p.zip_code.trim()) locationParts.push(p.zip_code.trim())
         
-        if (locationParts.length > 0) {
-          locationInfo = `\n- location: ${locationParts.join(', ')}`
+        // Use comprehensive location field if available (includes landmarks, neighborhoods, etc.)
+        if (p.location && p.location.trim()) {
+          locationInfo = `\n- location: ${p.location.trim()}`
+        } else {
+          // Fallback to individual location components
+          const locationParts = []
+          if (p.city && p.city.trim()) locationParts.push(p.city.trim())
+          if (p.state && p.state.trim()) locationParts.push(p.state.trim())
+          if (p.country && p.country.trim()) locationParts.push(p.country.trim())
+          if (p.zip_code && p.zip_code.trim()) locationParts.push(p.zip_code.trim())
+          
+          if (locationParts.length > 0) {
+            locationInfo = `\n- location: ${locationParts.join(', ')}`
+          }
         }
         
         // Add date information if available
@@ -131,14 +139,20 @@ export default defineEventHandler(async (event) => {
       }
       
       // Add location information if available
-      const locationParts = []
-      if (p.city && p.city.trim()) locationParts.push(p.city.trim())
-      if (p.state && p.state.trim()) locationParts.push(p.state.trim())
-      if (p.country && p.country.trim()) locationParts.push(p.country.trim())
-      if (p.zip_code && p.zip_code.trim()) locationParts.push(p.zip_code.trim())
-      
-      if (locationParts.length > 0) {
-        summary += `\n- location: ${locationParts.join(', ')}`
+      if (p.location && p.location.trim()) {
+        // Use comprehensive location field (includes landmarks, neighborhoods, etc.)
+        summary += `\n- location: ${p.location.trim()}`
+      } else {
+        // Fallback to individual location components
+        const locationParts = []
+        if (p.city && p.city.trim()) locationParts.push(p.city.trim())
+        if (p.state && p.state.trim()) locationParts.push(p.state.trim())
+        if (p.country && p.country.trim()) locationParts.push(p.country.trim())
+        if (p.zip_code && p.zip_code.trim()) locationParts.push(p.zip_code.trim())
+        
+        if (locationParts.length > 0) {
+          summary += `\n- location: ${locationParts.join(', ')}`
+        }
       }
       
       // Add date information if available
@@ -163,19 +177,24 @@ export default defineEventHandler(async (event) => {
       return summary
     }).join('\n\n')
 
-    const selectionSystemInstructions = `You are a warm, caring grandmother selecting the most meaningful family photos for a memory book.
+    // PHOTO SELECTION PROMPT -- AI PROMPT
 
-TASK: Select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool that will create the best story together.
+    const selectionSystemInstructions = `You are a warm, caring grandmother selecting the most 
+    meaningful family photos for a memory book.
+
+TASK: Select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided photo pool 
+that will create the best story together.  Prioritize photos that are related to the user selection prompt or event.
 
 ${memoryBookContext}
 PHOTO SELECTION RULES:
 - You MUST select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool
-- If there is a location named in the title match it against the city, state, country, or zip code in photo data
-- Prioritize photos with a recent upload_date
-- Select photos that are related to the title or event
+- If there is a location named in the user selection prompt, match it against the location data in photo metadata (including landmarks, neighborhoods, cities, states, countries)
+- Prioritize photos with a recent photo date
+- Select photos that are related to the user selection prompt or event
 - Choose the most meaningful and emotionally connected photos that work well together
 - Consider relationships, themes, and storytelling potential when selecting
 - If dates are available, use them to create a chronological or thematic flow
+- Pay attention to landmarks and distinctive locations that add context to the story
 - Arrange selected photos in the best storytelling order
 - CRITICAL: Use the photo numbers (1, 2, 3, etc.) exactly as shown in the "Photo X:" labels
 - CRITICAL: Copy the photo numbers EXACTLY - do not modify, change, or generate new numbers
@@ -205,7 +224,7 @@ ${photoSummaries}
 
 SELECTION INSTRUCTIONS:
 ${forceAll ? 
-  `Use ALL ${photos.length} provided photos in the order given.` : 
+  `Use ALL ${photos.length} provided photos in the order given as the selection pool.` : 
   `From the ${photos.length} photos above, select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} that will create the best story together. Choose photos that are meaningful and emotionally connected.`
 }`
 
@@ -215,6 +234,10 @@ ${photoDataSection}`
 
     // Call OpenAI for photo selection
     console.log('🤖 Making first AI call for photo selection...')
+    console.log("*** Photo selection prompt ***")
+    console.log(selectionPrompt)
+    console.log("*** Photo selection prompt ***")
+    
     const selectionRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -227,7 +250,7 @@ ${photoDataSection}`
           { role: 'system', content: 'You are a warm, caring grandmother selecting meaningful family photos.' },
           { role: 'user', content: selectionPrompt }
         ],
-        max_tokens: 1000
+        max_tokens: 5000
       })
     })
 
@@ -342,14 +365,20 @@ ${photoDataSection}`
       let summary = `Photo ${paddedNumber}:\n- orientation: ${p.orientation || 'unknown'}\n- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
       
       // Add location information if available
-      const locationParts = []
-      if (p.city && p.city.trim()) locationParts.push(p.city.trim())
-      if (p.state && p.state.trim()) locationParts.push(p.state.trim())
-      if (p.country && p.country.trim()) locationParts.push(p.country.trim())
-      if (p.zip_code && p.zip_code.trim()) locationParts.push(p.zip_code.trim())
-      
-      if (locationParts.length > 0) {
-        summary += `\n- location: ${locationParts.join(', ')}`
+      if (p.location && p.location.trim()) {
+        // Use comprehensive location field (includes landmarks, neighborhoods, etc.)
+        summary += `\n- location: ${p.location.trim()}`
+      } else {
+        // Fallback to individual location components
+        const locationParts = []
+        if (p.city && p.city.trim()) locationParts.push(p.city.trim())
+        if (p.state && p.state.trim()) locationParts.push(p.state.trim())
+        if (p.country && p.country.trim()) locationParts.push(p.country.trim())
+        if (p.zip_code && p.zip_code.trim()) locationParts.push(p.zip_code.trim())
+        
+        if (locationParts.length > 0) {
+          summary += `\n- location: ${locationParts.join(', ')}`
+        }
       }
       
       // Add date information if available
@@ -373,32 +402,38 @@ ${photoDataSection}`
       return summary
     }).join('\n\n')
 
-    const storySystemInstructions = `You are a warm, pithy, witty, hip and playful, grandmother creating personalized family stories from photos.
+    // STORY PROMPT -- AI PROMPT
+    
+    const storySystemInstructions = `You are a warm, pithy, witty, hip and playful, grandmother 
+    creating personalized family stories from photos.  Highlight the most important moments and relationships
+    mentioned in the photo captions, tags, and people detected.
 
-TASK: Create a 1-2 sentence story that connects the selected photos into a cohesive narrative.
-
-RESTRICTIONS:
-- Keep the story PG
-- Do not say "young ones" or "youngsters" use "kids" or "children"
-- Do not make up places, cities, locations or people names.  Only user names found in the photo metadats or the title
-- Do not reference locations, cities, states, countries, or zip codes unless all of the photos selected have the same location
-- Never make up people names
-
-STYLE REQUIREMENTS:
-- Warm, fun, and lighthearted tone like a hip grandma
-- But not too sappy or corny
-- 8th grade reading level
-- Natural, personal, and delightful language
-- Use photo context (captions, tags, people) for richness, but don't mention them literally
-- Refer to location information if available to make the story more specific and personal
-- IMPORTANT: Only use letters and symbols from the Latin character set (no Hebrew, Cyrillic, or other scripts). All output must be in English and use only Latin characters.
-
-${memoryBookContext}
-STORY GUIDELINES:
-- Weave together the selected photos into a single cohesive story
-- Focus on relationships, emotions, and shared experiences
-- Make it feel like a personal family memory
-- Use 1-2 sentences maximum`
+    TASK: Create a 1-2 sentence story that connects the selected photos into a cohesive narrative.
+    
+    RESTRICTIONS:
+    - Keep the story PG.
+    - Do not say "young ones" or "youngsters" — use "kids" or "children" instead.
+    - Do not invent or guess any place names, cities, states, countries, zip codes, landmarks, or personal names.
+    - You may only reference a location (including landmarks, neighborhoods, cities, states, or countries) if every photo in the list has the exact same location in the metadata.
+    - If even one photo is missing a location, or has a different location, do not mention any location at all.
+    - Only use names of people that are explicitly found in the photo metadata or the user selection prompt.
+    - Never fabricate or infer people names from context.
+    - When location data is available and consistent across all photos, you may mention landmarks, neighborhoods, or distinctive places that add context to the story.
+    
+    STYLE REQUIREMENTS:
+    - Warm, fun, and lighthearted tone like a hip grandma.
+    - But not too sappy or corny.
+    - 8th grade reading level.
+    - Natural, personal, and delightful language.
+    - Use photo context (captions, tags, people) for richness, but don't mention them literally.
+    - IMPORTANT: Only use letters and symbols from the Latin character set (no Hebrew, Cyrillic, or other scripts). All output must be in English and use only Latin characters.
+    
+    ${memoryBookContext}
+    STORY GUIDELINES:
+    - Weave together the selected photos into a single cohesive story.
+    - Focus on relationships, emotions, and shared experiences.
+    - Make it feel like a personal family memory.
+    - Use 1–2 sentences maximum.`;
 
     const storyPrompt = `${storySystemInstructions}
 
@@ -415,6 +450,12 @@ EXAMPLE:
 {
   "story": "Your story here..."
 }`
+
+    // Log the full story prompt for debugging
+    console.log('🤖 STORY GENERATION PROMPT DEBUG:')
+    console.log('='.repeat(80))
+    console.log(storyPrompt)
+    console.log('='.repeat(80))
 
     // Call OpenAI for story generation
     console.log('🤖 Making second AI call for story generation...')

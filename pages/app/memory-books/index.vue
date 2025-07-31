@@ -1374,7 +1374,8 @@
             <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
           <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1">✨ Help me create a special memory ✨</h3>
-          <p class="text-sm sm:text-base text-gray-600">Tell me something that will help me select the best photos for your memory and create a special story for you.</p>
+          <p class="text-sm sm:text-base text-gray-600">Tell me something that will help me select the best photos for your memory and 
+            create a special story for you. Savta our special AI understand requests line "Photos about by New York Trip"</p>
         </div>
         <div class="field w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
           <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Something special about this memory</label>
