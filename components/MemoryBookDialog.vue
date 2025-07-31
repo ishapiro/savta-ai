@@ -112,6 +112,19 @@
             />
           </div>
           
+          <!-- Output Format -->
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-2">Output Format</label>
+            <Dropdown
+              v-model="form.output"
+              :options="outputOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select output format"
+              class="w-full"
+            />
+          </div>
+          
           <!-- Theme (only show when layout type is 'theme') -->
           <div v-if="form.layoutType === 'theme'">
             <label class="block text-sm font-medium text-brand-primary mb-2">Theme</label>
@@ -936,6 +949,7 @@ const form = ref({
   printSize: '8x10',
   quality: 'standard',
   medium: 'digital',
+  output: 'PDF', // Default to PDF
   theme: '', // Will be set when themes are loaded
   memoryEvent: '',
   customMemoryEvent: '',
@@ -1011,6 +1025,11 @@ const mediumOptions = ref([
   { label: 'Digital PDF', value: 'digital' },
   { label: 'Print Ready', value: 'print' },
   { label: 'Web View', value: 'web' }
+])
+
+const outputOptions = ref([
+  { label: 'PDF Document', value: 'PDF' },
+  { label: 'PNG Image', value: 'PNG' }
 ])
 
 const themeOptions = ref([])
@@ -1182,6 +1201,7 @@ watch(() => props.initialData, (val) => {
       printSize: '8x10',
       quality: 'standard',
       medium: 'digital',
+      output: 'PDF', // Default to PDF
       theme_id: null, // Will be set when themes are loaded
       memoryEvent: '',
       customMemoryEvent: '',

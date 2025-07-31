@@ -2199,6 +2199,7 @@ const newBook = ref({
   printSize: '8x10',
   quality: 'standard',
   medium: 'digital',
+  output: 'PDF', // Default to PDF
   theme_id: null,
   gridLayout: '2x2',
   memoryShape: 'original',
@@ -2236,6 +2237,7 @@ const resetCreateModal = () => {
     printSize: '8x10',
     quality: 'standard',
     medium: 'digital',
+    output: 'PDF', // Default to PDF
     theme_id: null,
     gridLayout: '2x2',
     memoryShape: 'original',
@@ -2283,6 +2285,11 @@ const mediumOptions = ref([
   { label: 'Digital PDF', value: 'digital' },
   { label: 'Print Ready', value: 'print' },
   { label: 'Web View', value: 'web' }
+])
+
+const outputOptions = ref([
+  { label: 'PDF Document', value: 'PDF' },
+  { label: 'PNG Image', value: 'PNG' }
 ])
 
 
@@ -2557,6 +2564,7 @@ const createMemoryBook = async () => {
       print_size: newBook.value.printSize,
       quality: newBook.value.quality,
       medium: newBook.value.medium,
+      output: newBook.value.output || 'PDF', // Default to PDF
               theme_id: newBook.value.theme_id,
       grid_layout: newBook.value.gridLayout,
       memory_shape: newBook.value.memoryShape,

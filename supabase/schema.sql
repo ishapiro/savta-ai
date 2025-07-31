@@ -119,7 +119,8 @@ create table if not exists memory_books (
   include_tags boolean default true,
   ai_background boolean default true,
   auto_enhance boolean default false,
-  memory_event text
+  memory_event text,
+  output text default 'PDF' check (output in ('PDF', 'PNG'))
 );
 
 -- Add foreign key from memory_books.user_id to profiles.user_id (safe for rerun)
