@@ -663,18 +663,16 @@ BEGIN
   END IF;
   
   -- Update existing background_type constraint to include 'solid' if it exists
-  DO $$
-  BEGIN
-    IF EXISTS (
-      SELECT 1 FROM information_schema.check_constraints 
-      WHERE constraint_name LIKE '%background_type%' 
-      AND table_name = 'memory_books'
-    ) THEN
-      ALTER TABLE memory_books DROP CONSTRAINT IF EXISTS memory_books_background_type_check;
-      ALTER TABLE memory_books ADD CONSTRAINT memory_books_background_type_check 
-        CHECK (background_type in ('white', 'magical', 'solid'));
-    END IF;
-  END $$;
+  IF EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE constraint_name LIKE '%background_type%' 
+    AND table_name = 'memory_books'
+    AND constraint_type = 'CHECK'
+  ) THEN
+    ALTER TABLE memory_books DROP CONSTRAINT IF EXISTS memory_books_background_type_check;
+    ALTER TABLE memory_books ADD CONSTRAINT memory_books_background_type_check 
+      CHECK (background_type in ('white', 'magical', 'solid'));
+  END IF;
   
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns 
@@ -701,6 +699,40 @@ BEGIN
       AND column_name = 'ui'
   ) THEN
     ALTER TABLE memory_books ADD COLUMN ui text DEFAULT 'form' CHECK (ui IN ('wizard', 'form'));
+  END IF;
+END $$; 
+
+-- Add border fields to themes table (safe to rerun)
+DO $$
+BEGIN
+  -- Add photo_border column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'themes' 
+      AND column_name = 'photo_border'
+  ) THEN
+    ALTER TABLE themes ADD COLUMN photo_border integer DEFAULT 0;
+  END IF;
+  
+  -- Add page_border column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'themes' 
+      AND column_name = 'page_border'
+  ) THEN
+    ALTER TABLE themes ADD COLUMN page_border integer DEFAULT 0;
+  END IF;
+  
+  -- Add page_border_offset column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'themes' 
+      AND column_name = 'page_border_offset'
+  ) THEN
+    ALTER TABLE themes ADD COLUMN page_border_offset integer DEFAULT 5;
   END IF;
 END $$; 
 

@@ -829,6 +829,46 @@
           </div>
         </div>
 
+        <!-- Border Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Border Settings</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Photo Border (px)</label>
+              <InputText
+                v-model.number="newTheme.photo_border"
+                type="number"
+                min="0"
+                max="50"
+                placeholder="0"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Page Border (px)</label>
+              <InputText
+                v-model.number="newTheme.page_border"
+                type="number"
+                min="0"
+                max="50"
+                placeholder="0"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Page Border Offset (mm)</label>
+              <InputText
+                v-model.number="newTheme.page_border_offset"
+                type="number"
+                min="0"
+                max="50"
+                placeholder="5"
+                class="w-full text-xs"
+              />
+            </div>
+          </div>
+        </div>
+
         <!-- Card Wizard Settings -->
         <div class="border-t border-gray-200 pt-2">
           <h4 class="text-xs font-semibold text-brand-primary mb-2">Card Wizard Settings</h4>
@@ -1095,6 +1135,46 @@
                   Use rounded corners for memory shapes
                 </label>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Border Settings -->
+        <div class="border-t border-gray-200 pt-2">
+          <h4 class="text-xs font-semibold text-brand-primary mb-2">Border Settings</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Photo Border (px)</label>
+              <InputText
+                v-model.number="editingTheme.photo_border"
+                type="number"
+                min="0"
+                max="50"
+                placeholder="0"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Page Border (px)</label>
+              <InputText
+                v-model.number="editingTheme.page_border"
+                type="number"
+                min="0"
+                max="50"
+                placeholder="0"
+                class="w-full text-xs"
+              />
+            </div>
+            <div class="field">
+              <label class="block text-xs font-medium text-brand-primary mb-1">Page Border Offset (mm)</label>
+              <InputText
+                v-model.number="editingTheme.page_border_offset"
+                type="number"
+                min="0"
+                max="50"
+                placeholder="5"
+                class="w-full text-xs"
+              />
             </div>
           </div>
         </div>
@@ -1535,6 +1615,9 @@ const newTheme = ref({
   size: '8.5x11',
   card_default: false,
   card_wizard: false,
+  photo_border: 0,
+  page_border: 0,
+  page_border_offset: 5,
   editDefaultsMode: false
 })
 const editingTheme = ref({
@@ -1556,6 +1639,9 @@ const editingTheme = ref({
   size: '8.5x11',
   card_default: false,
   card_wizard: false,
+  photo_border: 0,
+  page_border: 0,
+  page_border_offset: 5,
   editDefaultsMode: false
 })
 
@@ -2372,6 +2458,9 @@ const createTheme = async () => {
       size: '8.5x11',
       card_default: false,
       card_wizard: false,
+      photo_border: 0,
+      page_border: 0,
+      page_border_offset: 5,
       editDefaultsMode: false
     }
     showCreateThemeModal.value = false
@@ -2425,6 +2514,9 @@ const editTheme = (theme) => {
     size: theme.size || '8.5x11',
     card_default: theme.card_default || false,
     card_wizard: theme.card_wizard || false,
+    photo_border: theme.photo_border || 0,
+    page_border: theme.page_border || 0,
+    page_border_offset: theme.page_border_offset || 5,
     editDefaultsMode: false
   }
   

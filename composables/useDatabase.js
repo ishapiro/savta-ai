@@ -1121,7 +1121,10 @@ export const useDatabase = () => {
         rounded: theme.rounded || false,
         size: theme.size || '8.5x11',
         card_default: theme.card_default || false,
-        card_wizard: theme.card_wizard || false
+        card_wizard: theme.card_wizard || false,
+        photo_border: theme.photo_border || 0,
+        page_border: theme.page_border || 0,
+        page_border_offset: theme.page_border_offset || 5
       }
       const { data, error } = await supabase
         .from('themes')
@@ -1157,7 +1160,10 @@ export const useDatabase = () => {
         rounded: theme.rounded || false,
         size: theme.size || '8.5x11',
         card_default: theme.card_default || false,
-        card_wizard: theme.card_wizard || false
+        card_wizard: theme.card_wizard || false,
+        photo_border: theme.photo_border || 0,
+        page_border: theme.page_border || 0,
+        page_border_offset: theme.page_border_offset || 5
       }
       const { data, error } = await supabase
         .from('themes')
