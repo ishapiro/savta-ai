@@ -834,7 +834,7 @@
           <h4 class="text-xs font-semibold text-brand-primary mb-2">Border Settings</h4>
           <div class="grid grid-cols-3 gap-3">
             <div class="field">
-              <label class="block text-xs font-medium text-brand-primary mb-1">Photo Border (px)</label>
+              <label class="block text-xs font-medium text-brand-primary mb-1">Photo Border (pixels)</label>
               <InputText
                 v-model.number="newTheme.photo_border"
                 type="number"
@@ -845,7 +845,7 @@
               />
             </div>
             <div class="field">
-              <label class="block text-xs font-medium text-brand-primary mb-1">Page Border (px)</label>
+              <label class="block text-xs font-medium text-brand-primary mb-1">Page Border (pixels)</label>
               <InputText
                 v-model.number="newTheme.page_border"
                 type="number"
@@ -1144,7 +1144,7 @@
           <h4 class="text-xs font-semibold text-brand-primary mb-2">Border Settings</h4>
           <div class="grid grid-cols-3 gap-3">
             <div class="field">
-              <label class="block text-xs font-medium text-brand-primary mb-1">Photo Border (px)</label>
+              <label class="block text-xs font-medium text-brand-primary mb-1">Photo Border (pixels)</label>
               <InputText
                 v-model.number="editingTheme.photo_border"
                 type="number"
@@ -1155,7 +1155,7 @@
               />
             </div>
             <div class="field">
-              <label class="block text-xs font-medium text-brand-primary mb-1">Page Border (px)</label>
+              <label class="block text-xs font-medium text-brand-primary mb-1">Page Border (pixels)</label>
               <InputText
                 v-model.number="editingTheme.page_border"
                 type="number"

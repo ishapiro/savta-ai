@@ -88,6 +88,25 @@ export default defineEventHandler(async (event) => {
     if (book.layout_type === 'magic') {
       console.log('✨ Magic memory detected, generating a new magic story for regeneration')
       
+      // Load theme if specified for magic memory
+      let theme = null
+      if (book.theme_id) {
+        console.log('🎨 Loading theme for magic memory:', book.theme_id)
+        const { data: themeData, error: themeError } = await supabase
+          .from('themes')
+          .select('*')
+          .eq('id', book.theme_id)
+          .eq('deleted', false)
+          .single()
+        
+        if (themeError || !themeData) {
+          console.warn('⚠️ Theme not found for magic memory:', themeError)
+        } else {
+          theme = themeData
+          console.log('🎨 Theme loaded for magic memory:', theme.name)
+        }
+      }
+      
       // Update status for magic story generation
       await updatePdfStatus(supabase, book.id, user.id, '✨ Crafting your magical story... ✨')
       
@@ -1819,8 +1838,13 @@ export default defineEventHandler(async (event) => {
         const storyAreaWidthPixels = Math.round(storyAreaWidth * pointsToPixels)
         const storyAreaHeightPixels = Math.round(storyAreaHeight * pointsToPixels)
         
+        // Ensure font color has # prefix for text rendering
+        let fontColor = theme?.body_font_color || '#2D1810'
+        if (fontColor && !fontColor.startsWith('#')) {
+          fontColor = '#' + fontColor
+        }
         console.log(`📏 Calling renderTextToImage with dimensions: ${storyAreaWidth}x${storyAreaHeight} points (${storyAreaWidthPixels}x${storyAreaHeightPixels} pixels)`)
-        storyTextBuffer = await renderTextToImage(story, storyAreaWidthPixels, storyAreaHeightPixels)
+        storyTextBuffer = await renderTextToImage(story, storyAreaWidthPixels, storyAreaHeightPixels, { color: fontColor })
         storyTextImage = await pdfDoc.embedPng(storyTextBuffer)
         console.log('✅ Story text rendered successfully with shared renderer')
         
@@ -1839,6 +1863,23 @@ export default defineEventHandler(async (event) => {
         const fallbackFont = await pdfDoc.embedFont(fallbackConfig.fontName)
         const fallbackFontSize = fallbackConfig.fontSize
         const fallbackLineHeight = fallbackFontSize * fallbackConfig.lineHeight
+        
+        // Use theme body font color for fallback if available
+        let fallbackColor = fallbackConfig.color
+        if (theme?.body_font_color) {
+          // Ensure border color has # prefix for parsing
+          let bodyFontColor = theme.body_font_color
+          if (bodyFontColor && !bodyFontColor.startsWith('#')) {
+            bodyFontColor = '#' + bodyFontColor
+          }
+          const hexColor = bodyFontColor.replace('#', '')
+          if (/^[0-9A-Fa-f]{6}$/.test(hexColor)) {
+            const r = parseInt(hexColor.substr(0, 2), 16) / 255
+            const g = parseInt(hexColor.substr(2, 2), 16) / 255
+            const b = parseInt(hexColor.substr(4, 2), 16) / 255
+            fallbackColor = { r, g, b }
+          }
+        }
         
         // Simple text wrapping for fallback
         const words = story.split(' ')
@@ -1880,7 +1921,7 @@ export default defineEventHandler(async (event) => {
               y: yPosition,
               size: fallbackFontSize,
               font: fallbackFont,
-              color: rgb(fallbackConfig.color.r, fallbackConfig.color.g, fallbackConfig.color.b)
+              color: rgb(fallbackColor.r, fallbackColor.g, fallbackColor.b)
             })
             linesDrawn++
           }
@@ -1992,6 +2033,59 @@ export default defineEventHandler(async (event) => {
           const blendedB = b * opacity + (1 - opacity)
           page.drawRectangle({ x: 0, y: 0, width: pageWidth, height: pageHeight, color: rgb(blendedR, blendedG, blendedB) })
           console.log(`🎨 Background applied: ${theme.background_color} with ${theme.background_opacity}% opacity`)
+        }
+      }
+
+      // Apply page border if specified in theme
+      const pageBorder = theme.page_border || 0
+      const pageBorderOffset = theme.page_border_offset || 5
+      console.log(`🔍 DEBUG - Page border values: pageBorder=${pageBorder}px, pageBorderOffset=${pageBorderOffset}mm`)
+      console.log(`🔍 DEBUG - Page dimensions: pageWidth=${pageWidth}pts, pageHeight=${pageHeight}pts`)
+      
+      if (pageBorder > 0) {
+        console.log(`🖼️ Applying page border: ${pageBorder}px with ${pageBorderOffset}mm offset`)
+        // Ensure border color has # prefix for parsing
+        let borderColor = theme.body_font_color || '#333333'
+        if (borderColor && !borderColor.startsWith('#')) {
+          borderColor = '#' + borderColor
+        }
+        console.log(`🔍 DEBUG - Border color: ${borderColor}`)
+        
+        const hexColor = borderColor.replace('#', '')
+        if (/^[0-9A-Fa-f]{6}$/.test(hexColor)) {
+          const r = parseInt(hexColor.substr(0, 2), 16) / 255
+          const g = parseInt(hexColor.substr(2, 2), 16) / 255
+          const b = parseInt(hexColor.substr(4, 2), 16) / 255
+          
+          // Convert mm offset to points
+          const mmToPoints = 72 / 25.4
+          const offsetPoints = pageBorderOffset * mmToPoints
+          
+          // Convert pixels to points for PDF border width (1 point = 1/72 inch, 1 pixel = 1/96 inch)
+          const borderWidthPoints = pageBorder * (72 / 96)
+          
+          console.log(`🔍 DEBUG - Calculated values: offsetPoints=${offsetPoints}, borderWidthPoints=${borderWidthPoints}`)
+          console.log(`🔍 DEBUG - Border rectangle: x=${offsetPoints}, y=${offsetPoints}, width=${pageWidth - (offsetPoints * 2)}, height=${pageHeight - (offsetPoints * 2)}`)
+          
+          // Draw border around the content area using the offset
+          // The border should be drawn around the content area, not fill the whole page
+          const borderX = offsetPoints
+          const borderY = offsetPoints
+          const borderWidth = pageWidth - (offsetPoints * 2)
+          const borderHeight = pageHeight - (offsetPoints * 2)
+          
+          console.log(`🔍 DEBUG - Border area: x=${borderX}, y=${borderY}, width=${borderWidth}, height=${borderHeight}`)
+          
+          // Draw the border rectangle around the content area - FIXED: Use borderColor and borderWidth properties
+          page.drawRectangle({ 
+            x: borderX, 
+            y: borderY, 
+            width: borderWidth, 
+            height: borderHeight, 
+            borderColor: rgb(r, g, b),
+            borderWidth: borderWidthPoints
+          })
+          console.log(`🖼️ Page border applied: ${pageBorder}px border with ${pageBorderOffset}mm offset`)
         }
       }
 
@@ -2168,19 +2262,61 @@ export default defineEventHandler(async (event) => {
               .png()
               .toBuffer()
           }
-          const borderRadius = photoConfig.borderRadius || (theme.rounded ? 5 : 0)
-          if (borderRadius > 0) {
-            const borderRadiusPixels = Math.round(borderRadius * 3.779527559)
+          // Apply photo border if specified in theme
+          const photoBorder = theme.photo_border || 0
+          if (photoBorder > 0) {
+            // Ensure border color has # prefix for Sharp
+            let borderColor = theme.body_font_color || '#333333'
+            if (borderColor && !borderColor.startsWith('#')) {
+              borderColor = '#' + borderColor
+            }
+            // photoBorder is already in pixels, no conversion needed
+            const borderWidth = photoBorder
             try {
-              const roundedSvg = `<svg width="${targetWidth}" height="${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" fill="white"/></svg>`
-              finalImageBuffer = await sharp(finalImageBuffer)
-                .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
+              // Create border by extending the image with border color
+              const borderedImage = await sharp(finalImageBuffer)
+                .extend({
+                  top: borderWidth,
+                  bottom: borderWidth,
+                  left: borderWidth,
+                  right: borderWidth,
+                  background: borderColor
+                })
                 .png()
                 .toBuffer()
-            } catch (roundError) {}
+              finalImageBuffer = borderedImage
+              
+              // Adjust drawing dimensions to account for border
+              // Convert pixels to points for PDF drawing (1 point = 1/72 inch, 1 pixel = 1/96 inch)
+              const borderPoints = photoBorder * (72 / 96)
+              const pdfImage = await pdfDoc.embedPng(finalImageBuffer)
+              page.drawImage(pdfImage, { 
+                x: photoX - borderPoints, 
+                y: photoY - borderPoints, 
+                width: photoWidth + (borderPoints * 2), 
+                height: photoHeight + (borderPoints * 2) 
+              })
+            } catch (borderError) {
+              console.warn('⚠️ Failed to apply photo border:', borderError)
+              const pdfImage = await pdfDoc.embedPng(finalImageBuffer)
+              page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
+            }
+          } else {
+            // Apply rounded corners if specified
+            const borderRadius = photoConfig.borderRadius || (theme.rounded ? 5 : 0)
+            if (borderRadius > 0) {
+              const borderRadiusPixels = Math.round(borderRadius * 3.779527559)
+              try {
+                const roundedSvg = `<svg width="${targetWidth}" height="${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" fill="white"/></svg>`
+                finalImageBuffer = await sharp(finalImageBuffer)
+                  .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
+                  .png()
+                  .toBuffer()
+              } catch (roundError) {}
+            }
+            const pdfImage = await pdfDoc.embedPng(finalImageBuffer)
+            page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
           }
-          const pdfImage = await pdfDoc.embedPng(finalImageBuffer)
-          page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
         } catch (err) {}
       }
 
@@ -2195,7 +2331,11 @@ export default defineEventHandler(async (event) => {
           const pointsToPixels = 96 / 72
           const storyWidthPixels = Math.round(storyWidth * pointsToPixels)
           const storyHeightPixels = Math.round(storyHeight * pointsToPixels)
-          const fontColor = theme.body_font_color || '#2D1810'
+          // Ensure font color has # prefix for text rendering
+          let fontColor = theme.body_font_color || '#2D1810'
+          if (fontColor && !fontColor.startsWith('#')) {
+            fontColor = '#' + fontColor
+          }
           const storyTextBuffer = await renderTextToImage(story, storyWidthPixels, storyHeightPixels, { color: fontColor })
           const storyTextImage = await pdfDoc.embedPng(storyTextBuffer)
           page.drawImage(storyTextImage, { x: storyX, y: storyY, width: storyWidth, height: storyHeight })
@@ -2224,6 +2364,25 @@ export default defineEventHandler(async (event) => {
       await supabase.from('memory_books').update({ pdf_url: pdfStorageUrl, status: 'ready', generated_at: new Date().toISOString() }).eq('id', book.id)
       await updatePdfStatus(supabase, book.id, user.id, '🎨 Your themed memory is ready!')
       return { success: true, downloadUrl: pdfStorageUrl }
+    }
+    
+    // Load theme if specified for regular PDF generation
+    let theme = null
+    if (book.theme_id) {
+      console.log('🎨 Loading theme for regular PDF generation:', book.theme_id)
+      const { data: themeData, error: themeError } = await supabase
+        .from('themes')
+        .select('*')
+        .eq('id', book.theme_id)
+        .eq('deleted', false)
+        .single()
+      
+      if (themeError || !themeData) {
+        console.warn('⚠️ Theme not found for regular PDF generation:', themeError)
+      } else {
+        theme = themeData
+        console.log('🎨 Theme loaded for regular PDF generation:', theme.name)
+      }
     }
     
     // 4. Layout assets into pages (using grid_layout from book settings)
@@ -2420,36 +2579,73 @@ export default defineEventHandler(async (event) => {
         console.log('🎨 NO BACKGROUND - No background image or solid color to draw')
       }
       
-      // Add border at 1/8" inside the page edge (1/8" = 9 points)
-      const borderMargin = 9
+      // Apply page border - use theme settings if available, otherwise use defaults
+      const pageBorder = theme?.page_border || 0
+      const pageBorderOffset = theme?.page_border_offset || 5
+      console.log(`🔍 DEBUG - Regular PDF page border values: pageBorder=${pageBorder}px, pageBorderOffset=${pageBorderOffset}mm`)
+      console.log(`🔍 DEBUG - Regular PDF page dimensions: width=${width}pts, height=${height}pts`)
+      
+      const borderMargin = pageBorder > 0 ? (pageBorderOffset * 72 / 25.4) : 9 // Convert mm to points, or use 9 points default
       
       // For solid backgrounds, use transparent fill to show the background color
       // For other backgrounds, use white fill
       const borderFillColor = book.background_type === 'solid' ? undefined : rgb(1, 1, 1)
       
+      // Use theme border color if available, otherwise use black
+      const borderColor = theme?.body_font_color ? 
+        (() => {
+          // Ensure border color has # prefix for parsing
+          let bodyFontColor = theme.body_font_color
+          if (bodyFontColor && !bodyFontColor.startsWith('#')) {
+            bodyFontColor = '#' + bodyFontColor
+          }
+          console.log(`🔍 DEBUG - Regular PDF border color: ${bodyFontColor}`)
+          
+          const hexColor = bodyFontColor.replace('#', '')
+          if (/^[0-9A-Fa-f]{6}$/.test(hexColor)) {
+            const r = parseInt(hexColor.substr(0, 2), 16) / 255
+            const g = parseInt(hexColor.substr(2, 2), 16) / 255
+            const b = parseInt(hexColor.substr(4, 2), 16) / 255
+            return rgb(r, g, b)
+          }
+          return rgb(0, 0, 0)
+        })() : rgb(0, 0, 0)
+      
       console.log('🖼️ BORDER DRAWING - Border configuration:', {
         background_type: book.background_type,
         borderFillColor: borderFillColor ? 'white' : 'transparent',
         borderMargin: borderMargin,
-        borderWidth: 3,
-        borderDimensions: {
+        borderWidth: pageBorder || 3,
+        borderColor: theme?.body_font_color || 'black',
+        theme_loaded: !!theme,
+        pageBorder,
+        pageBorderOffset
+      })
+      
+      if (pageBorder > 0) {
+        page.drawRectangle({
           x: borderMargin,
           y: borderMargin,
           width: width - 2 * borderMargin,
-          height: height - 2 * borderMargin
-        }
-      })
-      
-      page.drawRectangle({
-        x: borderMargin,
-        y: borderMargin,
-        width: width - 2 * borderMargin,
-        height: height - 2 * borderMargin,
-        borderColor: rgb(0, 0, 0),
-        borderWidth: 3, // Increased from 1 to 3 points for better visibility
-        color: borderFillColor // transparent for solid backgrounds, white for others
-      })
-      console.log(`🖼️ BORDER DRAWN - Border drawn: ${borderMargin} points from edge, width: ${width - 2 * borderMargin}x${height - 2 * borderMargin}, fill: ${borderFillColor ? 'white' : 'transparent'}`)
+          height: height - 2 * borderMargin,
+          borderColor: borderColor,
+          borderWidth: pageBorder,
+          color: borderFillColor
+        })
+        console.log(`🖼️ THEME BORDER DRAWN - Border drawn: ${borderMargin} points from edge, width: ${width - 2 * borderMargin}x${height - 2 * borderMargin}, border width: ${pageBorder}px`)
+      } else {
+        // Use default border
+        page.drawRectangle({
+          x: borderMargin,
+          y: borderMargin,
+          width: width - 2 * borderMargin,
+          height: height - 2 * borderMargin,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: 3, // Increased from 1 to 3 points for better visibility
+          color: borderFillColor // transparent for solid backgrounds, white for others
+        })
+        console.log(`🖼️ DEFAULT BORDER DRAWN - Border drawn: ${borderMargin} points from edge, width: ${width - 2 * borderMargin}x${height - 2 * borderMargin}, fill: ${borderFillColor ? 'white' : 'transparent'}`)
+      }
       
       // Margins
       const topMargin = 60 // for heading
@@ -2548,21 +2744,64 @@ export default defineEventHandler(async (event) => {
             // Center image in cell
             const imgX = x + (drawWidth - imgDisplayWidth) / 2
             const imgY = y + (drawHeight - imgDisplayHeight) / 2
-            // Draw white border (4px)
-            page.drawRectangle({
-              x: imgX - 2,
-              y: imgY - 2,
-              width: imgDisplayWidth + 4,
-              height: imgDisplayHeight + 4,
-              color: rgb(1, 1, 1)
-            })
-            // Draw the image
-            page.drawImage(pdfImage, {
-              x: imgX,
-              y: imgY,
-              width: imgDisplayWidth,
-              height: imgDisplayHeight
-            })
+            
+            // Apply photo border if specified in theme
+            const photoBorder = theme?.photo_border || 0
+            if (photoBorder > 0) {
+              console.log(`🖼️ Applying photo border: ${photoBorder}px`)
+              // Draw border rectangle with theme body font color
+              const borderColor = theme.body_font_color ? 
+                (() => {
+                  // Ensure border color has # prefix for parsing
+                  let bodyFontColor = theme.body_font_color
+                  if (bodyFontColor && !bodyFontColor.startsWith('#')) {
+                    bodyFontColor = '#' + bodyFontColor
+                  }
+                  const hexColor = bodyFontColor.replace('#', '')
+                  if (/^[0-9A-Fa-f]{6}$/.test(hexColor)) {
+                    const r = parseInt(hexColor.substr(0, 2), 16) / 255
+                    const g = parseInt(hexColor.substr(2, 2), 16) / 255
+                    const b = parseInt(hexColor.substr(4, 2), 16) / 255
+                    return rgb(r, g, b)
+                  }
+                  return rgb(0.2, 0.2, 0.2) // Dark gray fallback
+                })() : rgb(0.2, 0.2, 0.2)
+              
+              // Convert pixels to points for PDF drawing (1 point = 1/72 inch, 1 pixel = 1/96 inch)
+              const borderPoints = photoBorder * (72 / 96)
+              
+              page.drawRectangle({
+                x: imgX - borderPoints,
+                y: imgY - borderPoints,
+                width: imgDisplayWidth + (borderPoints * 2),
+                height: imgDisplayHeight + (borderPoints * 2),
+                color: borderColor
+              })
+              
+              // Draw the image with border offset
+              page.drawImage(pdfImage, {
+                x: imgX,
+                y: imgY,
+                width: imgDisplayWidth,
+                height: imgDisplayHeight
+              })
+            } else {
+              // Draw white border (4px) - default behavior
+              page.drawRectangle({
+                x: imgX - 2,
+                y: imgY - 2,
+                width: imgDisplayWidth + 4,
+                height: imgDisplayHeight + 4,
+                color: rgb(1, 1, 1)
+              })
+              // Draw the image
+              page.drawImage(pdfImage, {
+                x: imgX,
+                y: imgY,
+                width: imgDisplayWidth,
+                height: imgDisplayHeight
+              })
+            }
             // Draw caption if available
             // Use user_caption if it's valid (not blank, not filename), otherwise use ai_caption
             let captionText = ''
