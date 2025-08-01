@@ -1921,7 +1921,12 @@
                 </div>
               </div>
               <div class="mt-1 text-center">
-                <p class="text-xs font-medium text-brand-header truncate px-1">{{ asset.user_caption || asset.ai_caption || `Photo ${asset.id.slice(-4)}` }}</p>
+                <CaptionRenderer 
+                  :caption="asset.user_caption || asset.ai_caption || `Photo ${asset.id.slice(-4)}`"
+                  :max-width="120"
+                  :max-height="40"
+                  :font-size="10"
+                />
               </div>
             </div>
           </div>
@@ -2112,6 +2117,7 @@ import { ref, watch, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { Sparkles, Sparkle, Wand2, Gift } from 'lucide-vue-next'
 import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
+import CaptionRenderer from '~/components/CaptionRenderer.vue'
 const toast = useToast()
 
 const showPdfModal = ref(false)

@@ -545,9 +545,12 @@
               </div>
               <!-- Memory Info -->
               <div class="mt-1 sm:mt-2 text-center">
-                <p class="text-xs font-medium text-brand-primary">
-                  {{ asset.user_caption || asset.ai_caption || `Memory ${asset.id.slice(-4)}` }}
-                </p>
+                <CaptionRenderer 
+                  :caption="asset.user_caption || asset.ai_caption || `Memory ${asset.id.slice(-4)}`"
+                  :max-width="150"
+                  :max-height="50"
+                  :font-size="12"
+                />
                 <p class="text-xs text-brand-primary/70">
                   {{ formatDate(asset.created_at) }}
                 </p>
@@ -929,6 +932,7 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
+import CaptionRenderer from '~/components/CaptionRenderer.vue'
 
 // Import database composable
 const db = useDatabase()

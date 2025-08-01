@@ -85,11 +85,22 @@
 
           <!-- Download -->
           <button
+            v-if="!isMobile"
             class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header ml-2"
             @click="downloadPdf"
             aria-label="Download PDF"
           >
             <i class="pi pi-download text-xl sm:text-2xl text-brand-header"></i>
+          </button>
+
+          <!-- Share -->
+          <button
+            v-if="canShare"
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header ml-2"
+            @click="sharePdf"
+            aria-label="Share PDF"
+          >
+            <i class="pi pi-share-alt text-xl sm:text-2xl text-brand-header"></i>
           </button>
         </div>
       </div>
@@ -118,6 +129,16 @@ const isLoaded = ref(false)
 const scale = ref(0.8)
 const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
+
+// Check if Web Share API is available
+const canShare = computed(() => {
+  return 'share' in navigator && navigator.canShare
+})
+
+// Check if device is mobile
+const isMobile = computed(() => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+})
 
 const pdfContainerStyle = computed(() => {
   // For 8.5 x 11 aspect ratio, we want to maintain this ratio
@@ -270,6 +291,7 @@ function prevPage() {
 function nextPage() {
   if (currentPage.value < pageCount.value) currentPage.value++
 }
+
 function downloadPdf() {
   if (pdfRef.value?.download) {
     pdfRef.value.download()
@@ -286,12 +308,74 @@ function zoomIn() {
     // No need to force re-render since container size is fixed
   }
 }
+
 function zoomOut() {
   console.log('🔍 Zoom Out clicked, current scale:', scale.value)
   if (scale.value > 0.4) {
     scale.value = +(scale.value - 0.2).toFixed(1)
     console.log('🔍 New scale after zoom out:', scale.value)
     // No need to force re-render since container size is fixed
+  }
+}
+
+function sharePdf() {
+  try {
+    // Get the PDF source URL
+    const pdfUrl = props.src
+    
+    if (!pdfUrl) {
+      console.warn('🔍 No PDF source available to share')
+      return
+    }
+
+    // Check if Web Share API is available
+    if (!canShare.value) {
+      console.warn('🔍 Web Share API not available')
+      // Fallback: copy URL to clipboard
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(pdfUrl).then(() => {
+          console.log('🔍 PDF URL copied to clipboard')
+          // You could add a toast notification here
+        }).catch(err => {
+          console.error('🔍 Failed to copy URL:', err)
+        })
+      }
+      return
+    }
+
+    // Prepare share data
+    const shareData = {
+      title: 'Memory Book PDF',
+      text: 'Check out this beautiful memory book!',
+      url: pdfUrl
+    }
+
+    // Check if the data can be shared
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      navigator.share(shareData)
+        .then(() => {
+          console.log('🔍 PDF shared successfully!')
+        })
+        .catch((error) => {
+          console.error('🔍 Error sharing PDF:', error)
+          if (error.name !== 'AbortError') {
+            // Only show error if it's not a user cancellation
+            console.warn('🔍 Share was cancelled or failed')
+          }
+        })
+    } else {
+      console.warn('🔍 Share data not supported')
+      // Fallback: copy URL to clipboard
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(pdfUrl).then(() => {
+          console.log('🔍 PDF URL copied to clipboard')
+        }).catch(err => {
+          console.error('🔍 Failed to copy URL:', err)
+        })
+      }
+    }
+  } catch (error) {
+    console.error('🔍 Error in sharePdf function:', error)
   }
 }
 
