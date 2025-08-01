@@ -14,6 +14,7 @@
               :key="pdfBlobUrl"
               :src="pdfBlobUrl" 
               :style="pdfViewerStyle" 
+              :printSize="'8x10'"
             />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
               <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-brand-primary/40"></i>
@@ -29,6 +30,7 @@
               :key="pdfBlobUrl"
               :src="pdfBlobUrl" 
               :style="pdfViewerStyle" 
+              :printSize="'8x10'"
             />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
               <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-brand-primary/40"></i>

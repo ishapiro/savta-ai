@@ -3,7 +3,7 @@
     <div class="relative w-full h-full bg-brand-navigation">
               <!-- PDF Document -->
         <div class="w-full h-full overflow-auto pb-20 scrollbar-hide">
-          <div class="w-full h-full flex items-center justify-center p-4 mb-4">
+          <div class="w-full h-full flex p-4 mb-4" :class="shouldPositionAtTop ? 'items-start justify-center' : 'items-center justify-center'">
           <div 
             ref="pdfContainer"
             class="mb-4 flex items-center justify-center"
@@ -102,6 +102,10 @@ const props = defineProps({
   src: {
     type: String,
     required: true
+  },
+  printSize: {
+    type: String,
+    default: '7x5'
   }
 })
 
@@ -131,6 +135,21 @@ const pdfContainerStyle = computed(() => {
     maxWidth: 'none',
     maxHeight: 'none'
   }
+})
+
+// Determine if PDF should be positioned at top or centered based on print size
+const shouldPositionAtTop = computed(() => {
+  // Parse the print size to determine if it's larger than 7x5
+  const size = props.printSize.toLowerCase()
+  
+  // Define size hierarchy - larger sizes should be positioned at top
+  const sizeOrder = ['3x5', '5x3', '5x7', '7x5', '8x10', '10x8', '8.5x11', '11x8.5', '11x14', '14x11', '12x12']
+  
+  const currentIndex = sizeOrder.indexOf(size)
+  const sevenByFiveIndex = sizeOrder.indexOf('7x5')
+  
+  // If current size is larger than 7x5, position at top
+  return currentIndex > sevenByFiveIndex
 })
 
 function onLoaded(pdf) {

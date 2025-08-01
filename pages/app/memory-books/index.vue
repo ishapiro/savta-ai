@@ -1078,7 +1078,7 @@
         <!-- PDF Viewer - Mobile (with overflow) -->
         <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto sm:hidden px-0 pb-4">
           <ClientOnly>
-            <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
+            <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" :printSize="selectedBook?.print_size || '7x5'" />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
               <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
               <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
@@ -1089,7 +1089,7 @@
         <!-- PDF Viewer - Desktop (without overflow) -->
         <div class="hidden sm:flex flex-1 min-h-0 w-full items-center justify-center pt-2 pb-4">
           <ClientOnly>
-            <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
+            <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" :printSize="selectedBook?.print_size || '7x5'" />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
               <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
               <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
