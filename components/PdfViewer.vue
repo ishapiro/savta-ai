@@ -3,7 +3,7 @@
     <div class="relative w-full h-full bg-brand-navigation">
               <!-- PDF Document -->
         <div class="w-full h-full overflow-auto pb-20 scrollbar-hide">
-          <div class="w-full h-full flex p-4 mb-4" :class="shouldPositionAtTop ? 'items-start justify-center' : 'items-center justify-center'">
+          <div class="w-full h-full flex p-4 mb-4" :class="shouldPositionAtTop ? 'items-start justify-center' : 'items-center justify-center'" @vue:mounted="logPositioningClasses">
           <div 
             ref="pdfContainer"
             class="mb-4 flex items-center justify-center"
@@ -102,10 +102,6 @@ const props = defineProps({
   src: {
     type: String,
     required: true
-  },
-  printSize: {
-    type: String,
-    default: '7x5'
   }
 })
 
@@ -137,19 +133,36 @@ const pdfContainerStyle = computed(() => {
   }
 })
 
-// Determine if PDF should be positioned at top or centered based on print size
+// Determine if PDF should be positioned at top or centered based on actual PDF dimensions
 const shouldPositionAtTop = computed(() => {
-  // Parse the print size to determine if it's larger than 7x5
-  const size = props.printSize.toLowerCase()
+  const { width, height } = pdfDimensions.value
   
-  // Define size hierarchy - larger sizes should be positioned at top
-  const sizeOrder = ['3x5', '5x3', '5x7', '7x5', '8x10', '10x8', '8.5x11', '11x8.5', '11x14', '14x11', '12x12']
+  console.log('🔍 PDF Positioning Logic:', {
+    pdfWidth: width,
+    pdfHeight: height,
+    hasDimensions: width > 0 && height > 0
+  })
   
-  const currentIndex = sizeOrder.indexOf(size)
-  const sevenByFiveIndex = sizeOrder.indexOf('7x5')
+  if (!width || !height) {
+    console.log('🔍 No PDF dimensions available, defaulting to center')
+    return false
+  }
   
-  // If current size is larger than 7x5, position at top
-  return currentIndex > sevenByFiveIndex
+  // Calculate the aspect ratio
+  const aspectRatio = width / height
+  console.log('🔍 PDF Aspect Ratio:', aspectRatio)
+  
+  // 7x5 has an aspect ratio of 1.4
+  // If the PDF is wider or taller than 7x5 proportions, position at top
+  const isLargerThan7x5 = aspectRatio > 1.4 || aspectRatio < 0.714 // 1/1.4 = 0.714
+  
+  console.log('🔍 Positioning Decision:', {
+    aspectRatio,
+    isLargerThan7x5,
+    willPositionAtTop: isLargerThan7x5
+  })
+  
+  return isLargerThan7x5
 })
 
 function onLoaded(pdf) {
@@ -165,8 +178,18 @@ function onLoaded(pdf) {
       width: viewport.width,
       height: viewport.height
     }
+    console.log('🔍 PDF Loaded with dimensions:', pdfDimensions.value)
   }).catch(() => {
     pdfDimensions.value = { width: 595, height: 842 } // fallback to A4 size
+    console.log('🔍 PDF Loaded with fallback dimensions:', pdfDimensions.value)
+  })
+}
+
+function logPositioningClasses() {
+  console.log('🔍 PDF Container Positioning Classes:', {
+    shouldPositionAtTop: shouldPositionAtTop.value,
+    appliedClasses: shouldPositionAtTop.value ? 'items-start justify-center' : 'items-center justify-center',
+    pdfDimensions: pdfDimensions.value
   })
 }
 
@@ -226,6 +249,20 @@ watch(scale, (newScale) => {
 watch(pdfContainerStyle, (newStyle) => {
   console.log('🔍 Container style updated:', newStyle)
 }, { deep: true })
+
+// Watch for PDF dimensions changes
+watch(pdfDimensions, (newDimensions) => {
+  console.log('🔍 PDF dimensions changed:', newDimensions)
+}, { deep: true })
+
+// Watch for positioning changes
+watch(shouldPositionAtTop, (newPosition) => {
+  console.log('🔍 PDF positioning changed:', {
+    shouldPositionAtTop: newPosition,
+    pdfDimensions: pdfDimensions.value,
+    appliedClasses: newPosition ? 'items-start justify-center' : 'items-center justify-center'
+  })
+})
 </script>
 
 <style scoped>
