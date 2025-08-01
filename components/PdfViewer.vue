@@ -1,29 +1,41 @@
 <template>
   <ClientOnly>
     <div class="relative w-full h-full bg-brand-navigation">
-      <!-- PDF Document -->
-      <div class="w-full h-full overflow-auto pb-16">
-        <div class="w-full h-full flex items-center justify-center p-4 mb-4">
+              <!-- PDF Document -->
+        <div class="w-full h-full overflow-auto pb-20 scrollbar-hide">
+          <div class="w-full h-full flex items-center justify-center p-4 mb-4">
           <div 
             ref="pdfContainer"
             class="mb-4 flex items-center justify-center"
             :style="pdfContainerStyle"
           >
-            <VuePdfEmbed
-              ref="pdfRef"
-              :source="props.src"
-              :page="currentPage"
-              :scale="0.8"
-              annotation-layer
-              text-layer
-              @loaded="onLoaded"
-            />
+            <div 
+              :style="{ 
+                transform: `scale(${scale})`,
+                transformOrigin: 'center center',
+                width: '100%',
+                height: '100%'
+              }"
+            >
+              <VuePdfEmbed
+                :key="`pdf-${pdfEmbedKey}`"
+                ref="pdfRef"
+                :source="props.src"
+                :page="currentPage"
+                :scale="1.0"
+                annotation-layer
+                text-layer
+                @loaded="onLoaded"
+              />
+            </div>
           </div>
         </div>
       </div>
-      <!-- Navigation Bar -->
+
+      <!-- Navigation + Zoom Controls -->
       <div class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-brand-primary/20">
         <div class="flex items-center gap-2 sm:gap-4">
+          <!-- Previous Page -->
           <button
             class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
             :disabled="currentPage <= 1"
@@ -32,9 +44,13 @@
           >
             <i class="pi pi-angle-left text-xl sm:text-2xl text-brand-primary" :class="{ 'opacity-50': currentPage <= 1 }"></i>
           </button>
+
+          <!-- Page Info -->
           <span class="text-xs sm:text-base font-medium text-brand-primary select-none">
             Page {{ currentPage }} / {{ pageCount }}
           </span>
+
+          <!-- Next Page -->
           <button
             class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
             :disabled="currentPage >= pageCount"
@@ -43,6 +59,26 @@
           >
             <i class="pi pi-angle-right text-xl sm:text-2xl text-brand-primary" :class="{ 'opacity-50': currentPage >= pageCount }"></i>
           </button>
+
+          <!-- Zoom Out -->
+          <button
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header ml-2"
+            @click="zoomOut"
+            aria-label="Zoom Out"
+          >
+            <i class="pi pi-search-minus text-xl sm:text-2xl text-brand-header"></i>
+          </button>
+
+          <!-- Zoom In -->
+          <button
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
+            @click="zoomIn"
+            aria-label="Zoom In"
+          >
+            <i class="pi pi-search-plus text-xl sm:text-2xl text-brand-header"></i>
+          </button>
+
+          <!-- Download -->
           <button
             class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header ml-2"
             @click="downloadPdf"
@@ -57,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, nextTick, onUnmounted } from 'vue'
+import { ref, watch, computed } from 'vue'
 import VuePdfEmbed from 'vue-pdf-embed'
 import 'vue-pdf-embed/dist/styles/annotationLayer.css'
 import 'vue-pdf-embed/dist/styles/textLayer.css'
@@ -75,58 +111,25 @@ const currentPage = ref(1)
 const pageCount = ref(1)
 const isLoaded = ref(false)
 const scale = ref(0.8)
+const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
 
-// Computed style for the PDF container - adjusted for scale
 const pdfContainerStyle = computed(() => {
-  if (!pdfDimensions.value.width || !pdfDimensions.value.height) {
-    // Default size while loading - use a smaller default
-    return {
-      width: '100%',
-      maxWidth: '600px',
-      height: 'auto',
-      maxHeight: '400px'
-    }
-  }
+  // Provide a fixed size container that the PDF will scale to fit
+  const containerWidth = 600 + (scale.value - 0.8) * 200 // Start at 600px, scale up/down
+  const containerHeight = 400 + (scale.value - 0.8) * 150 // Start at 400px, scale up/down
 
-  const pdfAspectRatio = pdfDimensions.value.width / pdfDimensions.value.height
-  
-  // Use consistent maximum size to ensure PDF fits completely and maintains consistent centering
-  // Since we're using scale=0.8, we can use larger container dimensions
-  const maxWidth = 600
-  const maxHeight = 400
-  
-  let finalWidth, finalHeight
-  
-  if (pdfAspectRatio > 1) {
-    // Landscape PDF - fit to max width
-    finalWidth = maxWidth
-    finalHeight = maxWidth / pdfAspectRatio
-    
-    // If height exceeds max height, scale down proportionally
-    if (finalHeight > maxHeight) {
-      const scale = maxHeight / finalHeight
-      finalWidth = finalWidth * scale
-      finalHeight = maxHeight
-    }
-  } else {
-    // Portrait PDF - fit to max height
-    finalHeight = maxHeight
-    finalWidth = maxHeight * pdfAspectRatio
-    
-    // If width exceeds max width, scale down proportionally
-    if (finalWidth > maxWidth) {
-      const scale = maxWidth / finalWidth
-      finalHeight = finalHeight * scale
-      finalWidth = maxWidth
-    }
-  }
-  
+  console.log('🔍 PDF Container Style Update:', {
+    scale: scale.value,
+    containerWidth,
+    containerHeight
+  })
+
   return {
-    width: `${finalWidth}px`,
-    height: `${finalHeight}px`,
-    maxWidth: '100%',
-    maxHeight: '100%'
+    width: `${containerWidth}px`,
+    height: `${containerHeight}px`,
+    maxWidth: 'none',
+    maxHeight: 'none'
   }
 })
 
@@ -136,22 +139,16 @@ function onLoaded(pdf) {
   if (currentPage.value > pdf.numPages) {
     currentPage.value = 1
   }
-  
-  // Get PDF dimensions from the loaded PDF object
-  if (pdf.numPages > 0) {
-    pdf.getPage(1).then(page => {
-      const viewport = page.getViewport({ scale: 1.0 })
-      pdfDimensions.value = {
-        width: viewport.width,
-        height: viewport.height
-      }
-      console.log('📐 PDF dimensions loaded:', pdfDimensions.value)
-    }).catch(error => {
-      console.error('❌ Error getting PDF dimensions:', error)
-      // Fallback to default dimensions
-      pdfDimensions.value = { width: 595, height: 842 } // A4 default
-    })
-  }
+
+  pdf.getPage(1).then(page => {
+    const viewport = page.getViewport({ scale: 1.0 })
+    pdfDimensions.value = {
+      width: viewport.width,
+      height: viewport.height
+    }
+  }).catch(() => {
+    pdfDimensions.value = { width: 595, height: 842 } // fallback to A4 size
+  })
 }
 
 function prevPage() {
@@ -161,19 +158,64 @@ function nextPage() {
   if (currentPage.value < pageCount.value) currentPage.value++
 }
 function downloadPdf() {
-  if (pdfRef.value && pdfRef.value.download) {
+  if (pdfRef.value?.download) {
     pdfRef.value.download()
   } else {
-    // fallback: open in new tab
     window.open(props.src, '_blank')
   }
 }
 
-// Reset page on src change
+function zoomIn() {
+  console.log('🔍 Zoom In clicked, current scale:', scale.value)
+  if (scale.value < 3) {
+    scale.value = +(scale.value + 0.3).toFixed(1)
+    console.log('🔍 New scale after zoom in:', scale.value)
+    pdfEmbedKey.value++  // force component to re-render
+    // Force a small delay to ensure the component re-renders
+    setTimeout(() => {
+      console.log('🔍 Forcing PDF re-render after zoom in')
+    }, 100)
+  }
+}
+function zoomOut() {
+  console.log('🔍 Zoom Out clicked, current scale:', scale.value)
+  if (scale.value > 0.5) {
+    scale.value = +(scale.value - 0.3).toFixed(1)
+    console.log('🔍 New scale after zoom out:', scale.value)
+    pdfEmbedKey.value++
+    // Force a small delay to ensure the component re-renders
+    setTimeout(() => {
+      console.log('🔍 Forcing PDF re-render after zoom out')
+    }, 100)
+  }
+}
+
 watch(() => props.src, () => {
   currentPage.value = 1
   isLoaded.value = false
   scale.value = 0.8
   pdfDimensions.value = { width: 0, height: 0 }
+  pdfEmbedKey.value++ // ensure rerender when switching files
 })
+
+// Watch for scale changes to debug
+watch(scale, (newScale) => {
+  console.log('🔍 Scale changed to:', newScale)
+})
+
+// Watch for container style changes
+watch(pdfContainerStyle, (newStyle) => {
+  console.log('🔍 Container style updated:', newStyle)
+}, { deep: true })
 </script>
+
+<style scoped>
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+</style>
