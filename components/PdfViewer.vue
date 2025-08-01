@@ -126,7 +126,7 @@ const pdfContainerStyle = computed(() => {
   
   // Use a fixed base size that doesn't change with scale
   // The scale will be applied to the PDF content inside, not the container
-  const baseWidth = 600
+  const baseWidth = 750 // Increased from 600 to 750 (25% larger)
   const baseHeight = baseWidth / targetAspectRatio // Maintain 8.5:11 ratio
   
   // Ensure minimum and maximum sizes
