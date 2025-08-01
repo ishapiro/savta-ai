@@ -124,8 +124,9 @@ const pdfContainerStyle = computed(() => {
   // 8.5:11 = 0.773 aspect ratio
   const targetAspectRatio = 8.5 / 11 // 0.773
   
-  // Calculate container dimensions based on scale
-  const baseWidth = 600 + (scale.value - 0.8) * 200 // Start at 600px, scale up/down
+  // Use a fixed base size that doesn't change with scale
+  // The scale will be applied to the PDF content inside, not the container
+  const baseWidth = 600
   const baseHeight = baseWidth / targetAspectRatio // Maintain 8.5:11 ratio
   
   // Ensure minimum and maximum sizes
@@ -282,11 +283,7 @@ function zoomIn() {
   if (scale.value < 2.5) {
     scale.value = +(scale.value + 0.2).toFixed(1)
     console.log('🔍 New scale after zoom in:', scale.value)
-    pdfEmbedKey.value++  // force component to re-render
-    // Force a small delay to ensure the component re-renders
-    setTimeout(() => {
-      console.log('🔍 Forcing PDF re-render after zoom in')
-    }, 100)
+    // No need to force re-render since container size is fixed
   }
 }
 function zoomOut() {
@@ -294,11 +291,7 @@ function zoomOut() {
   if (scale.value > 0.4) {
     scale.value = +(scale.value - 0.2).toFixed(1)
     console.log('🔍 New scale after zoom out:', scale.value)
-    pdfEmbedKey.value++
-    // Force a small delay to ensure the component re-renders
-    setTimeout(() => {
-      console.log('🔍 Forcing PDF re-render after zoom out')
-    }, 100)
+    // No need to force re-render since container size is fixed
   }
 }
 
