@@ -14,7 +14,10 @@
                 transform: `scale(${scale})`,
                 transformOrigin: 'center center',
                 width: '100%',
-                height: '100%'
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }"
             >
               <VuePdfEmbed
@@ -115,21 +118,40 @@ const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
 
 const pdfContainerStyle = computed(() => {
-  // Provide a fixed size container that the PDF will scale to fit
-  const containerWidth = 600 + (scale.value - 0.8) * 200 // Start at 600px, scale up/down
-  const containerHeight = 400 + (scale.value - 0.8) * 150 // Start at 400px, scale up/down
+  // For 8.5 x 11 aspect ratio, we want to maintain this ratio
+  // 8.5:11 = 0.773 aspect ratio
+  const targetAspectRatio = 8.5 / 11 // 0.773
+  
+  // Calculate container dimensions based on scale
+  const baseWidth = 600 + (scale.value - 0.8) * 200 // Start at 600px, scale up/down
+  const baseHeight = baseWidth / targetAspectRatio // Maintain 8.5:11 ratio
+  
+  // Ensure minimum and maximum sizes
+  const minWidth = 400
+  const maxWidth = 1200
+  const minHeight = minWidth / targetAspectRatio
+  const maxHeight = maxWidth / targetAspectRatio
+  
+  const containerWidth = Math.max(minWidth, Math.min(maxWidth, baseWidth))
+  const containerHeight = Math.max(minHeight, Math.min(maxHeight, baseHeight))
 
   console.log('🔍 PDF Container Style Update:', {
     scale: scale.value,
+    targetAspectRatio,
     containerWidth,
-    containerHeight
+    containerHeight,
+    baseWidth,
+    baseHeight
   })
 
   return {
     width: `${containerWidth}px`,
     height: `${containerHeight}px`,
     maxWidth: 'none',
-    maxHeight: 'none'
+    maxHeight: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 })
 
@@ -174,8 +196,9 @@ function onLoaded(pdf) {
       calculateInitialScale()
     }, 100)
   }).catch(() => {
-    pdfDimensions.value = { width: 595, height: 842 } // fallback to A4 size
-    console.log('🔍 PDF Loaded with fallback dimensions:', pdfDimensions.value)
+    // For 8.5 x 11 documents, use standard dimensions
+    pdfDimensions.value = { width: 612, height: 792 } // 8.5 x 11 at 72 DPI
+    console.log('🔍 PDF Loaded with 8.5x11 fallback dimensions:', pdfDimensions.value)
     setTimeout(() => {
       calculateInitialScale()
     }, 100)
@@ -207,12 +230,12 @@ function calculateInitialScale() {
   const availableWidth = containerWidth - 32 // 16px padding on each side
   const availableHeight = containerHeight - 32 // 16px padding on top and bottom
   
-  // Calculate scale to fit width and height with 10px margins
-  const scaleForWidth = (availableWidth - 20) / pdfWidth // 10px margin on each side
-  const scaleForHeight = (availableHeight - 20) / pdfHeight // 10px margin on top and bottom
+  // Calculate scale to fit width and height with 20px margins for better spacing
+  const scaleForWidth = (availableWidth - 40) / pdfWidth // 20px margin on each side
+  const scaleForHeight = (availableHeight - 40) / pdfHeight // 20px margin on top and bottom
   
   // Use the smaller scale to ensure PDF fits completely
-  const calculatedScale = Math.min(scaleForWidth, scaleForHeight, 3.0) // Cap at 3.0x zoom
+  const calculatedScale = Math.min(scaleForWidth, scaleForHeight, 2.5) // Cap at 2.5x zoom
   
   console.log('🔍 Initial Scale Calculation:', {
     containerWidth,
@@ -224,10 +247,10 @@ function calculateInitialScale() {
     scaleForWidth,
     scaleForHeight,
     calculatedScale,
-    finalScale: Math.max(calculatedScale, 0.3)
+    finalScale: Math.max(calculatedScale, 0.4)
   })
   
-  scale.value = Math.max(calculatedScale, 0.3) // Minimum 0.3x zoom
+  scale.value = Math.max(calculatedScale, 0.4) // Minimum 0.4x zoom for better visibility
 }
 
 function logPositioningClasses() {
@@ -254,8 +277,8 @@ function downloadPdf() {
 
 function zoomIn() {
   console.log('🔍 Zoom In clicked, current scale:', scale.value)
-  if (scale.value < 3) {
-    scale.value = +(scale.value + 0.3).toFixed(1)
+  if (scale.value < 2.5) {
+    scale.value = +(scale.value + 0.2).toFixed(1)
     console.log('🔍 New scale after zoom in:', scale.value)
     pdfEmbedKey.value++  // force component to re-render
     // Force a small delay to ensure the component re-renders
@@ -266,8 +289,8 @@ function zoomIn() {
 }
 function zoomOut() {
   console.log('🔍 Zoom Out clicked, current scale:', scale.value)
-  if (scale.value > 0.5) {
-    scale.value = +(scale.value - 0.3).toFixed(1)
+  if (scale.value > 0.4) {
+    scale.value = +(scale.value - 0.2).toFixed(1)
     console.log('🔍 New scale after zoom out:', scale.value)
     pdfEmbedKey.value++
     // Force a small delay to ensure the component re-renders
