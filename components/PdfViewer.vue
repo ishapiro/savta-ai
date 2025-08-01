@@ -97,7 +97,7 @@
           <button
             v-if="canShare"
             class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header ml-2"
-            @click="sharePdf"
+            @click.prevent="sharePdf"
             aria-label="Share PDF"
           >
             <i class="pi pi-share-alt text-xl sm:text-2xl text-brand-header"></i>
@@ -129,6 +129,7 @@ const isLoaded = ref(false)
 const scale = ref(0.8)
 const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
+const isSharing = ref(false) // Track if we're currently sharing
 
 // Check if Web Share API is available
 const canShare = computed(() => {
@@ -293,6 +294,12 @@ function nextPage() {
 }
 
 function downloadPdf() {
+  // Prevent download if we're currently sharing
+  if (isSharing.value) {
+    console.log('🔍 Download blocked - currently sharing')
+    return
+  }
+  
   if (pdfRef.value?.download) {
     pdfRef.value.download()
   } else {
@@ -319,27 +326,50 @@ function zoomOut() {
 }
 
 function sharePdf() {
+  console.log('🔍 Share button clicked - starting sharePdf function')
+  
+  // Prevent multiple share attempts
+  if (isSharing.value) {
+    console.log('🔍 Already sharing, ignoring click')
+    return
+  }
+  
+  isSharing.value = true
+  
+  // Set a timeout to reset the sharing flag after 10 seconds
+  const sharingTimeout = setTimeout(() => {
+    if (isSharing.value) {
+      console.log('🔍 Sharing timeout - resetting flag')
+      isSharing.value = false
+    }
+  }, 10000)
+  
   try {
     // Get the PDF source URL
     const pdfUrl = props.src
+    console.log('🔍 PDF URL to share:', pdfUrl)
     
     if (!pdfUrl) {
       console.warn('🔍 No PDF source available to share')
+      clearTimeout(sharingTimeout)
+      isSharing.value = false
       return
     }
 
     // Check if Web Share API is available
+    console.log('🔍 Can share check:', canShare.value)
     if (!canShare.value) {
       console.warn('🔍 Web Share API not available')
-      // Fallback: copy URL to clipboard
+      // Fallback: copy URL to clipboard only
       if (navigator.clipboard) {
         navigator.clipboard.writeText(pdfUrl).then(() => {
           console.log('🔍 PDF URL copied to clipboard')
-          // You could add a toast notification here
         }).catch(err => {
           console.error('🔍 Failed to copy URL:', err)
         })
       }
+      clearTimeout(sharingTimeout)
+      isSharing.value = false
       return
     }
 
@@ -349,23 +379,31 @@ function sharePdf() {
       text: 'Check out this beautiful memory book!',
       url: pdfUrl
     }
+    console.log('🔍 Share data prepared:', shareData)
 
     // Check if the data can be shared
     if (navigator.canShare && navigator.canShare(shareData)) {
+      console.log('🔍 Attempting to share...')
       navigator.share(shareData)
         .then(() => {
           console.log('🔍 PDF shared successfully!')
+          clearTimeout(sharingTimeout)
+          isSharing.value = false
         })
         .catch((error) => {
           console.error('🔍 Error sharing PDF:', error)
           if (error.name !== 'AbortError') {
-            // Only show error if it's not a user cancellation
+            // Only log error if it's not a user cancellation
             console.warn('🔍 Share was cancelled or failed')
           }
+          // Explicitly do nothing - don't open any windows
+          console.log('🔍 Share cancelled/failed - no window opened')
+          clearTimeout(sharingTimeout)
+          isSharing.value = false
         })
     } else {
       console.warn('🔍 Share data not supported')
-      // Fallback: copy URL to clipboard
+      // Fallback: copy URL to clipboard only
       if (navigator.clipboard) {
         navigator.clipboard.writeText(pdfUrl).then(() => {
           console.log('🔍 PDF URL copied to clipboard')
@@ -373,9 +411,15 @@ function sharePdf() {
           console.error('🔍 Failed to copy URL:', err)
         })
       }
+      clearTimeout(sharingTimeout)
+      isSharing.value = false
     }
   } catch (error) {
     console.error('🔍 Error in sharePdf function:', error)
+    // Explicitly do nothing - don't open any windows
+    console.log('🔍 Share error caught - no window opened')
+    clearTimeout(sharingTimeout)
+    isSharing.value = false
   }
 }
 

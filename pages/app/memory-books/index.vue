@@ -1099,14 +1099,6 @@
         <!-- Action Buttons -->
         <div class="z-50 flex justify-center items-center gap-3 sm:gap-4 py-4 sm:py-6 px-4 bg-gray-50 border-t border-gray-200 min-h-[60px] sm:min-h-[80px]">
           <Button
-            v-if="canShare"
-            label="Share"
-            icon="pi pi-share"
-            size="small"
-            class="bg-brand-dialog-edit text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 border-0"
-            @click="sharePdf"
-          />
-          <Button
             label="Close"
             size="small"
             class="bg-brand-dialog-cancel text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3"
