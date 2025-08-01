@@ -6,7 +6,7 @@
           <div class="w-full h-full flex p-4 mb-4" :class="shouldPositionAtTop ? 'items-start justify-center' : 'items-center justify-center'" @vue:mounted="logPositioningClasses">
           <div 
             ref="pdfContainer"
-            class="mb-4 flex items-center justify-center"
+            class="mb-4 flex"
             :style="pdfContainerStyle"
           >
             <div 
@@ -148,21 +148,9 @@ const shouldPositionAtTop = computed(() => {
     return false
   }
   
-  // Calculate the aspect ratio
-  const aspectRatio = width / height
-  console.log('🔍 PDF Aspect Ratio:', aspectRatio)
-  
-  // 7x5 has an aspect ratio of 1.4
-  // If the PDF is wider or taller than 7x5 proportions, position at top
-  const isLargerThan7x5 = aspectRatio > 1.4 || aspectRatio < 0.714 // 1/1.4 = 0.714
-  
-  console.log('🔍 Positioning Decision:', {
-    aspectRatio,
-    isLargerThan7x5,
-    willPositionAtTop: isLargerThan7x5
-  })
-  
-  return isLargerThan7x5
+  // Since all PDFs are now scaled to fit the available space, center all of them
+  console.log('🔍 All PDFs are scaled to fit, centering all')
+  return false
 })
 
 function onLoaded(pdf) {
@@ -179,10 +167,67 @@ function onLoaded(pdf) {
       height: viewport.height
     }
     console.log('🔍 PDF Loaded with dimensions:', pdfDimensions.value)
+    
+    // Calculate initial scale to fit PDF in dialog with 10px margins
+    // Add small delay to ensure container is available
+    setTimeout(() => {
+      calculateInitialScale()
+    }, 100)
   }).catch(() => {
     pdfDimensions.value = { width: 595, height: 842 } // fallback to A4 size
     console.log('🔍 PDF Loaded with fallback dimensions:', pdfDimensions.value)
+    setTimeout(() => {
+      calculateInitialScale()
+    }, 100)
   })
+}
+
+function calculateInitialScale() {
+  // Get the actual container dimensions
+  const container = pdfContainer.value
+  if (!container) {
+    console.log('🔍 Container not available, using default scale')
+    scale.value = 0.8
+    return
+  }
+  
+  const containerRect = container.getBoundingClientRect()
+  const containerWidth = containerRect.width
+  const containerHeight = containerRect.height
+  
+  const { width: pdfWidth, height: pdfHeight } = pdfDimensions.value
+  
+  if (!pdfWidth || !pdfHeight) {
+    console.log('🔍 No PDF dimensions available, using default scale')
+    scale.value = 0.8
+    return
+  }
+  
+  // Account for padding (p-4 = 16px on each side)
+  const availableWidth = containerWidth - 32 // 16px padding on each side
+  const availableHeight = containerHeight - 32 // 16px padding on top and bottom
+  
+  // Calculate scale to fit width and height with 10px margins
+  const scaleForWidth = (availableWidth - 20) / pdfWidth // 10px margin on each side
+  const scaleForHeight = (availableHeight - 20) / pdfHeight // 10px margin on top and bottom
+  
+  // Use the smaller scale to ensure PDF fits completely
+  const calculatedScale = Math.min(scaleForWidth, scaleForHeight, 3.0) // Cap at 3.0x zoom
+  
+  console.log('🔍 Initial Scale Calculation:', {
+    containerWidth,
+    containerHeight,
+    availableWidth,
+    availableHeight,
+    pdfWidth,
+    pdfHeight,
+    scaleForWidth,
+    scaleForHeight,
+    calculatedScale,
+    finalScale: Math.max(calculatedScale, 0.3)
+  })
+  
+  scale.value = Math.max(calculatedScale, 0.3) // Minimum 0.3x zoom
 }
 
 function logPositioningClasses() {
@@ -235,7 +280,7 @@ function zoomOut() {
 watch(() => props.src, () => {
   currentPage.value = 1
   isLoaded.value = false
-  scale.value = 0.8
+  scale.value = 0.8 // Will be recalculated when PDF loads
   pdfDimensions.value = { width: 0, height: 0 }
   pdfEmbedKey.value++ // ensure rerender when switching files
 })
