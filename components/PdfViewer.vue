@@ -1,3 +1,5 @@
+
+<!-- PDF Viewer -->
 <template>
   <ClientOnly>
     <div class="relative w-full h-full bg-brand-navigation">
