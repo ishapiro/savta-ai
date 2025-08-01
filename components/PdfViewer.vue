@@ -1,5 +1,5 @@
 
-<!-- PDF Viewer -->
+<!-- PDF Viewer for Savta.AI -->
 <template>
   <ClientOnly>
     <div class="relative w-full h-full bg-brand-navigation">
