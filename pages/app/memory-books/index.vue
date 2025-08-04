@@ -162,18 +162,14 @@
         :class="[
           'rounded-xl flex flex-col overflow-hidden',
           'bg-brand-card',
-          book.layout_type === 'magic' 
-            ? 'border-brand-secondary/30' 
-            : 'border-brand-highlight/30'
+          'border-brand-highlight/30'
         ]"
       >
         <!-- Card Header -->
         <div
           :class="[
             'relative flex items-center justify-center h-20',
-            book.layout_type === 'magic'
-              ? 'bg-brand-highlight'
-              : 'bg-brand-secondary'
+            'bg-brand-secondary'
           ]"
         >
           <!-- Status Badge: absolute top-right, smaller -->
@@ -914,7 +910,7 @@
                 <span class="sm:hidden">Approve</span>
               </button>
               <button
-                v-if="selectedBook && selectedBook.layout_type !== 'magic'"
+                v-if="selectedBook"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="openEditSettings(selectedBook)"
               >
@@ -2571,14 +2567,8 @@ const createMemoryBook = async () => {
       background_type: newBook.value.aiBackground ? 'magical' : 'white', // Set background_type based on ai_background
       background_opacity: newBook.value.backgroundOpacity || 30, // Set background opacity with default
       memory_event: newBook.value.memoryEvent === 'custom' ? newBook.value.customMemoryEvent : newBook.value.memoryEvent,
-      // For magic memories: selected assets go to photo_selection_pool, created_from_assets will be set by AI
-      // For regular memories: selected assets go to created_from_assets
-      ...(newBook.value.layoutType === 'magic' ? {
-        photo_selection_pool: assetsToUse,
-        created_from_assets: [] // Will be populated by AI during story generation
-      } : {
-        created_from_assets: assetsToUse
-      }),
+      // Store selected assets
+      created_from_assets: assetsToUse,
       status: 'draft'
     }
     console.log('🔧 [createMemoryBook] Calling db.memoryBooks.createMemoryBook with:', JSON.parse(JSON.stringify(bookData)))
@@ -4690,14 +4680,7 @@ async function createMemoryBookFromDialog(data) {
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
       // Store selected asset IDs for the book
-      // For magic memories: selected assets go to photo_selection_pool, created_from_assets will be set by AI
-      // For regular memories: selected assets go to created_from_assets
-      ...(data.layoutType === 'magic' ? {
-        photo_selection_pool: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : [],
-        created_from_assets: [] // Will be populated by AI during story generation
-      } : {
-        created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
-      })
+      created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
     }
     
     console.log('🔧 [createMemoryBookFromDialog] Mapped newBook.value:', newBook.value)
@@ -4741,15 +4724,8 @@ async function saveEditBookFromDialog(data) {
       backgroundOpacity: data.backgroundOpacity || 30,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
-      // Update asset references based on layout type
-      // For magic memories: selected assets go to photo_selection_pool, created_from_assets will be set by AI
-      // For regular memories: selected assets go to created_from_assets
-      ...(data.layoutType === 'magic' ? {
-        photo_selection_pool: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : [],
-        created_from_assets: [] // Will be populated by AI during story generation
-      } : {
-        created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
-      })
+      // Update asset references
+      created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
     }
     
     console.log('🔧 [saveEditBookFromDialog] Mapped editBook.value:', editBook.value)

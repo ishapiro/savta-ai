@@ -187,11 +187,7 @@ export default defineEventHandler(async (event) => {
         await updatePdfStatus(supabase, book.id, user.id, 'Creating beautiful background design...')
         
         // Fetch approved assets for this book to get tags
-        // For magic memories, use photo_selection_pool (user's original selection) for background generation
-        // For regular memories, use created_from_assets (user-selected photos)
-        const assetIds = book.layout_type === 'magic' 
-          ? (book.photo_selection_pool || book.created_from_assets || [])
-          : (book.created_from_assets || [])
+        const assetIds = book.created_from_assets || []
         
         console.log('📸 Fetching assets for book:', assetIds)
         console.log('Book layout type:', book.layout_type)
