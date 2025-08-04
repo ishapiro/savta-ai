@@ -8,6 +8,138 @@ import { generateFingerprintsForAssets } from '../../../utils/generate-fingerpri
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
 import { enhanceImage } from '../../../utils/image-enhancer.js'
 
+// Centralized function to save and upload PDF/PNG files
+async function saveAndUploadFile(pdfDoc, book, user, supabase) {
+  console.log('💾 Saving PDF to buffer...')
+  const pdfBytes = await pdfDoc.save()
+  console.log('✅ PDF saved, size:', pdfBytes.length, 'bytes')
+  
+  // Check if we should convert to PNG based on output field
+  const shouldConvertToPng = book.output && (book.output.toLowerCase() === 'png')
+  console.log(`🔍 Output field check: ${book.output} (convert to PNG: ${shouldConvertToPng})`)
+  
+  let finalBytes = pdfBytes
+  let contentType = 'application/pdf'
+  let fileExtension = 'pdf'
+  let fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.pdf`
+  
+  if (shouldConvertToPng) {
+    try {
+      console.log('🔄 Checking PDF page count for PNG conversion...')
+      
+      // Load the PDF to check page count
+      const pdfDocForCheck = await PDFDocument.load(pdfBytes)
+      const pageCount = pdfDocForCheck.getPageCount()
+      console.log(`📄 PDF has ${pageCount} page(s)`)
+      
+      if (pageCount === 1) {
+        console.log('✅ Single page PDF detected, converting to PNG...')
+        
+        // Convert PDF to PNG using Sharp
+        const pngBuffer = await sharp(pdfBytes, { density: 300 })
+          .png()
+          .toBuffer()
+        
+        console.log('✅ PDF converted to PNG successfully')
+        console.log(`📊 PNG size: ${pngBuffer.length} bytes`)
+        
+        finalBytes = pngBuffer
+        contentType = 'image/png'
+        fileExtension = 'png'
+        fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.png`
+        
+        console.log('🖼️ Will upload PNG instead of PDF')
+      } else {
+        console.log(`⚠️ PDF has ${pageCount} pages, keeping as PDF (PNG conversion only for single-page documents)`)
+        // Show message to user about multi-page PDF
+        await updatePdfStatus(supabase, book.id, user.id, `PDF has ${pageCount} pages - keeping as PDF (PNG conversion only available for single-page documents)`)
+      }
+    } catch (conversionError) {
+      console.warn('⚠️ PNG conversion failed, keeping as PDF:', conversionError.message)
+      await updatePdfStatus(supabase, book.id, user.id, 'PNG conversion failed - keeping as PDF')
+    }
+  }
+  
+  const timestamp = Date.now()
+  
+  // Delete old PDF files if they exist (try both old and new patterns)
+  console.log('🗑️ Deleting old PDF files...')
+  try {
+    // List files in the PDF directory to find old files
+    const { data: files, error: listError } = await supabase.storage
+      .from('assets')
+      .list(`${user.id}/memory_book/pdfs/`)
+    
+    if (!listError && files) {
+      const filesToDelete = files
+        .filter(file => file.name.startsWith(`${book.id}`))
+        .map(file => `${user.id}/memory_book/pdfs/${file.name}`)
+      
+      if (filesToDelete.length > 0) {
+        const { error: deleteError } = await supabase.storage
+          .from('assets')
+          .remove(filesToDelete)
+        
+        if (deleteError) {
+          console.warn('⚠️ Failed to delete old PDF files:', deleteError.message)
+        } else {
+          console.log('✅ Old PDF files deleted successfully:', filesToDelete.length, 'files')
+        }
+      } else {
+        console.log('ℹ️ No old PDF files found to delete')
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Error deleting old PDF files:', error.message)
+  }
+  
+  await updatePdfStatus(supabase, book.id, user.id, `Uploading ${fileExtension.toUpperCase()} to cloud storage...`)
+  console.log(`📤 Uploading ${fileExtension.toUpperCase()} to Supabase Storage:`, fileName)
+  
+  // Upload to Supabase Storage (using assets bucket with memory_book subdirectory)
+  const { data: uploadData, error: uploadError } = await supabase.storage.from('assets').upload(fileName, finalBytes, {
+    contentType: contentType,
+    upsert: true
+  })
+  
+  if (uploadError) {
+    console.error(`❌ Failed to upload ${fileExtension.toUpperCase()} to storage:`, uploadError)
+    throw new Error(`Failed to upload ${fileExtension.toUpperCase()} to storage: ` + uploadError.message)
+  }
+  console.log(`✅ ${fileExtension.toUpperCase()} uploaded to storage successfully:`, uploadData)
+  
+  // Get public URL
+  await updatePdfStatus(supabase, book.id, user.id, 'Generating download link...')
+  console.log('🔗 Getting public URL for uploaded file...')
+  const { data: publicUrlData } = supabase.storage.from('assets').getPublicUrl(fileName)
+  const publicUrl = publicUrlData?.publicUrl
+  if (!publicUrl) {
+    console.error(`❌ Failed to get public URL for ${fileExtension.toUpperCase()}`)
+    throw new Error(`Failed to get public URL for ${fileExtension.toUpperCase()}`)
+  }
+  console.log('✅ Public URL generated:', publicUrl)
+  
+  // Update the book with the public URL
+  await updatePdfStatus(supabase, book.id, user.id, 'Saving file link to database...')
+  console.log('📝 Updating memory book with file URL...')
+  const { data: updateData, error: updateError } = await supabase
+    .from('memory_books')
+    .update({ 
+      pdf_url: publicUrl
+    })
+    .eq('id', book.id)
+    .select()
+  
+  if (updateError) {
+    console.error('❌ Error updating book with file URL:', updateError)
+    // Don't throw here, as the file was successfully uploaded
+  } else {
+    console.log('✅ Memory book updated with file URL successfully')
+  }
+  
+  return publicUrl
+}
+
 export default defineEventHandler(async (event) => {
   try {
     console.log('📄 Starting PDF generation endpoint')
@@ -1954,29 +2086,12 @@ export default defineEventHandler(async (event) => {
       }
       // End magic memory layout
       await updatePdfStatus(supabase, book.id, user.id, '✨ Magic Memory PDF created! ✨')
-      const pdfBytes = await pdfDoc.save()
-      // Upload PDF to storage and return download URL (copy from normal logic)
-      const pdfFileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.pdf`
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('assets')
-        .upload(pdfFileName, pdfBytes, {
-          contentType: 'application/pdf',
-          upsert: true
-        })
-      if (uploadError) {
-        throw createError({ statusCode: 500, statusMessage: 'Failed to upload PDF: ' + uploadError.message })
-      }
-      // Get public URL for PDF
-      const { data: pdfUrlData } = supabase.storage
-        .from('assets')
-        .getPublicUrl(pdfFileName)
-      const pdfStorageUrl = pdfUrlData?.publicUrl
-      if (!pdfStorageUrl) {
-        throw createError({ statusCode: 500, statusMessage: 'Failed to get public URL for PDF' })
-      }
-      // Update book with PDF URL and status
+      
+      // Use centralized function to save and upload file
+      const pdfStorageUrl = await saveAndUploadFile(pdfDoc, book, user, supabase)
+      
+      // Update book status and return
       await supabase.from('memory_books').update({
-        pdf_url: pdfStorageUrl,
         status: 'ready',
         generated_at: new Date().toISOString()
       }).eq('id', book.id)
@@ -2377,22 +2492,15 @@ export default defineEventHandler(async (event) => {
 
       // Save and upload PDF
       await updatePdfStatus(supabase, book.id, user.id, '🎨 Theme PDF created!')
-      const pdfBytes = await pdfDoc.save()
-      const pdfFileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.pdf`
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('assets')
-        .upload(pdfFileName, pdfBytes, { contentType: 'application/pdf', upsert: true })
-      if (uploadError) {
-        throw createError({ statusCode: 500, statusMessage: 'Failed to upload PDF: ' + uploadError.message })
-      }
-      const { data: pdfUrlData } = supabase.storage
-        .from('assets')
-        .getPublicUrl(pdfFileName)
-      const pdfStorageUrl = pdfUrlData?.publicUrl
-      if (!pdfStorageUrl) {
-        throw createError({ statusCode: 500, statusMessage: 'Failed to get public URL for PDF' })
-      }
-      await supabase.from('memory_books').update({ pdf_url: pdfStorageUrl, status: 'ready', generated_at: new Date().toISOString() }).eq('id', book.id)
+      
+      // Use centralized function to save and upload file
+      const pdfStorageUrl = await saveAndUploadFile(pdfDoc, book, user, supabase)
+      
+      // Update book status and return
+      await supabase.from('memory_books').update({ 
+        status: 'ready', 
+        generated_at: new Date().toISOString() 
+      }).eq('id', book.id)
       await updatePdfStatus(supabase, book.id, user.id, '🎨 Your themed memory is ready!')
       return { success: true, downloadUrl: pdfStorageUrl }
     }
@@ -2996,88 +3104,8 @@ export default defineEventHandler(async (event) => {
     
     await updatePdfStatus(supabase, book.id, user.id, 'Finalizing PDF document...')
     
-    // 5. Save PDF and upload to Supabase Storage
-    console.log('💾 Saving PDF to buffer...')
-    const pdfBytes = await pdfDoc.save()
-    console.log('✅ PDF saved, size:', pdfBytes.length, 'bytes')
-    
-    const timestamp = Date.now()
-    const fileName = `${user.id}/memory_book/pdfs/${book.id}_${timestamp}.pdf`
-    
-    // Delete old PDF files if they exist (try both old and new patterns)
-    console.log('🗑️ Deleting old PDF files...')
-    try {
-      // List files in the PDF directory to find old files
-      const { data: files, error: listError } = await supabase.storage
-        .from('assets')
-        .list(`${user.id}/memory_book/pdfs/`)
-      
-      if (!listError && files) {
-        const filesToDelete = files
-          .filter(file => file.name.startsWith(`${book.id}`))
-          .map(file => `${user.id}/memory_book/pdfs/${file.name}`)
-        
-        if (filesToDelete.length > 0) {
-          const { error: deleteError } = await supabase.storage
-            .from('assets')
-            .remove(filesToDelete)
-          
-          if (deleteError) {
-            console.warn('⚠️ Failed to delete old PDF files:', deleteError.message)
-          } else {
-            console.log('✅ Old PDF files deleted successfully:', filesToDelete.length, 'files')
-          }
-        } else {
-          console.log('ℹ️ No old PDF files found to delete')
-        }
-      }
-    } catch (error) {
-      console.warn('⚠️ Error deleting old PDF files:', error.message)
-    }
-    
-    await updatePdfStatus(supabase, book.id, user.id, 'Uploading PDF to cloud storage...')
-    console.log('📤 Uploading PDF to Supabase Storage:', fileName)
-    
-    // Upload to Supabase Storage (using assets bucket with memory_book subdirectory)
-    const { data: uploadData, error: uploadError } = await supabase.storage.from('assets').upload(fileName, pdfBytes, {
-      contentType: 'application/pdf',
-      upsert: true
-    })
-    
-    if (uploadError) {
-      console.error('❌ Failed to upload PDF to storage:', uploadError)
-      throw new Error('Failed to upload PDF to storage: ' + uploadError.message)
-    }
-    console.log('✅ PDF uploaded to storage successfully:', uploadData)
-    
-    // Get public URL
-    await updatePdfStatus(supabase, book.id, user.id, 'Generating download link...')
-    console.log('🔗 Getting public URL for uploaded PDF...')
-    const { data: publicUrlData } = supabase.storage.from('assets').getPublicUrl(fileName)
-    const publicUrl = publicUrlData?.publicUrl
-    if (!publicUrl) {
-      console.error('❌ Failed to get public URL for PDF')
-      throw new Error('Failed to get public URL for PDF')
-    }
-    console.log('✅ Public URL generated:', publicUrl)
-    
-    // Update the book with the public URL
-    await updatePdfStatus(supabase, book.id, user.id, 'Saving PDF link to database...')
-    console.log('📝 Updating memory book with PDF URL...')
-    const { data: updateData, error: updateError } = await supabase
-      .from('memory_books')
-      .update({ 
-        pdf_url: publicUrl
-      })
-      .eq('id', book.id)
-      .select()
-    
-    if (updateError) {
-      console.error('❌ Error updating book with PDF URL:', updateError)
-      // Don't throw here, as the PDF was successfully uploaded
-    } else {
-      console.log('✅ Memory book updated with PDF URL successfully')
-    }
+    // 5. Save PDF and upload to Supabase Storage using centralized function
+    const publicUrl = await saveAndUploadFile(pdfDoc, book, user, supabase)
     
     await updatePdfStatus(supabase, book.id, user.id, 'Working our magic ...')
     console.log('🎉 PDF generated and uploaded successfully')

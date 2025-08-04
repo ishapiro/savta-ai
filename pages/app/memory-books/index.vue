@@ -2557,13 +2557,13 @@ const createMemoryBook = async () => {
     // Prepare data for API
     const bookData = {
       title: newBook.value.title,
-              layout_type: newBook.value.layoutType,
-        ui: newBook.value.ui || 'form',
+      layout_type: newBook.value.layoutType,
+      ui: newBook.value.ui || 'form',
       print_size: newBook.value.printSize,
       quality: newBook.value.quality,
       medium: newBook.value.medium,
       output: newBook.value.output || 'PDF', // Default to PDF
-              theme_id: newBook.value.theme_id,
+      theme_id: newBook.value.theme_id,
       grid_layout: newBook.value.gridLayout,
       memory_shape: newBook.value.memoryShape,
       include_captions: newBook.value.includeCaptions,
