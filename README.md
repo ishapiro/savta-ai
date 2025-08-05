@@ -290,9 +290,9 @@ assets/
 ├── {user_id}/                    # User-specific folders
 │   ├── memory_book/              # Memory book files
 │   │   ├── backgrounds/          # AI-generated background images
-│   │   │   └── {book_id}.png    # Background for specific memory book
-│   │   └── pdfs/                # Generated PDF files
-│   │       └── {book_id}.pdf    # PDF for specific memory book
+│   │   │   └── {book_id}.jpg    # Background for specific memory book
+│   │   └── pdfs/                # Generated PDF/Image files
+│   │       └── {book_id}.pdf    # PDF for specific memory book (or .jpg for single-page)
 │   └── {timestamp}-{filename}   # User uploaded assets (photos, text)
 │       ├── 1234567890-photo.jpg
 │       ├── 1234567891-story.txt
@@ -305,8 +305,8 @@ assets/
 
 **File Types:**
 - **User Assets**: Photos and text stories uploaded by users
-- **Background Images**: AI-generated backgrounds for memory books (PNG format)
-- **PDF Files**: Generated memory book PDFs (PDF format)
+- **Background Images**: AI-generated backgrounds for memory books (JPG format)
+- **PDF Files**: Generated memory book PDFs (PDF format) or high-quality JPG images for single-page books
 
 **Security:**
 - Each user can only access files in their own folder (`{user_id}/`)

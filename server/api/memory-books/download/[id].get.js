@@ -300,12 +300,12 @@ export default defineEventHandler(async (event) => {
         await updatePdfStatus(supabase, book.id, user.id, 'Saving background to storage...')
         console.log('📤 Uploading background to storage...')
         const timestamp = Date.now()
-        const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}_${timestamp}.png`
+        const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}_${timestamp}.jpg`
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('assets')
           .upload(bgFileName, bgBuffer, {
-            contentType: 'image/png',
+            contentType: 'image/jpeg',
             upsert: true
           })
         

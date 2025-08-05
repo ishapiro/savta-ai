@@ -243,12 +243,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
         kernel: 'mitchell',
         fit: 'fill'
       })
-      .png({
-        quality: 100,
-        compressionLevel: 0,
-        adaptiveFiltering: false,
-        force: true
-      })
+      .png()
       .toBuffer()
     
     return buffer

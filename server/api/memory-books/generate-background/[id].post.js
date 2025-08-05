@@ -82,8 +82,8 @@ export default defineEventHandler(async (event) => {
     console.log('🗑️ Deleting old background files...')
     try {
       // Try to delete files with both old pattern and new timestamp pattern
-      const oldFilePattern = `${user.id}/memory_book/backgrounds/${book.id}.png`
-      const timestampPattern = `${user.id}/memory_book/backgrounds/${book.id}_*.png`
+      const oldFilePattern = `${user.id}/memory_book/backgrounds/${book.id}.jpg`
+      const timestampPattern = `${user.id}/memory_book/backgrounds/${book.id}_*.jpg`
       
       // List files in the background directory to find old files
       const { data: files, error: listError } = await supabase.storage
@@ -216,12 +216,12 @@ export default defineEventHandler(async (event) => {
     await updatePdfStatus(supabase, book.id, user.id, 'Saving background to storage...')
     console.log('📤 Uploading background to storage...')
     const timestamp = Date.now()
-    const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}_${timestamp}.png`
+    const bgFileName = `${user.id}/memory_book/backgrounds/${book.id}_${timestamp}.jpg`
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('assets')
       .upload(bgFileName, bgBuffer, {
-        contentType: 'image/png',
+        contentType: 'image/jpeg',
         upsert: true
       })
     

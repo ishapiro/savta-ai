@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     })
 
     // Set response headers for image
-    setHeader(event, 'Content-Type', 'image/png')
+    setHeader(event, 'Content-Type', 'image/jpeg')
     setHeader(event, 'Cache-Control', 'public, max-age=3600') // Cache for 1 hour
 
     return imageBuffer

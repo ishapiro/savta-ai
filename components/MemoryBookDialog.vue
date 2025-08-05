@@ -1030,7 +1030,7 @@ const mediumOptions = ref([
 
 const outputOptions = ref([
   { label: 'PDF Document', value: 'PDF' },
-  { label: 'PNG Image', value: 'PNG' }
+  { label: 'JPG Image', value: 'JPG' }
 ])
 
 const themeOptions = ref([])

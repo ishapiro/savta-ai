@@ -7,8 +7,8 @@
       <div class="w-full h-full overflow-auto pb-20 scrollbar-hide">
         <div class="w-full h-full flex p-4 mb-4" :class="shouldPositionAtTop ? 'items-start justify-center' : 'items-center justify-center'" @vue:mounted="logPositioningClasses">
           
-          <!-- PNG Image Display -->
-          <div v-if="isPngImage"
+          <!-- JPG Image Display -->
+          <div v-if="isJpgImage"
                ref="imageContainer"
                class="mb-4 flex"
                :style="imageContainerStyle"
@@ -17,6 +17,11 @@
               :src="props.src"
               :alt="'Memory Book Image'"
               class="max-w-full max-h-full object-contain"
+              :style="{ 
+                transform: `scale(${scale})`,
+                transformOrigin: 'center center',
+                transition: 'transform 0.2s ease-in-out'
+              }"
               @load="onImageLoaded"
               @error="onImageError"
             />
@@ -54,8 +59,8 @@
         </div>
       </div>
 
-      <!-- Navigation + Zoom Controls (only show for PDFs) -->
-              <div v-if="!isPngImage" class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-brand-primary/20">
+      <!-- Navigation + Zoom Controls (show for PDFs and JPGs) -->
+              <div v-if="!isJpgImage" class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-brand-primary/20">
         <div class="flex items-center gap-2 sm:gap-4">
           <!-- Previous Page -->
           <button
@@ -122,29 +127,61 @@
         </div>
       </div>
 
-      <!-- Download/Share Controls for PNG Images -->
-              <div v-if="isPngImage" class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-brand-primary/20">
-        <div class="flex items-center gap-2 sm:gap-4">
-          <!-- Download PNG -->
-          <button
-            v-if="!isMobile"
-            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
-            @click="downloadImage"
-            aria-label="Download Image"
-          >
-            <i class="pi pi-download text-xl sm:text-2xl text-brand-header"></i>
-          </button>
+      <!-- Download/Share Controls for JPG Images -->
+              <div v-if="isJpgImage" class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-brand-primary/20">
+                <div class="flex items-center gap-2 sm:gap-4">
+                  <!-- Zoom Out -->
+                  <button
+                    class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
+                    @click="zoomOut"
+                    aria-label="Zoom Out"
+                  >
+                    <i class="pi pi-search-minus text-xl sm:text-2xl text-brand-header"></i>
+                  </button>
 
-          <!-- Share PNG -->
-          <button
-            v-if="canShare"
-            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header ml-2"
-            @click.prevent="shareImage"
-            aria-label="Share Image"
-          >
-            <i class="pi pi-share-alt text-xl sm:text-2xl text-brand-header"></i>
-          </button>
-        </div>
+                  <!-- Zoom Level Display -->
+                  <span class="text-xs sm:text-base font-medium text-brand-primary select-none">
+                    {{ Math.round(scale * 100) }}%
+                  </span>
+
+                  <!-- Zoom In -->
+                  <button
+                    class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
+                    @click="zoomIn"
+                    aria-label="Zoom In"
+                  >
+                    <i class="pi pi-search-plus text-xl sm:text-2xl text-brand-header"></i>
+                  </button>
+
+                  <!-- Reset Zoom -->
+                  <button
+                    class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
+                    @click="resetZoom"
+                    aria-label="Reset Zoom"
+                  >
+                    <i class="pi pi-refresh text-xl sm:text-2xl text-brand-header"></i>
+                  </button>
+
+                  <!-- Download JPG -->
+                  <button
+                    v-if="!isMobile"
+                    class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
+                    @click="downloadImage"
+                    aria-label="Download Image"
+                  >
+                    <i class="pi pi-download text-xl sm:text-2xl text-brand-header"></i>
+                  </button>
+
+                  <!-- Share JPG -->
+                  <button
+                    v-if="canShare"
+                    class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header ml-2"
+                    @click.prevent="shareImage"
+                    aria-label="Share Image"
+                  >
+                    <i class="pi pi-share-alt text-xl sm:text-2xl text-brand-header"></i>
+                  </button>
+                </div>
       </div>
     </div>
   </ClientOnly>
@@ -173,16 +210,16 @@ const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
 const isSharing = ref(false) // Track if we're currently sharing
 
-// Check if the source is a PNG image
-const isPngImage = computed(() => {
+// Check if the source is a JPG image
+const isJpgImage = computed(() => {
   // Remove query parameters and hash from URL before checking
   const cleanUrl = props.src ? props.src.split('?')[0].split('#')[0] : ''
-  const result = cleanUrl && cleanUrl.toLowerCase().endsWith('.png')
+  const result = cleanUrl && (cleanUrl.toLowerCase().endsWith('.jpg') || cleanUrl.toLowerCase().endsWith('.jpeg'))
   
-  console.log('🔍 isPngImage check:', {
+  console.log('🔍 isJpgImage check:', {
     src: props.src,
     cleanUrl: cleanUrl,
-    endsWithPng: cleanUrl?.toLowerCase().endsWith('.png'),
+    endsWithJpg: cleanUrl?.toLowerCase().endsWith('.jpg') || cleanUrl?.toLowerCase().endsWith('.jpeg'),
     result: result
   })
   return result
@@ -238,15 +275,35 @@ const pdfContainerStyle = computed(() => {
 })
 
 const imageContainerStyle = computed(() => {
-  // For images, use a more flexible container that adapts to the image size
-  const maxWidth = 800
-  const maxHeight = 600
+  // For JPG images, use the actual memory book dimensions at 300 DPI
+  // 7x5 inches at 300 DPI = 2100x1500 pixels
+  const memoryBookWidth = 2100 // 7 inches × 300 DPI
+  const memoryBookHeight = 1500 // 5 inches × 300 DPI
+  
+  // Calculate display size while maintaining aspect ratio
+  const maxDisplayWidth = 1200 // Maximum display width
+  const maxDisplayHeight = 900 // Maximum display height
+  
+  // Calculate scale to fit within display bounds while maintaining aspect ratio
+  const scaleX = maxDisplayWidth / memoryBookWidth
+  const scaleY = maxDisplayHeight / memoryBookHeight
+  const scale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
+  
+  const displayWidth = Math.round(memoryBookWidth * scale)
+  const displayHeight = Math.round(memoryBookHeight * scale)
+  
+  console.log('🔍 JPG Image Container Style:', {
+    memoryBookDimensions: `${memoryBookWidth}x${memoryBookHeight}`,
+    displayDimensions: `${displayWidth}x${displayHeight}`,
+    scale: scale,
+    dpi: '300'
+  })
   
   return {
-    maxWidth: `${maxWidth}px`,
-    maxHeight: `${maxHeight}px`,
-    width: '100%',
-    height: '100%',
+    width: `${displayWidth}px`,
+    height: `${displayHeight}px`,
+    maxWidth: `${maxDisplayWidth}px`,
+    maxHeight: `${maxDisplayHeight}px`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
@@ -255,7 +312,7 @@ const imageContainerStyle = computed(() => {
 
 // Determine if PDF should be positioned at top or centered based on actual PDF dimensions
 const shouldPositionAtTop = computed(() => {
-  if (isPngImage.value) {
+  if (isJpgImage.value) {
     // For images, always center
     return false
   }
@@ -324,8 +381,21 @@ function calculateInitialScale() {
   const container = pdfContainer.value
   if (!container) {
     console.log('🔍 Container not available, using default scale')
-    // For PNG images, use 1.0 (original size), for PDFs use 0.8
-    scale.value = isPngImage.value ? 1.0 : 0.8
+    // For JPG images, use memory book scale, for PDFs use 0.8
+    if (isJpgImage.value) {
+      const memoryBookWidth = 2100 // 7 inches × 300 DPI
+      const memoryBookHeight = 1500 // 5 inches × 300 DPI
+      const maxDisplayWidth = 1200
+      const maxDisplayHeight = 900
+      
+      const scaleX = maxDisplayWidth / memoryBookWidth
+      const scaleY = maxDisplayHeight / memoryBookHeight
+      const memoryBookScale = Math.min(scaleX, scaleY, 1)
+      
+      scale.value = memoryBookScale
+    } else {
+      scale.value = 0.8
+    }
     return
   }
   
@@ -337,15 +407,39 @@ function calculateInitialScale() {
   
   if (!pdfWidth || !pdfHeight) {
     console.log('🔍 No PDF dimensions available, using default scale')
-    // For PNG images, use 1.0 (original size), for PDFs use 0.8
-    scale.value = isPngImage.value ? 1.0 : 0.8
+    // For JPG images, use memory book scale, for PDFs use 0.8
+    if (isJpgImage.value) {
+      const memoryBookWidth = 2100 // 7 inches × 300 DPI
+      const memoryBookHeight = 1500 // 5 inches × 300 DPI
+      const maxDisplayWidth = 1200
+      const maxDisplayHeight = 900
+      
+      const scaleX = maxDisplayWidth / memoryBookWidth
+      const scaleY = maxDisplayHeight / memoryBookHeight
+      const memoryBookScale = Math.min(scaleX, scaleY, 1)
+      
+      scale.value = memoryBookScale
+    } else {
+      scale.value = 0.8
+    }
     return
   }
   
-  // For PNG images, start at original size (1.0) and let user zoom if needed
-  if (isPngImage.value) {
-    console.log('🔍 PNG image detected, setting initial scale to 1.0 (original size)')
-    scale.value = 1.0
+  // For JPG images, start at the correct memory book scale
+  if (isJpgImage.value) {
+    console.log('🔍 JPG image detected, setting initial scale to memory book size')
+    // Calculate the scale to display at actual memory book dimensions
+    const memoryBookWidth = 2100 // 7 inches × 300 DPI
+    const memoryBookHeight = 1500 // 5 inches × 300 DPI
+    const maxDisplayWidth = 1200
+    const maxDisplayHeight = 900
+    
+    const scaleX = maxDisplayWidth / memoryBookWidth
+    const scaleY = maxDisplayHeight / memoryBookHeight
+    const initialScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
+    
+    scale.value = initialScale
+    console.log('🔍 JPG initial scale set to:', initialScale)
     return
   }
   
@@ -378,7 +472,7 @@ function calculateInitialScale() {
 
 function logPositioningClasses() {
   console.log('🔍 Container Positioning Classes:', {
-    isPngImage: isPngImage.value,
+    isJpgImage: isJpgImage.value,
     shouldPositionAtTop: shouldPositionAtTop.value,
     appliedClasses: shouldPositionAtTop.value ? 'items-start justify-center' : 'items-center justify-center',
     pdfDimensions: pdfDimensions.value
@@ -413,7 +507,13 @@ function downloadImage() {
     return
   }
   
-  console.log('🔍 Downloading PNG image:', props.src)
+  // Determine file extension based on URL
+  const cleanUrl = props.src ? props.src.split('?')[0].split('#')[0] : ''
+  const isJpg = cleanUrl && (cleanUrl.toLowerCase().endsWith('.jpg') || cleanUrl.toLowerCase().endsWith('.jpeg'))
+  const fileExtension = isJpg ? 'jpg' : 'pdf'
+  const fileName = `memory-book.${fileExtension}`
+  
+  console.log('🔍 Downloading image:', props.src, 'with extension:', fileExtension)
   
   // For cross-origin URLs, we need to fetch the image first
   fetch(props.src)
@@ -425,7 +525,7 @@ function downloadImage() {
       // Create a temporary link to download the image
       const link = document.createElement('a')
       link.href = blobUrl
-      link.download = 'memory-book.png'
+      link.download = fileName
       link.style.display = 'none'
       
       // Add to DOM, click, and remove
@@ -438,14 +538,14 @@ function downloadImage() {
         URL.revokeObjectURL(blobUrl)
       }, 100)
       
-      console.log('🔍 PNG download initiated')
+      console.log('🔍 Download initiated with filename:', fileName)
     })
     .catch(error => {
-      console.error('🔍 Error downloading PNG:', error)
+      console.error('🔍 Error downloading file:', error)
       // Fallback: try direct download
       const link = document.createElement('a')
       link.href = props.src
-      link.download = 'memory-book.png'
+      link.download = fileName
       link.target = '_blank'
       document.body.appendChild(link)
       link.click()
@@ -468,6 +568,27 @@ function zoomOut() {
     scale.value = +(scale.value - 0.2).toFixed(1)
     console.log('🔍 New scale after zoom out:', scale.value)
     // No need to force re-render since container size is fixed
+  }
+}
+
+function resetZoom() {
+  console.log('🔍 Reset Zoom clicked, current scale:', scale.value)
+  if (isJpgImage.value) {
+    // Reset to memory book scale for JPG images
+    const memoryBookWidth = 2100 // 7 inches × 300 DPI
+    const memoryBookHeight = 1500 // 5 inches × 300 DPI
+    const maxDisplayWidth = 1200
+    const maxDisplayHeight = 900
+    
+    const scaleX = maxDisplayWidth / memoryBookWidth
+    const scaleY = maxDisplayHeight / memoryBookHeight
+    const memoryBookScale = Math.min(scaleX, scaleY, 1)
+    
+    scale.value = memoryBookScale
+    console.log('🔍 JPG scale reset to memory book size:', memoryBookScale)
+  } else {
+    scale.value = 0.8
+    console.log('🔍 PDF scale reset to:', scale.value)
   }
 }
 
@@ -670,8 +791,21 @@ function shareImage() {
 watch(() => props.src, () => {
   currentPage.value = 1
   isLoaded.value = false
-  // Set initial scale based on file type: PNG = 1.0 (original size), PDF = 0.8
-  scale.value = isPngImage.value ? 1.0 : 0.8
+  // Set initial scale based on file type: JPG = memory book scale, PDF = 0.8
+  if (isJpgImage.value) {
+    const memoryBookWidth = 2100 // 7 inches × 300 DPI
+    const memoryBookHeight = 1500 // 5 inches × 300 DPI
+    const maxDisplayWidth = 1200
+    const maxDisplayHeight = 900
+    
+    const scaleX = maxDisplayWidth / memoryBookWidth
+    const scaleY = maxDisplayHeight / memoryBookHeight
+    const memoryBookScale = Math.min(scaleX, scaleY, 1)
+    
+    scale.value = memoryBookScale
+  } else {
+    scale.value = 0.8
+  }
   pdfDimensions.value = { width: 0, height: 0 }
   pdfEmbedKey.value++ // ensure rerender when switching files
 })
@@ -694,7 +828,7 @@ watch(pdfDimensions, (newDimensions) => {
 // Watch for positioning changes
 watch(shouldPositionAtTop, (newPosition) => {
   console.log('🔍 Container positioning changed:', {
-    isPngImage: isPngImage.value,
+    isJpgImage: isJpgImage.value,
     shouldPositionAtTop: newPosition,
     pdfDimensions: pdfDimensions.value,
     appliedClasses: newPosition ? 'items-start justify-center' : 'items-center justify-center'
@@ -702,9 +836,9 @@ watch(shouldPositionAtTop, (newPosition) => {
 })
 
 // Watch for file type changes
-watch(isPngImage, (isPng) => {
+watch(isJpgImage, (isJpg) => {
   console.log('🔍 File type changed:', {
-    isPngImage: isPng,
+    isJpgImage: isJpg,
     src: props.src
   })
 })

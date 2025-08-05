@@ -2260,7 +2260,7 @@ const mediumOptions = ref([
 
 const outputOptions = ref([
   { label: 'PDF Document', value: 'PDF' },
-  { label: 'PNG Image', value: 'PNG' }
+  { label: 'JPG Image', value: 'JPG' }
 ])
 
 
@@ -3391,17 +3391,17 @@ const formatDate = (dateString) => {
 // File type helper functions
 const getFileTypeDisplay = (book) => {
   if (!book) return 'PDF'
-  return book.output === 'PNG' ? 'PNG' : 'PDF'
+  return book.output === 'JPG' ? 'JPG' : 'PDF'
 }
 
 const getFileTypeIcon = (book) => {
   if (!book) return 'pi pi-file-pdf'
-  return book.output === 'PNG' ? 'pi pi-image' : 'pi pi-file-pdf'
+  return book.output === 'JPG' ? 'pi pi-image' : 'pi pi-file-pdf'
 }
 
 const getFileTypeColor = (book) => {
   if (!book) return 'text-brand-primary'
-  return book.output === 'PNG' ? 'text-brand-accent' : 'text-brand-primary'
+  return book.output === 'JPG' ? 'text-brand-accent' : 'text-brand-primary'
 }
 
 const showEditSettingsModal = ref(false)
@@ -4031,7 +4031,7 @@ async function onMagicMemoryContinue() {
         background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
         photo_count: magicPhotoCount.value,
         theme_id: magicSelectedTheme.value,
-        output: 'PNG' // Wizard creates single-page memories, so always use PNG
+        output: 'JPG' // Wizard creates single-page memories, so always use JPG
       },
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -4178,7 +4178,7 @@ const retryMagicMemory = async () => {
         background_type: aiRes.background_type || config.backgroundType,
         photo_count: config.photoCount,
         theme_id: config.selectedTheme || null,
-        output: 'PNG' // Wizard creates single-page memories, so always use PNG
+        output: 'JPG' // Wizard creates single-page memories, so always use JPG
       },
       headers: {
         Authorization: `Bearer ${accessToken}`

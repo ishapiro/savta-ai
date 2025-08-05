@@ -3,20 +3,25 @@
 
 import { PDFDocument, rgb } from 'pdf-lib'
 import sharp from 'sharp'
-import { pdfToPng } from 'pdf-to-png-converter'
 
 import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
 import { enhanceImage } from '../../../utils/image-enhancer.js'
 
-// Centralized function to save and upload PDF/PNG files
-async function saveAndUploadFile(pdfDoc, book, user, supabase) {
+// Centralized function to save and upload PDF/JPG files
+async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize = '7x5') {
+  // Ensure printSize is always a valid string
+  if (typeof printSize !== 'string' || !printSize) {
+    printSize = (book && book.print_size) || '7x5';
+  }
+  console.log('[saveAndUploadFile] Using printSize:', printSize);
+  
   console.log('💾 Saving PDF to buffer...')
   const pdfBytes = await pdfDoc.save()
   console.log('✅ PDF saved, size:', pdfBytes.length, 'bytes')
   
-  // Enhanced logging for debugging PNG conversion
-  console.log('🔍 DEBUG - Book object for PNG conversion:')
+  // Enhanced logging for debugging JPG conversion
+  console.log('🔍 DEBUG - Book object for JPG conversion:')
   console.log('   - Book ID:', book.id)
   console.log('   - Book title:', book.title)
   console.log('   - Book output field:', book.output)
@@ -24,20 +29,20 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase) {
   console.log('   - Book layout_type:', book.layout_type)
   console.log('   - Book ui field:', book.ui)
   
-  // Check if we should convert to PNG based on output field
-  const shouldConvertToPng = book.output && (book.output.toLowerCase() === 'png')
-  console.log(`🔍 Output field check: ${book.output} (convert to PNG: ${shouldConvertToPng})`)
-  console.log(`🔍 Should convert logic: book.output=${book.output}, toLowerCase()=${book.output?.toLowerCase()}, comparison=${book.output?.toLowerCase() === 'png'}`)
+  // Check if we should convert to JPG based on output field
+  const shouldConvertToJpg = book.output && book.output === 'JPG'
+  console.log(`🔍 Output field check: ${book.output} (convert to JPG: ${shouldConvertToJpg})`)
+  console.log(`🔍 Should convert logic: book.output=${book.output}, comparison=${book.output === 'JPG'}`)
   
   let finalBytes = pdfBytes
   let contentType = 'application/pdf'
   let fileExtension = 'pdf'
   let fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.pdf`
   
-  if (shouldConvertToPng) {
-    console.log('🔄 PNG conversion is enabled, starting conversion process...')
+  if (shouldConvertToJpg) {
+    console.log('🔄 JPG conversion is enabled, starting conversion process...')
     try {
-      console.log('🔄 Checking PDF page count for PNG conversion...')
+      console.log('🔄 Checking PDF page count for JPG conversion...')
       
       // Load the PDF to check page count
       const pdfDocForCheck = await PDFDocument.load(pdfBytes)
@@ -45,135 +50,84 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase) {
       console.log(`📄 PDF has ${pageCount} page(s)`)
       
       if (pageCount === 1) {
-        console.log('✅ Single page PDF detected, converting to PNG...')
-        console.log('🔄 Starting Sharp conversion with density: 300 DPI...')
-        
-        // Convert PDF to PNG using pdf-to-png-converter
-        console.log('🔄 Using pdf-to-png-converter to convert PDF to PNG...')
+        console.log('✅ Single page PDF detected, converting to JPG...')
+        console.log('🔄 Starting pdf-poppler conversion with 300 DPI...')
         
         try {
-          // First, save the PDF to a temporary file
-          const fs = await import('fs')
-          const path = await import('path')
-          const os = await import('os')
+          // Call our new pdf-poppler API endpoint
+          console.log('🔄 Using pdf-poppler to convert PDF to JPG...')
           
-          // Create temporary file paths
-          const tempDir = os.default.tmpdir()
-          const tempPdfPath = path.default.join(tempDir, `temp_${book.id}_${Date.now()}.pdf`)
+          const conversionResponse = await fetch(`${config.public.siteUrl}/api/pdf-to-jpg`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              pdfBuffer: Array.from(pdfBytes), // Convert Buffer to array for JSON serialization
+              page: 1,
+              quality: 100,
+              dpi: 300,
+              printSize: printSize // Pass the print size for correct dimensions
+            })
+          })
           
-          console.log('📁 Temporary PDF path:', tempPdfPath)
-          
-          try {
-            // Write PDF to temporary file
-            fs.default.writeFileSync(tempPdfPath, pdfBytes)
-            console.log('✅ PDF written to temporary file')
-            
-            // Configure pdf-to-png-converter options for 300 DPI output
-            // Base DPI for PDF.js is 72 DPI
-            // For 300 DPI: 300/72 = 4.166
-            // This works for any PDF size (7x5, 8.5x11, etc.) since it's a scale factor
-            const options = {
-              pages: [1], // Convert only first page
-              viewportScale: 4.166, // 300 DPI (300/72 = 4.166)
-              outputFormat: 'PNG',
-              disableFontFace: false, // Enable font rendering for better quality
-              useSystemFonts: false, // Use embedded fonts for better quality
-              allowLocalFiles: true // Allow local font files
-            }
-            
-            console.log('⚙️ pdf-to-png-converter options:', options)
-            
-            // Convert PDF to PNG
-            const pngPages = await pdfToPng(tempPdfPath, options)
-            
-            if (!pngPages || pngPages.length === 0) {
-              throw new Error('No PNG pages returned from conversion')
-            }
-            
-            // Get the first (and only) page content
-            let pngBuffer = pngPages[0].content
-            console.log('✅ PDF to PNG conversion completed')
-            console.log(`📊 PNG buffer size: ${pngBuffer.length} bytes`)
-            
-            // Post-process with Sharp to set correct DPI metadata
-            console.log('🔄 Setting 300 DPI metadata with Sharp...')
-            pngBuffer = await sharp(pngBuffer)
-              .withMetadata({ density: 300 }) // Set DPI metadata to 300
-              .png({ 
-                compressionLevel: 9 
-              })
-              .toBuffer()
-            
-            console.log('✅ DPI metadata set to 300')
-            
-            // Clean up temporary PDF file
-            fs.default.unlinkSync(tempPdfPath)
-            console.log('🧹 Temporary PDF file cleaned up')
-            
-            finalBytes = pngBuffer
-            contentType = 'image/png'
-            fileExtension = 'png'
-            fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.png`
-            
-            console.log('✅ PDF converted to PNG successfully')
-            console.log(`📊 PNG size: ${pngBuffer.length} bytes`)
-            console.log(`📊 Original PDF size: ${pdfBytes.length} bytes`)
-            console.log(`📊 Compression ratio: ${((1 - pngBuffer.length / pdfBytes.length) * 100).toFixed(1)}%`)
-            
-            console.log('🖼️ Will upload PNG instead of PDF')
-            console.log('🖼️ Final file details:')
-            console.log('   - File name:', fileName)
-            console.log('   - Content type:', contentType)
-            console.log('   - File extension:', fileExtension)
-            console.log('   - File size:', finalBytes.length, 'bytes')
-            
-          } catch (conversionError) {
-            console.error('❌ pdf-to-png-converter conversion failed:', conversionError)
-            
-            // Clean up temporary PDF file if it exists
-            try {
-              if (fs.default.existsSync(tempPdfPath)) {
-                fs.default.unlinkSync(tempPdfPath)
-              }
-            } catch (cleanupError) {
-              console.warn('⚠️ Error cleaning up temporary PDF file:', cleanupError.message)
-            }
-            
-            throw conversionError
+          if (!conversionResponse.ok) {
+            const errorText = await conversionResponse.text()
+            throw new Error(`PDF to JPG conversion failed: ${conversionResponse.status} - ${errorText}`)
           }
           
+          const jpgBuffer = Buffer.from(await conversionResponse.arrayBuffer())
+          console.log('✅ PDF to JPG conversion completed')
+          console.log(`📊 JPG buffer size: ${jpgBuffer.length} bytes`)
+          
+          finalBytes = jpgBuffer
+          contentType = 'image/jpeg'
+          fileExtension = 'jpg'
+          fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.jpg`
+          
+          console.log('✅ PDF converted to JPG successfully')
+          console.log(`📊 JPG size: ${jpgBuffer.length} bytes`)
+          console.log(`📊 Original PDF size: ${pdfBytes.length} bytes`)
+          console.log(`📊 Compression ratio: ${((1 - jpgBuffer.length / pdfBytes.length) * 100).toFixed(1)}%`)
+          
+          console.log('🖼️ Will upload JPG instead of PDF')
+          console.log('🖼️ Final file details:')
+          console.log('   - File name:', fileName)
+          console.log('   - Content type:', contentType)
+          console.log('   - File extension:', fileExtension)
+          console.log('   - File size:', finalBytes.length, 'bytes')
+          
         } catch (conversionError) {
-          console.error('❌ pdf-to-png-converter conversion failed:', conversionError)
+          console.error('❌ pdf-poppler conversion failed:', conversionError)
           console.error('❌ Conversion error details:', {
             message: conversionError.message,
             stack: conversionError.stack,
             name: conversionError.name
           })
-          throw conversionError
+          await updatePdfStatus(supabase, book.id, user.id, 'JPG conversion failed - keeping as PDF')
         }
       } else {
-        console.log(`⚠️ PDF has ${pageCount} pages, keeping as PDF (PNG conversion only for single-page documents)`)
-        console.log(`⚠️ Page count ${pageCount} > 1, skipping PNG conversion`)
+        console.log(`⚠️ PDF has ${pageCount} pages, keeping as PDF (JPG conversion only for single-page documents)`)
+        console.log(`⚠️ Page count ${pageCount} > 1, skipping JPG conversion`)
         // Show message to user about multi-page PDF
-        await updatePdfStatus(supabase, book.id, user.id, `PDF has ${pageCount} pages - keeping as PDF (PNG conversion only available for single-page documents)`)
+        await updatePdfStatus(supabase, book.id, user.id, `PDF has ${pageCount} pages - keeping as PDF (JPG conversion only available for single-page documents)`)
       }
     } catch (conversionError) {
-      console.error('❌ PNG conversion failed, keeping as PDF:', conversionError)
+      console.error('❌ JPG conversion failed, keeping as PDF:', conversionError)
       console.error('❌ Conversion error details:', {
         message: conversionError.message,
         stack: conversionError.stack,
         name: conversionError.name
       })
-      await updatePdfStatus(supabase, book.id, user.id, 'PNG conversion failed - keeping as PDF')
+      await updatePdfStatus(supabase, book.id, user.id, 'JPG conversion failed - keeping as PDF')
     }
   } else {
-    console.log('ℹ️ PNG conversion is disabled, keeping as PDF')
+    console.log('ℹ️ JPG conversion is disabled, keeping as PDF')
     console.log('ℹ️ Reasons for not converting:')
     console.log('   - book.output exists:', !!book.output)
     console.log('   - book.output value:', book.output)
     console.log('   - book.output type:', typeof book.output)
-    console.log('   - toLowerCase() result:', book.output?.toLowerCase())
-    console.log('   - comparison result:', book.output?.toLowerCase() === 'png')
+    console.log('   - comparison result:', book.output === 'JPG')
   }
   
   const timestamp = Date.now()
@@ -199,14 +153,12 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase) {
         if (deleteError) {
           console.warn('⚠️ Failed to delete old PDF files:', deleteError.message)
         } else {
-          console.log('✅ Old PDF files deleted successfully:', filesToDelete.length, 'files')
+          console.log('✅ Old PDF files deleted successfully')
         }
-      } else {
-        console.log('ℹ️ No old PDF files found to delete')
       }
     }
   } catch (error) {
-    console.warn('⚠️ Error deleting old PDF files:', error.message)
+    console.warn('⚠️ Error listing/deleting old PDF files:', error.message)
   }
   
   await updatePdfStatus(supabase, book.id, user.id, `Uploading ${fileExtension.toUpperCase()} to cloud storage...`)
@@ -346,9 +298,8 @@ export default defineEventHandler(async (event) => {
     console.log('🔍 OUTPUT FIELD DEBUG:')
     console.log('   - book.output value:', book.output)
     console.log('   - book.output type:', typeof book.output)
-    console.log('   - book.output === "PNG":', book.output === 'PNG')
-    console.log('   - book.output === "png":', book.output === 'png')
-    console.log('   - book.output?.toLowerCase() === "png":', book.output?.toLowerCase() === 'png')
+    console.log('   - book.output === "JPG":', book.output === 'JPG')
+    console.log('   - book.output === "PDF":', book.output === 'PDF')
     
 
 
@@ -991,9 +942,12 @@ export default defineEventHandler(async (event) => {
             width: cropArea.width,
             height: cropArea.height
           })
-          .resize(targetWidth, targetHeight, { fit: 'cover' })
+          .resize(targetWidth, targetHeight, { 
+            fit: 'cover',
+            kernel: 'mitchell'
+          })
           .withMetadata() // Preserve original orientation
-          .png()
+          .jpeg({ quality: 100, progressive: true, mozjpeg: true })
           .toBuffer()
         
         console.log('✅ OpenAI face detection crop completed successfully')
@@ -1002,9 +956,12 @@ export default defineEventHandler(async (event) => {
         console.warn('⚠️ OpenAI face detection crop failed, using fallback:', error.message)
         // Fallback to regular resize using original imageBuffer
         return await sharp(imageBuffer)
-          .resize(targetWidth, targetHeight, { fit: 'cover' })
+          .resize(targetWidth, targetHeight, { 
+            fit: 'cover',
+            kernel: 'mitchell'
+          })
           .withMetadata() // Preserve original orientation
-          .png()
+          .jpeg({ quality: 100, progressive: true, mozjpeg: true })
           .toBuffer()
       }
     }
@@ -1154,7 +1111,7 @@ export default defineEventHandler(async (event) => {
                 // Use fallback to default cropping
                 processedImage = await sharp(imageBuffer)
                   .resize(targetWidth, targetHeight, { fit: 'cover' })
-                  .png()
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 console.log('✅ Fallback crop applied successfully')
                 return processedImage
@@ -1178,7 +1135,7 @@ export default defineEventHandler(async (event) => {
                     height: Math.round(cropHeight)
                   })
                   .resize(targetWidth, targetHeight, { fit: 'cover' })
-                  .png()
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 console.log('✅ AI-guided square crop applied successfully')
               } catch (cropError) {
@@ -1186,7 +1143,7 @@ export default defineEventHandler(async (event) => {
                 // Use fallback to default cropping
                 processedImage = await sharp(imageBuffer)
                   .resize(targetWidth, targetHeight, { fit: 'cover' })
-                  .png()
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 console.log('✅ Fallback square crop applied successfully')
               }
@@ -1195,7 +1152,7 @@ export default defineEventHandler(async (event) => {
               console.log('⚠️ Using default center cropping for square (no AI analysis)')
               processedImage = await sharp(imageBuffer)
                 .resize(targetWidth, targetHeight, { fit: 'cover' })
-                .png()
+                .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                 .toBuffer()
             }
             break
@@ -1247,7 +1204,7 @@ export default defineEventHandler(async (event) => {
                     input: Buffer.from(circleSvg),
                     blend: 'dest-in'
                   }])
-                  .png()
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 console.log('✅ Fallback crop applied successfully')
                 return processedImage
@@ -1275,7 +1232,7 @@ export default defineEventHandler(async (event) => {
                     input: Buffer.from(circleSvg),
                     blend: 'dest-in'
                   }])
-                  .png()
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 console.log('✅ AI-guided crop applied successfully')
               } catch (cropError) {
@@ -1287,7 +1244,7 @@ export default defineEventHandler(async (event) => {
                     input: Buffer.from(circleSvg),
                     blend: 'dest-in'
                   }])
-                  .png()
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 console.log('✅ Fallback crop applied successfully')
               }
@@ -1300,7 +1257,7 @@ export default defineEventHandler(async (event) => {
                   input: Buffer.from(circleSvg),
                   blend: 'dest-in'
                 }])
-                .png()
+                .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                 .toBuffer()
             }
             break
@@ -1405,7 +1362,7 @@ export default defineEventHandler(async (event) => {
                   input: Buffer.from(ellipseSvg),
                   blend: 'dest-in'
                 }])
-                .png()
+                .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                 .toBuffer()
             }
             break
@@ -1468,8 +1425,11 @@ export default defineEventHandler(async (event) => {
                 console.log('📚 Regular memory book - using standard resize for rounded shape')
                 // For regular memory books, use standard resize with standardized dimensions
                 resizedImage = await sharp(imageBuffer)
-                  .resize(highResWidth, highResHeight, { fit: 'cover' })
-                  .png()
+                  .resize(highResWidth, highResHeight, { 
+                    fit: 'cover',
+                    kernel: 'mitchell'
+                  })
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
               }
             
@@ -1497,7 +1457,7 @@ export default defineEventHandler(async (event) => {
                 input: Buffer.from(roundedMaskSvg),
                 blend: 'dest-in'
               }])
-              .png()
+              .jpeg({ quality: 100, progressive: true, mozjpeg: true })
               .toBuffer()
             
             console.log(`🎨 Applied rounded corners with Sharp, radius: ${Math.round(radius)}px`)
@@ -1520,7 +1480,7 @@ export default defineEventHandler(async (event) => {
                 top: borderWidth,
                 left: borderWidth
               }])
-              .png()
+              .jpeg({ quality: 100, progressive: true, mozjpeg: true })
               .toBuffer()
             
                           console.log(`✅ ${isMagicMemory ? 'SMART CROP + ' : ''}ROUNDED CORNERS PROCESSING COMPLETED`)
@@ -1531,8 +1491,11 @@ export default defineEventHandler(async (event) => {
           default:
             // Keep original aspect ratio
             processedImage = await sharp(imageBuffer)
-              .resize(targetWidth, targetHeight, { fit: 'inside' })
-              .png()
+              .resize(targetWidth, targetHeight, { 
+                fit: 'inside',
+                kernel: 'mitchell'
+              })
+              .jpeg({ quality: 100, progressive: true, mozjpeg: true })
               .toBuffer()
             
             // Add border to rectangular images
@@ -1544,7 +1507,7 @@ export default defineEventHandler(async (event) => {
                 right: borderWidth,
                 background: borderColor
               })
-              .png()
+              .jpeg({ quality: 100, progressive: true, mozjpeg: true })
               .toBuffer()
             break
         }
@@ -1867,7 +1830,7 @@ export default defineEventHandler(async (event) => {
             finalImageBuffer = await sharp(imageBuffer)
               .resize(targetWidth, targetHeight, { fit: 'cover' })
               .withMetadata() // Preserve original orientation
-              .png()
+              .jpeg({ quality: 100, progressive: true, mozjpeg: true })
               .toBuffer()
           }
           // Apply photo border if specified in theme
@@ -1890,14 +1853,14 @@ export default defineEventHandler(async (event) => {
                   right: borderWidth,
                   background: borderColor
                 })
-                .png()
+                .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                 .toBuffer()
               finalImageBuffer = borderedImage
               
               // Adjust drawing dimensions to account for border
               // Convert pixels to points for PDF drawing (1 point = 1/72 inch, 1 pixel = 1/96 inch)
               const borderPoints = photoBorder * (72 / 96)
-              const pdfImage = await pdfDoc.embedPng(finalImageBuffer)
+              const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
               page.drawImage(pdfImage, { 
                 x: photoX - borderPoints, 
                 y: photoY - borderPoints, 
@@ -1906,7 +1869,7 @@ export default defineEventHandler(async (event) => {
               })
             } catch (borderError) {
               console.warn('⚠️ Failed to apply photo border:', borderError)
-              const pdfImage = await pdfDoc.embedPng(finalImageBuffer)
+              const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
               page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
             }
           } else {
@@ -1918,11 +1881,11 @@ export default defineEventHandler(async (event) => {
                 const roundedSvg = `<svg width="${targetWidth}" height="${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" fill="white"/></svg>`
                 finalImageBuffer = await sharp(finalImageBuffer)
                   .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
-                  .png()
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
               } catch (roundError) {}
             }
-            const pdfImage = await pdfDoc.embedPng(finalImageBuffer)
+            const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
             page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
           }
         } catch (err) {}
@@ -1956,7 +1919,7 @@ export default defineEventHandler(async (event) => {
       await updatePdfStatus(supabase, book.id, user.id, '🎨 Theme PDF created!')
       
       // Use centralized function to save and upload file
-      const pdfStorageUrl = await saveAndUploadFile(pdfDoc, book, user, supabase)
+      const pdfStorageUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, book.print_size || '7x5')
       
       // Update book status and return
       await supabase.from('memory_books').update({ 
@@ -2307,8 +2270,8 @@ export default defineEventHandler(async (event) => {
             console.log(`✅ Image downloaded, size:`, imageBuffer.length, 'bytes')
             
             // Process image orientation and shape
-            const isPng = asset.storage_url.endsWith('.png')
-            const processedImageBuffer = await processImageOrientation(imageBuffer, isPng ? 'png' : 'jpeg')
+            const isJpg = asset.storage_url.endsWith('.jpg') || asset.storage_url.endsWith('.jpeg')
+            const processedImageBuffer = await processImageOrientation(imageBuffer, isJpg ? 'jpeg' : 'jpeg')
             console.log(`🔄 After orientation processing, size:`, processedImageBuffer.length, 'bytes')
             
             // Get memory shape from book settings
@@ -2331,9 +2294,9 @@ export default defineEventHandler(async (event) => {
             }
             
             let pdfImage
-            if (memoryShape !== 'original' || isPng) {
-              console.log(`📄 Embedding PNG image (processed shape or PNG format)`)
-              pdfImage = await pdfDoc.embedPng(finalImageBuffer)
+            if (memoryShape !== 'original' || isJpg) {
+              console.log(`📄 Embedding JPG image (processed shape or JPG format)`)
+              pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
             } else {
               console.log(`📄 Embedding JPG image (original format)`)
               pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
@@ -2567,7 +2530,7 @@ export default defineEventHandler(async (event) => {
     await updatePdfStatus(supabase, book.id, user.id, 'Finalizing PDF document...')
     
     // 5. Save PDF and upload to Supabase Storage using centralized function
-    const publicUrl = await saveAndUploadFile(pdfDoc, book, user, supabase)
+    const publicUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, book.print_size || '7x5')
     
     await updatePdfStatus(supabase, book.id, user.id, 'Working our magic ...')
     console.log('🎉 PDF generated and uploaded successfully')
