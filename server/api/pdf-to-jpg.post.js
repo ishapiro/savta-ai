@@ -65,7 +65,11 @@ export default defineEventHandler(async (event) => {
         targetHeight = 1500
     }
     
-    const pdftoppmCommand = `pdftoppm -jpeg -f ${page} -l ${page} -x ${targetWidth} -y ${targetHeight} -singlefile "${inputPdfPath}" "${outputPath.replace('.jpg', '')}"`
+    // Use -r (resolution) parameter to set exact DPI
+    // This should generate the correct pixel dimensions
+    const targetDpi = 300
+    
+    const pdftoppmCommand = `pdftoppm -jpeg -f ${page} -l ${page} -r ${targetDpi} -singlefile "${inputPdfPath}" "${outputPath.replace('.jpg', '')}"`
     
     console.log('⚙️ pdftoppm command:', pdftoppmCommand)
     console.log(`📐 Target dimensions: ${targetWidth}x${targetHeight} pixels (${(targetWidth/300).toFixed(1)}x${(targetHeight/300).toFixed(1)} inches at 300 DPI for ${printSize} print size)`)
@@ -89,9 +93,12 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Process with Sharp for additional quality optimization
-    console.log('🔄 Processing with Sharp for quality optimization...')
+    // Process with Sharp for additional quality optimization and DPI metadata
+    console.log('🔄 Processing with Sharp for quality optimization and DPI metadata...')
     const outputBuffer = await sharp(outputPath)
+      .withMetadata({
+        density: 300 // Set DPI metadata to 300
+      })
       .jpeg({ 
         quality: quality,
         progressive: true,
