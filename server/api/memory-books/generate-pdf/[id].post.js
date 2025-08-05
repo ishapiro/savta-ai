@@ -644,9 +644,9 @@ export default defineEventHandler(async (event) => {
             const faceWidth = face.width
             const faceHeight = face.height
             
-            // Add generous padding around each face center (15% more area around face)
-            const paddingX = faceWidth * 1.15
-            const paddingY = faceHeight * 1.15
+            // Add generous padding around each face center (25% more area around face)
+            const paddingX = faceWidth * 1.25
+            const paddingY = faceHeight * 1.25
             
             const faceMinX = centerX - paddingX
             const faceMaxX = centerX + paddingX
@@ -681,7 +681,7 @@ export default defineEventHandler(async (event) => {
             maxX: maxX.toFixed(1),
             maxY: maxY.toFixed(1),
             faceCount: faces.length,
-            paddingMultiplier: '1.15x'
+            paddingMultiplier: '1.25x'
           })
           
           // Calculate the maximum possible crop area that includes all faces
