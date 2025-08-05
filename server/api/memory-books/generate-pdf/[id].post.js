@@ -3,6 +3,7 @@
 
 import { PDFDocument, rgb } from 'pdf-lib'
 import sharp from 'sharp'
+import { pdfToPng } from 'pdf-to-png-converter'
 
 import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
@@ -14,9 +15,19 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase) {
   const pdfBytes = await pdfDoc.save()
   console.log('✅ PDF saved, size:', pdfBytes.length, 'bytes')
   
+  // Enhanced logging for debugging PNG conversion
+  console.log('🔍 DEBUG - Book object for PNG conversion:')
+  console.log('   - Book ID:', book.id)
+  console.log('   - Book title:', book.title)
+  console.log('   - Book output field:', book.output)
+  console.log('   - Book output type:', typeof book.output)
+  console.log('   - Book layout_type:', book.layout_type)
+  console.log('   - Book ui field:', book.ui)
+  
   // Check if we should convert to PNG based on output field
   const shouldConvertToPng = book.output && (book.output.toLowerCase() === 'png')
   console.log(`🔍 Output field check: ${book.output} (convert to PNG: ${shouldConvertToPng})`)
+  console.log(`🔍 Should convert logic: book.output=${book.output}, toLowerCase()=${book.output?.toLowerCase()}, comparison=${book.output?.toLowerCase() === 'png'}`)
   
   let finalBytes = pdfBytes
   let contentType = 'application/pdf'
@@ -24,6 +35,7 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase) {
   let fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.pdf`
   
   if (shouldConvertToPng) {
+    console.log('🔄 PNG conversion is enabled, starting conversion process...')
     try {
       console.log('🔄 Checking PDF page count for PNG conversion...')
       
@@ -34,30 +46,134 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase) {
       
       if (pageCount === 1) {
         console.log('✅ Single page PDF detected, converting to PNG...')
+        console.log('🔄 Starting Sharp conversion with density: 300 DPI...')
         
-        // Convert PDF to PNG using Sharp
-        const pngBuffer = await sharp(pdfBytes, { density: 300 })
-          .png()
-          .toBuffer()
+        // Convert PDF to PNG using pdf-to-png-converter
+        console.log('🔄 Using pdf-to-png-converter to convert PDF to PNG...')
         
-        console.log('✅ PDF converted to PNG successfully')
-        console.log(`📊 PNG size: ${pngBuffer.length} bytes`)
-        
-        finalBytes = pngBuffer
-        contentType = 'image/png'
-        fileExtension = 'png'
-        fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.png`
-        
-        console.log('🖼️ Will upload PNG instead of PDF')
+        try {
+          // First, save the PDF to a temporary file
+          const fs = await import('fs')
+          const path = await import('path')
+          const os = await import('os')
+          
+          // Create temporary file paths
+          const tempDir = os.default.tmpdir()
+          const tempPdfPath = path.default.join(tempDir, `temp_${book.id}_${Date.now()}.pdf`)
+          
+          console.log('📁 Temporary PDF path:', tempPdfPath)
+          
+          try {
+            // Write PDF to temporary file
+            fs.default.writeFileSync(tempPdfPath, pdfBytes)
+            console.log('✅ PDF written to temporary file')
+            
+            // Configure pdf-to-png-converter options for 300 DPI output
+            // Base DPI for PDF.js is 72 DPI
+            // For 300 DPI: 300/72 = 4.166
+            // This works for any PDF size (7x5, 8.5x11, etc.) since it's a scale factor
+            const options = {
+              pages: [1], // Convert only first page
+              viewportScale: 4.166, // 300 DPI (300/72 = 4.166)
+              outputFormat: 'PNG',
+              disableFontFace: false, // Enable font rendering for better quality
+              useSystemFonts: false, // Use embedded fonts for better quality
+              allowLocalFiles: true // Allow local font files
+            }
+            
+            console.log('⚙️ pdf-to-png-converter options:', options)
+            
+            // Convert PDF to PNG
+            const pngPages = await pdfToPng(tempPdfPath, options)
+            
+            if (!pngPages || pngPages.length === 0) {
+              throw new Error('No PNG pages returned from conversion')
+            }
+            
+            // Get the first (and only) page content
+            let pngBuffer = pngPages[0].content
+            console.log('✅ PDF to PNG conversion completed')
+            console.log(`📊 PNG buffer size: ${pngBuffer.length} bytes`)
+            
+            // Post-process with Sharp to set correct DPI metadata
+            console.log('🔄 Setting 300 DPI metadata with Sharp...')
+            pngBuffer = await sharp(pngBuffer)
+              .withMetadata({ density: 300 }) // Set DPI metadata to 300
+              .png({ 
+                compressionLevel: 9 
+              })
+              .toBuffer()
+            
+            console.log('✅ DPI metadata set to 300')
+            
+            // Clean up temporary PDF file
+            fs.default.unlinkSync(tempPdfPath)
+            console.log('🧹 Temporary PDF file cleaned up')
+            
+            finalBytes = pngBuffer
+            contentType = 'image/png'
+            fileExtension = 'png'
+            fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.png`
+            
+            console.log('✅ PDF converted to PNG successfully')
+            console.log(`📊 PNG size: ${pngBuffer.length} bytes`)
+            console.log(`📊 Original PDF size: ${pdfBytes.length} bytes`)
+            console.log(`📊 Compression ratio: ${((1 - pngBuffer.length / pdfBytes.length) * 100).toFixed(1)}%`)
+            
+            console.log('🖼️ Will upload PNG instead of PDF')
+            console.log('🖼️ Final file details:')
+            console.log('   - File name:', fileName)
+            console.log('   - Content type:', contentType)
+            console.log('   - File extension:', fileExtension)
+            console.log('   - File size:', finalBytes.length, 'bytes')
+            
+          } catch (conversionError) {
+            console.error('❌ pdf-to-png-converter conversion failed:', conversionError)
+            
+            // Clean up temporary PDF file if it exists
+            try {
+              if (fs.default.existsSync(tempPdfPath)) {
+                fs.default.unlinkSync(tempPdfPath)
+              }
+            } catch (cleanupError) {
+              console.warn('⚠️ Error cleaning up temporary PDF file:', cleanupError.message)
+            }
+            
+            throw conversionError
+          }
+          
+        } catch (conversionError) {
+          console.error('❌ pdf-to-png-converter conversion failed:', conversionError)
+          console.error('❌ Conversion error details:', {
+            message: conversionError.message,
+            stack: conversionError.stack,
+            name: conversionError.name
+          })
+          throw conversionError
+        }
       } else {
         console.log(`⚠️ PDF has ${pageCount} pages, keeping as PDF (PNG conversion only for single-page documents)`)
+        console.log(`⚠️ Page count ${pageCount} > 1, skipping PNG conversion`)
         // Show message to user about multi-page PDF
         await updatePdfStatus(supabase, book.id, user.id, `PDF has ${pageCount} pages - keeping as PDF (PNG conversion only available for single-page documents)`)
       }
     } catch (conversionError) {
-      console.warn('⚠️ PNG conversion failed, keeping as PDF:', conversionError.message)
+      console.error('❌ PNG conversion failed, keeping as PDF:', conversionError)
+      console.error('❌ Conversion error details:', {
+        message: conversionError.message,
+        stack: conversionError.stack,
+        name: conversionError.name
+      })
       await updatePdfStatus(supabase, book.id, user.id, 'PNG conversion failed - keeping as PDF')
     }
+  } else {
+    console.log('ℹ️ PNG conversion is disabled, keeping as PDF')
+    console.log('ℹ️ Reasons for not converting:')
+    console.log('   - book.output exists:', !!book.output)
+    console.log('   - book.output value:', book.output)
+    console.log('   - book.output type:', typeof book.output)
+    console.log('   - toLowerCase() result:', book.output?.toLowerCase())
+    console.log('   - comparison result:', book.output?.toLowerCase() === 'png')
   }
   
   const timestamp = Date.now()
@@ -122,6 +238,12 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase) {
   // Update the book with the public URL
   await updatePdfStatus(supabase, book.id, user.id, 'Saving file link to database...')
   console.log('📝 Updating memory book with file URL...')
+  console.log('📝 Database update details:')
+  console.log('   - Book ID:', book.id)
+  console.log('   - File URL:', publicUrl)
+  console.log('   - File extension:', fileExtension)
+  console.log('   - Content type:', contentType)
+  
   const { data: updateData, error: updateError } = await supabase
     .from('memory_books')
     .update({ 
@@ -135,6 +257,7 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase) {
     // Don't throw here, as the file was successfully uploaded
   } else {
     console.log('✅ Memory book updated with file URL successfully')
+    console.log('✅ Updated book data:', updateData)
   }
   
   return publicUrl
@@ -216,8 +339,16 @@ export default defineEventHandler(async (event) => {
       status: book.status,
       photo_selection_pool_count: book.photo_selection_pool?.length || 0,
       created_from_assets_count: book.created_from_assets?.length || 0,
-      theme_id: book.theme_id || 'none'
+      theme_id: book.theme_id || 'none',
+      output: book.output || 'not set',
+      ui: book.ui || 'not set'
     })
+    console.log('🔍 OUTPUT FIELD DEBUG:')
+    console.log('   - book.output value:', book.output)
+    console.log('   - book.output type:', typeof book.output)
+    console.log('   - book.output === "PNG":', book.output === 'PNG')
+    console.log('   - book.output === "png":', book.output === 'png')
+    console.log('   - book.output?.toLowerCase() === "png":', book.output?.toLowerCase() === 'png')
     
 
 

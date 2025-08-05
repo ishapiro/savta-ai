@@ -34,6 +34,7 @@
     "lucide-vue-next": "^0.525.0",
     "marked": "^11.1.1",
     "pdf-lib": "^1.17.1",
+    "pdf-to-png-converter": "^3.7.1",
     "pdfjs-dist": "^3.11.174",
     "pluralize": "^8.0.0",
     "primeflex": "^3.3.1",

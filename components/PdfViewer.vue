@@ -1,15 +1,32 @@
 
-<!-- PDF Viewer for Savta.AI -->
+<!-- PDF/Image Viewer for Savta.AI -->
 <template>
   <ClientOnly>
     <div class="relative w-full h-full bg-brand-navigation">
-              <!-- PDF Document -->
-        <div class="w-full h-full overflow-auto pb-20 scrollbar-hide">
-          <div class="w-full h-full flex p-4 mb-4" :class="shouldPositionAtTop ? 'items-start justify-center' : 'items-center justify-center'" @vue:mounted="logPositioningClasses">
-          <div 
-            ref="pdfContainer"
-            class="mb-4 flex"
-            :style="pdfContainerStyle"
+      <!-- Document/Image Container -->
+      <div class="w-full h-full overflow-auto pb-20 scrollbar-hide">
+        <div class="w-full h-full flex p-4 mb-4" :class="shouldPositionAtTop ? 'items-start justify-center' : 'items-center justify-center'" @vue:mounted="logPositioningClasses">
+          
+          <!-- PNG Image Display -->
+          <div v-if="isPngImage"
+               ref="imageContainer"
+               class="mb-4 flex"
+               :style="imageContainerStyle"
+          >
+            <img 
+              :src="props.src"
+              :alt="'Memory Book Image'"
+              class="max-w-full max-h-full object-contain"
+              @load="onImageLoaded"
+              @error="onImageError"
+            />
+          </div>
+
+          <!-- PDF Document Display -->
+          <div v-else
+               ref="pdfContainer"
+               class="mb-4 flex"
+               :style="pdfContainerStyle"
           >
             <div 
               :style="{ 
@@ -37,8 +54,8 @@
         </div>
       </div>
 
-      <!-- Navigation + Zoom Controls -->
-      <div class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-brand-primary/20">
+      <!-- Navigation + Zoom Controls (only show for PDFs) -->
+              <div v-if="!isPngImage" class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-brand-primary/20">
         <div class="flex items-center gap-2 sm:gap-4">
           <!-- Previous Page -->
           <button
@@ -104,6 +121,31 @@
           </button>
         </div>
       </div>
+
+      <!-- Download/Share Controls for PNG Images -->
+              <div v-if="isPngImage" class="absolute bottom-0 left-0 right-0 flex justify-center items-center py-2 sm:py-3 bg-white z-10 border-t border-brand-primary/20">
+        <div class="flex items-center gap-2 sm:gap-4">
+          <!-- Download PNG -->
+          <button
+            v-if="!isMobile"
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
+            @click="downloadImage"
+            aria-label="Download Image"
+          >
+            <i class="pi pi-download text-xl sm:text-2xl text-brand-header"></i>
+          </button>
+
+          <!-- Share PNG -->
+          <button
+            v-if="canShare"
+            class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header ml-2"
+            @click.prevent="shareImage"
+            aria-label="Share Image"
+          >
+            <i class="pi pi-share-alt text-xl sm:text-2xl text-brand-header"></i>
+          </button>
+        </div>
+      </div>
     </div>
   </ClientOnly>
 </template>
@@ -130,6 +172,21 @@ const scale = ref(0.8)
 const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
 const isSharing = ref(false) // Track if we're currently sharing
+
+// Check if the source is a PNG image
+const isPngImage = computed(() => {
+  // Remove query parameters and hash from URL before checking
+  const cleanUrl = props.src ? props.src.split('?')[0].split('#')[0] : ''
+  const result = cleanUrl && cleanUrl.toLowerCase().endsWith('.png')
+  
+  console.log('🔍 isPngImage check:', {
+    src: props.src,
+    cleanUrl: cleanUrl,
+    endsWithPng: cleanUrl?.toLowerCase().endsWith('.png'),
+    result: result
+  })
+  return result
+})
 
 // Check if Web Share API is available
 const canShare = computed(() => {
@@ -180,8 +237,29 @@ const pdfContainerStyle = computed(() => {
   }
 })
 
+const imageContainerStyle = computed(() => {
+  // For images, use a more flexible container that adapts to the image size
+  const maxWidth = 800
+  const maxHeight = 600
+  
+  return {
+    maxWidth: `${maxWidth}px`,
+    maxHeight: `${maxHeight}px`,
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+})
+
 // Determine if PDF should be positioned at top or centered based on actual PDF dimensions
 const shouldPositionAtTop = computed(() => {
+  if (isPngImage.value) {
+    // For images, always center
+    return false
+  }
+  
   const { width, height } = pdfDimensions.value
   
   console.log('🔍 PDF Positioning Logic:', {
@@ -199,6 +277,17 @@ const shouldPositionAtTop = computed(() => {
   console.log('🔍 All PDFs are scaled to fit, centering all')
   return false
 })
+
+function onImageLoaded(event) {
+  const img = event.target
+  isLoaded.value = true
+  console.log('🔍 Image loaded successfully:', props.src)
+}
+
+function onImageError() {
+  console.error('🔍 Failed to load image:', props.src)
+  isLoaded.value = false
+}
 
 function onLoaded(pdf) {
   pageCount.value = pdf.numPages
@@ -235,7 +324,8 @@ function calculateInitialScale() {
   const container = pdfContainer.value
   if (!container) {
     console.log('🔍 Container not available, using default scale')
-    scale.value = 0.8
+    // For PNG images, use 1.0 (original size), for PDFs use 0.8
+    scale.value = isPngImage.value ? 1.0 : 0.8
     return
   }
   
@@ -247,7 +337,15 @@ function calculateInitialScale() {
   
   if (!pdfWidth || !pdfHeight) {
     console.log('🔍 No PDF dimensions available, using default scale')
-    scale.value = 0.8
+    // For PNG images, use 1.0 (original size), for PDFs use 0.8
+    scale.value = isPngImage.value ? 1.0 : 0.8
+    return
+  }
+  
+  // For PNG images, start at original size (1.0) and let user zoom if needed
+  if (isPngImage.value) {
+    console.log('🔍 PNG image detected, setting initial scale to 1.0 (original size)')
+    scale.value = 1.0
     return
   }
   
@@ -279,7 +377,8 @@ function calculateInitialScale() {
 }
 
 function logPositioningClasses() {
-  console.log('🔍 PDF Container Positioning Classes:', {
+  console.log('🔍 Container Positioning Classes:', {
+    isPngImage: isPngImage.value,
     shouldPositionAtTop: shouldPositionAtTop.value,
     appliedClasses: shouldPositionAtTop.value ? 'items-start justify-center' : 'items-center justify-center',
     pdfDimensions: pdfDimensions.value
@@ -305,6 +404,53 @@ function downloadPdf() {
   } else {
     window.open(props.src, '_blank')
   }
+}
+
+function downloadImage() {
+  // Prevent download if we're currently sharing
+  if (isSharing.value) {
+    console.log('🔍 Download blocked - currently sharing')
+    return
+  }
+  
+  console.log('🔍 Downloading PNG image:', props.src)
+  
+  // For cross-origin URLs, we need to fetch the image first
+  fetch(props.src)
+    .then(response => response.blob())
+    .then(blob => {
+      // Create a blob URL
+      const blobUrl = URL.createObjectURL(blob)
+      
+      // Create a temporary link to download the image
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = 'memory-book.png'
+      link.style.display = 'none'
+      
+      // Add to DOM, click, and remove
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // Clean up the blob URL
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl)
+      }, 100)
+      
+      console.log('🔍 PNG download initiated')
+    })
+    .catch(error => {
+      console.error('🔍 Error downloading PNG:', error)
+      // Fallback: try direct download
+      const link = document.createElement('a')
+      link.href = props.src
+      link.download = 'memory-book.png'
+      link.target = '_blank'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    })
 }
 
 function zoomIn() {
@@ -423,10 +569,109 @@ function sharePdf() {
   }
 }
 
+function shareImage() {
+  console.log('🔍 Share button clicked - starting shareImage function')
+  
+  // Prevent multiple share attempts
+  if (isSharing.value) {
+    console.log('🔍 Already sharing, ignoring click')
+    return
+  }
+  
+  isSharing.value = true
+  
+  // Set a timeout to reset the sharing flag after 10 seconds
+  const sharingTimeout = setTimeout(() => {
+    if (isSharing.value) {
+      console.log('🔍 Sharing timeout - resetting flag')
+      isSharing.value = false
+    }
+  }, 10000)
+  
+  try {
+    // Get the image source URL
+    const imageUrl = props.src
+    console.log('🔍 Image URL to share:', imageUrl)
+    
+    if (!imageUrl) {
+      console.warn('🔍 No image source available to share')
+      clearTimeout(sharingTimeout)
+      isSharing.value = false
+      return
+    }
+
+    // Check if Web Share API is available
+    console.log('🔍 Can share check:', canShare.value)
+    if (!canShare.value) {
+      console.warn('🔍 Web Share API not available')
+      // Fallback: copy URL to clipboard only
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(imageUrl).then(() => {
+          console.log('🔍 Image URL copied to clipboard')
+        }).catch(err => {
+          console.error('🔍 Failed to copy URL:', err)
+        })
+      }
+      clearTimeout(sharingTimeout)
+      isSharing.value = false
+      return
+    }
+
+    // Prepare share data
+    const shareData = {
+      title: 'Memory Book Image',
+      text: 'Check out this beautiful memory book!',
+      url: imageUrl
+    }
+    console.log('🔍 Share data prepared:', shareData)
+
+    // Check if the data can be shared
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      console.log('🔍 Attempting to share...')
+      navigator.share(shareData)
+        .then(() => {
+          console.log('🔍 Image shared successfully!')
+          clearTimeout(sharingTimeout)
+          isSharing.value = false
+        })
+        .catch((error) => {
+          console.error('🔍 Error sharing image:', error)
+          if (error.name !== 'AbortError') {
+            // Only log error if it's not a user cancellation
+            console.warn('🔍 Share was cancelled or failed')
+          }
+          // Explicitly do nothing - don't open any windows
+          console.log('🔍 Share cancelled/failed - no window opened')
+          clearTimeout(sharingTimeout)
+          isSharing.value = false
+        })
+    } else {
+      console.warn('🔍 Share data not supported')
+      // Fallback: copy URL to clipboard only
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(imageUrl).then(() => {
+          console.log('🔍 Image URL copied to clipboard')
+        }).catch(err => {
+          console.error('🔍 Failed to copy URL:', err)
+        })
+      }
+      clearTimeout(sharingTimeout)
+      isSharing.value = false
+    }
+  } catch (error) {
+    console.error('🔍 Error in shareImage function:', error)
+    // Explicitly do nothing - don't open any windows
+    console.log('🔍 Share error caught - no window opened')
+    clearTimeout(sharingTimeout)
+    isSharing.value = false
+  }
+}
+
 watch(() => props.src, () => {
   currentPage.value = 1
   isLoaded.value = false
-  scale.value = 0.8 // Will be recalculated when PDF loads
+  // Set initial scale based on file type: PNG = 1.0 (original size), PDF = 0.8
+  scale.value = isPngImage.value ? 1.0 : 0.8
   pdfDimensions.value = { width: 0, height: 0 }
   pdfEmbedKey.value++ // ensure rerender when switching files
 })
@@ -448,10 +693,19 @@ watch(pdfDimensions, (newDimensions) => {
 
 // Watch for positioning changes
 watch(shouldPositionAtTop, (newPosition) => {
-  console.log('🔍 PDF positioning changed:', {
+  console.log('🔍 Container positioning changed:', {
+    isPngImage: isPngImage.value,
     shouldPositionAtTop: newPosition,
     pdfDimensions: pdfDimensions.value,
     appliedClasses: newPosition ? 'items-start justify-center' : 'items-center justify-center'
+  })
+})
+
+// Watch for file type changes
+watch(isPngImage, (isPng) => {
+  console.log('🔍 File type changed:', {
+    isPngImage: isPng,
+    src: props.src
   })
 })
 </script>

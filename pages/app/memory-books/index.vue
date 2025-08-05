@@ -129,7 +129,7 @@
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-primary/20"><i class="pi pi-list text-lg text-brand-primary"></i></span>
-                              <span class="text-brand-primary"><b>Details</b>: See more information about your Special Memory Card.</span>
+              <span class="text-brand-primary"><b>Details</b>: See more information about your Special Memory Card.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-highlight/20"><i class="pi pi-cog text-lg text-brand-highlight"></i></span>
@@ -848,15 +848,15 @@
             </div>
           </div>
 
-          <!-- PDF Section -->
+          <!-- Memory Book Section -->
           <div v-if="selectedBook.pdf_url" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div class="flex items-center gap-3">
-                                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-file-pdf text-brand-primary text-sm sm:text-base"></i>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i :class="[getFileTypeIcon(selectedBook), getFileTypeColor(selectedBook), 'text-sm sm:text-base']"></i>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Book PDF</h3>
+                  <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Book {{ getFileTypeDisplay(selectedBook) }}</h3>
                   <p class="text-xs sm:text-sm text-gray-600">Ready to download and share</p>
                 </div>
               </div>
@@ -865,14 +865,14 @@
                 @click="forceDownloadPDF(selectedBook)"
               >
                 <i class="pi pi-download text-xs sm:text-sm"></i>
-                <span class="hidden sm:inline">Download PDF</span>
+                <span class="hidden sm:inline">Download Your Memory</span>
                 <span class="sm:hidden">Download</span>
               </button>
             </div>
             <div class="border-0 bg-gradient-to-br from-brand-primary/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 mt-4">
               <div class="flex items-start gap-2 text-xs sm:text-sm text-brand-primary">
                 <i class="pi pi-info-circle text-brand-primary text-xs sm:text-sm mt-0.5 flex-shrink-0"></i>
-                <span>Click download to save your memory book as a PDF file to your device</span>
+                <span>Click download to save your memory book as a {{ getFileTypeDisplay(selectedBook) }} file to your device</span>
               </div>
             </div>
           </div>
@@ -3411,6 +3411,22 @@ const formatDate = (dateString) => {
   }
 }
 
+// File type helper functions
+const getFileTypeDisplay = (book) => {
+  if (!book) return 'PDF'
+  return book.output === 'PNG' ? 'PNG' : 'PDF'
+}
+
+const getFileTypeIcon = (book) => {
+  if (!book) return 'pi pi-file-pdf'
+  return book.output === 'PNG' ? 'pi pi-image' : 'pi pi-file-pdf'
+}
+
+const getFileTypeColor = (book) => {
+  if (!book) return 'text-brand-primary'
+  return book.output === 'PNG' ? 'text-brand-accent' : 'text-brand-primary'
+}
+
 const showEditSettingsModal = ref(false)
 const editBook = ref(null)
 const savingEditBook = ref(false)
@@ -4018,7 +4034,8 @@ async function onMagicMemoryContinue() {
         background_type: aiRes.background_type || magicBackgroundType.value,
         background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
         photo_count: magicPhotoCount.value,
-        theme_id: magicSelectedTheme.value || null
+        theme_id: magicSelectedTheme.value || null,
+        output: 'PNG' // Wizard creates single-page memories, so always use PNG
       },
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -4164,7 +4181,8 @@ const retryMagicMemory = async () => {
         memory_event: config.memoryEvent,
         background_type: aiRes.background_type || config.backgroundType,
         photo_count: config.photoCount,
-        theme_id: config.selectedTheme || null
+        theme_id: config.selectedTheme || null,
+        output: 'PNG' // Wizard creates single-page memories, so always use PNG
       },
       headers: {
         Authorization: `Bearer ${accessToken}`
