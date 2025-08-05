@@ -1568,20 +1568,6 @@
           </div>
         </div>
 
-        <!-- Background Details Info -->
-        <div v-if="magicBackgroundType !== 'solid'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
-          <div class="flex items-start gap-3">
-            <i class="pi pi-info-circle text-brand-flash mt-1"></i>
-            <div>
-              <h4 class="font-semibold text-brand-flash mb-1">Background Details</h4>
-              <p class="text-xs sm:text-sm text-gray-700">
-                {{ magicBackgroundType === 'white' 
-                  ? 'A clean white background will make your photos and story the star of the show.' 
-                  : 'I\'ll create a beautiful background design that complements your story and makes your memory even more special.' }}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Step 5: Theme Selection -->
@@ -1612,15 +1598,6 @@
           </small>
         </div>
         
-        <!-- Skip Theme Option -->
-        <div class="mt-4 w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
-          <button
-            @click="magicSelectedTheme = null"
-            class="w-full text-sm text-gray-500 hover:text-gray-700 underline"
-          >
-            Skip theme selection (use default)
-          </button>
-        </div>
       </div>
 
       <!-- Step 6: Photo Selection Method -->
@@ -3856,7 +3833,7 @@ const fetchMagicThemes = async () => {
     loadingMagicThemes.value = true
     const { data, error } = await supabase
       .from('themes')
-      .select('id, name, description, is_active, layout_config, card_wizard')
+      .select('id, name, description, is_active, layout_config, card_wizard, card_default')
       .eq('is_active', true)
       .eq('deleted', false)
       .eq('card_wizard', true) // Only show themes that are enabled for wizard
@@ -3867,7 +3844,8 @@ const fetchMagicThemes = async () => {
       return
     }
     
-    // Transform themes for dropdown
+    // Transform themes for dropdown and find default theme
+    let defaultThemeId = null
     magicThemeOptions.value = data.map(theme => {
       let photoCount = 0
       try {
@@ -3882,14 +3860,26 @@ const fetchMagicThemes = async () => {
         console.error('Error parsing theme layout config:', error)
       }
       
+      // Track the default theme
+      if (theme.card_default) {
+        defaultThemeId = theme.id
+      }
+      
       return {
         label: photoCount > 0 ? `${theme.name} (${photoCount} photos)` : theme.name,
         value: theme.id,
         description: theme.description,
         layoutConfig: theme.layout_config,
-        photoCount: photoCount
+        photoCount: photoCount,
+        card_default: theme.card_default
       }
     })
+    
+    // Set the default theme if no theme is currently selected
+    if (!magicSelectedTheme.value && defaultThemeId) {
+      magicSelectedTheme.value = defaultThemeId
+      console.log('[MAGIC-MEMORY] Auto-selected default theme:', defaultThemeId)
+    }
     
     console.log('[MAGIC-MEMORY] Fetched themes for wizard:', magicThemeOptions.value)
   } catch (error) {
@@ -3915,6 +3905,12 @@ const getContrastTextClass = (backgroundColor) => {
   // Return appropriate text class based on luminance
   return luminance > 0.5 ? 'text-gray-900' : 'text-white'
 }
+
+// Computed property to get the default theme name
+const defaultThemeName = computed(() => {
+  const defaultTheme = magicThemeOptions.value.find(theme => theme.card_default)
+  return defaultTheme ? defaultTheme.label.split(' (')[0] : null // Extract just the name without photo count
+})
 
 // Watch for magic memory step changes to handle Step 5 redirect
 watch(magicMemoryStep, (newStep) => {
@@ -3995,7 +3991,7 @@ async function onMagicMemoryContinue() {
       photo_count: magicPhotoCount.value,
       background_type: magicBackgroundType.value,
       background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
-              theme_id: magicSelectedTheme.value || null // Use selected theme or default to null
+              theme_id: magicSelectedTheme.value // Use selected theme (which will be default if none selected)
     }
     if (photos.length <= magicPhotoCount.value) {
       aiBody.forceAll = true
@@ -4034,7 +4030,7 @@ async function onMagicMemoryContinue() {
         background_type: aiRes.background_type || magicBackgroundType.value,
         background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
         photo_count: magicPhotoCount.value,
-        theme_id: magicSelectedTheme.value || null,
+        theme_id: magicSelectedTheme.value,
         output: 'PNG' // Wizard creates single-page memories, so always use PNG
       },
       headers: {

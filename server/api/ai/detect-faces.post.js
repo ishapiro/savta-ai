@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     
     // Get request body
     const body = await readBody(event)
-    const { imageUrl } = body
+    const { imageUrl, imageWidth, imageHeight } = body
     
     if (!imageUrl) {
       throw createError({
@@ -26,17 +26,18 @@ export default defineEventHandler(async (event) => {
     }
     
     console.log('🔍 Analyzing image for faces:', imageUrl)
+    console.log('📐 Image dimensions:', imageWidth, 'x', imageHeight)
     
-    // Construct prompt for face detection
+    // Construct prompt for face detection with actual dimensions
     const prompt = `DETECT ALL HUMAN FACES IN THIS IMAGE. RETURN ONLY A JSON OBJECT WITH THIS EXACT STRUCTURE:
 
 {
   "faces": [
     {
-      "x": 50,
-      "y": 40,
-      "width": 10,
-      "height": 10,
+      "x": 500,
+      "y": 300,
+      "width": 200,
+      "height": 200,
       "confidence": 0.95
     }
   ],
@@ -44,11 +45,14 @@ export default defineEventHandler(async (event) => {
 }
 
 WHERE:
-- x, y are center coordinates as percentages (0-100)
-- width, height are face dimensions as percentages (0-100)
+- x, y are center coordinates in PIXELS (0 to ${imageWidth} for x, 0 to ${imageHeight} for y)
+- Origin (0,0) is at the TOP-LEFT corner of the image
+- X increases from left to right, Y increases from top to bottom
+- width, height are face dimensions in PIXELS
 - confidence is 0-1
 - total_faces is the count
 
+USE THE ACTUAL IMAGE DIMENSIONS: ${imageWidth}x${imageHeight} PIXELS
 RETURN ONLY THE JSON. NO OTHER TEXT. NO EXPLANATIONS.`
     // Call OpenAI Vision API
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {

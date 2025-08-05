@@ -608,7 +608,9 @@ export default defineEventHandler(async (event) => {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                imageUrl: storageUrl
+                imageUrl: storageUrl,
+                imageWidth: workingMetadata.width,
+                imageHeight: workingMetadata.height
               })
             })
             
@@ -629,37 +631,43 @@ export default defineEventHandler(async (event) => {
         let cropArea = null
         
         if (faces.length > 0) {
-          // Calculate crop area that includes all detected faces
-          let minX = 100
-          let minY = 100
+          // Calculate crop area based on face centers with generous padding
+          let minX = workingMetadata.width
+          let minY = workingMetadata.height
           let maxX = 0
           let maxY = 0
           
           faces.forEach(face => {
-            const x = face.x / 100 * workingMetadata.width
-            const y = face.y / 100 * workingMetadata.height
-            const width = face.width / 100 * workingMetadata.width
-            const height = face.height / 100 * workingMetadata.height
+            // AI now returns coordinates in pixels, no conversion needed
+            const centerX = face.x
+            const centerY = face.y
+            const faceWidth = face.width
+            const faceHeight = face.height
             
-            minX = Math.min(minX, x - width / 2)
-            minY = Math.min(minY, y - height / 2)
-            maxX = Math.max(maxX, x + width / 2)
-            maxY = Math.max(maxY, y + height / 2)
+            // Add generous padding around each face center (15% more area around face)
+            const paddingX = faceWidth * 1.15
+            const paddingY = faceHeight * 1.15
+            
+            const faceMinX = centerX - paddingX
+            const faceMaxX = centerX + paddingX
+            const faceMinY = centerY - paddingY
+            const faceMaxY = centerY + paddingY
+            
+            minX = Math.min(minX, faceMinX)
+            minY = Math.min(minY, faceMinY)
+            maxX = Math.max(maxX, faceMaxX)
+            maxY = Math.max(maxY, faceMaxY)
+            
+            console.log(`🎯 Face ${faces.indexOf(face) + 1}: center(${centerX},${centerY}), size(${faceWidth}x${faceHeight}), padded(${faceMinX.toFixed(1)},${faceMinY.toFixed(1)}) to (${faceMaxX.toFixed(1)},${faceMaxY.toFixed(1)})`)
           })
           
-          // Add padding around faces (30% of face area)
-          const faceWidth = maxX - minX
-          const faceHeight = maxY - minY
-          const paddingX = faceWidth * 0.3
-          const paddingY = faceHeight * 0.3
-          
-          minX = Math.max(0, minX - paddingX)
-          minY = Math.max(0, minY - paddingY)
-          maxX = Math.min(workingMetadata.width, maxX + paddingX)
-          maxY = Math.min(workingMetadata.height, maxY + paddingY)
+          // Ensure crop area stays within image bounds
+          minX = Math.max(0, minX)
+          minY = Math.max(0, minY)
+          maxX = Math.min(workingMetadata.width, maxX)
+          maxY = Math.min(workingMetadata.height, maxY)
           
           // Calculate the largest possible crop area that maintains target aspect ratio
-          // Start with the face bounding box and expand to maximize area
           const targetAspectRatio = targetWidth / targetHeight
           const currentWidth = maxX - minX
           const currentHeight = maxY - minY
@@ -671,7 +679,9 @@ export default defineEventHandler(async (event) => {
             minX: minX.toFixed(1),
             minY: minY.toFixed(1),
             maxX: maxX.toFixed(1),
-            maxY: maxY.toFixed(1)
+            maxY: maxY.toFixed(1),
+            faceCount: faces.length,
+            paddingMultiplier: '1.15x'
           })
           
           // Calculate the maximum possible crop area that includes all faces
@@ -679,8 +689,7 @@ export default defineEventHandler(async (event) => {
           let finalX, finalY
           
           if (isLandscape) {
-            // For landscape, prioritize using full width when possible
-            // Start with the full width and calculate height
+            // For landscape, use the full image width and center around faces
             finalWidth = workingMetadata.width
             finalHeight = finalWidth / targetAspectRatio
             
@@ -690,30 +699,37 @@ export default defineEventHandler(async (event) => {
               finalWidth = finalHeight * targetAspectRatio
             }
             
-            // Center the crop horizontally, but ensure faces are included
-            const centerX = Math.floor((workingMetadata.width - finalWidth) / 2)
-            finalX = Math.max(0, Math.min(centerX, minX))
+            // Calculate the center of the face bounding box
+            const faceCenterX = (minX + maxX) / 2
+            const faceCenterY = (minY + maxY) / 2
             
-            // Ensure the crop includes all faces
+            // Center the crop around the face bounding box
+            finalX = Math.max(0, Math.min(faceCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
+            finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
+            
+            // Ensure the crop includes all faces (adjust if faces would be cut off)
+            if (finalX > minX) {
+              finalX = minX
+            }
             if (finalX + finalWidth < maxX) {
               finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
             }
-            
-            // For landscape with faces detected, center around faces instead of forcing top 1/3rd
-            // Only apply top-1/3rd rule if no faces were detected
-            if (faces.length === 0) {
-              const topThirdHeight = Math.floor(workingMetadata.height / 3)
-              finalY = Math.max(0, Math.min(minY, topThirdHeight - finalHeight))
-            } else {
-              // With faces detected, center the crop around the face bounding box
-              // Calculate the center of the face bounding box
-              const faceCenterY = (minY + maxY) / 2
-              // Center the crop around the face, but ensure it fits within image bounds
-              finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
+            if (finalY > minY) {
+              finalY = minY
             }
+            if (finalY + finalHeight < maxY) {
+              finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
+            }
+            
+            console.log('🎯 Final crop calculation (landscape):', {
+              finalX: finalX.toFixed(1),
+              finalY: finalY.toFixed(1),
+              finalWidth: finalWidth.toFixed(1),
+              finalHeight: finalHeight.toFixed(1),
+              cropArea: `${finalX.toFixed(1)},${finalY.toFixed(1)} to ${(finalX + finalWidth).toFixed(1)},${(finalY + finalHeight).toFixed(1)}`
+            })
           } else if (isPortrait) {
-            // For portrait, prioritize using full height when possible
-            // Start with the full height and calculate width
+            // For portrait, use the full image height and center around faces
             finalHeight = workingMetadata.height
             finalWidth = finalHeight * targetAspectRatio
             
@@ -723,47 +739,70 @@ export default defineEventHandler(async (event) => {
               finalHeight = finalWidth / targetAspectRatio
             }
             
-            // Center the crop horizontally, but ensure faces are included
-            const centerX = Math.floor((workingMetadata.width - finalWidth) / 2)
-            finalX = Math.max(0, Math.min(centerX, minX))
+            // Calculate the center of the face bounding box
+            const faceCenterX = (minX + maxX) / 2
+            const faceCenterY = (minY + maxY) / 2
             
-            // Ensure the crop includes all faces
+            // Center the crop around the face bounding box
+            finalX = Math.max(0, Math.min(faceCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
+            finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
+            
+            // Ensure the crop includes all faces (adjust if faces would be cut off)
+            if (finalX > minX) {
+              finalX = minX
+            }
             if (finalX + finalWidth < maxX) {
               finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
             }
-            
-            // For portrait with faces detected, center around faces instead of forcing top half
-            // Only apply top-half rule if no faces were detected
-            if (faces.length === 0) {
-              const topHalfHeight = Math.floor(workingMetadata.height / 2)
-              finalY = Math.max(0, Math.min(minY, topHalfHeight - finalHeight))
-            } else {
-              // With faces detected, center the crop around the face bounding box
-              // Calculate the center of the face bounding box
-              const faceCenterY = (minY + maxY) / 2
-              // Center the crop around the face, but ensure it fits within image bounds
-              finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
-            }
-          } else {
-            // For square, use the largest possible square that includes all faces
-            const maxSize = Math.min(workingMetadata.width, workingMetadata.height)
-            finalWidth = maxSize
-            finalHeight = maxSize
-            
-            // Center the crop, but ensure faces are included
-            const centerX = Math.floor((workingMetadata.width - finalWidth) / 2)
-            const centerY = Math.floor((workingMetadata.height - finalHeight) / 2)
-            
-            finalX = Math.max(0, Math.min(centerX, minX))
-            finalY = Math.max(0, Math.min(centerY, minY))
-            
-            // Ensure the crop includes all faces
-            if (finalX + finalWidth < maxX) {
-              finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
+            if (finalY > minY) {
+              finalY = minY
             }
             if (finalY + finalHeight < maxY) {
               finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
             }
+            
+            console.log('🎯 Final crop calculation (portrait):', {
+              finalX: finalX.toFixed(1),
+              finalY: finalY.toFixed(1),
+              finalWidth: finalWidth.toFixed(1),
+              finalHeight: finalHeight.toFixed(1),
+              cropArea: `${finalX.toFixed(1)},${finalY.toFixed(1)} to ${(finalX + finalWidth).toFixed(1)},${(finalY + finalHeight).toFixed(1)}`
+            })
+          } else {
+            // For square, use the largest possible square and center around faces
+            const maxSize = Math.min(workingMetadata.width, workingMetadata.height)
+            finalWidth = maxSize
+            finalHeight = maxSize
+            
+            // Calculate the center of the face bounding box
+            const faceCenterX = (minX + maxX) / 2
+            const faceCenterY = (minY + maxY) / 2
+            
+            // Center the crop around the face bounding box
+            finalX = Math.max(0, Math.min(faceCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
+            finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
+            
+            // Ensure the crop includes all faces (adjust if faces would be cut off)
+            if (finalX > minX) {
+              finalX = minX
+            }
+            if (finalX + finalWidth < maxX) {
+              finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
+            }
+            if (finalY > minY) {
+              finalY = minY
+            }
+            if (finalY + finalHeight < maxY) {
+              finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
+            }
+            
+            console.log('🎯 Final crop calculation (square):', {
+              finalX: finalX.toFixed(1),
+              finalY: finalY.toFixed(1),
+              finalWidth: finalWidth.toFixed(1),
+              finalHeight: finalHeight.toFixed(1),
+              cropArea: `${finalX.toFixed(1)},${finalY.toFixed(1)} to ${(finalX + finalWidth).toFixed(1)},${(finalY + finalHeight).toFixed(1)}`
+            })
           }
           
           // Ensure the crop fits within image bounds

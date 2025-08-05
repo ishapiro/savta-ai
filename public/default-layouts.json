@@ -82,12 +82,12 @@
     "cardHeightMm": 76,
     "story": {
       "position": {
-        "x": 70,
-        "y": 10
+        "x": 5,
+        "y": 40
       },
       "size": {
-        "width": 35,
-        "height": 60
+        "width": 74.1689453125,
+        "height": 29.2841796875
       },
       "fontSizePt": 8,
       "align": "center"
@@ -96,48 +96,36 @@
       {
         "id": "1",
         "position": {
-          "x": 10,
-          "y": 10
+          "x": 5,
+          "y": 5
         },
         "size": {
-          "width": 25,
-          "height": 15
+          "width": 55,
+          "height": 30
         },
         "borderRadius": 2
       },
       {
         "id": "2",
         "position": {
-          "x": 40,
-          "y": 10
+          "x": 67,
+          "y": 5
         },
         "size": {
-          "width": 25,
-          "height": 15
-        },
-        "borderRadius": 2
-      },
-      {
-        "id": "3",
-        "position": {
-          "x": 10,
-          "y": 30
-        },
-        "size": {
-          "width": 25,
-          "height": 15
+          "width": 55,
+          "height": 30
         },
         "borderRadius": 2
       },
       {
         "id": "4",
         "position": {
-          "x": 40,
-          "y": 30
+          "x": 85,
+          "y": 40
         },
         "size": {
-          "width": 25,
-          "height": 15
+          "width": 36.875,
+          "height": 29.6455078125
         },
         "borderRadius": 2
       }
