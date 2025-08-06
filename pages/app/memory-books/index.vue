@@ -1028,13 +1028,13 @@
     <!-- Regenerate Confirmation Dialog -->
     <Dialog v-model:visible="showRegenerateDialog" modal header="Recreate Memory Book" class="w-full max-w-xl">
       <div class="p-4">
-        <p class="text-sm sm:text-base mb-2">
-          Are you sure you want to recreate this memory book?
+        <p class="text-brand-header text-sm sm:text-base mb-2">
+          Would you like to create a fresh version of your special memory?
         </p>
-        <p class="text-gray-600 text-base sm:text-sm mb-2">
-          This will make a brand new memory book for you with fresh photos, stories, and beautiful backgrounds - just like baking a new batch of cookies with the same recipe! 
-          Every time you recreate it, you'll get something wonderfully different. When it's just perfect and makes your heart smile, 
-          that's when you'll want to approve it.
+        <p class="text-brand-primary text-sm sm:text-base mb-2">
+          Savta AI will choose new photos and create a beautiful new story for you - like making a fresh batch of cookies with the same recipe! 
+          Each time you recreate it, you'll get something wonderfully different. When it's just perfect and makes your heart smile, 
+          that's when you'll know it's ready.
         </p>
         <div class="flex gap-3 justify-end mt-4">
           <Button label="Cancel" class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" @click="cancelDialog" />
@@ -1055,6 +1055,52 @@
         <div class="flex justify-end gap-2 mt-4">
           <Button label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-xs px-3 py-2" @click="cancelDialog" />
           <Button label="Compose Now" size="small" class="bg-brand-dialog-save text-white font-bold rounded-full text-xs px-3 py-2" @click="confirmDownloadDraft" />
+        </div>
+      </div>
+    </Dialog>
+
+    <!-- Update Description Dialog -->
+    <Dialog v-model:visible="showUpdateDescriptionDialog" modal header="Update Memory Description" class="w-full max-w-xl">
+      <div class="p-4">
+        <div class="mb-4">
+          <p class="text-sm sm:text-base mb-3">
+            Tell me about the memory you want to recreate. This helps Savta AI choose the best photos and create a beautiful new story for you.
+          </p>
+          <div class="bg-gray-50 rounded-lg p-3 mb-4">
+            <p class="text-xs text-gray-600 mb-1">Your current description:</p>
+            <p class="text-sm text-gray-800 font-medium">{{ pendingBook?.title || 'No description' }}</p>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="newDescription" class="block text-sm font-medium text-gray-700 mb-2">
+            New Description
+          </label>
+          <Textarea
+            id="newDescription"
+            v-model="newDescription"
+            rows="3"
+            placeholder="For example: 'Photos from our New York trip' or 'Our family vacation memories'"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-highlight focus:border-brand-highlight"
+          />
+        </div>
+        
+        <div class="flex gap-3 justify-end mt-4">
+          <Button 
+            label="Cancel" 
+            class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" 
+            @click="cancelDialog" 
+          />
+          <Button 
+            label="No change -- just Recreate" 
+            class="bg-brand-dialog-save text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" 
+            @click="confirmUpdateDescription" 
+          />
+          <Button 
+            label="Update & Recreate" 
+            class="bg-brand-dialog-edit text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" 
+            @click="confirmUpdateDescription" 
+          />
         </div>
       </div>
     </Dialog>
@@ -1367,8 +1413,10 @@
             <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
           <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1">✨ Help me create a special memory ✨</h3>
-          <p class="text-sm sm:text-base text-gray-600">Tell me something that will help me select the best photos for your memory and 
-            create a special story for you. Savta our special AI understand requests line "Photos about by New York Trip"</p>
+          <p class="text-sm sm:text-base text-gray-600">Tell me about the memory you want to create. 
+            For example, you could say "Photos from our New York trip" or "Our family vacation memories". 
+            Savta AI will use this description to select the best photos and create a personalized story for you.
+          </p>
         </div>
         <div class="field w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
           <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Something special about this memory</label>
@@ -1999,7 +2047,10 @@
       <p class="text-gray-600 mb-6">
         {{ errorDialogMessage || "Something went wrong while creating your magic memory. Let's try again!" }}
       </p>
-      <div class="flex justify-center gap-3">
+      <p class="text-gray-600 mb-6">Please try a different description for your memory. For example, if your description mentioned a location and we couldn't find matching photos, try being more specific or using different keywords.
+        you can change the location or upload a photo with this location.
+      </p>
+      <div class="flex justify-center gap-3"> 
         <Button
           label="Try Again"
           icon="pi pi-refresh"
@@ -2167,7 +2218,7 @@ const isRegenerating = ref(false)
 const newBook = ref({
   title: '',
   layoutType: 'grid',
-  printSize: '8x10',
+  printSize: '8.5x11',
   quality: 'standard',
   medium: 'digital',
   output: 'PDF', // Default to PDF
@@ -2205,7 +2256,7 @@ const resetCreateModal = () => {
   newBook.value = {
     title: '',
     layoutType: 'grid',
-    printSize: '8x10',
+    printSize: '8.5x11',
     quality: 'standard',
     medium: 'digital',
     output: 'PDF', // Default to PDF
@@ -2291,6 +2342,8 @@ const memoryEventOptions = ref([
 // Dialog state
 const showGenerateDialog = ref(false)
 const showRegenerateDialog = ref(false)
+const showUpdateDescriptionDialog = ref(false)
+const newDescription = ref('')
 
 // Error dialog state
 const showErrorDialog = ref(false)
@@ -2339,8 +2392,102 @@ const confirmRegenerate = async () => {
   showRegenerateDialog.value = false
   if (!pendingBook.value) return
 
-          // Use the Savta Recipe way for magic books
-          if (pendingBook.value.ui === 'wizard') {
+  // Check if this is a theme-based book that needs reprompting
+  if (pendingBook.value.layout_type === 'theme') {
+    // Show dialog to update description
+    newDescription.value = pendingBook.value.title || ''
+    showUpdateDescriptionDialog.value = true
+    return // Exit early, will continue after dialog confirmation
+  }
+
+  // Continue with regeneration (for non-theme books or after description update)
+  await continueRegeneration()
+}
+const downloadCurrentBook = () => {
+  showRegenerateDialog.value = false
+  if (pendingBook.value) downloadPDF(pendingBook.value)
+  pendingBook.value = null
+}
+const confirmDownloadDraft = () => {
+  showDownloadDraftDialog.value = false
+  if (pendingBook.value) generatePDF(pendingBook.value)
+  pendingBook.value = null
+}
+const cancelDialog = () => {
+  showGenerateDialog.value = false
+  showRegenerateDialog.value = false
+  showDownloadDraftDialog.value = false
+  showUpdateDescriptionDialog.value = false
+  pendingBook.value = null
+}
+
+const confirmUpdateDescription = async () => {
+  if (!newDescription.value.trim()) {
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'warn',
+        summary: 'Description Required',
+        detail: 'Please provide a description for your memory.',
+        life: 4000
+      })
+    }
+    return
+  }
+  
+  // Update the book title with the new description
+  try {
+    const supabase = useNuxtApp().$supabase
+    const { error: updateError } = await supabase
+      .from('memory_books')
+      .update({ title: newDescription.value.trim() })
+      .eq('id', pendingBook.value.id)
+    
+    if (updateError) {
+      console.error('❌ Error updating book title:', updateError)
+      if ($toast && $toast.add) {
+        $toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to update memory description',
+          life: 4000
+        })
+      }
+      return
+    }
+    
+    // Update the pending book with the new title
+    pendingBook.value.title = newDescription.value.trim()
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'Updated',
+        detail: 'Memory description updated successfully',
+        life: 3000
+      })
+    }
+    
+    // Close dialog and continue with regeneration
+    showUpdateDescriptionDialog.value = false
+    
+    // Continue with the regeneration process
+    await continueRegeneration()
+  } catch (error) {
+    console.error('❌ Error updating book title:', error)
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to update memory description',
+        life: 4000
+      })
+    }
+  }
+}
+
+const continueRegeneration = async () => {
+  // Use the Savta Recipe way for magic books
+  if (pendingBook.value.ui === 'wizard') {
     try {
       const supabase = useNuxtApp().$supabase
       const { data: sessionData } = await supabase.auth.getSession()
@@ -2378,22 +2525,6 @@ const confirmRegenerate = async () => {
     // Traditional pipeline
     await generatePDF(pendingBook.value)
   }
-  pendingBook.value = null
-}
-const downloadCurrentBook = () => {
-  showRegenerateDialog.value = false
-  if (pendingBook.value) downloadPDF(pendingBook.value)
-  pendingBook.value = null
-}
-const confirmDownloadDraft = () => {
-  showDownloadDraftDialog.value = false
-  if (pendingBook.value) generatePDF(pendingBook.value)
-  pendingBook.value = null
-}
-const cancelDialog = () => {
-  showGenerateDialog.value = false
-  showRegenerateDialog.value = false
-  showDownloadDraftDialog.value = false
   pendingBook.value = null
 }
 
@@ -2853,7 +2984,7 @@ const generatePDF = async (book) => {
       throw new Error('Failed to fetch latest book data')
     }
 
-    const printSize = latestBook.print_size || '8x10'
+    const printSize = latestBook.print_size || '8.5x11'
     
     console.log('📄 PDF generation parameters:', { printSize })
 
@@ -3433,7 +3564,7 @@ const openEditSettings = async (book) => {
       title: book.title,
               layoutType: book.layout_type || book.layoutType || 'grid',
         ui: book.ui || 'form',
-      printSize: book.print_size || book.printSize || '8x10',
+      printSize: book.print_size || book.printSize || '8.5x11',
       quality: book.quality || 'standard',
       medium: book.medium || 'digital',
               theme_id: book.theme_id || null,

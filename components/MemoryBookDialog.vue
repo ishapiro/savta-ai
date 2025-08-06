@@ -950,7 +950,7 @@ const emit = defineEmits(['submit', 'close', 'cleanup'])
 const form = ref({
   title: '',
   layoutType: 'grid', // Default to grid for traditional memory books
-  printSize: '8x10',
+  printSize: '8.5x11',
   quality: 'standard',
   medium: 'digital',
   output: 'PDF', // Default to PDF
@@ -1003,7 +1003,8 @@ const layoutOptions = ref([
 ])
 
 const printSizeOptions = ref([
-  { label: '3x5 inches (Portrait)', value: '3x5' },
+  { label: '4x6 inches (Portrait)', value: '4x6' },
+  { label: '6x4 inches (Landscape)', value: '6x4' },
   { label: '5x3 inches (Landscape)', value: '5x3' },
   { label: '5x7 inches (Portrait)', value: '5x7' },
   { label: '7x5 inches (Landscape)', value: '7x5' },
@@ -1199,7 +1200,7 @@ watch(() => props.initialData, (val) => {
     form.value = {
       title: '',
       layoutType: 'grid', // Default to grid for traditional memory books
-      printSize: '8x10',
+      printSize: '8.5x11',
       quality: 'standard',
       medium: 'digital',
       output: 'PDF', // Default to PDF

@@ -1,23 +1,23 @@
 {
-  "3x5": {
+  "4x6": {
     "name": "Small Portrait Layout",
     "units": {
       "position": "mm",
       "size": "mm",
       "fontSize": "pt"
     },
-    "cardWidthMm": 76,
-    "cardHeightMm": 127,
+    "cardWidthMm": 102,
+    "cardHeightMm": 152,
     "story": {
       "position": {
         "x": 10,
-        "y": 100
+        "y": 120
       },
       "size": {
-        "width": 60,
-        "height": 15
+        "width": 80,
+        "height": 20
       },
-      "fontSizePt": 8,
+      "fontSizePt": 9,
       "align": "center"
     },
     "photos": [
@@ -28,20 +28,20 @@
           "y": 10
         },
         "size": {
-          "width": 25,
-          "height": 20
+          "width": 35,
+          "height": 25
         },
         "borderRadius": 2
       },
       {
         "id": "2",
         "position": {
-          "x": 40,
+          "x": 55,
           "y": 10
         },
         "size": {
-          "width": 25,
-          "height": 20
+          "width": 35,
+          "height": 25
         },
         "borderRadius": 2
       },
@@ -49,23 +49,95 @@
         "id": "3",
         "position": {
           "x": 10,
-          "y": 35
+          "y": 45
         },
         "size": {
-          "width": 25,
-          "height": 20
+          "width": 35,
+          "height": 25
         },
         "borderRadius": 2
       },
       {
         "id": "4",
         "position": {
-          "x": 40,
-          "y": 35
+          "x": 55,
+          "y": 45
         },
         "size": {
-          "width": 25,
-          "height": 20
+          "width": 35,
+          "height": 25
+        },
+        "borderRadius": 2
+      }
+    ]
+  },
+  "6x4": {
+    "name": "Small Landscape Layout",
+    "units": {
+      "position": "mm",
+      "size": "mm",
+      "fontSize": "pt"
+    },
+    "cardWidthMm": 152,
+    "cardHeightMm": 102,
+    "story": {
+      "position": {
+        "x": 5,
+        "y": 60
+      },
+      "size": {
+        "width": 140,
+        "height": 30
+      },
+      "fontSizePt": 9,
+      "align": "center"
+    },
+    "photos": [
+      {
+        "id": "1",
+        "position": {
+          "x": 5,
+          "y": 5
+        },
+        "size": {
+          "width": 65,
+          "height": 45
+        },
+        "borderRadius": 2
+      },
+      {
+        "id": "2",
+        "position": {
+          "x": 80,
+          "y": 5
+        },
+        "size": {
+          "width": 65,
+          "height": 45
+        },
+        "borderRadius": 2
+      },
+      {
+        "id": "3",
+        "position": {
+          "x": 5,
+          "y": 55
+        },
+        "size": {
+          "width": 65,
+          "height": 45
+        },
+        "borderRadius": 2
+      },
+      {
+        "id": "4",
+        "position": {
+          "x": 80,
+          "y": 55
+        },
+        "size": {
+          "width": 65,
+          "height": 45
         },
         "borderRadius": 2
       }

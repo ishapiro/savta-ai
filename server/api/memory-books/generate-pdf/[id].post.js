@@ -1560,7 +1560,8 @@ export default defineEventHandler(async (event) => {
       // Convert theme size to PDF dimensions
       let pageWidth, pageHeight
       switch (theme.size) {
-        case '3x5': pageWidth = 216; pageHeight = 360; break
+        case '4x6': pageWidth = 288; pageHeight = 432; break
+        case '6x4': pageWidth = 432; pageHeight = 288; break
         case '5x3': pageWidth = 360; pageHeight = 216; break
         case '5x7': pageWidth = 360; pageHeight = 504; break
         case '7x5': pageWidth = 504; pageHeight = 360; break
@@ -1982,7 +1983,7 @@ export default defineEventHandler(async (event) => {
     
     // Get print size from request body or use defaults from book
     const body = await readBody(event).catch(() => ({}))
-    const printSize = body.printSize || book.print_size || '8x10'
+    const printSize = body.printSize || book.print_size || '8.5x11'
     
     console.log('📄 PDF generation parameters:', { printSize })
     

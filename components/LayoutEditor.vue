@@ -750,7 +750,8 @@ function exitEditMode() {
 // Function to calculate dimensions and scale factor based on size
 function calculateSizeDimensions(size) {
   const sizeMap = {
-    '3x5': { width: 3, height: 5, aspectRatio: 0.6 },
+    '4x6': { width: 4, height: 6, aspectRatio: 0.67 },
+    '6x4': { width: 6, height: 4, aspectRatio: 1.5 },
     '5x3': { width: 5, height: 3, aspectRatio: 1.67 },
     '5x7': { width: 5, height: 7, aspectRatio: 0.71 },
     '7x5': { width: 7, height: 5, aspectRatio: 1.4 },

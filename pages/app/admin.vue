@@ -1660,9 +1660,10 @@ const fontOptions = ref([
 ])
 
 // Size options for themes
-const sizeOptions = ref([
-  { label: '3x5 inches (Portrait)', value: '3x5' },
-  { label: '5x3 inches (Landscape)', value: '5x3' },
+  const sizeOptions = ref([
+    { label: '4x6 inches (Portrait)', value: '4x6' },
+    { label: '6x4 inches (Landscape)', value: '6x4' },
+    { label: '5x3 inches (Landscape)', value: '5x3' },
   { label: '5x7 inches (Portrait)', value: '5x7' },
   { label: '7x5 inches (Landscape)', value: '7x5' },
   { label: '8x10 inches (Portrait)', value: '8x10' },
@@ -1705,9 +1706,10 @@ const passwordError = ref('')
 const selectedLayoutDefault = ref(null)
 
 // Layout default options
-const layoutDefaultOptions = ref([
-  { label: '3x5 inches - Small Portrait Layout', value: '3x5' },
-  { label: '5x3 inches - Small Landscape Layout', value: '5x3' },
+  const layoutDefaultOptions = ref([
+    { label: '4x6 inches - Small Portrait Layout', value: '4x6' },
+    { label: '6x4 inches - Small Landscape Layout', value: '6x4' },
+    { label: '5x3 inches - Small Landscape Layout', value: '5x3' },
   { label: '5x7 inches - Medium Portrait Layout', value: '5x7' },
   { label: '7x5 inches - Medium Landscape Layout', value: '7x5' },
   { label: '8x10 inches - Large Portrait Layout', value: '8x10' },
@@ -3145,10 +3147,11 @@ const closeLayoutDefaultsModal = () => {
   selectedLayoutDefault.value = null
 }
 
-const getLayoutDefaultName = (size) => {
-  const layoutNames = {
-    '3x5': 'Small Portrait Layout',
-    '5x3': 'Small Landscape Layout',
+  const getLayoutDefaultName = (size) => {
+    const layoutNames = {
+      '4x6': 'Small Portrait Layout',
+      '6x4': 'Small Landscape Layout',
+      '5x3': 'Small Landscape Layout',
     '5x7': 'Medium Portrait Layout',
     '7x5': 'Medium Landscape Layout',
     '8x10': 'Large Portrait Layout',

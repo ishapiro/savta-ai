@@ -364,7 +364,7 @@ export default defineEventHandler(async (event) => {
     try {
       // Get print size from query parameters or use defaults from book
       const query = getQuery(event)
-      const printSize = query.printSize || book.print_size || '8x10'
+      const printSize = query.printSize || book.print_size || '8.5x11'
       
       console.log('📄 PDF generation parameters:', { printSize })
       

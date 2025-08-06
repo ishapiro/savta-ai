@@ -38,7 +38,7 @@ This project uses a **manual PrimeVue integration** via `plugins/primevue.ts`.
 - 🔄 **Regeneration**: Create new memory books with fresh AI backgrounds
 - 🎨 PrimeVue 3 components styled with Tailwind CSS and custom color system
 - 🔒 Supabase authentication and comprehensive database
-- 🚀 Ready for Vercel deployment
+- 🚀 Ready for Railway.com deployment
 
 **Tech Stack:**
 - **Framework:** Nuxt 3
@@ -47,7 +47,7 @@ This project uses a **manual PrimeVue integration** via `plugins/primevue.ts`.
 - **Database:** Supabase
 - **AI Processing:** OpenAI (GPT-4 Vision, DALL-E 3)
 - **PDF Generation:** PDF-lib
-- **Deployment:** Vercel
+- **Deployment:** Railway.com
 
 ## Project Structure
 ```
@@ -76,7 +76,7 @@ savta-ai/
 ├── supabase/schema.sql     # DB schema for users, assets, memory books
 ├── nuxt.config.ts          # Nuxt and module configuration
 ├── tailwind.config.js      # Tailwind CSS and color system
-├── vercel.json             # Vercel deployment config
+├── railway.json            # Railway deployment config
 └── README.md               # This file
 ```
 
@@ -368,6 +368,66 @@ This comprehensive cleanup script will:
 - Clear npm cache and temporary files
 - Install dependencies to ensure everything works properly
 - Provide a fresh development environment
+
+## 🛠️ Development Tools
+
+### Database Access with susql
+
+The project uses a `susql` alias to run PostgreSQL commands against the cloud database. This alias provides a convenient way to execute SQL commands and migrations.
+
+**How to create the susql alias:**
+
+1. **Add to your shell profile** (`.zshrc`, `.bashrc`, or `.bash_profile`):
+   ```bash
+   alias susql='psql "postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres"'
+   ```
+
+2. **Replace the placeholders** with your actual Supabase database credentials:
+   - `[YOUR-PASSWORD]`: Your Supabase database password
+   - `[YOUR-HOST]`: Your Supabase database host (found in Supabase dashboard)
+
+3. **Reload your shell profile**:
+   ```bash
+   source ~/.zshrc  # or ~/.bashrc
+   ```
+
+4. **Test the alias**:
+   ```bash
+   susql -c "SELECT version();"
+   ```
+
+**Usage Examples:**
+```bash
+# Run a migration script
+susql < migrate_3x5_to_4x6.sql
+
+# Execute a single command
+susql -c "SELECT COUNT(*) FROM memory_books;"
+
+# Connect to database interactively
+susql
+```
+
+**Security Note:** Keep your database credentials secure and never commit them to version control.
+
+## 🚀 Deployment
+
+### Railway.com Deployment
+
+This project is configured for deployment on Railway.com using the **Nixpacks builder** with a custom build command.
+
+**Custom Build Command:**
+```bash
+apt-get update && apt-get install -y poppler-utils && npm run build
+```
+
+**Deployment Configuration:**
+- **Builder**: Nixpacks
+- **Build Command**: Custom command that installs `poppler-utils` (required for PDF processing) and then runs `npm run build`
+- **Runtime**: Node.js environment
+
+**Why poppler-utils?**
+The `poppler-utils` package is required for PDF processing features in the application, specifically for the memory book generation functionality.
 
 ## Available Scripts
 
