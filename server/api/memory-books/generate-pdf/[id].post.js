@@ -2239,25 +2239,12 @@ export default defineEventHandler(async (event) => {
       }
       
       // Margins
-      const topMargin = 60 // for heading
+      const topMargin = 0 // no heading space needed
       const bottomMargin = 50 // for page number
-      const gridYOffset = (pageIndex === 0) ? topMargin : 0
+      const gridYOffset = 0 // no offset needed since no title
       const availableHeight = height - gridYOffset - bottomMargin
       
-      // Draw title on first page, with extra space below
-      if (pageIndex === 0) {
-        const headingY = height - 60
-        const title = (book.ai_supplemental_prompt || 'Memory Book').trim() // Use user's AI supplemental prompt or fallback, trim whitespace
-        const titleWidth = title.length * 12 // Approximate width based on character count for font size 24
-        const titleX = (width - titleWidth) / 2 // Center the title
-        
-        page.drawText(title, {
-          x: titleX,
-          y: headingY,
-          size: 24,
-          color: rgb(0.2, 0.2, 0.2)
-        })
-      }
+      // Title removed for grid layout memory books
       
       // Calculate grid layout from grid layout string
       const [gridCols, gridRows] = gridLayout.split('x').map(Number)
