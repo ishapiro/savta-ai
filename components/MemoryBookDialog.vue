@@ -14,16 +14,16 @@
           Book Details
         </h3>
         <div class="space-y-4">
-          <!-- Title -->
+          <!-- AI Supplemental Prompt -->
           <div>
-            <label for="title" class="block text-sm font-medium text-brand-primary mb-2">
-              Title
+            <label for="ai_supplemental_prompt" class="block text-sm font-medium text-brand-primary mb-2">
+              AI Supplemental Prompt
             </label>
             <InputText
-              id="title"
-              v-model="form.title"
+              id="ai_supplemental_prompt"
+              v-model="form.ai_supplemental_prompt"
               class="w-full"
-              placeholder="Enter memory book title"
+              placeholder="Enter AI supplemental prompt for photo selection and story creation"
               required
             />
           </div>
@@ -948,7 +948,7 @@ const props = defineProps({
 const emit = defineEmits(['submit', 'close', 'cleanup'])
 
 const form = ref({
-  title: '',
+  ai_supplemental_prompt: '',
   layoutType: 'grid', // Default to grid for traditional memory books
   printSize: '8.5x11',
   quality: 'standard',
@@ -1198,7 +1198,7 @@ watch(() => props.initialData, (val) => {
   if (val && Object.keys(val).length > 0) {
     // Reset form to defaults first, then apply initial data
     form.value = {
-      title: '',
+      ai_supplemental_prompt: '',
       layoutType: 'grid', // Default to grid for traditional memory books
       printSize: '8.5x11',
       quality: 'standard',

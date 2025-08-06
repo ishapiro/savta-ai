@@ -92,7 +92,7 @@ create table if not exists asset_tags (
 create table if not exists memory_books (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null,
-  title text,
+  ai_supplemental_prompt text,
   magic_story text,
   layout_type text,
   ui text default 'form' check (ui in ('wizard', 'form')),
@@ -559,9 +559,9 @@ BEGIN
     SELECT 1 FROM information_schema.columns 
     WHERE table_schema = 'public' 
       AND table_name = 'memory_books' 
-      AND column_name = 'title'
+      AND column_name = 'ai_supplemental_prompt'
   ) THEN
-    ALTER TABLE memory_books ADD COLUMN title text;
+    ALTER TABLE memory_books ADD COLUMN ai_supplemental_prompt text;
   END IF;
   
   IF NOT EXISTS (

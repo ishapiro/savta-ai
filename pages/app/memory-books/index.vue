@@ -184,7 +184,7 @@
                               <Wand2 v-if="book.ui === 'wizard'" class="w-8 h-8 text-white" />
               <i v-else class="pi pi-book w-8 h-8 text-white flex items-center justify-center text-2xl"></i>
             </div>
-                            <span class="text-xs font-semibold text-white text-center px-2 leading-tight">{{ book.title || (book.ui === 'wizard' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6))) }}</span>
+                            <span class="text-xs font-semibold text-white text-center px-2 leading-tight">{{ book.ai_supplemental_prompt || (book.ui === 'wizard' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6))) }}</span>
           </div>
         </div>
         <!-- Divider -->
@@ -202,7 +202,7 @@
             <div class="relative w-full h-24 rounded-lg overflow-hidden border border-gray-200">
               <img 
                 :src="getFirstAssetThumbnail(book)" 
-                :alt="book.title || 'Memory Book'"
+                :alt="book.ai_supplemental_prompt || 'Memory Book'"
                 class="w-full h-full object-cover"
               />
               <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -667,7 +667,7 @@
                 <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <div class="min-w-0 flex-1">
-                <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1 truncate">{{ selectedBook.title || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
+                <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1 truncate">{{ selectedBook.ai_supplemental_prompt || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
                 <div class="flex items-center gap-2">
                   <div :class="getStatusBadgeClass(selectedBook.status)" class="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold shadow-md backdrop-blur-sm">
                     <i :class="getStatusIcon(selectedBook.status)" class="text-xs sm:text-sm"></i>
@@ -778,7 +778,7 @@
                 <i class="pi pi-file-edit text-brand-primary text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Title</span>
               </div>
-              <p class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ selectedBook.title || 'Untitled' }}</p>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ selectedBook.ai_supplemental_prompt || 'Untitled' }}</p>
             </div>
           </div>
 
@@ -1068,7 +1068,7 @@
           </p>
           <div class="bg-gray-50 rounded-lg p-3 mb-4">
             <p class="text-xs text-gray-600 mb-1">Your current description:</p>
-            <p class="text-sm text-gray-800 font-medium">{{ pendingBook?.title || 'No description' }}</p>
+            <p class="text-sm text-gray-800 font-medium">{{ pendingBook?.ai_supplemental_prompt || 'No description' }}</p>
           </div>
         </div>
         
@@ -1427,7 +1427,10 @@
             maxlength="80"
             show-clear
             aria-label="Memory Subject"
+            required
+            :model-value="magicMemoryTitle"
           />
+          <small class="text-gray-500 text-xs mt-1 block">This helps me select the best photos and create a personalized story for you.</small>
         </div>
       </div>
 
@@ -2240,7 +2243,7 @@ const selectedAssets = ref([])
 
 // Create modal navigation functions
 const nextStep = () => {
-  if (createStep.value === 1 && newBook.value.title.trim()) {
+  if (createStep.value === 1 && newBook.value.ai_supplemental_prompt.trim()) {
     createStep.value = 2
   }
 }
@@ -2254,7 +2257,7 @@ const previousStep = () => {
 const resetCreateModal = () => {
   createStep.value = 1
   newBook.value = {
-    title: '',
+    ai_supplemental_prompt: '',
     layoutType: 'grid',
     printSize: '8.5x11',
     quality: 'standard',
@@ -2395,7 +2398,7 @@ const confirmRegenerate = async () => {
   // Check if this is a theme-based book that needs reprompting
   if (pendingBook.value.layout_type === 'theme') {
     // Show dialog to update description
-    newDescription.value = pendingBook.value.title || ''
+            newDescription.value = pendingBook.value.ai_supplemental_prompt || ''
     showUpdateDescriptionDialog.value = true
     return // Exit early, will continue after dialog confirmation
   }
@@ -2439,7 +2442,7 @@ const confirmUpdateDescription = async () => {
     const supabase = useNuxtApp().$supabase
     const { error: updateError } = await supabase
       .from('memory_books')
-      .update({ title: newDescription.value.trim() })
+              .update({ ai_supplemental_prompt: newDescription.value.trim() })
       .eq('id', pendingBook.value.id)
     
     if (updateError) {
@@ -2456,7 +2459,7 @@ const confirmUpdateDescription = async () => {
     }
     
     // Update the pending book with the new title
-    pendingBook.value.title = newDescription.value.trim()
+            pendingBook.value.ai_supplemental_prompt = newDescription.value.trim()
     
     if ($toast && $toast.add) {
       $toast.add({
@@ -2626,8 +2629,8 @@ onUnmounted(() => {
 // Create memory book
 const createMemoryBook = async () => {
   console.log('🔧 [createMemoryBook] Called. newBook.value:', JSON.parse(JSON.stringify(newBook.value)))
-  if (!newBook.value.title) {
-    console.log('🔧 [createMemoryBook] No title provided, returning')
+          if (!newBook.value.ai_supplemental_prompt) {
+          console.log('🔧 [createMemoryBook] No AI supplemental prompt provided, returning')
     return
   }
   creatingBook.value = true
@@ -2660,7 +2663,7 @@ const createMemoryBook = async () => {
     }
     // Prepare data for API
     const bookData = {
-      title: newBook.value.title,
+              ai_supplemental_prompt: newBook.value.ai_supplemental_prompt,
       layout_type: newBook.value.layoutType,
       ui: newBook.value.ui || 'form',
       print_size: newBook.value.printSize,
@@ -3127,7 +3130,7 @@ const forceDownloadPDF = async (book) => {
     // Create a temporary anchor element to force download
     const link = document.createElement('a')
     link.href = response.downloadUrl
-    link.download = `${latestBook.title || 'Memory Book'}.pdf`
+            link.download = `${latestBook.ai_supplemental_prompt || 'Memory Book'}.pdf`
     link.target = '_blank'
     
     // Add cache-busting query string
@@ -3342,7 +3345,7 @@ const downloadCurrentPdf = () => {
   if (pdfBlobUrl.value) {
     const link = document.createElement('a');
     link.href = pdfBlobUrl.value;
-    link.download = `${selectedBook.value?.title || 'Memory Book'}.pdf`;
+            link.download = `${selectedBook.value?.ai_supplemental_prompt || 'Memory Book'}.pdf`;
     link.target = '_blank';
     document.body.appendChild(link);
     link.click();
@@ -3366,13 +3369,13 @@ const sharePdf = async () => {
       const blob = await response.blob();
       
       // Create a file from the blob
-      const file = new File([blob], `${selectedBook.value?.title || 'Memory Book'}.pdf`, {
+              const file = new File([blob], `${selectedBook.value?.ai_supplemental_prompt || 'Memory Book'}.pdf`, {
         type: 'application/pdf'
       });
       
       // Share the file
       await navigator.share({
-        title: selectedBook.value?.title || 'Memory Book',
+                  title: selectedBook.value?.ai_supplemental_prompt || 'Memory Book',
         text: 'Check out this memory book!',
         files: [file]
       });
@@ -3561,7 +3564,7 @@ const openEditSettings = async (book) => {
     // Map book fields to editable fields
     editBook.value = {
       id: book.id,
-      title: book.title,
+              ai_supplemental_prompt: book.ai_supplemental_prompt,
               layoutType: book.layout_type || book.layoutType || 'grid',
         ui: book.ui || 'form',
       printSize: book.print_size || book.printSize || '8.5x11',
@@ -3607,7 +3610,7 @@ const saveEditBook = async () => {
 
     // Update the book with new settings and selected assets
     await db.memoryBooks.updateMemoryBook(editBook.value.id, {
-      title: editBook.value.title,
+      ai_supplemental_prompt: editBook.value.ai_supplemental_prompt,
               layout_type: editBook.value.layoutType,
         ui: editBook.value.ui || 'form',
       print_size: editBook.value.printSize,
@@ -4115,6 +4118,12 @@ async function onMagicMemoryContinue() {
       created_at: a.created_at || null,
       location: a.location || null
     }))
+    console.log('🔍 Magic Memory Title Debug:', {
+      magicMemoryTitle: magicMemoryTitle.value,
+      trimmed: magicMemoryTitle.value.trim(),
+      isEmpty: !magicMemoryTitle.value.trim()
+    })
+    
     let aiBody = { 
       photos,
       title: magicMemoryTitle.value,
@@ -4156,12 +4165,13 @@ async function onMagicMemoryContinue() {
         asset_ids: aiRes.selected_photo_ids,
         photo_selection_pool: photoSelectionPool,
         story: aiRes.story,
-        title: magicMemoryTitle.value || 'Magic Memory',
+        ai_supplemental_prompt: magicMemoryTitle.value || 'Magic Memory',
         memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
         background_type: aiRes.background_type || magicBackgroundType.value,
         background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
         photo_count: magicPhotoCount.value,
         theme_id: magicSelectedTheme.value,
+        print_size: '8.5x11', // Default print size for magic memories
         output: 'JPG' // Wizard creates single-page memories, so always use JPG
       },
       headers: {
@@ -4177,7 +4187,7 @@ async function onMagicMemoryContinue() {
     // Create a book object for the progress dialog with proper asset references
     const book = {
       id: dbRes.book_id,
-      layout_type: 'theme',
+      layout_type: magicSelectedTheme.value ? 'theme' : 'grid',
       ui: 'wizard',
       status: 'draft',
       photo_selection_pool: photoSelectionPool,
@@ -4304,11 +4314,12 @@ const retryMagicMemory = async () => {
         asset_ids: aiRes.selected_photo_ids,
         photo_selection_pool: config.photoSelectionPool,
         story: aiRes.story,
-        title: config.title || 'Magic Memory',
+        ai_supplemental_prompt: config.title || 'Magic Memory',
         memory_event: config.memoryEvent,
         background_type: aiRes.background_type || config.backgroundType,
         photo_count: config.photoCount,
         theme_id: config.selectedTheme || null,
+        print_size: '8.5x11', // Default print size for magic memories
         output: 'JPG' // Wizard creates single-page memories, so always use JPG
       },
       headers: {
@@ -4325,7 +4336,7 @@ const retryMagicMemory = async () => {
     // Create a book object for the progress dialog with proper asset references
     const book = {
       id: dbRes.book_id,
-      layout_type: 'theme',
+      layout_type: config.selectedTheme ? 'theme' : 'grid',
       ui: 'wizard',
       status: 'draft',
       photo_selection_pool: config.photoSelectionPool,
@@ -4417,6 +4428,15 @@ const reloadAssetsForMagicMemory = async () => {
 const nextMagicMemoryStep = () => {
   // Validate current step before proceeding
   if (magicMemoryStep.value === MAGIC_STEPS.TITLE && !magicMemoryTitle.value.trim()) {
+    // Show error message to user
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Title Required',
+        detail: 'Please enter a description for your memory to help me select the best photos.',
+        life: 3000
+      })
+    }
     return // Don't proceed if title is empty
   }
   
@@ -4811,7 +4831,7 @@ async function createMemoryBookFromDialog(data) {
   try {
     // Map dialog data to newBook structure
     newBook.value = {
-      title: data.title,
+      ai_supplemental_prompt: data.ai_supplemental_prompt,
       layoutType: data.layoutType,
       printSize: data.printSize,
       quality: data.quality,
@@ -4856,7 +4876,7 @@ async function saveEditBookFromDialog(data) {
     // Map dialog data to editBook structure
     editBook.value = {
       ...editBook.value, // Keep existing fields like id
-      title: data.title,
+      ai_supplemental_prompt: data.ai_supplemental_prompt,
       layoutType: data.layoutType,
       printSize: data.printSize,
       quality: data.quality,

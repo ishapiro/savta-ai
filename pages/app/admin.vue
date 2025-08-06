@@ -1906,7 +1906,7 @@ const filteredBooks = computed(() => {
   if (bookSearch.value) {
     const search = bookSearch.value.toLowerCase()
     filtered = filtered.filter(book => 
-      book.title?.toLowerCase().includes(search)
+              book.ai_supplemental_prompt?.toLowerCase().includes(search)
     )
   }
 

@@ -48,7 +48,7 @@ async function testThemeIntegration() {
       .insert([
         {
           user_id: '00000000-0000-0000-0000-000000000000', // Test user ID
-          title: 'Test Memory Book',
+          ai_supplemental_prompt: 'Test Memory Book',
           theme: theme.id,
           status: 'draft',
           layout_type: 'grid',

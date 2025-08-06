@@ -23,7 +23,7 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize
   // Enhanced logging for debugging JPG conversion
   console.log('🔍 DEBUG - Book object for JPG conversion:')
   console.log('   - Book ID:', book.id)
-  console.log('   - Book title:', book.title)
+      console.log('   - Book AI supplemental prompt:', book.ai_supplemental_prompt)
   console.log('   - Book output field:', book.output)
   console.log('   - Book output type:', typeof book.output)
   console.log('   - Book layout_type:', book.layout_type)
@@ -282,7 +282,7 @@ export default defineEventHandler(async (event) => {
     
     console.log('📚 BOOK DATA - Memory book loaded:', {
       id: book.id,
-      title: book.title,
+              title: book.ai_supplemental_prompt,
       background_type: book.background_type,
       background_color: book.background_color,
       background_url: book.background_url ? 'exists' : 'none',
@@ -1526,7 +1526,8 @@ export default defineEventHandler(async (event) => {
 
     // Handle theme layout PDF generation
     if (book.layout_type === 'theme') {
-      console.log('🎨 Starting theme-based PDF generation')
+      try {
+        console.log('🎨 Starting theme-based PDF generation')
       
       // Fetch the theme again to ensure we have the latest data
       const { data: theme, error: themeError } = await supabase
@@ -1579,6 +1580,9 @@ export default defineEventHandler(async (event) => {
       // Create PDF document
       const pdfDoc = await PDFDocument.create()
       const page = pdfDoc.addPage([pageWidth, pageHeight])
+      
+      // Use theme size for JPG conversion when theme is selected
+      const effectivePrintSize = theme.size || printSize
 
       // Apply background color with opacity
       if (theme.background_color) {
@@ -1661,7 +1665,20 @@ export default defineEventHandler(async (event) => {
       console.log(`📐 Card dimensions: ${cardWidthPoints}x${cardHeightPoints} points (${cardWidthMm}x${cardHeightMm}mm)`)
 
       // Process photos from layout_config
-      const photoCount = layoutConfig.photos.length
+      const themePhotoCount = layoutConfig.photos.length
+      const userIntendedPhotoCount = book.created_from_assets?.length || themePhotoCount
+      console.log(`📸 Theme layout supports ${themePhotoCount} photos, user intended ${userIntendedPhotoCount} photos`)
+      
+      // If user selected more photos than theme supports, use grid layout instead
+      if (userIntendedPhotoCount > themePhotoCount) {
+        console.log(`⚠️ User selected ${userIntendedPhotoCount} photos but theme only supports ${themePhotoCount}. Switching to grid layout.`)
+        // Change layout type to grid for this generation
+        book.layout_type = 'grid'
+        // Continue with grid layout processing instead of theme layout
+        throw new Error('SWITCH_TO_GRID_LAYOUT')
+      }
+      
+      const photoCount = themePhotoCount
       console.log(`📸 Processing ${photoCount} photos from theme layout`)
 
       // Fetch all assets for the book using photo_selection_pool if available, otherwise created_from_assets
@@ -1713,7 +1730,7 @@ export default defineEventHandler(async (event) => {
         },
         body: JSON.stringify({
           photos: photos,
-          title: book.title,
+          title: book.ai_supplemental_prompt,
           memory_event: book.memory_event,
           theme: book.theme_id || null,
           photo_count: photoCount,
@@ -1920,7 +1937,7 @@ export default defineEventHandler(async (event) => {
       await updatePdfStatus(supabase, book.id, user.id, '🎨 Theme PDF created!')
       
       // Use centralized function to save and upload file
-      const pdfStorageUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, book.print_size || '7x5')
+      const pdfStorageUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, effectivePrintSize)
       
       // Update book status and return
       await supabase.from('memory_books').update({ 
@@ -1929,6 +1946,15 @@ export default defineEventHandler(async (event) => {
       }).eq('id', book.id)
       await updatePdfStatus(supabase, book.id, user.id, '🎨 Your themed memory is ready!')
       return { success: true, downloadUrl: pdfStorageUrl }
+      } catch (themeError) {
+        if (themeError.message === 'SWITCH_TO_GRID_LAYOUT') {
+          console.log('🔄 Switching to grid layout due to photo count mismatch')
+          book.layout_type = 'grid'
+          // Continue with grid layout processing
+        } else {
+          throw themeError
+        }
+      }
     }
     
     // Load theme if specified for regular PDF generation
@@ -2221,7 +2247,7 @@ export default defineEventHandler(async (event) => {
       // Draw title on first page, with extra space below
       if (pageIndex === 0) {
         const headingY = height - 60
-        const title = (book.title || 'Memory Book').trim() // Use user's title or fallback, trim whitespace
+        const title = (book.ai_supplemental_prompt || 'Memory Book').trim() // Use user's AI supplemental prompt or fallback, trim whitespace
         const titleWidth = title.length * 12 // Approximate width based on character count for font size 24
         const titleX = (width - titleWidth) / 2 // Center the title
         
@@ -2577,7 +2603,7 @@ export default defineEventHandler(async (event) => {
     try {
       console.log('================ SAVTA PDF GENERATION SUMMARY ================')
       console.log('Book ID:', book.id)
-      console.log('Title:', book.title)
+      console.log('AI Supplemental Prompt:', book.ai_supplemental_prompt)
       console.log('Background type:', book.background_type)
       console.log('Background color:', book.background_color)
       if (typeof photoPool !== 'undefined') {
