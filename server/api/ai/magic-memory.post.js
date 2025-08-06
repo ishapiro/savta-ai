@@ -12,16 +12,57 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    let { photos, forceAll, title, memory_event, photo_count = 4, background_type = 'white', background_color } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
+    let { photos, forceAll, title, memory_event, photo_count = 4, background_type = 'white', background_color, theme_id } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
     if (!photos || !Array.isArray(photos) || photos.length < 1) {
       throw createError({ statusCode: 400, statusMessage: 'At least 1 photo is required' })
     }
 
-    console.log(`🎭 Magic Memory AI - Input: ${photos.length} photos, title: "${title}", photo_count: ${photo_count}`)
+    console.log(`🎭 Magic Memory AI - Input: ${photos.length} photos, title: "${title}", photo_count: ${photo_count}, theme_id: ${theme_id}`)
+
+    // Determine target photo count based on theme if provided
+    let targetPhotoCount = photo_count
+    if (theme_id) {
+      try {
+        console.log(`🎨 Theme selected (${theme_id}), fetching theme information...`)
+        const { createClient } = await import('@supabase/supabase-js')
+        const supabase = createClient(
+          config.public.supabaseUrl,
+          config.supabaseServiceRoleKey || config.public.supabaseKey
+        )
+        
+        const { data: theme, error: themeError } = await supabase
+          .from('themes')
+          .select('layout_config')
+          .eq('id', theme_id)
+          .eq('deleted', false)
+          .single()
+        
+        if (themeError || !theme) {
+          console.warn(`⚠️ Theme not found (${theme_id}), using default photo count: ${photo_count}`)
+        } else {
+          try {
+            const layoutConfig = typeof theme.layout_config === 'string' 
+              ? JSON.parse(theme.layout_config) 
+              : theme.layout_config
+            
+            if (layoutConfig && layoutConfig.photos && Array.isArray(layoutConfig.photos)) {
+              targetPhotoCount = layoutConfig.photos.length
+              console.log(`🎨 Theme photo count: ${targetPhotoCount} photos`)
+            } else {
+              console.warn(`⚠️ Theme layout_config invalid, using default photo count: ${photo_count}`)
+            }
+          } catch (parseError) {
+            console.warn(`⚠️ Error parsing theme layout_config, using default photo count: ${photo_count}`)
+          }
+        }
+      } catch (error) {
+        console.warn(`⚠️ Error fetching theme, using default photo count: ${photo_count}`)
+      }
+    }
 
     // Validate photo_count
     const validPhotoCounts = [1, 4, 6]
-    const targetPhotoCount = validPhotoCounts.includes(photo_count) ? photo_count : 4
+    targetPhotoCount = validPhotoCounts.includes(targetPhotoCount) ? targetPhotoCount : 4
 
     // Build memory book context string
     let memoryBookContext = ''

@@ -69,6 +69,23 @@
             />
           </div>
           
+          <!-- Theme (only show when layout type is 'theme') -->
+          <div v-if="form.layoutType === 'theme'">
+            <label class="block text-sm font-medium text-brand-primary mb-2">Theme</label>
+            <Dropdown
+              v-model="form.theme_id"
+              :options="themeOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select theme"
+              class="w-full"
+              :loading="loadingThemes"
+            />
+            <small class="text-brand-primary/70 text-xs mt-1 block">
+              Select a custom theme for your memory book layout
+            </small>
+          </div>
+          
           <!-- Print Size -->
           <div>
             <label class="block text-sm font-medium text-brand-primary mb-2">Print Size</label>
@@ -123,23 +140,6 @@
               placeholder="Select output format"
               class="w-full"
             />
-          </div>
-          
-          <!-- Theme (only show when layout type is 'theme') -->
-          <div v-if="form.layoutType === 'theme'">
-            <label class="block text-sm font-medium text-brand-primary mb-2">Theme</label>
-            <Dropdown
-              v-model="form.theme_id"
-              :options="themeOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select theme"
-              class="w-full"
-              :loading="loadingThemes"
-            />
-            <small class="text-brand-primary/70 text-xs mt-1 block">
-              Select a custom theme for your memory book layout
-            </small>
           </div>
         </div>
       </div>
@@ -568,9 +568,17 @@
               <div>
                 <p class="text-xs sm:text-sm font-medium text-brand-primary">
                   {{ selectedMemories.length }} photos selected
+                  <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount" class="text-orange-600">
+                    / {{ selectedThemePhotoCount }}
+                  </span>
                 </p>
                 <p class="text-xs text-brand-primary/70">
-                  Ready to create your cards or booklets
+                  <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount">
+                    Theme limit: {{ selectedThemePhotoCount }} photos
+                  </span>
+                  <span v-else>
+                    Ready to create your cards or booklets
+                  </span>
                 </p>
               </div>
             </div>
@@ -602,6 +610,9 @@
           <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
             <span class="text-xs sm:text-sm text-brand-primary/70 text-center sm:text-left">
               {{ selectedMemories.length }} selected
+              <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount" class="text-orange-600">
+                / {{ selectedThemePhotoCount }}
+              </span>
             </span>
             <Button
               label="Save Selection"
@@ -927,6 +938,28 @@
         </div>
       </template>
     </Dialog>
+    
+    <!-- Theme Limit Alert Dialog -->
+    <Dialog
+      v-model:visible="showThemeLimitAlert"
+      modal
+      :closable="true"
+      class="theme-limit-alert"
+      style="max-width: 95vw; width: 500px;"
+    >
+      <div class="flex flex-col items-center justify-center py-6 px-4 text-center">
+        <div class="w-16 h-16 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mb-4">
+          <i class="pi pi-exclamation-triangle text-2xl text-orange-500"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Theme Photo Limit</h3>
+        <p class="text-sm text-gray-600 mb-4">{{ themeLimitMessage }}</p>
+        <Button
+          label="OK"
+          @click="showThemeLimitAlert = false"
+          class="bg-brand-dialog-save border-0 rounded-full px-6 py-2"
+        />
+      </div>
+    </Dialog>
   </Dialog>
 </template>
 
@@ -977,6 +1010,8 @@ const selectedTagFilter = ref([])
 const showLocationDialog = ref(false)
 const showTagDialog = ref(false)
 const showDateDialog = ref(false)
+const showThemeLimitAlert = ref(false)
+const themeLimitMessage = ref('')
 
 // Location filter state
 const locationSearch = ref('')
@@ -1257,8 +1292,21 @@ const closeAssetSelector = () => {
 const toggleMemorySelection = (assetId) => {
   const index = selectedMemories.value.indexOf(assetId)
   if (index > -1) {
+    // Remove photo - always allowed
     selectedMemories.value.splice(index, 1)
   } else {
+    // Add photo - check theme limits
+    if (form.value.layoutType === 'theme' && selectedThemePhotoCount.value) {
+      if (selectedMemories.value.length >= selectedThemePhotoCount.value) {
+        // Get theme name for error message
+        const selectedTheme = themeOptions.value.find(theme => theme.value === form.value.theme_id)
+        const themeName = selectedTheme ? selectedTheme.label.split(' (')[0] : 'this theme'
+        
+        themeLimitMessage.value = `The "${themeName}" theme only uses ${selectedThemePhotoCount.value} photos. Please deselect some photos first.`
+        showThemeLimitAlert.value = true
+        return
+      }
+    }
     selectedMemories.value.push(assetId)
   }
 }
