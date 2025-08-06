@@ -38,9 +38,9 @@
                   <span class="hidden sm:inline">Savta Create a Card</span>
                   <span class="sm:hidden">Savta Create</span>
                 </button>
-                <p class="text-sm text-brand-primary/70 mt-1 text-center">Start Here (Quick)</p>
+                <p class="mt-2 text-sm text-brand-highlight text-center">Start Here and I'll Help You Create a Card</p>
               </div>
-              <div class="flex flex-col items-center">
+              <!-- <div class="flex flex-col items-center">
                 <button
                   class="border-0 bg-brand-highlight hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('full')"
@@ -50,7 +50,7 @@
                   <span class="sm:hidden">Help Me</span>
                 </button>
                 <p class="text-sm text-brand-primary/70 mt-1 text-center">More Control</p>
-              </div>
+              </div> -->
             </div>
           </div>
           
@@ -66,7 +66,7 @@
                 <span class="hidden sm:inline">Special Memory Booklets</span>
                 <span class="sm:hidden">Memory Booklets</span>
               </button>
-              <p class="text-sm text-brand-primary/70 mt-1 text-center">Full Control</p>
+              <p class="mt-2 text-sm text-brand-highlight text-center">You Choose the Photos, Choose the Layout, I'll Create the Book</p>
             </div>
           </div>
         </div>
@@ -268,12 +268,12 @@
               <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
             </div>
             <!-- Approve Button (books without story) -->
-            <div v-if="book.status === 'ready' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
+            <div v-if="book.status === 'ready' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)" v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'">
               <i class="pi pi-check text-lg sm:text-xl text-brand-header group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-brand-header mt-1 font-medium">Approve</span>
             </div>
             <!-- Approve Button (books with story) -->
-            <div v-if="book.status === 'ready' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)">
+            <div v-if="book.status === 'ready' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)" v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'">
               <i class="pi pi-check text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Approve</span>
             </div>
@@ -904,6 +904,7 @@
                 v-if="selectedBook.status === 'ready'"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="approveBook(selectedBook.id)"
+                v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'"
               >
                 <i class="pi pi-check text-xs sm:text-sm"></i>
                 <span class="hidden sm:inline">Approve</span>

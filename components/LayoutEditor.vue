@@ -88,6 +88,9 @@
         <button @click="resetLayout" class="px-2 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-medium transition-colors">
           <i class="pi pi-refresh text-xs mr-1"></i>Reset
         </button>
+        <button @click="showNewLayoutDialog = true" class="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium transition-colors">
+          <i class="pi pi-sync text-xs mr-1"></i>New Layout
+        </button>
         <button @click="saveLayout" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors">
           <i class="pi pi-save text-xs mr-1"></i>Save
         </button>
@@ -452,6 +455,82 @@
         </div>
       </div>
     </div>
+    
+    <!-- New Layout Selection Dialog -->
+    <Dialog
+      v-model:visible="showNewLayoutDialog"
+      modal
+      :closable="true"
+      class="new-layout-dialog"
+      style="max-width: 95vw; width: 600px;"
+    >
+      <div class="flex flex-col py-6 px-4">
+        <div class="flex items-center justify-center mb-4">
+          <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center">
+            <i class="pi pi-th-large text-2xl text-purple-500"></i>
+          </div>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Select New Layout</h3>
+        <p class="text-sm text-gray-600 mb-6 text-center">
+          Choose a layout from the default layouts. This will replace your current layout.
+        </p>
+        
+        <!-- Loading State -->
+        <div v-if="loadingDefaultLayouts" class="flex items-center justify-center py-8">
+          <div class="text-center">
+            <i class="pi pi-spin pi-spinner text-2xl text-purple-500 mb-2"></i>
+            <p class="text-sm text-gray-600">Loading layouts...</p>
+          </div>
+        </div>
+        
+        <!-- Layout Selection -->
+        <div v-else class="space-y-4">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
+            <div
+              v-for="(layout, size) in availableLayouts"
+              :key="size"
+              @click="selectedLayoutSize = size"
+              class="relative cursor-pointer border-2 rounded-lg p-3 transition-all duration-200 hover:shadow-md"
+              :class="selectedLayoutSize === size 
+                ? 'border-purple-500 bg-purple-50 shadow-md' 
+                : 'border-gray-200 hover:border-purple-300'"
+            >
+              <div class="text-center">
+                <div class="text-lg font-semibold text-gray-900 mb-1">{{ size }}</div>
+                <div class="text-xs text-gray-600 mb-2">{{ layout.name }}</div>
+                <div class="text-xs text-gray-500">
+                  {{ layout.photos?.length || 0 }} photos
+                  <span v-if="layout.story" class="ml-1">• Story</span>
+                </div>
+                <div v-if="selectedLayoutSize === size" class="absolute top-2 right-2">
+                  <i class="pi pi-check text-purple-500 text-sm"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="Object.keys(availableLayouts).length === 0" class="text-center py-8">
+            <i class="pi pi-exclamation-triangle text-2xl text-gray-400 mb-2"></i>
+            <p class="text-sm text-gray-600">No layouts available</p>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex gap-3 mt-6 justify-center">
+          <Button
+            label="Cancel"
+            @click="showNewLayoutDialog = false"
+            class="bg-gray-500 hover:bg-gray-600 text-white border-0 rounded-full px-6 py-2"
+          />
+          <Button
+            label="Apply Layout"
+            :disabled="!selectedLayoutSize"
+            @click="applySelectedLayout"
+            class="bg-purple-600 hover:bg-purple-700 text-white border-0 rounded-full px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -497,6 +576,15 @@ const showInstructionsDialog = ref(false)
 // JSON popup dialog
 const showJsonDialog = ref(false)
 
+// New Layout dialog
+const showNewLayoutDialog = ref(false)
+const selectedLayoutSize = ref('')
+const loadingDefaultLayouts = ref(false)
+const dialogLayouts = ref({})
+
+// Computed property for dialog layouts
+const availableLayouts = computed(() => dialogLayouts.value)
+
 // Resize dialog
 const showResizeDialog = ref(false)
 const resizeDialogData = ref({
@@ -537,6 +625,26 @@ function updateGridSize() {
   // Ensure grid size is within bounds (5-100)
   if (gridSize.value < 5) gridSize.value = 5
   if (gridSize.value > 100) gridSize.value = 100
+}
+
+// Load default layouts for the new layout dialog
+async function loadDefaultLayoutsForDialog() {
+  try {
+    loadingDefaultLayouts.value = true
+    const layouts = await loadDefaultLayouts()
+    // Convert to reactive object for the dialog
+    const reactiveLayouts = {}
+    Object.keys(layouts).forEach(size => {
+      reactiveLayouts[size] = layouts[size]
+    })
+    return reactiveLayouts
+  } catch (error) {
+    console.error('[NEW LAYOUT] Error loading default layouts:', error)
+    alert('❌ Error loading default layouts. Please try again.')
+    return {}
+  } finally {
+    loadingDefaultLayouts.value = false
+  }
 }
 
 // Multi-select functionality
@@ -1743,6 +1851,45 @@ async function resetLayout() {
   }
 }
 
+async function applySelectedLayout() {
+  try {
+    if (!selectedLayoutSize.value) {
+      alert('Please select a layout first.')
+      return
+    }
+    
+    console.log('[NEW LAYOUT] Applying selected layout:', selectedLayoutSize.value)
+    
+    // Get the selected layout
+    const layouts = await loadDefaultLayouts()
+    const selectedLayout = layouts[selectedLayoutSize.value]
+    if (!selectedLayout) {
+      throw new Error(`Layout for size ${selectedLayoutSize.value} not found`)
+    }
+    
+    // Apply the layout data
+    layoutData.name = selectedLayout.name
+    layoutData.orientation = selectedLayout.orientation || 'portrait'
+    layoutData.story = selectedLayout.story || null
+    layoutData.photos = selectedLayout.photos || []
+    layoutData.cardWidthMm = selectedLayout.cardWidthMm
+    layoutData.cardHeightMm = selectedLayout.cardHeightMm
+    
+    // Clear any selections
+    selectedBoxes.value = []
+    copiedBoxes.value = []
+    
+    // Close the dialog
+    showNewLayoutDialog.value = false
+    selectedLayoutSize.value = ''
+    
+    console.log('[NEW LAYOUT] Layout applied successfully:', selectedLayout)
+  } catch (error) {
+    console.error('[NEW LAYOUT] Error applying layout:', error)
+    alert('❌ Error applying layout. Please try again.')
+  }
+}
+
 function saveLayout() {
   // If in edit defaults mode, save to defaults
   if (props.editDefaultsMode) {
@@ -1821,6 +1968,15 @@ watch(() => props.size, (newSize) => {
     hasExistingLayout
   })
 }, { immediate: true })
+
+// Watch for new layout dialog to load layouts
+watch(() => showNewLayoutDialog.value, (isOpen) => {
+  if (isOpen && Object.keys(dialogLayouts.value).length === 0) {
+    loadDefaultLayoutsForDialog().then(layouts => {
+      dialogLayouts.value = layouts
+    })
+  }
+})
 
 // Initialize boxes when component mounts
 onMounted(async () => {
