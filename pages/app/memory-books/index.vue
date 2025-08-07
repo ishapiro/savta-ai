@@ -113,11 +113,11 @@
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-secondary/20"><i class="pi pi-bolt text-lg text-brand-secondary"></i></span>
-                              <span class="text-brand-primary"><b>Compose</b>: Create your Special Memory Card for the first time.</span>
+              <span class="text-brand-primary"><b>Compose</b>: Create your Special Memory Card for the first time.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-yellow-100"><i class="pi pi-refresh text-lg text-yellow-600"></i></span>
-                              <span class="text-brand-primary"><b>Recreate</b>: Make a new version of your Special Memory Card with a fresh design.</span>
+              <span class="text-brand-primary"><b>Recreate</b>: Make a new version of your Special Memory Card with a fresh design.</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-secondary/20"><i class="pi pi-check text-lg text-brand-secondary"></i></span>
@@ -331,7 +331,7 @@
         <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Great! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first special memory?</p>
         <button
           class="border-0 bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
-          @click="openMagicMemoryDialog('full')"
+          @click="openMagicMemoryDialog('quick')"
         >
           <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Special Memory
         </button>
@@ -1406,7 +1406,7 @@
       :style="{ maxWidth: '700px', maxHeight: '100vh' }"
       :class="['z-50', 'w-full', 'sm:w-[700px]', 'sm:max-w-[700px]', 'h-full', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl']"
     >
-      <!-- Step 1: Title Input -->
+      <!-- Step 1: AI Prompt Input -->
       <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
@@ -1660,23 +1660,24 @@
             <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
-          <p class="text-xs sm:text-base text-gray-600 mb-2">I'll choose photos from your library. Use the tiles below to tell me how to pick them.</p>
+          <p class="text-xs sm:text-base text-gray-600 mb-2">Choose how you'd like me to select photos from your library.</p>
           <p class="text-xs text-brand-flash font-medium">📸 You have {{ availableAssets.length }} photo{{ availableAssets.length !== 1 ? 's' : '' }} in your library</p>
         </div>
         
         <!-- Photo Selection Tiles -->
-        <div class="grid grid-cols-2 gap-3 w-full max-w-md mx-auto sm:max-w-2xl">
-          <!-- Savta Selects Tile -->
+        <div class="space-y-3 w-full max-w-md mx-auto sm:max-w-2xl">
+          <!-- Savta Selects Tile (Wide Button) -->
           <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'last_100'">
-            <div class="border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[70px] flex flex-col items-center justify-center"
+            <div class="mx-4 border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
               :class="magicPhotoSelectionMethod === 'last_100' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-images text-sm sm:text-xl text-white"></i>
+              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                <i class="pi pi-images text-sm sm:text-lg text-white"></i>
               </div>
               <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Savta selects</div>
-              <div class="text-xs text-gray-600">I'll search your photos for matches to "{{ magicMemoryTitle || 'your memory' }}" and pick the best 50 recent photos.</div>
+              <div class="text-xs text-gray-600">I'll search your photos for matches to "{{ magicMemoryTitle || 'your memory' }}" 
+                and pick the best photos from your recent uploads.</div>
               <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-1 right-1">
                 <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
@@ -1685,58 +1686,88 @@
             </div>
           </div>
 
-          <!-- By Location Tile -->
-          <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'geo_code'">
-            <div class="border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[70px] flex flex-col items-center justify-center"
-              :class="magicPhotoSelectionMethod === 'geo_code' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-map-marker text-sm sm:text-xl text-white"></i>
-              </div>
-              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">By location</div>
-              <div class="text-xs text-gray-600">Pick by country, city, or state.</div>
-              <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-1 right-1">
-                <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-xs"></i>
+          <!-- Other Options Grid (2x2) -->
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Photo Library Selection Tile -->
+            <div class="relative cursor-pointer group" @click="() => { 
+              magicPhotoSelectionMethod = 'photo_library'; 
+              console.log('🔍 [Photo Library Clicked] magicPhotoSelectionMethod set to:', magicPhotoSelectionMethod);
+              // Automatically advance to manual step when photo library is selected
+              nextMagicMemoryStep();
+            }">
+              <div class="border-2 rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
+                :class="magicPhotoSelectionMethod === 'photo_library' 
+                  ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                  : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                  <i class="pi pi-folder-open text-xs sm:text-sm text-white"></i>
+                </div>
+                <div class="text-xs sm:text-sm font-bold text-gray-900 mb-1">Photo library</div>
+                <div class="text-xs text-gray-600">Choose exactly which photos you want from your library.</div>
+                <div v-if="magicPhotoSelectionMethod === 'photo_library'" class="absolute top-1 right-1">
+                  <div class="w-4 h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                    <i class="pi pi-check text-white text-xs"></i>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- By Date Tile -->
-          <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'date_range'">
-            <div class="border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[70px] flex flex-col items-center justify-center"
-              :class="magicPhotoSelectionMethod === 'date_range' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-calendar-plus text-sm sm:text-xl text-white"></i>
-              </div>
-              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">By date</div>
-              <div class="text-xs text-gray-600">Pick a time period.</div>
-              <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-1 right-1">
-                <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-xs"></i>
+            <!-- By Location Tile -->
+            <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'geo_code'">
+              <div class="border-2 rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
+                :class="magicPhotoSelectionMethod === 'geo_code' 
+                  ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                  : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                  <i class="pi pi-map-marker text-xs sm:text-sm text-white"></i>
+                </div>
+                <div class="text-xs sm:text-sm font-bold text-gray-900 mb-1">By location</div>
+                <div class="text-xs text-gray-600">Choose a country, city, or state. 
+                  I'll pick the best photos from this location.</div>
+                <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-1 right-1">
+                  <div class="w-4 h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                    <i class="pi pi-check text-white text-xs"></i>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- By Tags Tile -->
-          <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'tags'">
-            <div class="border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[70px] flex flex-col items-center justify-center"
-              :class="magicPhotoSelectionMethod === 'tags' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-tags text-sm sm:text-xl text-white"></i>
+            <!-- By Date Tile -->
+            <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'date_range'">
+              <div class="border-2 rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
+                :class="magicPhotoSelectionMethod === 'date_range' 
+                  ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                  : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                  <i class="pi pi-calendar-plus text-xs sm:text-sm text-white"></i>
+                </div>
+                <div class="text-xs sm:text-sm font-bold text-gray-900 mb-1">By date</div>
+                <div class="text-xs text-gray-600">Choose a specific time period. 
+                  I'll pick the best photos from this date range.</div>
+                <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-1 right-1">
+                  <div class="w-4 h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                    <i class="pi pi-check text-white text-xs"></i>
+                  </div>
+                </div>
               </div>
-              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">By tags</div>
-              <div class="text-xs text-gray-600">Pick by tag or person.</div>
-              <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-1 right-1">
-                <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-xs"></i>
+            </div>
+
+            <!-- By Tags Tile -->
+            <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'tags'">
+              <div class="border-2 rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
+                :class="magicPhotoSelectionMethod === 'tags' 
+                  ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                  : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                  <i class="pi pi-tags text-xs sm:text-sm text-white"></i>
+                </div>
+                <div class="text-xs sm:text-sm font-bold text-gray-900 mb-1">By tags</div>
+                <div class="text-xs text-gray-600">Choose a tag or person. 
+                  I'll pick the best photos with these tags.</div>
+                <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-1 right-1">
+                  <div class="w-4 h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                    <i class="pi pi-check text-white text-xs"></i>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1882,16 +1913,11 @@
         </div>
       </div>
 
-      <!-- Step 6: Photo Selection (only for manual selection) -->
-      <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && currentButtonConfig?.steps.includes(MAGIC_STEPS.MANUAL) && magicPhotoSelectionMethod === 'manual' && !loadingAssets" class="space-y-3 sm:space-y-4 px-4 overflow-x-hidden">
-        <div class="bg-gradient-to-r from-yellow-50 via-brand-navigation to-blue-50 rounded-lg p-3 sm:p-4 border border-brand-highlight flex items-center gap-2 sm:gap-3 animate-pulse max-w-xs w-full mx-auto">
-          <i class="pi pi-sparkles text-lg sm:text-2xl text-yellow-400 animate-bounce"></i>
-          <div>
-            <h3 class="text-base sm:text-lg font-bold text-brand-header mb-1">Choose your photos for "{{ magicMemoryTitle }}"</h3>
-                          <p class="text-xs sm:text-sm text-gray-700">Select up to 12 photos that you'd like me to consider for your special story. I'll select the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your choices!</p>
-          </div>
-        </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 max-w-xs w-full mx-auto">
+
+
+      <!-- Step 6: Photo Library Selection (only for photo_library selection) -->
+      <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod === 'photo_library' && !loadingAssets" class="space-y-3 sm:space-y-4 px-4 overflow-x-hidden">
+        <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 w-full mx-auto">
           <label class="block text-sm font-medium text-gray-900 mb-2">Filter by Tags</label>
           <div class="flex gap-2 mb-3">
             <MultiSelect
@@ -1912,26 +1938,26 @@
               v-tooltip.top="'Clear filter'"
             />
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 max-h-48 sm:max-h-64 overflow-y-auto">
+          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 max-h-64 sm:max-h-80 overflow-y-auto">
             <div
               v-for="asset in magicFilteredAssets"
               :key="asset.id"
               class="relative group cursor-pointer touch-manipulation magic-photo-card"
               :class="{
                 'opacity-60 pointer-events-none': magicSelectedMemories.length >= 12 && !magicSelectedMemories.includes(asset.id),
-                'ring-4 ring-yellow-400 ring-offset-2 scale-105 z-10 bg-yellow-100 shadow-xl': magicSelectedMemories.includes(asset.id)
+                'ring-4 ring-purple-400 ring-offset-2 scale-105 z-10 bg-purple-100 shadow-xl': magicSelectedMemories.includes(asset.id)
               }"
               @click="toggleMagicMemorySelection(asset.id)"
             >
-              <div v-if="magicSelectedMemories.includes(asset.id)" class="absolute inset-0 bg-yellow-200/40 rounded-lg z-20 flex items-center justify-center pointer-events-none transition-all duration-200">
-                <i class="pi pi-check text-4xl text-yellow-500 animate-bounce"></i>
+              <div v-if="magicSelectedMemories.includes(asset.id)" class="absolute inset-0 bg-purple-200/40 rounded-lg z-20 flex items-center justify-center pointer-events-none transition-all duration-200">
+                <i class="pi pi-check text-4xl text-purple-500 animate-bounce"></i>
               </div>
-              <div class="aspect-square bg-gradient-to-br from-brand-navigation via-yellow-50 to-blue-100 rounded-lg overflow-hidden border-2 border-brand-highlight hover:border-yellow-400 transition-colors">
+              <div class="aspect-square bg-gradient-to-br from-brand-navigation via-purple-50 to-blue-100 rounded-lg overflow-hidden border-2 border-brand-highlight hover:border-purple-400 transition-colors">
                 <img
                   v-if="asset.storage_url"
                   :src="asset.storage_url"
                   :alt="asset.user_caption || asset.ai_caption || 'Memory'"
-                  class="w-full h-full object-cover bg-white"
+                  class="w-full h-full object-contain bg-white"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center">
                   <i class="pi pi-image text-gray-400 text-lg"></i>
@@ -1940,15 +1966,15 @@
               <div class="mt-1 text-center">
                 <CaptionRenderer 
                   :caption="asset.user_caption || asset.ai_caption || `Photo ${asset.id.slice(-4)}`"
-                  :max-width="120"
-                  :max-height="40"
-                  :font-size="10"
+                  :max-width="140"
+                  :max-height="50"
+                  :font-size="11"
                 />
               </div>
             </div>
           </div>
           <div class="mt-2 text-xs text-gray-600 text-center">
-            <span>{{ magicSelectedMemories.length }} selected (I'll pick the best {{ magicPhotoCount }} from your choices)</span>
+            <span>{{ magicSelectedMemories.length }} selected (up to 12 photos)</span>
             <span v-if="magicSelectedTagFilter && magicSelectedTagFilter.length > 0"> • Filtered by: {{ magicSelectedTagFilter.join(', ') }}</span>
           </div>
           
@@ -1970,10 +1996,10 @@
           </div>
         </div>
       </div>
-      <div v-else-if="loadingAssets && currentButtonConfig?.steps.includes(MAGIC_STEPS.MANUAL) && magicPhotoSelectionMethod === 'manual'" class="flex items-center justify-center py-8">
+      <div v-else-if="loadingAssets && magicPhotoSelectionMethod === 'photo_library'" class="flex items-center justify-center py-8">
         <div class="text-center">
           <i class="pi pi-spin pi-spinner text-3xl text-brand-header mb-3"></i>
-          <p class="text-sm text-gray-600">Looking through your beautiful memories...</p>
+          <p class="text-sm text-gray-600">Loading your photo library...</p>
         </div>
       </div>
       <template #footer>
@@ -2010,7 +2036,7 @@
             v-if="isLastStep()"
             label="Let's make something beautiful together"
             icon="pi pi-bolt"
-            :disabled="(currentButtonConfig?.steps.includes(6) && magicPhotoSelectionMethod === 'manual' && magicSelectedMemories.length < 1) || magicLoading"
+            :disabled="(magicMemoryStep === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod === 'photo_library' && magicSelectedMemories.length < 1) || magicLoading"
             :loading="magicLoading"
             @click="onMagicMemoryContinue"
             class="bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto animate-pulse"
@@ -3897,6 +3923,9 @@ const MAGIC_STEPS = {
   MANUAL: 'manual'
 }
 
+// Photo pool size constant for easy configuration
+const PHOTO_POOL_SIZE = 50
+
 // Step definitions with required/optional flags
 const stepDefinitions = {
   [MAGIC_STEPS.TITLE]: { name: "Title Input", required: true },
@@ -3904,8 +3933,7 @@ const stepDefinitions = {
   [MAGIC_STEPS.COUNT]: { name: "Photo Count Selection", required: true },
   [MAGIC_STEPS.BACKGROUND]: { name: "Background Selection", required: true },
   [MAGIC_STEPS.THEME]: { name: "Theme Selection", required: false },
-  [MAGIC_STEPS.PHOTOS]: { name: "Photo Selection Method", required: true },
-  [MAGIC_STEPS.MANUAL]: { name: "Photo Selection", required: true }
+  [MAGIC_STEPS.PHOTOS]: { name: "Photo Selection Method", required: true }
 }
 
 // Button configurations defining which steps to include
@@ -4059,8 +4087,8 @@ watch(magicMemoryStep, (newStep) => {
 
 
 async function onMagicMemoryContinue() {
-  // If step 6 (photo selection) is included and manual selection is chosen, validate selection
-  if (currentButtonConfig.value.steps.includes(MAGIC_STEPS.MANUAL) && magicPhotoSelectionMethod.value === 'manual' && magicSelectedMemories.value.length < 1) {
+  // If we're on the manual step and no photos are selected, don't proceed
+  if (magicMemoryStep.value === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod.value === 'photo_library' && magicSelectedMemories.value.length < 1) {
     return
   }
   
@@ -4083,10 +4111,10 @@ async function onMagicMemoryContinue() {
     
     let selectedAssets
     
-    if (currentButtonConfig.value.steps.includes(MAGIC_STEPS.MANUAL) && magicPhotoSelectionMethod.value === 'manual') {
-      // For manual selection, use the selected memories
+    if (magicMemoryStep.value === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod.value === 'photo_library') {
+      // For photo library selection, use the selected memories
       selectedAssets = availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
-      console.log('🔍 [onMagicMemoryContinue] Manual selection - selected assets count:', selectedAssets.length)
+      console.log('🔍 [onMagicMemoryContinue] Photo library selection - selected assets count:', selectedAssets.length)
     } else {
       // For automatic selection, ensure we have all the assets from the photo selection pool
       // If availableAssets doesn't contain all the assets we need, reload them
@@ -4173,7 +4201,8 @@ async function onMagicMemoryContinue() {
         photo_count: magicPhotoCount.value,
         theme_id: magicSelectedTheme.value,
         print_size: '8.5x11', // Default print size for magic memories
-        output: 'JPG' // Wizard creates single-page memories, so always use JPG
+        output: 'JPG', // Wizard creates single-page memories, so always use JPG
+        photo_selection_method: magicPhotoSelectionMethod.value
       },
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -4213,15 +4242,16 @@ async function onMagicMemoryContinue() {
     // Store the configuration for retry
     lastMagicMemoryConfig.value = {
       photoSelectionPool: populatePhotoSelectionPool(),
-      selectedAssets: currentButtonConfig.value.steps.includes(6) && magicPhotoSelectionMethod.value === 'manual' 
-        ? availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
-        : availableAssets.value.filter(a => populatePhotoSelectionPool().includes(a.id)),
+                    selectedAssets: magicMemoryStep.value === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod.value === 'photo_library' 
+          ? availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
+          : availableAssets.value.filter(a => populatePhotoSelectionPool().includes(a.id)),
       title: magicMemoryTitle.value,
       memoryEvent: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
       photoCount: magicPhotoCount.value,
       backgroundType: magicBackgroundType.value,
       selectedTheme: magicSelectedTheme.value,
-      buttonType: currentButtonConfig.value
+      buttonType: currentButtonConfig.value,
+      photoSelectionMethod: magicPhotoSelectionMethod.value
     }
     
     // Show user-friendly error dialog
@@ -4321,7 +4351,8 @@ const retryMagicMemory = async () => {
         photo_count: config.photoCount,
         theme_id: config.selectedTheme || null,
         print_size: '8.5x11', // Default print size for magic memories
-        output: 'JPG' // Wizard creates single-page memories, so always use JPG
+        output: 'JPG', // Wizard creates single-page memories, so always use JPG
+        photo_selection_method: config.photoSelectionMethod
       },
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -4450,6 +4481,18 @@ const nextMagicMemoryStep = () => {
     return // Don't proceed if location is not selected
   }
   
+  // Special handling for photo_library selection - add MANUAL step programmatically
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod.value === 'photo_library') {
+    console.log('🔍 [nextMagicMemoryStep] Photo library selected, adding MANUAL step')
+    // Add MANUAL step to the current button configuration
+    currentButtonConfig.value.steps.push(MAGIC_STEPS.MANUAL)
+    // Move to the MANUAL step
+    currentStepIndex.value = currentButtonConfig.value.steps.indexOf(MAGIC_STEPS.MANUAL)
+    magicMemoryStep.value = MAGIC_STEPS.MANUAL
+    console.log('🔍 [nextMagicMemoryStep] Advanced to MANUAL step:', magicMemoryStep.value)
+    return
+  }
+  
   // Find next step in the button's sequence
   const nextIndex = currentStepIndex.value + 1
   if (nextIndex < currentButtonConfig.value.steps.length) {
@@ -4484,6 +4527,11 @@ const previousMagicMemoryStep = () => {
 
 // Helper functions for navigation
 const getNextStepName = () => {
+  // Special case: if we're on PHOTOS step and photo_library is selected, the next step is MANUAL
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod.value === 'photo_library') {
+    return "Photo Selection"
+  }
+  
   const nextIndex = currentStepIndex.value + 1
   if (nextIndex < currentButtonConfig.value.steps.length) {
     const nextStepNumber = currentButtonConfig.value.steps[nextIndex]
@@ -4493,7 +4541,14 @@ const getNextStepName = () => {
 }
 
 const isLastStep = () => {
-  return currentStepIndex.value === currentButtonConfig.value.steps.length - 1
+  // Special case: if we're on PHOTOS step and photo_library is selected, we're not on the last step
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod.value === 'photo_library') {
+    console.log('🔍 [isLastStep] Photo library selected, not last step')
+    return false
+  }
+  const isLast = currentStepIndex.value === currentButtonConfig.value.steps.length - 1
+  console.log('🔍 [isLastStep] Current step index:', currentStepIndex.value, 'Total steps:', currentButtonConfig.value.steps.length, 'Is last:', isLast)
+  return isLast
 }
 
 const isFirstStep = () => {
@@ -4598,13 +4653,13 @@ const populatePhotoSelectionPool = () => {
             const sortedMatchingAssets = matchingAssets
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
             
-            // If we have 25 or more matching photos, take top 25
-            if (sortedMatchingAssets.length >= 25) {
-              filteredAssets = sortedMatchingAssets.slice(0, 25)
-              console.log('🔍 [populatePhotoSelectionPool] Savta picks - selected 25 most recent matching photos')
+            // If we have PHOTO_POOL_SIZE or more matching photos, take top PHOTO_POOL_SIZE
+            if (sortedMatchingAssets.length >= PHOTO_POOL_SIZE) {
+              filteredAssets = sortedMatchingAssets.slice(0, PHOTO_POOL_SIZE)
+              console.log(`🔍 [populatePhotoSelectionPool] Savta picks - selected ${PHOTO_POOL_SIZE} most recent matching photos`)
             } else {
-              // Supplement with recent non-matching assets to reach 25
-              console.log(`🔍 [populatePhotoSelectionPool] Only ${sortedMatchingAssets.length} matching photos found, supplementing with recent photos to reach 25`)
+              // Supplement with recent non-matching assets to reach PHOTO_POOL_SIZE
+              console.log(`🔍 [populatePhotoSelectionPool] Only ${sortedMatchingAssets.length} matching photos found, supplementing with recent photos to reach ${PHOTO_POOL_SIZE}`)
               
               // Get all assets sorted by most recent
               const allAssetsSorted = filteredAssets
@@ -4615,8 +4670,8 @@ const populatePhotoSelectionPool = () => {
                 !sortedMatchingAssets.some(matchingAsset => matchingAsset.id === asset.id)
               )
               
-              // Take enough recent non-matching assets to reach exactly 25
-              const additionalNeeded = 25 - sortedMatchingAssets.length
+              // Take enough recent non-matching assets to reach exactly PHOTO_POOL_SIZE
+              const additionalNeeded = PHOTO_POOL_SIZE - sortedMatchingAssets.length
               const additionalAssets = nonMatchingAssets.slice(0, additionalNeeded)
               
               // Combine matching assets with additional recent assets
@@ -4625,25 +4680,25 @@ const populatePhotoSelectionPool = () => {
               console.log(`🔍 [populatePhotoSelectionPool] Savta picks - selected ${sortedMatchingAssets.length} matching photos + ${additionalAssets.length} recent photos = ${filteredAssets.length} total`)
             }
           } else {
-            // No matches found, use most recent 25 photos
-            console.log('🔍 [populatePhotoSelectionPool] No matches found, using most recent 25 photos')
+            // No matches found, use most recent PHOTO_POOL_SIZE photos
+            console.log(`🔍 [populatePhotoSelectionPool] No matches found, using most recent ${PHOTO_POOL_SIZE} photos`)
             filteredAssets = filteredAssets
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-              .slice(0, 25)
+              .slice(0, PHOTO_POOL_SIZE)
           }
         } else {
-          // No meaningful search words, use most recent 25 photos
-          console.log('🔍 [populatePhotoSelectionPool] No meaningful search words, using most recent 25 photos')
+          // No meaningful search words, use most recent PHOTO_POOL_SIZE photos
+          console.log(`🔍 [populatePhotoSelectionPool] No meaningful search words, using most recent ${PHOTO_POOL_SIZE} photos`)
           filteredAssets = filteredAssets
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            .slice(0, 25)
+            .slice(0, PHOTO_POOL_SIZE)
         }
       } else {
-        // No user input, use most recent 25 photos
-        console.log('🔍 [populatePhotoSelectionPool] No user input, using most recent 25 photos')
+        // No user input, use most recent PHOTO_POOL_SIZE photos
+        console.log(`🔍 [populatePhotoSelectionPool] No user input, using most recent ${PHOTO_POOL_SIZE} photos`)
         filteredAssets = filteredAssets
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 25)
+          .slice(0, PHOTO_POOL_SIZE)
       }
       
       console.log('🔍 [populatePhotoSelectionPool] Savta picks method - final filtered assets count:', filteredAssets.length)
@@ -4680,10 +4735,10 @@ const populatePhotoSelectionPool = () => {
         console.log('🔍 [populatePhotoSelectionPool] Geo code method - before filter:', beforeFilter, 'after filter:', filteredAssets.length)
         console.log('🔍 [populatePhotoSelectionPool] Geo code method - matching assets:', filteredAssets.map(a => ({ id: a.id, country: a.country, state: a.state, city: a.city })))
       } else {
-        console.log('🔍 [populatePhotoSelectionPool] Geo code method - no location selected, using most recent 25 photos')
+        console.log(`🔍 [populatePhotoSelectionPool] Geo code method - no location selected, using most recent ${PHOTO_POOL_SIZE} photos`)
         filteredAssets = filteredAssets
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 25)
+          .slice(0, PHOTO_POOL_SIZE)
       }
       break
       
@@ -4699,10 +4754,10 @@ const populatePhotoSelectionPool = () => {
         console.log('🔍 [populatePhotoSelectionPool] Date range method - filtered assets count:', filteredAssets.length)
         console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
       } else {
-        console.log('🔍 [populatePhotoSelectionPool] Date range method - no date range selected, using most recent 25 photos')
+        console.log(`🔍 [populatePhotoSelectionPool] Date range method - no date range selected, using most recent ${PHOTO_POOL_SIZE} photos`)
         filteredAssets = filteredAssets
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 25)
+          .slice(0, PHOTO_POOL_SIZE)
       }
       break
       
@@ -4721,31 +4776,31 @@ const populatePhotoSelectionPool = () => {
         console.log('🔍 [populatePhotoSelectionPool] Tags method - before filter:', beforeFilter, 'after filter:', filteredAssets.length)
         console.log('🔍 [populatePhotoSelectionPool] Tags method - matching assets:', filteredAssets.map(a => ({ id: a.id, tags: a.tags })))
       } else {
-        console.log('🔍 [populatePhotoSelectionPool] Tags method - no tags selected, using most recent 25 photos')
+        console.log(`🔍 [populatePhotoSelectionPool] Tags method - no tags selected, using most recent ${PHOTO_POOL_SIZE} photos`)
         filteredAssets = filteredAssets
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 25)
+          .slice(0, PHOTO_POOL_SIZE)
       }
       break
       
-    case 'manual':
-      // For manual selection, we'll use the existing magicSelectedMemories
+    case 'photo_library':
+      // For photo library selection, we'll use the existing magicSelectedMemories
       // This will be handled in the photo selection step
-      console.log('🔍 [populatePhotoSelectionPool] Manual method - selected memories count:', magicSelectedMemories.value.length)
+      console.log('🔍 [populatePhotoSelectionPool] Photo library method - selected memories count:', magicSelectedMemories.value.length)
       return magicSelectedMemories.value
       
     default:
-      // Default to last 25 photos if no method is selected
+      // Default to last PHOTO_POOL_SIZE photos if no method is selected
       filteredAssets = filteredAssets
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 25)
+        .slice(0, PHOTO_POOL_SIZE)
       console.log('🔍 [populatePhotoSelectionPool] Default method - filtered assets count:', filteredAssets.length)
       break
   }
   
-  // Final supplementation: ensure we always return exactly 25 assets (or all available if less than 25)
-  if (filteredAssets.length < 25) {
-    console.log(`🔍 [populatePhotoSelectionPool] Final supplementation: Only ${filteredAssets.length} filtered assets, supplementing with recent assets to reach 25`)
+  // Final supplementation: ensure we always return exactly PHOTO_POOL_SIZE assets (or all available if less than PHOTO_POOL_SIZE)
+  if (filteredAssets.length < PHOTO_POOL_SIZE) {
+    console.log(`🔍 [populatePhotoSelectionPool] Final supplementation: Only ${filteredAssets.length} filtered assets, supplementing with recent assets to reach ${PHOTO_POOL_SIZE}`)
     
     // Get all assets sorted by most recent
     const allAssetsSorted = availableAssets.value
@@ -4756,20 +4811,20 @@ const populatePhotoSelectionPool = () => {
       !filteredAssets.some(filteredAsset => filteredAsset.id === asset.id)
     )
     
-    // Take enough recent additional assets to reach exactly 25
-    const additionalNeeded = 25 - filteredAssets.length
+    // Take enough recent additional assets to reach exactly PHOTO_POOL_SIZE
+    const additionalNeeded = PHOTO_POOL_SIZE - filteredAssets.length
     const assetsToAdd = additionalAssets.slice(0, additionalNeeded)
     
     // Combine filtered assets with additional recent assets
     filteredAssets = [...filteredAssets, ...assetsToAdd]
     
     console.log(`🔍 [populatePhotoSelectionPool] Final supplementation - added ${assetsToAdd.length} recent assets = ${filteredAssets.length} total`)
-  } else if (filteredAssets.length > 25) {
-    // If we have more than 25, take the most recent 25
-    console.log(`🔍 [populatePhotoSelectionPool] Final trimming: ${filteredAssets.length} assets found, taking most recent 25`)
+  } else if (filteredAssets.length > PHOTO_POOL_SIZE) {
+    // If we have more than PHOTO_POOL_SIZE, take the most recent PHOTO_POOL_SIZE
+    console.log(`🔍 [populatePhotoSelectionPool] Final trimming: ${filteredAssets.length} assets found, taking most recent ${PHOTO_POOL_SIZE}`)
     filteredAssets = filteredAssets
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(0, 25)
+      .slice(0, PHOTO_POOL_SIZE)
   }
   
   const result = filteredAssets.map(asset => asset.id)

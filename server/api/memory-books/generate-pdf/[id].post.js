@@ -1701,8 +1701,20 @@ export default defineEventHandler(async (event) => {
 
       let selectedAssets = assets
       let aiStory = book.magic_story || null
-      // Always call AI for theme layouts to ensure fresh story generation
-      console.log('🎨 Theme layout detected, generating a new story for regeneration')
+      
+      // Check if this is a photo library selection (user manually selected photos)
+      const isPhotoLibrarySelection = book.photo_selection_method === 'photo_library'
+      
+      if (isPhotoLibrarySelection) {
+        console.log('📚 Photo library selection detected - using user-selected photos without AI selection')
+        // For photo library selection, use the assets as-is (they were pre-selected by the user)
+        selectedAssets = assets
+        // Still generate a story using the selected photos
+        console.log('🎨 Photo library layout detected, generating a story for user-selected photos')
+      } else {
+        // Always call AI for theme layouts to ensure fresh story generation
+        console.log('🎨 Theme layout detected, generating a new story for regeneration')
+      }
       
       const photos = assets.map(asset => ({
         id: asset.id,
@@ -1722,6 +1734,7 @@ export default defineEventHandler(async (event) => {
         created_at: asset.created_at || null,
         location: asset.location || null
       }))
+      
       const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
         method: 'POST',
         headers: {
@@ -1735,13 +1748,14 @@ export default defineEventHandler(async (event) => {
           theme: book.theme_id || null,
           photo_count: photoCount,
           background_type: book.background_type || 'white',
-          background_color: book.background_color
+          background_color: book.background_color,
+          forceAll: isPhotoLibrarySelection // Force AI to use all photos when user has manually selected them
         })
       })
       if (magicRes.ok) {
         const magicData = await magicRes.json()
-        // Use selected_photo_ids (array of asset IDs) from AI response
-        if (magicData.selected_photo_ids && Array.isArray(magicData.selected_photo_ids)) {
+        // Use selected_photo_ids (array of asset IDs) from AI response, unless it's photo library selection
+        if (!isPhotoLibrarySelection && magicData.selected_photo_ids && Array.isArray(magicData.selected_photo_ids)) {
           selectedAssets = assets.filter(a => magicData.selected_photo_ids.includes(a.id))
         }
         aiStory = magicData.story

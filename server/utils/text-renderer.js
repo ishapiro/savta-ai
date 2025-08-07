@@ -164,8 +164,8 @@ export async function renderTextToImage(text, width, height, options = {}) {
     lineHeight = 1.4,
     padding = 2, // Reduced from 8 to 2 for much tighter margins
     color = '#2D1810',
-    dpi = 1200, // Ultra high-quality DPI for embedded fonts
-    scale = 16,  // High scale for embedded font quality
+    dpi = 2400, // Ultra high-quality DPI for embedded fonts (doubled for better printing)
+    scale = 32,  // High scale for embedded font quality (doubled for better printing)
     backgroundColor = 'transparent' // Background color (default transparent for stories)
   } = options
   
@@ -244,6 +244,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
         fit: 'fill'
       })
       .png()
+      .withMetadata({ density: dpi }) // Set DPI metadata for high-quality printing
       .toBuffer()
     
     return buffer
@@ -268,8 +269,8 @@ export async function createCaptionImage(captionText, maxWidth, maxHeight, optio
     lineHeight = 1.3,   // Tighter line height for captions
     padding = 8,         // Slightly more padding for captions with background
     color = '#2D1810',
-    dpi = 1200,         // Ultra high-quality DPI
-    scale = 16,         // High scale for embedded font quality
+    dpi = 2400,         // Ultra high-quality DPI (doubled for better printing)
+    scale = 32,         // High scale for embedded font quality (doubled for better printing)
     backgroundColor = '#FFFFFF' // White background for captions
   } = options
   

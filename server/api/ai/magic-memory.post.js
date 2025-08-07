@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    let { photos, forceAll, title, memory_event, photo_count = 4, background_type = 'white', background_color, theme_id } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
+    let { photos, forceAll = false, title, memory_event, photo_count = 4, background_type = 'white', background_color, theme_id } = body // Array of { id, ai_caption, people_detected, tags, user_tags }, and forceAll boolean, plus memory book fields
     if (!photos || !Array.isArray(photos) || photos.length < 1) {
       throw createError({ statusCode: 400, statusMessage: 'At least 1 photo is required' })
     }
@@ -167,7 +167,166 @@ export default defineEventHandler(async (event) => {
     photos = photosToInclude
 
     // STEP 1: PHOTO SELECTION
-    console.log(`📝 Photo selection prompt: ${targetPhotoCount} photos, ${photos.length} available`)
+    console.log(`📝 Photo selection prompt: ${targetPhotoCount} photos, ${photos.length} available, forceAll: ${forceAll}`)
+    
+    // If forceAll is true, skip AI photo selection and use all photos
+    if (forceAll) {
+      console.log('📚 ForceAll mode: Using all provided photos without AI selection')
+      const selectedPhotos = photos
+      console.log('✨ Photo selection completed (forceAll mode)')
+      console.log('Selected photo IDs:', selectedPhotos.map(p => p.id))
+      
+      // Skip to story generation with all photos
+      const selectedPhotoIds = selectedPhotos.map(p => p.id)
+      
+      // STEP 2: STORY GENERATION (using all photos)
+      console.log('📖 Generating story for all selected photos...')
+      
+      // Generate story for all photos
+      const selectedPhotoSummaries = selectedPhotos.map((p, i) => {
+        const photoNumber = i + 1
+        const paddedNumber = photoNumber.toString().padStart(3, '0')
+        let summary = `Photo ${paddedNumber}:\n- orientation: ${p.orientation || 'unknown'}\n- dimensions: ${p.width || 'unknown'}x${p.height || 'unknown'}\n- ai_caption: ${p.ai_caption || ''}\n- people_detected: ${(p.people_detected||[]).join(', ')}\n- tags: ${(p.tags||[]).join(', ')}\n- user_tags: ${(p.user_tags||[]).join(', ')}`
+        
+        // Add fingerprint for duplicate detection
+        if (p.fingerprint) {
+          summary += `\n- fingerprint: ${p.fingerprint}`
+        }
+        
+        // Add location information if available
+        if (p.location && p.location.trim()) {
+          summary += `\n- location: ${p.location.trim()}`
+        } else {
+          const locationParts = []
+          if (p.city && p.city.trim()) locationParts.push(p.city.trim())
+          if (p.state && p.state.trim()) locationParts.push(p.state.trim())
+          if (p.country && p.country.trim()) locationParts.push(p.country.trim())
+          if (p.zip_code && p.zip_code.trim()) locationParts.push(p.zip_code.trim())
+          
+          if (locationParts.length > 0) {
+            summary += `\n- location: ${locationParts.join(', ')}`
+          }
+        }
+        
+        // Add date information if available
+        if (p.asset_date) {
+          const photoDate = new Date(p.asset_date)
+          const formattedDate = photoDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })
+          summary += `\n- date: ${formattedDate}`
+        }
+        if (p.created_at) {
+          const uploadDate = new Date(p.created_at)
+          const mm = String(uploadDate.getMonth() + 1).padStart(2, '0')
+          const dd = String(uploadDate.getDate()).padStart(2, '0')
+          const yyyy = uploadDate.getFullYear()
+          summary += `\n- upload_date: ${mm}-${dd}-${yyyy}`
+        }
+        
+        return summary
+      }).join('\n\n')
+      
+      // Generate story for all photos
+      const storySystemInstructions = `You are a warm, pithy, witty, hip and playful, grandmother 
+      creating personalized caption for this group of photos.  Highlight the most important moments and relationships
+      mentioned in the photo captions, tags, and people detected.
+
+      TASK: Create a 1-2 sentence caption that connects the selected photos into a cohesive narrative.
+      
+      RESTRICTIONS:
+      - Keep the story PG.
+      - Do not say "young ones" or "youngsters" — use "kids" or "children" instead.
+      - Do not invent or guess any place names, cities, states, countries, zip codes, landmarks, or personal names.
+      - You may only reference a location (including landmarks, neighborhoods, cities, states, or countries) if every photo in the list has the exact same location in the metadata.
+      - If even one photo is missing a location, or has a different location, do not mention any location at all.
+      - Only use names of people that are explicitly found in the photo metadata or the user selection prompt.
+      - Never fabricate or infer people names from context.
+      - When location data is available and consistent across all photos, you may mention landmarks, neighborhoods, or distinctive places that add context to the story.
+      
+      STYLE REQUIREMENTS:
+      - Warm, fun, and lighthearted tone like a hip grandma.
+      - But not too sappy or corny.
+      - 8th grade reading level.
+      - Natural, personal, and delightful language.
+      - Use photo context (captions, tags, people) for richness, but don't mention them literally.
+      - IMPORTANT: Only use letters and symbols from the Latin character set (no Hebrew, Cyrillic, or other scripts). All output must be in English and use only Latin characters.
+      
+      ${memoryBookContext}
+      STORY GUIDELINES:
+      - Weave together the selected photos into a single cohesive caption.
+      - Focus on relationships, emotions, and shared experiences.
+      - Make it feel like a personal family memory.
+      - Use 1–2 sentences maximum.`;
+
+      const storyPrompt = `${storySystemInstructions}
+
+SELECTED PHOTOS FOR STORY (${selectedPhotos.length} photos):
+${selectedPhotoSummaries}
+
+RESPONSE FORMAT:
+Return ONLY a valid JSON object with this exact field:
+{
+  "story": "Your 1-2 sentence story here..."
+}`
+
+      // Call OpenAI for story generation
+      console.log('🤖 Making AI call for story generation (forceAll mode)...')
+      const storyRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiApiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            { role: 'system', content: 'You are a warm, caring grandmother creating personalized stories.' },
+            { role: 'user', content: storyPrompt }
+          ],
+          max_tokens: 2000
+        })
+      })
+
+      if (!storyRes.ok) {
+        const errorText = await storyRes.text()
+        throw createError({ statusCode: 500, statusMessage: `OpenAI API error: ${errorText}` })
+      }
+
+      const storyData = await storyRes.json()
+      const storyText = storyData.choices[0].message.content
+
+      console.log(`🤖 Story generation response received (${storyText.length} chars)`)
+
+      // Parse story JSON
+      let storyResult
+      try {
+        const jsonMatch = storyText.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          storyResult = JSON.parse(jsonMatch[0])
+          console.log(`✅ Parsed story generation: ${storyResult.story ? 'Story generated' : 'No story'}`)
+        } else {
+          throw new Error('No JSON found in story response')
+        }
+      } catch (err) {
+        console.error('Story generation JSON parsing error:', err)
+        console.error('Raw story response:', storyText)
+        
+        // Fallback: use a simple story
+        storyResult = {
+          story: `A beautiful collection of ${selectedPhotos.length} special moments.`
+        }
+        console.log('Fallback story result:', storyResult)
+      }
+
+      // Return the result with all photo IDs
+      return {
+        story: storyResult.story || `A beautiful collection of ${selectedPhotos.length} special moments.`,
+        selected_photo_ids: selectedPhotoIds
+      }
+    }
     
     const photoSummaries = photos.map((p, i) => {
       const photoNumber = i + 1
