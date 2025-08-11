@@ -205,7 +205,7 @@ const pdfContainer = ref(null)
 const currentPage = ref(1)
 const pageCount = ref(1)
 const isLoaded = ref(false)
-const scale = ref(0.8)
+const scale = ref(0.7)
 const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
 const isSharing = ref(false) // Track if we're currently sharing
@@ -381,7 +381,7 @@ function calculateInitialScale() {
   const container = pdfContainer.value
   if (!container) {
     console.log('🔍 Container not available, using default scale')
-    // For JPG images, use memory book scale, for PDFs use 0.8
+    // For JPG images, use memory book scale, for PDFs use 0.7
     if (isJpgImage.value) {
       const memoryBookWidth = 2100 // 7 inches × 300 DPI
       const memoryBookHeight = 1500 // 5 inches × 300 DPI
@@ -394,7 +394,7 @@ function calculateInitialScale() {
       
       scale.value = memoryBookScale
     } else {
-      scale.value = 0.8
+      scale.value = 0.7
     }
     return
   }
@@ -407,7 +407,7 @@ function calculateInitialScale() {
   
   if (!pdfWidth || !pdfHeight) {
     console.log('🔍 No PDF dimensions available, using default scale')
-    // For JPG images, use memory book scale, for PDFs use 0.8
+    // For JPG images, use memory book scale, for PDFs use 0.7
     if (isJpgImage.value) {
       const memoryBookWidth = 2100 // 7 inches × 300 DPI
       const memoryBookHeight = 1500 // 5 inches × 300 DPI
@@ -420,7 +420,7 @@ function calculateInitialScale() {
       
       scale.value = memoryBookScale
     } else {
-      scale.value = 0.8
+      scale.value = 0.7
     }
     return
   }
@@ -587,7 +587,7 @@ function resetZoom() {
     scale.value = memoryBookScale
     console.log('🔍 JPG scale reset to memory book size:', memoryBookScale)
   } else {
-    scale.value = 0.8
+    scale.value = 0.7
     console.log('🔍 PDF scale reset to:', scale.value)
   }
 }
@@ -804,7 +804,7 @@ watch(() => props.src, () => {
     
     scale.value = memoryBookScale
   } else {
-    scale.value = 0.8
+    scale.value = 0.7
   }
   pdfDimensions.value = { width: 0, height: 0 }
   pdfEmbedKey.value++ // ensure rerender when switching files

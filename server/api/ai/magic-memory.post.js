@@ -283,12 +283,12 @@ Return ONLY a valid JSON object with this exact field:
           'Authorization': `Bearer ${openaiApiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-5',
+          model: 'gpt-4o',
           messages: [
             { role: 'system', content: 'You are a warm, caring grandmother creating personalized stories.' },
             { role: 'user', content: storyPrompt }
           ],
-          max_completion_tokens: 5000
+          max_completion_tokens: 1000
         })
       })
 
@@ -447,12 +447,12 @@ ${photoDataSection}`
         'Authorization': `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-5',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: 'You are a warm, caring grandmother selecting meaningful family photos.' },
           { role: 'user', content: selectionPrompt }
         ],
-        max_completion_tokens: 10000
+        max_completion_tokens: 1000
       })
     })
 
@@ -674,12 +674,12 @@ EXAMPLE:
         'Authorization': `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-5',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: 'You are a warm, witty Hallmark card writer.' },
           { role: 'user', content: storyPrompt }
         ],
-        max_completion_tokens: 5000
+        max_completion_tokens: 1000
       })
     })
 
