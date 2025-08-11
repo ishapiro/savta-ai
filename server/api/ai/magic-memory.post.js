@@ -60,9 +60,11 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Validate photo_count
-    const validPhotoCounts = [1, 4, 6]
-    targetPhotoCount = validPhotoCounts.includes(targetPhotoCount) ? targetPhotoCount : 4
+    // Validate photo_count - only apply validation if no theme is selected
+    if (!theme_id) {
+      const validPhotoCounts = [1, 4, 6]
+      targetPhotoCount = validPhotoCounts.includes(targetPhotoCount) ? targetPhotoCount : 4
+    }
 
     // Build memory book context string
     let memoryBookContext = ''
@@ -281,12 +283,12 @@ Return ONLY a valid JSON object with this exact field:
           'Authorization': `Bearer ${openaiApiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-4o',
+          model: 'gpt-5',
           messages: [
             { role: 'system', content: 'You are a warm, caring grandmother creating personalized stories.' },
             { role: 'user', content: storyPrompt }
           ],
-          max_tokens: 2000
+          max_completion_tokens: 5000
         })
       })
 
@@ -445,12 +447,12 @@ ${photoDataSection}`
         'Authorization': `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5',
         messages: [
           { role: 'system', content: 'You are a warm, caring grandmother selecting meaningful family photos.' },
           { role: 'user', content: selectionPrompt }
         ],
-        max_tokens: 5000
+        max_completion_tokens: 10000
       })
     })
 
@@ -672,12 +674,12 @@ EXAMPLE:
         'Authorization': `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5',
         messages: [
           { role: 'system', content: 'You are a warm, witty Hallmark card writer.' },
           { role: 'user', content: storyPrompt }
         ],
-        max_tokens: 1000
+        max_completion_tokens: 5000
       })
     })
 

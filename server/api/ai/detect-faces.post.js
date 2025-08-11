@@ -62,7 +62,7 @@ RETURN ONLY THE JSON. NO OTHER TEXT. NO EXPLANATIONS.`
         'Authorization': `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5',
         messages: [
           {
             role: 'system',
@@ -84,7 +84,7 @@ RETURN ONLY THE JSON. NO OTHER TEXT. NO EXPLANATIONS.`
             ]
           }
         ],
-        max_tokens: 500,
+        max_completion_tokens: 1000,
         temperature: 0.0
       })
     })

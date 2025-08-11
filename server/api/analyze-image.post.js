@@ -71,7 +71,7 @@ Respond only with valid JSON.`
           ]
         }
       ],
-      max_tokens: 300
+      max_completion_tokens: 1000
     }).length} characters`)
     
     const startTime = Date.now()
@@ -82,7 +82,7 @@ Respond only with valid JSON.`
         'Authorization': `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5',
         messages: [
           {
             role: 'user',
@@ -100,7 +100,7 @@ Respond only with valid JSON.`
             ]
           }
         ],
-        max_tokens: 300
+        max_completion_tokens: 1000
       })
     })
     const endTime = Date.now()

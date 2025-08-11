@@ -2555,7 +2555,7 @@ export default defineEventHandler(async (event) => {
       }
     }
     
-    await updatePdfStatus(supabase, book.id, user.id, 'Finalizing PDF document...')
+    await updatePdfStatus(supabase, book.id, user.id, 'Finalizing your memory ...')
     
     // 5. Save PDF and upload to Supabase Storage using centralized function
     const publicUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, book.print_size || '7x5')

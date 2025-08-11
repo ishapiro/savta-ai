@@ -281,7 +281,7 @@ async function analyzeImage(imageUrl, apiKey, context = {}) {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5',
         messages: [
           {
             role: 'system',
@@ -303,7 +303,7 @@ async function analyzeImage(imageUrl, apiKey, context = {}) {
             ]
           }
         ],
-        max_tokens: 1000
+        max_completion_tokens: 5000
       })
     })
 
@@ -368,7 +368,7 @@ async function analyzeText(text, apiKey, context = {}) {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5',
         messages: [
           {
             role: 'system',
@@ -379,7 +379,7 @@ async function analyzeText(text, apiKey, context = {}) {
             content: prompts.userInstruction(context)
           }
         ],
-        max_tokens: 1000
+        max_completion_tokens: 5000
       })
     })
 

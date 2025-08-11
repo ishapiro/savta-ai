@@ -92,7 +92,7 @@ Respond with JSON format:
         'Authorization': `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5',
         messages: [
           {
             role: 'user',
@@ -110,7 +110,7 @@ Respond with JSON format:
             ]
           }
         ],
-        max_tokens: 500
+        max_completion_tokens: 5000
       })
     })
     

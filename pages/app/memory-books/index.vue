@@ -1660,7 +1660,8 @@
             <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
-          <p class="text-xs sm:text-base text-gray-600 mb-2">Choose how you'd like me to select photos from your library.</p>
+          <p class="text-xs sm:text-base text-gray-600 mb-2">When you upload photos they go into your library.  Then I will use AI to 
+            select the best photos and captions for your card or booklet. Choose how you'd like me to select photos from your library.</p>
           <p class="text-xs text-brand-flash font-medium">📸 You have {{ availableAssets.length }} photo{{ availableAssets.length !== 1 ? 's' : '' }} in your library</p>
         </div>
         
