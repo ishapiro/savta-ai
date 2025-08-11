@@ -504,6 +504,18 @@
                 <li>I'll recognize the faces, places and write sweet notes about each one</li>
                 <li>I'll use my special AI powers to select the best photos and captions for your card or book</li>
               </ul>
+              
+              <!-- Special recommendation for new users -->
+              <div v-if="shouldOpenWizardAfterUpload" class="mt-4 p-3 bg-brand-highlight/10 rounded-lg border border-brand-highlight/20">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-lightbulb text-brand-highlight text-lg"></i>
+                  <span class="font-semibold text-brand-highlight">💡 Pro Tip for Best Results</span>
+                </div>
+                <p class="text-sm text-brand-primary">
+                  Savta, our special AI, works best when she can select from a library of at least 6 photos. 
+                  This helps her create more meaningful and diverse memory cards for you!
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -2642,12 +2654,35 @@ onMounted(async () => {
   // Check for query parameters to auto-open dialogs
   console.log('[MEMORY-BOOKS] onMounted - route query params:', route.query)
   
-  if (route.query.openDialog === 'quick') {
-    console.log('[MEMORY-BOOKS] onMounted - opening magic memory dialog')
-    // Small delay to ensure everything is loaded
-    setTimeout(() => {
-      openMagicMemoryDialog('quick')
-    }, 500)
+    if (route.query.openDialog === 'quick') {
+    console.log('[MEMORY-BOOKS] onMounted - checking photo count before opening wizard')
+    // Check if user has enough photos before opening wizard
+    try {
+      const approvedAssets = await db.assets.getAssets({ approved: true })
+      const photoCount = approvedAssets?.length || 0
+      
+      if (photoCount < 6) {
+        console.log('[MEMORY-BOOKS] onMounted - user has', photoCount, 'photos, showing upload dialog first')
+        // Show upload dialog with recommendation for 6+ photos
+        setTimeout(() => {
+          showUploadDialog.value = true
+          // Set flag to open wizard after upload
+          shouldOpenWizardAfterUpload.value = true
+        }, 1000) // Increased delay to ensure DOM is ready
+      } else {
+        console.log('[MEMORY-BOOKS] onMounted - user has', photoCount, 'photos, opening wizard directly')
+        // User has enough photos, open wizard directly
+        setTimeout(() => {
+          openMagicMemoryDialog('quick')
+        }, 1000) // Increased delay to ensure DOM is ready
+      }
+    } catch (error) {
+      console.error('[MEMORY-BOOKS] Error checking photo count:', error)
+      // Fallback: open wizard directly if we can't check photo count
+      setTimeout(() => {
+        openMagicMemoryDialog('quick')
+      }, 1000)
+    }
   } else if (route.query.openUploadDialog === 'true') {
     console.log('[MEMORY-BOOKS] onMounted - opening upload dialog')
     // Small delay to ensure everything is loaded
@@ -4982,6 +5017,7 @@ const magicCustomMemoryEvent = ref('')
 
 // Upload dialog state
 const showUploadDialog = ref(false)
+const shouldOpenWizardAfterUpload = ref(false)
 const uploadProgress = ref(0)
 const uploadStatus = ref('')
 const uploadingFiles = ref([])
@@ -5259,6 +5295,35 @@ const finishUpload = async () => {
   uploadStatus.value = ''
   isUploading.value = false
   
+  // Check if we should open wizard after upload
+  if (shouldOpenWizardAfterUpload.value) {
+    console.log('[MEMORY-BOOKS] Should open wizard after upload, checking photo count')
+    shouldOpenWizardAfterUpload.value = false // Reset flag
+    
+    // Small delay to ensure assets are updated
+    setTimeout(async () => {
+      await checkAssets()
+      const approvedAssets = await db.assets.getAssets({ approved: true })
+      const photoCount = approvedAssets?.length || 0
+      
+      if (photoCount >= 6) {
+        console.log('[MEMORY-BOOKS] User now has', photoCount, 'photos, opening wizard')
+        openMagicMemoryDialog('quick')
+      } else {
+        console.log('[MEMORY-BOOKS] User has', photoCount, 'photos, showing recommendation to add more')
+        // Show toast encouraging more photos
+        if ($toast && $toast.add) {
+          $toast.add({
+            severity: 'info',
+            summary: 'Great Start!',
+            detail: `You have ${photoCount} photos. For best results, consider adding more photos before creating your memory card.`,
+            life: 5000
+          })
+        }
+      }
+    }, 1000)
+  }
+  
   // Check if user came from home page flow and now has approved photos
   if (route.query.openUploadDialog === 'true') {
     // Small delay to ensure assets are updated
@@ -5311,18 +5376,47 @@ const skipUpload = () => {
   // Close upload dialog
   showUploadDialog.value = false
   
-  toast.add({ 
-    severity: 'info', 
-    summary: 'No Problem', 
-    detail: 'You can upload photos anytime from the Upload page', 
-    life: 3000 
-  })
-  
-  // If user came from home page flow, redirect them back to home
-  if (route.query.openUploadDialog === 'true') {
-    setTimeout(() => {
-      navigateTo('/app/home')
-    }, 1500)
+  // Check if we should open wizard after skipping upload
+  if (shouldOpenWizardAfterUpload.value) {
+    console.log('[MEMORY-BOOKS] User skipped upload, but should open wizard')
+    shouldOpenWizardAfterUpload.value = false // Reset flag
+    
+    // Small delay to ensure assets are updated
+    setTimeout(async () => {
+      await checkAssets()
+      const approvedAssets = await db.assets.getAssets({ approved: true })
+      const photoCount = approvedAssets?.length || 0
+      
+      if (photoCount > 0) {
+        console.log('[MEMORY-BOOKS] User has', photoCount, 'photos, opening wizard')
+        openMagicMemoryDialog('quick')
+      } else {
+        console.log('[MEMORY-BOOKS] User has no photos, showing recommendation')
+        // Show toast encouraging photos
+        if ($toast && $toast.add) {
+          $toast.add({
+            severity: 'info',
+            summary: 'No Photos Yet',
+            detail: 'You can upload photos anytime from the Upload page. For best results, try to add at least 6 photos.',
+            life: 5000
+          })
+        }
+      }
+    }, 1000)
+  } else {
+    toast.add({ 
+      severity: 'info', 
+      summary: 'No Problem', 
+      detail: 'You can upload photos anytime from the Upload page', 
+      life: 3000 
+    })
+    
+    // If user came from home page flow, redirect them back to home
+    if (route.query.openUploadDialog === 'true') {
+      setTimeout(() => {
+        navigateTo('/app/home')
+      }, 1500)
+    }
   }
 }
 

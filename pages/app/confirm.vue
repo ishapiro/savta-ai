@@ -184,8 +184,8 @@ const goToDashboard = () => {
     console.log('[CONFIRM] Redirecting to home page for enhanced flow')
     navigateTo('/app/home')
   } else {
-    console.log('[CONFIRM] Redirecting to dashboard')
-    navigateTo('/app/dashboard')
+    console.log('[CONFIRM] Redirecting to memory books with quick dialog for new users')
+    navigateTo('/app/memory-books?openDialog=quick')
   }
 }
 
@@ -202,8 +202,8 @@ const onDialogHide = () => {
     console.log('[CONFIRM] Dialog hide - redirecting to home page for enhanced flow')
     navigateTo('/app/home')
   } else {
-    console.log('[CONFIRM] Dialog hide - redirecting to dashboard')
-    navigateTo('/app/dashboard')
+    console.log('[CONFIRM] Dialog hide - redirecting to memory books with quick dialog for new users')
+    navigateTo('/app/memory-books?openDialog=quick')
   }
 }
 
