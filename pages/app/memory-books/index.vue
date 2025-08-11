@@ -334,7 +334,14 @@
           <i class="pi pi-book text-4xl sm:text-6xl"></i>
         </div>
         <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No special memories yet</h3>
-        <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Wonderful! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first memory card?</p>
+        <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">
+          Wonderful! You have {{ approvedAssetsCount }} approved photos ready. 
+          <span v-if="approvedAssetsCount < 6" class="block mt-2 text-brand-secondary font-medium">
+            💡 Tip: Savta, our special AI, works better when she can select from a library of at least 6 photos. 
+            Consider adding more photos for the best results!
+          </span>
+          Are you ready to create your first memory card?
+        </p>
                   <button
             class="border-0 bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
             @click="openMagicMemoryDialog('quick')"
