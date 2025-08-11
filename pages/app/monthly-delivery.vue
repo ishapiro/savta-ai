@@ -4,9 +4,9 @@
       <div class="w-20 h-20 sm:w-24 sm:h-24 bg-brand-navigation rounded-full flex items-center justify-center mx-auto mb-6">
         <i class="pi pi-calendar text-brand-secondary text-3xl sm:text-4xl"></i>
       </div>
-      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Monthly Delivery</h2>
+      <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Print & Mail Service</h2>
       <p class="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
-        Beautiful memories delivered to your family every month.
+        Print and mail your memory cards and books to family members, or share them digitally.
       </p>
     </div>
     
@@ -15,36 +15,37 @@
         <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <i class="pi pi-clock text-yellow-500 text-2xl"></i>
         </div>
-        <h3 class="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">Coming Soon!</h3>
+        <h3 class="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">Print & Mail Service Coming Soon!</h3>
         <p class="text-gray-600 leading-relaxed">
-          We're working hard to bring you monthly memory book deliveries. 
-          This feature will allow you to automatically receive beautiful, 
-          AI-generated scrapbooks of your family's precious moments every month.
+          We're working hard to bring you automatic print and mail service. 
+          Soon you'll be able to set up subscriptions to automatically print and mail 
+          your memory cards and books to family members on a schedule you choose.
         </p>
         <p class="mt-2 mx-3 text-gray-600 leading-relaxed">
-          While you are waiting for book deliveries you can download your memories as a PDF.
+          During beta, you can download your memory cards and books as PDFs to share digitally. 
+          Print and mail service will be available after our initial launch.
         </p>
       </div>
       
       <div class="space-y-4">
         <div class="bg-gray-50 rounded-lg p-4">
-          <h4 class="font-semibold text-gray-900 mb-2">What to expect:</h4>
+          <h4 class="font-semibold text-gray-900 mb-2">Subscription options coming soon:</h4>
           <ul class="text-sm text-gray-600 space-y-1 text-left">
             <li class="flex items-center gap-2">
               <i class="pi pi-check text-green-500"></i>
-              Monthly curated memory books
+              Weekly, monthly, or on-demand delivery
             </li>
             <li class="flex items-center gap-2">
               <i class="pi pi-check text-green-500"></i>
-              Beautiful layouts and captions
+              Memory cards and books printed and mailed
             </li>
             <li class="flex items-center gap-2">
               <i class="pi pi-check text-green-500"></i>
-              Family sharing and collaboration
+              Multiple family members per subscription
             </li>
             <li class="flex items-center gap-2">
               <i class="pi pi-check text-green-500"></i>
-              Customizable delivery preferences
+              Pause or cancel anytime
             </li>
           </ul>
         </div>
@@ -53,7 +54,7 @@
           @click="navigateToUpload"
           class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"
         >
-          Start Creating Memories Now
+          Create Memory Cards Now
         </button>
       </div>
     </div>

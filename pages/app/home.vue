@@ -4,18 +4,18 @@
     <div class="w-full px-4 sm:px-6 lg:px-8 pt-2 pb-8 text-center">
       <div class="max-w-3xl mx-auto">
         <h1 class="font-extrabold text-brand-primary mb-4 tracking-tight leading-tight text-center">
-          <span class="block text-2xl sm:text-4xl lg:text-7xl mb-2">Your best moments.</span>
-          <span class="block text-2xl sm:text-4xl lg:text-5xl text-brand-secondary mb-2">Sharable, printable,</span>
-          <span class="block text-2xl sm:text-4xl lg:text-5xl text-brand-header">fridge-worthy.</span>
+          <span class="block text-2xl sm:text-4xl lg:text-7xl mb-2">Turn photos into</span>
+          <span class="block text-2xl sm:text-4xl lg:text-5xl text-brand-secondary mb-2">beautiful memory cards</span>
+          <span class="block text-2xl sm:text-4xl lg:text-5xl text-brand-header">— automatically.</span>
         </h1>
       </div>
       <h2 class="italic text-base sm:text-lg lg:text-xl text-brand-secondary font-medium mb-6 leading-snug">
-        Savta helps you turn your favorite photos<br />
-        photos and memories into something you can hold,<br />
-        display, or share. All in minutes.
+        No more dragging photos into layouts. Our AI picks your best moments,<br />
+        writes captions, and designs beautiful cards for you.<br />
+        Just upload and we'll mail them to your loved ones or share them digitally.
       </h2>
       <Button
-        label="Let's Do This"
+        label="Create My First Memory Card"
         class="w-full sm:w-auto bg-brand-header hover:bg-brand-secondary text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 mb-3 border-0"
         @click="openMagicMemoryDialog('quick')"
       />
@@ -32,40 +32,40 @@
       <div class="bg-brand-highlight/10 rounded-xl p-4 flex items-start gap-3">
         <span class="text-2xl">📱</span>
         <div>
-          <h3 class="font-semibold text-brand-primary mb-2">Got Photos Everywhere?</h3>
+          <h3 class="font-semibold text-brand-primary mb-2">Photos scattered everywhere?</h3>
           <p class="text-sm sm:text-base text-brand-primary/80 leading-relaxed">
-            Thousands of photos scattered across your phone, computer, and that old tablet you forgot about?
+            We'll find your best moments from your phone, computer, and social media — no organizing required.
           </p>
         </div>
       </div>
       <div class="bg-brand-secondary/10 rounded-xl p-4 flex items-start gap-3">
         <span class="text-2xl">✨</span>
         <div>
-          <h3 class="font-semibold text-brand-primary mb-2">I'm Your Digital Grandma</h3>
+          <h3 class="font-semibold text-brand-primary mb-2">AI does the heavy lifting</h3>
           <p class="text-sm sm:text-base text-brand-primary/80 leading-relaxed">
-            I actually understand technology (shocking, I know)! I turn your digital chaos into beautiful memory cards and books.
+            Our AI picks your best photos, writes heartwarming captions, and designs beautiful layouts — all automatically.
           </p>
         </div>
       </div>
       <div class="bg-brand-accent/20 rounded-xl p-4 flex items-start gap-3 col-span-1 sm:col-span-2">
         <div class="flex flex-col gap-2 w-full">
-          <h3 class="font-semibold text-brand-primary text-lg mb-1">What I Do For You:</h3>
+          <h3 class="font-semibold text-brand-primary text-lg mb-1">How it works:</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div class="flex items-center gap-3">
               <span class="text-brand-header text-lg">🎯</span>
-              <span class="text-sm sm:text-base text-brand-primary/80">Pick the perfect photos automatically</span>
+              <span class="text-sm sm:text-base text-brand-primary/80">Select your best photos automatically</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="text-brand-header text-lg">✍️</span>
-              <span class="text-sm sm:text-base text-brand-primary/80">Write stories that capture the moment</span>
+              <span class="text-sm sm:text-base text-brand-primary/80">Write heartwarming captions for each photo</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="text-brand-header text-lg">🎨</span>
-              <span class="text-sm sm:text-base text-brand-primary/80">Design beautiful layouts you'll love</span>
+              <span class="text-sm sm:text-base text-brand-primary/80">Design beautiful card layouts automatically</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="text-brand-header text-lg">📤</span>
-              <span class="text-sm sm:text-base text-brand-primary/80">Make it easy to share with family</span>
+              <span class="text-sm sm:text-base text-brand-primary/80">Mail or share cards with your loved ones</span>
             </div>
           </div>
         </div>
@@ -81,21 +81,21 @@
             <span class="text-xl">📸</span>
           </div>
           <h4 class="font-medium text-brand-primary text-sm">Upload Photos</h4>
-          <p class="text-xs text-brand-primary/70">Drop in your favorite moments</p>
+          <p class="text-xs text-brand-primary/70">Add photos from anywhere</p>
         </div>
         <div class="text-center space-y-2">
           <div class="w-12 h-12 bg-brand-secondary/20 rounded-full flex items-center justify-center mx-auto">
             <span class="text-xl">✨</span>
           </div>
-          <h4 class="font-medium text-brand-primary text-sm">AI Magic</h4>
-          <p class="text-xs text-brand-primary/70">I organize everything</p>
+          <h4 class="font-medium text-brand-primary text-sm">AI Creates Cards</h4>
+          <p class="text-xs text-brand-primary/70">Picks photos & writes captions</p>
         </div>
         <div class="text-center space-y-2">
           <div class="w-12 h-12 bg-brand-highlight/20 rounded-full flex items-center justify-center mx-auto">
             <span class="text-xl">💝</span>
           </div>
-          <h4 class="font-medium text-brand-primary text-sm">Beautiful Results</h4>
-          <p class="text-xs text-brand-primary/70">Shareable memory cards</p>
+          <h4 class="font-medium text-brand-primary text-sm">Cards Delivered</h4>
+                      <p class="text-xs text-brand-primary/70">Print & mail or share digitally</p>
         </div>
       </div>
     </div>

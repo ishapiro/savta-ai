@@ -25,18 +25,14 @@
     </div>
 
     <div class="text-center mb-8 sm:mb-12">
-      <h2 class="text-h1 text-brand-header mb-2 sm:mb-4">Savta Special Memory Home</h2>
+      <h2 class="text-h1 text-brand-header mb-2 sm:mb-4">Create Memory Cards</h2>
       <p class="text-base sm:text-xl text-brand-primary max-w-4xl mx-auto">
-        Using a bit of AI to create beautiful Savta Special Memories ready for sharing with family and friends.
+        Turn your photos into beautiful memory cards. Perfect for mailing to family members or sharing digitally.
       </p>
     </div>
     
     <!-- Primary Action: Create Special Memories -->
     <div class="mb-8 sm:mb-12">
-      <div class="text-center mb-6">
-        <h3 class="text-h2 text-brand-secondary mb-3 tracking-tight">✨ Get Started ✨</h3>
-        <p class="text-base sm:text-lg text-brand-primary font-medium">Begin your special journey here</p>
-      </div>
       
       <div 
         class="bg-gradient-to-br from-brand-highlight/20 via-brand-header/10 to-brand-navigation/20 rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-12 border-2 border-brand-header/30 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500 cursor-pointer group relative overflow-hidden"
@@ -57,11 +53,10 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-brand-header to-brand-secondary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
               </div>
-              <h3 class="text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Share a Special Memory</h3>
+              <h3 class="text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Create a Memory Card</h3>
               <p class="text-brand-primary text-lg sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
-                Turn your everyday photos into beautiful, printed memory cards and booklets — automatically.
-                Upload your pictures, let our AI do the layout, captions, and selection, 
-                and we&apos;ll mail them to your loved ones. Not interested in printed cards share them digitally.
+                I'll pick your best photos, write heartwarming captions, and design beautiful layouts for you.
+                Just upload your pictures and I'll create a stunning memory card that's perfect for mailing or sharing digitally.
               </p>
             </div>
             
@@ -72,25 +67,25 @@
                   <div class="w-8 h-8 bg-brand-highlight/30 rounded-lg flex items-center justify-center">
                     <Image class="w-4 h-4 text-brand-header" />
                   </div>
-                  <span class="font-semibold text-sm sm:text-base">Beautiful backgrounds</span>
+                  <span class="font-semibold text-sm sm:text-base">Beautiful designs</span>
                 </div>
                 <div class="flex items-center gap-3 text-brand-secondary">
                   <div class="w-8 h-8 bg-brand-highlight/30 rounded-lg flex items-center justify-center">
                     <Grid class="w-4 h-4 text-brand-header" />
                   </div>
-                  <span class="font-semibold text-sm sm:text-base">Organized memories</span>
+                  <span class="font-semibold text-sm sm:text-base">Perfect layouts</span>
                 </div>
                 <div class="flex items-center gap-3 text-brand-secondary">
                   <div class="w-8 h-8 bg-brand-highlight/30 rounded-lg flex items-center justify-center">
                     <Sparkles class="w-4 h-4 text-brand-header" />
                   </div>
-                  <span class="font-semibold text-sm sm:text-base">AI-powered memories</span>
+                  <span class="font-semibold text-sm sm:text-base">Heartwarming stories</span>
                 </div>
                 <div class="flex items-center gap-3 text-brand-secondary">
                   <div class="w-8 h-8 bg-brand-highlight/30 rounded-lg flex items-center justify-center">
                     <Share2 class="w-4 h-4 text-brand-header" />
                   </div>
-                  <span class="font-semibold text-sm sm:text-base">Ready to share</span>
+                  <span class="font-semibold text-sm sm:text-base">Ready to mail or share</span>
                 </div>
               </div>
             </div>
@@ -102,34 +97,34 @@
     <!-- Secondary Actions -->
     <div class="mb-8">
       <div class="text-center mb-6">
-        <h3 class="text-h2 text-brand-secondary mb-3 tracking-tight">Other Actions</h3>
-        <p class="text-base sm:text-lg text-brand-primary font-medium">Additional tools to enhance your experience</p>
+        <h3 class="text-h2 text-brand-secondary mb-3 tracking-tight">Manage Your Photos</h3>
+        <p class="text-base sm:text-lg text-brand-primary font-medium">Upload, review, and organize your photos</p>
       </div>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- Photo Upload Card -->
         <div 
-          class="bg-gradient-to-br from-brand-navigation/10 to-brand-navigation/20 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-navigation/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+          class="bg-gradient-to-br from-brand-accent/20 to-brand-accent/10 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-accent/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
           @click="handleCardClick('upload')"
         >
-          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-navigation to-brand-secondary rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-accent to-brand-header rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
             <Camera class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h3 class="text-h3 text-brand-secondary mb-4 tracking-tight">Upload Moments</h3>
+          <h3 class="text-h3 text-brand-secondary mb-4 tracking-tight">Add Photos</h3>
           <p class="text-brand-primary text-base sm:text-lg leading-relaxed mb-6 font-medium">
-            Upload your photos and memories. Our AI adds captions and smart tags automatically.
+            Upload photos from your phone, computer, or social media. I'll add captions and organize them for you.
           </p>
           <div class="space-y-2">
             <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <Tag class="w-4 h-4 text-brand-navigation" />
+              <Tag class="w-4 h-4 text-brand-header" />
               <span class="font-semibold">Smart Tagging</span>
             </div>
             <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <MessageCircle class="w-4 h-4 text-brand-navigation" />
-              <span class="font-semibold">Automatic AI Generated Captions</span>
+              <MessageCircle class="w-4 h-4 text-brand-header" />
+              <span class="font-semibold">Automatic captions</span>
             </div>
               <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-                <FileText class="w-4 h-4 text-brand-navigation" />
+                <FileText class="w-4 h-4 text-brand-header" />
                 <span class="font-semibold">Add Text Based Moments</span>
               </div>
           </div>
@@ -137,15 +132,15 @@
         
         <!-- Review Memories Card -->
         <div 
-          class="bg-gradient-to-br from-brand-highlight/20 to-brand-header/10 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-header/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+          class="bg-gradient-to-br from-brand-warm/30 to-brand-warm/20 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-warm/40 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
           @click="handleCardClick('review')"
         >
-          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-header to-brand-highlight rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
             <Edit class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h3 class="text-h3 text-brand-secondary mb-4 tracking-tight">Review Moments</h3>
+          <h3 class="text-h3 text-brand-secondary mb-4 tracking-tight">Review Photos</h3>
           <p class="text-brand-primary text-base sm:text-lg leading-relaxed mb-6 font-medium">
-            Review and refine your moments. Approve or reject AI suggestions, edit captions, and add keywords.
+            Review and approve your photos. Edit captions, crop photos, and organize your collection.
           </p>
           <div class="space-y-2">
             <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
@@ -165,24 +160,24 @@
         
         <!-- Monthly Delivery Card -->
         <div 
-          class="bg-gradient-to-br from-brand-secondary/10 to-brand-secondary/20 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-secondary/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+          class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-highlight/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
           @click="handleCardClick('monthly')"
         >
-          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-secondary to-brand-navigation rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-highlight to-brand-header rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
             <Send class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h3 class="text-h3 text-brand-secondary mb-4 tracking-tight">Share & Deliver</h3>
+          <h3 class="text-h3 text-brand-secondary mb-4 tracking-tight">Download & Share</h3>
           <p class="text-brand-primary text-base sm:text-lg leading-relaxed mb-6 font-medium">
-            Share digitally or send printed cards to the people you love.
+            Download your memory cards as PDFs to mail or share digitally with family and friends.
           </p>
           <div class="space-y-2">
             <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <Share2 class="w-4 h-4 text-brand-navigation" />
+              <Share2 class="w-4 h-4 text-brand-header" />
               <span class="font-semibold">Digital sharing</span>
             </div>
             <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <Printer class="w-4 h-4 text-brand-navigation" />
-              <span class="font-semibold">Printed cards</span>
+              <Printer class="w-4 h-4 text-brand-header" />
+              <span class="font-semibold">Print & mail</span>
             </div>
           </div>
         </div>
@@ -202,16 +197,16 @@
           <div class="w-10 h-10 bg-brand-highlight/30 rounded-full flex items-center justify-center">
             <Heart class="w-5 h-5 text-brand-header" />
           </div>
-          <h3 class="text-xl font-semibold text-brand-secondary">Join the Family</h3>
+          <h3 class="text-xl font-semibold text-brand-secondary">Create Your Account</h3>
         </div>
       </template>
       
       <div class="text-center py-4">
         <div class="mb-6">
-          <h4 class="text-lg font-medium text-brand-secondary mb-3">Create Your First Savta Special Memory</h4>
+          <h4 class="text-lg font-medium text-brand-secondary mb-3">Start Creating Memory Cards</h4>
           <p class="text-brand-primary leading-relaxed">
-            Start preserving your precious family moments with Savta Special Cards and Books. 
-            Create an account to begin your journey of capturing and sharing beautiful memories.
+            Create an account to start sharing beautiful memory cards with your family. 
+            I'll help you pick the best moments and create stunning designs for you.
           </p>
         </div>
         

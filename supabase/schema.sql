@@ -96,6 +96,7 @@ create table if not exists memory_books (
   magic_story text,
   layout_type text,
   ui text default 'form' check (ui in ('wizard', 'form')),
+  format text default 'book' check (format in ('card', 'book')),
   page_count integer,
   grid_layout text default '2x2' check (grid_layout in ('1x1', '2x1', '2x2', '3x2', '3x3', '3x4', '4x4')),
   memory_shape text default 'rounded' check (memory_shape in ('original', 'magic', 'rounded')),
@@ -203,6 +204,7 @@ create index if not exists idx_memory_books_user_id on memory_books(user_id);
 create index if not exists idx_memory_books_status on memory_books(status);
 create index if not exists idx_memory_books_print_size on memory_books(print_size);
 create index if not exists idx_memory_books_ui on memory_books(ui);
+create index if not exists idx_memory_books_format on memory_books(format);
 create index if not exists idx_pdf_status_book_id on pdf_status(book_id);
 create index if not exists idx_pdf_status_user_id on pdf_status(user_id);
 create index if not exists idx_activity_log_user_id on activity_log(user_id);

@@ -24,10 +24,10 @@
           <span class="text-2xl">{{ isNewUser ? '🎉' : '✅' }}</span>
         </div>
         <h1 class="text-xl sm:text-2xl font-bold text-brand-primary mb-1">
-          {{ isNewUser ? 'Welcome to Savta AI!' : 'Welcome Back!' }}
+          {{ isNewUser ? 'Welcome to Savta!' : 'Welcome Back!' }}
         </h1>
         <p class="text-sm sm:text-base text-brand-primary/80 max-w-2xl mx-auto">
-          {{ isNewUser ? 'Thank you for joining Savta AI. Your account is now active and ready to use.' : 'You are now successfully logged in to your Savta AI account.' }}
+          {{ isNewUser ? 'Thank you for joining! You can now start creating beautiful memory cards to share with your family.' : 'You are now signed in and ready to continue sharing family memories.' }}
         </p>
       </div>
 
@@ -73,21 +73,21 @@
       <!-- Hide Next Steps if user is disabled -->
       <div v-if="!isUserDisabled" class="bg-brand-highlight/10 rounded-lg p-2 sm:p-3 mb-2 w-full">
         <h3 class="text-sm font-semibold text-brand-highlight mb-1 flex items-center">
-            <span class="text-brand-highlight mr-2">🚀</span>
-            What's Next?
+            <span class="text-brand-highlight mr-2">💝</span>
+            Ready to Get Started?
           </h3>
           <ul class="space-y-1 text-brand-highlight/80 text-xs">
             <li class="flex items-start">
               <span class="text-brand-highlight mr-2 mt-1">•</span>
-              <span>Explore your personalized dashboard</span>
+              <span>Upload your family photos</span>
             </li>
             <li class="flex items-start">
               <span class="text-brand-highlight mr-2 mt-1">•</span>
-              <span>Start creating your first family newsletter</span>
+              <span>Create your first memory card</span>
             </li>
             <li class="flex items-start">
               <span class="text-brand-highlight mr-2 mt-1">•</span>
-              <span>Invite family members to join</span>
+              <span>Share beautiful memories with loved ones</span>
             </li>
           </ul>
         </div>
@@ -96,7 +96,7 @@
       <div class="flex flex-col sm:flex-row gap-2 justify-center w-full">
         <Button
           v-if="!isUserDisabled"
-          label="Start Creating Special Moments"
+          label="Create My First Memory Card"
           class="bg-brand-header hover:bg-brand-secondary text-white px-4 py-2 rounded-lg font-semibold text-sm"
           @click="goToDashboard"
         />

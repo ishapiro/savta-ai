@@ -4,12 +4,12 @@
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Upload Photos and Posts</h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Add Your Photos</h1>
           <button
             class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-brand-background transition-colors focus:outline-none flex-shrink-0"
-            v-tooltip.top="'How to use this page'"
+            v-tooltip.top="'How to add photos'"
             @click="showHelpModal = true"
-            aria-label="Information about upload page"
+            aria-label="Information about adding photos"
           >
             <i class="pi pi-info text-lg text-brand-highlight"></i>
           </button>
@@ -20,8 +20,8 @@
             @click="navigateTo('/app/review')"
           >
             <i class="pi pi-list text-lg sm:text-2xl animate-bounce"></i>
-            <span class="hidden sm:inline">View All Uploads</span>
-            <span class="sm:hidden">View All</span>
+            <span class="hidden sm:inline">Review My Photos</span>
+            <span class="sm:hidden">Review Photos</span>
           </button>
         </div>
       </div>
@@ -32,7 +32,7 @@
         <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200">
           <div class="flex items-center gap-2">
             <i class="pi pi-exclamation-triangle text-amber-600 text-sm"></i>
-            <span class="text-sm font-semibold text-amber-800">⚠️ Please stay on this page until uploads complete</span>
+            <span class="text-sm font-semibold text-amber-800">⚠️ Please stay on this page while photos are uploading</span>
           </div>
         </div>
 
@@ -40,7 +40,7 @@
         <div v-if="oversizedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-brand-navigation rounded-lg p-3 border border-red-200">
           <div class="flex items-center gap-2 mb-2">
             <i class="pi pi-times-circle text-red-600 text-sm"></i>
-            <span class="text-sm font-semibold text-red-800">📁 Files too large ({{ oversizedFiles.length }} skipped)</span>
+            <span class="text-sm font-semibold text-red-800">📁 Photos too large ({{ oversizedFiles.length }} skipped)</span>
           </div>
           <div class="space-y-1">
             <div v-for="file in oversizedFiles" :key="file.name" class="bg-white rounded p-2 border border-red-100">
@@ -57,7 +57,7 @@
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
               <i class="pi pi-cloud-upload text-blue-500 text-sm"></i>
-              <span class="text-sm font-semibold text-gray-800">{{ currentFileIndex }}/{{ totalFilesToUpload }} files</span>
+              <span class="text-sm font-semibold text-gray-800">{{ currentFileIndex }}/{{ totalFilesToUpload }} photos</span>
             </div>
             <span class="text-sm font-medium text-gray-600">{{ Math.round(overallProgress) }}%</span>
           </div>
@@ -72,7 +72,7 @@
           
           <!-- Progress Stats -->
           <div class="flex justify-between text-xs text-gray-600">
-            <span>{{ successfulUploads }} done</span>
+            <span>{{ successfulUploads }} uploaded</span>
             <span>{{ uploadingFiles.length }} uploading</span>
             <span>{{ failedUploads }} failed</span>
           </div>

@@ -51,6 +51,8 @@ export default defineEventHandler(async (event) => {
         user_id: user.id,
         ai_supplemental_prompt: title || 'Magic Memory',
         layout_type: layoutType,
+        ui: 'wizard',
+        format: 'card',
         created_from_assets: asset_ids,
         photo_selection_pool: photo_selection_pool || asset_ids,
         magic_story: story,

@@ -4,12 +4,12 @@
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Manage your Moments (Photos and Posts)</h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Review Family Photos</h1>
           <button
             class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
-            v-tooltip.top="'How to use this page'"
+            v-tooltip.top="'How to review family photos'"
             @click="showHelpModal = true"
-            aria-label="Information about review page"
+            aria-label="Information about reviewing family photos"
           >
             <i class="pi pi-info text-lg text-brand-highlight"></i>
           </button>
@@ -22,7 +22,7 @@
             :disabled="approvingAll"
           >
             <i class="pi pi-check text-lg sm:text-2xl" :class="{ 'animate-spin': approvingAll }"></i>
-            <span class="hidden sm:inline">Approve All ({{ stats.pending }})</span>
+            <span class="hidden sm:inline">Approve All Photos ({{ stats.pending }})</span>
             <span class="sm:hidden">Approve All</span>
           </button>
           <button
@@ -30,8 +30,8 @@
             @click="navigateTo('/app/deleted-memories')"
           >
             <i class="pi pi-trash text-lg sm:text-2xl animate-bounce"></i>
-            <span class="hidden sm:inline">Trash</span>
-            <span class="sm:hidden">Trash</span>
+            <span class="hidden sm:inline">Deleted Photos</span>
+            <span class="sm:hidden">Deleted</span>
           </button>
         </div>
       </div>
@@ -40,12 +40,12 @@
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
           <i class="pi pi-image text-brand-secondary text-2xl mb-2"></i>
-          <div class="text-sm text-brand-primary/70">Total</div>
+          <div class="text-sm text-brand-primary/70">All Photos</div>
           <div class="text-xl font-bold text-brand-primary">{{ stats.total }}</div>
         </div>
         <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
           <i class="pi pi-clock text-yellow-500 text-2xl mb-2"></i>
-          <div class="text-sm text-brand-primary/70">Pending</div>
+          <div class="text-sm text-brand-primary/70">Need Review</div>
           <div class="text-xl font-bold text-brand-primary">{{ stats.pending }}</div>
         </div>
         <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
@@ -55,7 +55,7 @@
         </div>
         <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
           <i class="pi pi-book text-brand-secondary text-2xl mb-2"></i>
-          <div class="text-sm text-brand-primary/70">Ready for Book</div>
+          <div class="text-sm text-brand-primary/70">Ready for Cards</div>
           <div class="text-xl font-bold text-brand-primary">{{ stats.readyForBook }}</div>
         </div>
       </div>

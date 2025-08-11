@@ -25,10 +25,13 @@
               Keep the memories that matter most, beautifully.
             </h2>
             <p class="text-[10px] sm:text-sm text-brand-secondary/90 leading-relaxed mb-0.5 drop-shadow-md">
-              Each month, we turn your family's best photos, stories, and milestones into a themed, shareable booklet — curated with a gentle touch of AI magic.
+              Turn your scattered photos into beautiful, printed memory cards — automatically. 
+              No more dragging photos into layouts. Our AI picks your best moments, writes 
+              captions, and designs everything for you.
             </p>
             <p class="text-[10px] sm:text-sm text-brand-secondary/80 leading-relaxed drop-shadow-md">
-              No more scrolling through endless chats. Just one meaningful snapshot of your family's life, preserved with love.
+              Just upload and we'll mail the cards to your loved ones or share them digitally. Perfect for grandparents 
+              who don't use social media.
             </p>
           </div>
         </div>

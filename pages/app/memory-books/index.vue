@@ -15,7 +15,7 @@
       <!-- Header -->
       <div class="flex flex-col items-center justify-between mb-6 sm:mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-primary">Create Special Memories</h1>
+          <h1 class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-primary">Create Memory Cards & Books</h1>
           <button
             class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             @click="showInfoDialog = true"
@@ -26,19 +26,19 @@
         </div>
         <div class="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
           <!-- Memory Cards Card -->
-          <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
-            <h3 class="text-lg sm:text-xl font-bold text-brand-primary mb-4 text-center">Memory Cards</h3>
+          <div class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg border border-brand-highlight/30 p-4 sm:p-6">
+            <h3 class="text-lg sm:text-xl font-bold text-brand-highlight mb-4 text-center">Single Memory Cards</h3>
             <div class="flex flex-col sm:flex-row gap-4">
               <div class="flex flex-col items-center">
                 <button
-                  class="border-0 bg-brand-highlight hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
+                  class="border-0 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
                   @click="openMagicMemoryDialog('quick')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
-                  <span class="hidden sm:inline">Savta Create a Card</span>
-                  <span class="sm:hidden">Savta Create</span>
+                  <span class="hidden sm:inline">Create a Memory Card</span>
+                  <span class="sm:hidden">Create Card</span>
                 </button>
-                <p class="mt-2 text-sm text-brand-highlight text-center">Start Here and I'll Help You Create a Card</p>
+                                  <p class="mt-2 text-sm text-brand-highlight text-center">Single page with beautiful themes</p>
               </div>
               <!-- <div class="flex flex-col items-center">
                 <button
@@ -55,41 +55,40 @@
           </div>
           
           <!-- Memory Books Card -->
-          <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
-            <h3 class="text-lg sm:text-xl font-bold text-brand-primary mb-4 text-center">Memory Booklets</h3>
+          <div class="bg-gradient-to-br from-brand-warm/30 to-brand-warm/20 rounded-xl shadow-lg border border-brand-warm/40 p-4 sm:p-6">
+            <h3 class="text-lg sm:text-xl font-bold text-brand-secondary mb-4 text-center">Memory Books</h3>
             <div class="flex flex-col items-center">
               <button
                 class="border-0 bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
                 @click="showCreateModal = true"
               >
                 <i class="pi pi-plus mr-1 sm:mr-2"></i>
-                <span class="hidden sm:inline">Special Memory Booklets</span>
-                <span class="sm:hidden">Memory Booklets</span>
+                <span class="hidden sm:inline">Create a Memory Book</span>
+                <span class="sm:hidden">Create Book</span>
               </button>
-              <p class="mt-2 text-sm text-brand-highlight text-center">You Choose the Photos, Choose the Layout, I'll Create the Book</p>
+                              <p class="mt-2 text-sm text-brand-secondary text-center">Multi-page books with themes or grid layouts</p>
             </div>
           </div>
         </div>
       </div>
 
     <!-- Info Dialog -->
-    <Dialog v-model:visible="showInfoDialog" modal header="About Savta's Magic Memories" class="w-full max-w-3xl sm:rounded-2xl">
+    <Dialog v-model:visible="showInfoDialog" modal header="About Memory Cards & Books" class="w-full max-w-3xl sm:rounded-2xl">
       <div class="space-y-4">
         <div class="bg-brand-highlight/10 rounded-lg p-4 border border-brand-highlight/20">
-          <h2 class="text-lg font-bold text-brand-highlight mb-2">What are Special Memory Cards?</h2>
+          <h2 class="text-lg font-bold text-brand-highlight mb-2">What are Memory Cards?</h2>
           <p class="text-base text-brand-primary">
-            Special Memory Cards are perfect for everyone! They create beautiful single cards for digital and physical distribution. 
-            Our AI selects the best photos from your collection and generates a heartwarming story based on those photos. 
-            It's like having a personal storyteller create a magical moment just for you!
+            Memory Cards are single-page designs with beautiful themes. Our AI picks your best photos and writes heartwarming captions. 
+            Perfect for mailing to family members or sharing digitally. Each card tells a story in one beautiful page.
           </p>
         </div>
         <div class="bg-brand-secondary/10 rounded-lg p-4 border border-brand-secondary/20">
-          <h2 class="text-lg font-bold text-brand-secondary mb-2">What are Special Memory Books?</h2>
+          <h2 class="text-lg font-bold text-brand-secondary mb-2">What are Memory Books?</h2>
           <p class="text-base text-brand-primary mb-3">
-            Special Memory Booklets are for advanced users who want more control. They create multiple-page books with lots of layout options. 
-            You select exactly which photos to include and have full control over the design and layout of your memory book.
+            Memory Books are multi-page collections that can use themes or grid layouts. You choose which photos to include and our AI creates 
+            beautiful designs. Perfect for printing and mailing to family members or sharing digitally.
           </p>
-          <h3 class="text-md font-bold text-brand-secondary mb-2">Why Create Magic Memories?</h3>
+          <h3 class="text-md font-bold text-brand-secondary mb-2">Why Create Memory Cards?</h3>
           <ul class="list-disc pl-5 text-base text-brand-primary space-y-1">
             <li>To keep your precious memories safe and easy to find.</li>
             <li>To share your stories with children, grandchildren, and friends.</li>
@@ -100,8 +99,8 @@
           <h2 class="text-lg font-bold text-brand-accent mb-2">How Do I Use It?</h2>
           <p class="text-base text-brand-primary">
             Just pick your favorite memory moments, design your cards, and let the magic happen! 
-            You can view your memory moment as a PDF, print it, or share it with your loved ones. 
-            It's easy and fun—no computer skills needed!  No tedius droping and dragging photos into a photo album.
+            You can view your memory card as a PDF, print it, or share it with your loved ones. 
+            It's easy and fun—no computer skills needed! No tedious dropping and dragging photos into a photo album.
           </p>
         </div>
         <div class="bg-white rounded-lg p-4 border border-gray-100">
@@ -169,7 +168,7 @@
         <div
           :class="[
             'relative flex items-center justify-center h-20',
-            'bg-brand-secondary'
+            book.format === 'card' ? 'bg-brand-highlight' : 'bg-brand-secondary'
           ]"
         >
           <!-- Status Badge: absolute top-right, smaller -->
@@ -181,16 +180,23 @@
           </div>
           <div class="flex flex-col items-center relative z-1">
             <div class="mb-2 relative group-hover:scale-110 transition-transform duration-300">
-                              <Wand2 v-if="book.ui === 'wizard'" class="w-8 h-8 text-white" />
+                              <Wand2 v-if="book.format === 'card'" class="w-8 h-8 text-white" />
               <i v-else class="pi pi-book w-8 h-8 text-white flex items-center justify-center text-2xl"></i>
             </div>
-                            <span class="text-xs font-semibold text-white text-center px-2 leading-tight">{{ book.ai_supplemental_prompt || (book.ui === 'wizard' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6))) }}</span>
+                            <span class="text-xs font-semibold text-white text-center px-2 leading-tight">{{ book.ai_supplemental_prompt || (book.format === 'card' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6))) }}</span>
           </div>
         </div>
         <!-- Divider -->
         <div class="h-0.5 w-full bg-brand-primary/10"></div>
         <!-- Card Body (center) -->
-        <div class="flex-1 flex flex-col p-5 pb-3 min-h-[160px] bg-brand-card rounded-b-xl sm:rounded-b-2xl">
+        <div 
+          :class="[
+            'flex-1 flex flex-col p-5 pb-3 min-h-[160px] rounded-b-xl sm:rounded-b-2xl',
+            book.format === 'card' 
+              ? 'bg-gradient-to-br from-brand-highlight/10 to-brand-highlight/5'
+              : 'bg-gradient-to-br from-brand-warm/20 to-brand-warm/10'
+          ]"
+        >
                       <div v-if="book.magic_story" class="text-brand-secondary text-xs magic-story animate-fade-in mb-3 relative leading-relaxed">
             <div class="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
               <Sparkle class="w-4 h-4 text-yellow-400 absolute left-0 top-0" />
@@ -236,8 +242,8 @@
         <div
           :class="[
             'rounded-b-xl sm:rounded-b-2xl px-4 py-3 flex items-center justify-between gap-2 border-t shadow-sm h-20',
-            book.magic_story
-              ? 'bg-brand-header/20 border-brand-header/20'
+            book.format === 'card' 
+              ? 'bg-brand-highlight/20 border-brand-highlight/20'
               : 'bg-brand-secondary/20 border-brand-secondary/20'
           ]"
         >
@@ -328,13 +334,13 @@
           <i class="pi pi-book text-4xl sm:text-6xl"></i>
         </div>
         <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No special memories yet</h3>
-        <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Great! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first special memory?</p>
-        <button
-          class="border-0 bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
-          @click="openMagicMemoryDialog('quick')"
-        >
-          <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Special Memory
-        </button>
+        <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">Wonderful! You have {{ approvedAssetsCount }} approved photos ready. Are you ready to create your first memory card?</p>
+                  <button
+            class="border-0 bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
+            @click="openMagicMemoryDialog('quick')"
+          >
+            <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Memory Card
+          </button>
       </div>
     </div>
 
@@ -1415,9 +1421,9 @@
             <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
           <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1">✨ Choose your memory ✨</h3>
-          <p class="text-sm sm:text-base text-gray-600">Tell me about the memory you want to create. 
+          <p class="text-sm sm:text-base text-gray-600">Tell me about the memory you want to share with your family. 
             For example, you could say "Photos from our New York trip" or "Our family vacation memories". 
-            Savta AI will use this description to select the best photos and create a personalized story for you.
+            I'll use this to pick the best photos and write a heartwarming story for you.
           </p>
         </div>
         <div class="field w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
@@ -1432,7 +1438,7 @@
             required
             :model-value="magicMemoryTitle"
           />
-          <small class="text-gray-500 text-xs mt-1 block">This helps me select the best photos and create a personalized story for you.</small>
+          <small class="text-gray-500 text-xs mt-1 block">This helps me pick the best photos and write a lovely story for you.</small>
         </div>
       </div>
 
@@ -1481,8 +1487,8 @@
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How many photos should I choose for you?</h3>
-          <p class="text-sm sm:text-base text-gray-600">Select how many photos I should pick from your memory collection to create your special story - trust me, this will be amazing!</p>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How many photos would you like me to choose?</h3>
+          <p class="text-sm sm:text-base text-gray-600">I'll pick the best photos from your collection to create a beautiful story - I promise it will be lovely!</p>
         </div>
         <div class="grid grid-cols-3 gap-3 mt-2 w-full max-w-xs mx-auto sm:gap-4 sm:max-w-[520px] sm:mx-auto">
           <div
@@ -1514,7 +1520,7 @@
               <h4 class="font-semibold text-blue-900 mb-1">Add your photos</h4>
               <p class="text-xs sm:text-sm text-blue-800">
                 You'll select up to 12 photos in the next step, then I'll choose the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your selection. 
-                Your magic card will be split 50% for photos and 50% for text.
+                Your memory card will be split 50% for photos and 50% for text.
               </p>
             </div>
           </div>
@@ -1529,7 +1535,7 @@
             <i class="pi pi-palette text-xl sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Pick your style</h3>
-          <p class="text-sm sm:text-base text-gray-600 mb-2">Choose a clean white background or let me create a special design that matches your story's theme!</p>
+          <p class="text-sm sm:text-base text-gray-600 mb-2">Choose a clean white background or let me create something special that matches your story perfectly!</p>
         </div>
         
         <!-- Background Selection Tiles -->
@@ -1631,7 +1637,7 @@
             <i class="pi pi-palette text-lg sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Pick a special theme for your memory</h3>
-          <p class="text-sm sm:text-base text-gray-600">Select a beautiful theme to make your memory card extra special. You can also skip this and use the default theme.</p>
+          <p class="text-sm sm:text-base text-gray-600">Pick a beautiful theme to make your memory card extra special. Or you can skip this and I'll use my favorite default theme.</p>
         </div>
         
         <div class="field w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
@@ -1661,8 +1667,7 @@
             <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
-          <p class="text-xs sm:text-base text-gray-600 mb-2">When you upload photos they go into your library.  Then I will use AI to 
-            select the best photos and captions for your card or booklet. Choose how you'd like me to select photos from your library.</p>
+          <p class="text-xs sm:text-base text-gray-600 mb-2">When you upload photos, they go into your library. Then I'll choose the best ones and write lovely captions for your card or booklet. Choose how you'd like me to pick photos from your library.</p>
           <p class="text-xs text-brand-flash font-medium">📸 You have {{ availableAssets.length }} photo{{ availableAssets.length !== 1 ? 's' : '' }} in your library</p>
         </div>
         
@@ -1677,7 +1682,7 @@
               <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
                 <i class="pi pi-images text-sm sm:text-lg text-white"></i>
               </div>
-              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Savta selects</div>
+              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">I'll choose for you</div>
               <div class="text-xs text-gray-600">I'll search your photos for matches to "{{ magicMemoryTitle || 'your memory' }}" 
                 and pick the best photos from your recent uploads.</div>
               <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-1 right-1">
@@ -2036,7 +2041,7 @@
           <!-- Continue Button (only on last step) -->
           <Button
             v-if="isLastStep()"
-            label="Let's make something beautiful together"
+            label="Let's create something beautiful together"
             icon="pi pi-bolt"
             :disabled="(magicMemoryStep === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod === 'photo_library' && magicSelectedMemories.length < 1) || magicLoading"
             :loading="magicLoading"
@@ -2075,9 +2080,9 @@
       <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <i class="pi pi-exclamation-triangle text-2xl text-red-500"></i>
       </div>
-      <h3 class="text-xl font-bold text-gray-900 mb-2">Oops, Savta got confused!</h3>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Oops, I got a little confused!</h3>
       <p class="text-gray-600 mb-6">
-        {{ errorDialogMessage || "Something went wrong while creating your magic memory. Let's try again!" }}
+        {{ errorDialogMessage || "Something went wrong while creating your memory card. Let's try again!" }}
       </p>
       <p class="text-gray-600 mb-6">Please try a different description for your memory. For example, if your description mentioned a location and we couldn't find matching photos, try being more specific or using different keywords.
         you can change the location or upload a photo with this location.
@@ -2684,7 +2689,7 @@ const createMemoryBook = async () => {
         $toast.add({
           severity: 'warn',
           summary: 'No Assets',
-          detail: 'No approved assets available for this magic memory',
+          detail: 'No approved photos available for this memory card',
           life: 3000
         })
       }
@@ -2695,6 +2700,7 @@ const createMemoryBook = async () => {
               ai_supplemental_prompt: newBook.value.ai_supplemental_prompt,
       layout_type: newBook.value.layoutType,
       ui: newBook.value.ui || 'form',
+      format: 'book', // Dialog creates books
       print_size: newBook.value.printSize,
       quality: newBook.value.quality,
       medium: newBook.value.medium,
@@ -2718,7 +2724,7 @@ const createMemoryBook = async () => {
       $toast.add({
         severity: 'success',
         summary: 'Created',
-        detail: 'Magic memory created successfully',
+        detail: 'Memory card created successfully',
         life: 3000
       })
     }
@@ -2732,7 +2738,7 @@ const createMemoryBook = async () => {
       $toast.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to create magic memory',
+        detail: 'Failed to create memory card',
         life: 3000
       })
     }
@@ -3177,7 +3183,7 @@ const forceDownloadPDF = async (book) => {
       $toast.add({
         severity: 'success',
         summary: 'Download Started',
-        detail: 'Your magic memory PDF is being downloaded',
+        detail: 'Your memory card PDF is being downloaded',
         life: 3000
       })
     }
@@ -3206,7 +3212,7 @@ const approveBook = async (bookId) => {
       $toast.add({
         severity: 'success',
         summary: 'Approved',
-        detail: 'Magic memory approved',
+        detail: 'Memory card approved',
         life: 3000
       })
     }
@@ -3860,7 +3866,7 @@ const confirmCleanup = async () => {
       $toast.add({
         severity: 'success',
         summary: 'Cleaned Up!',
-        detail: 'We have cleaned up your magic memory so you can apply new magic!',
+        detail: 'We have cleaned up your memory card so you can create a new one!',
         life: 4000
       })
     }
@@ -4221,6 +4227,7 @@ async function onMagicMemoryContinue() {
       id: dbRes.book_id,
       layout_type: magicSelectedTheme.value ? 'theme' : 'grid',
       ui: 'wizard',
+      format: 'card',
       status: 'draft',
       photo_selection_pool: photoSelectionPool,
       created_from_assets: aiRes.selected_photo_ids || []
@@ -4372,6 +4379,7 @@ const retryMagicMemory = async () => {
       id: dbRes.book_id,
       layout_type: config.selectedTheme ? 'theme' : 'grid',
       ui: 'wizard',
+      format: 'card',
       status: 'draft',
       photo_selection_pool: config.photoSelectionPool,
       created_from_assets: aiRes.selected_photo_ids || []
@@ -4879,7 +4887,7 @@ async function createMemoryBookFromDialog(data) {
       $toast.add({
         severity: 'warn',
         summary: 'Assets Required',
-        detail: 'Please select at least one memory to include in your magic memory book.',
+        detail: 'Please select at least one photo to include in your memory book.',
         life: 4000
       })
     }
