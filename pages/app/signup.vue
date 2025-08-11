@@ -204,7 +204,8 @@ watchEffect(() => {
 })
 
 const validateEmail = () => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  // Updated regex to support Google Plus addressing (allows + in local part)
+  const emailRegex = /^[^\s@]+(\+[^\s@]+)?@[^\s@]+\.[^\s@]+$/
   if (!email.value) {
     emailError.value = 'Email is required'
   } else if (!emailRegex.test(email.value)) {
