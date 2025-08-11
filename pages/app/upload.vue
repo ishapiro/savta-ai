@@ -4,7 +4,7 @@
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Upload Moments (Photo and Posts)</h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Upload Photos and Posts</h1>
           <button
             class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-brand-background transition-colors focus:outline-none flex-shrink-0"
             v-tooltip.top="'How to use this page'"
@@ -268,8 +268,8 @@
                 <i class="pi pi-heart text-brand-secondary text-xl"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Manage Your Special Moments</h3>
-                <p class="text-sm text-gray-600">Use review to manage and edit your moments</p>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Manage Your Library</h3>
+                <p class="text-sm text-gray-600">Use review to manage and edit your photos and posts</p>
               </div>
             </div>
             <button
@@ -283,7 +283,7 @@
         </div>
         
         <p class="text-sm text-gray-600 mb-4">
-          Showing your 10 most recent uploads. Visit the Review page to see all your memories and manage them.
+          Showing your 10 most recent uploads. Visit the Review page to see all your photos and posts.
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           <Card
@@ -331,7 +331,7 @@
               </div>
               <div>
                 <h3 class="text-xl font-bold text-gray-800 mb-1">Welcome to Your Memory Workshop! 🎨</h3>
-                <p class="text-gray-600">This is where the special moments begin - upload your precious memories and watch them transform into beautiful family stories!</p>
+                <p class="text-gray-600">This is where the special moments begin - upload your precious photos and posts and watch them transform into beautiful family stories!</p>
               </div>
             </div>
           </div>
@@ -343,8 +343,8 @@
                 <i class="pi pi-images text-blue-600 text-lg"></i>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">📸 Photos & 📝 Stories</h3>
-                <p class="text-gray-600">Choose your special medium! Upload photos or share your family stories - both will be transformed into beautiful memory moments.</p>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">📸 Photos & 📝 Posts</h3>
+                <p class="text-gray-600">Choose your special medium! Upload photos or share your family posts - both will be transformed into beautiful memory moments.</p>
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -353,7 +353,7 @@
                   <i class="pi pi-image text-blue-500"></i>
                   <span class="font-semibold text-gray-800">Photo Memories</span>
                 </div>
-                <p class="text-sm text-gray-600">Drag & drop or click to upload your family photos. Our AI will add captions and detect people!</p>
+                <p class="text-sm text-gray-600">Add photos from your phone or computer. We’ll store them in your Savta.ai library so you can use them anytime.</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -472,7 +472,7 @@
               <i class="pi pi-rocket text-blue-600 text-2xl"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">🚀 Ready to Start Your Special Journey?</h3>
-            <p class="text-gray-600 mb-4">Upload your first moment (photo or post) and watch the special moments unfold!</p>
+            <p class="text-gray-600 mb-4">Upload your first photos or post and watch the special moments unfold!</p>
             <button
               class="bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
               @click="showHelpModal = false"
@@ -499,7 +499,7 @@
             <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <i class="pi pi-check text-white text-3xl"></i>
             </div>
-            <h2 class="text-2xl font-bold text-green-700 mb-2">🎉 Special Moments Complete!</h2>
+            <h2 class="text-2xl font-bold text-green-700 mb-2">🎉 Uploads Complete!</h2>
             <p class="text-lg text-green-600 mb-4">
               We uploaded and created special moments from <span class="font-bold">{{ successfulUploads }}</span> 
               <span v-if="successfulUploads === 1">&nbsp; memory</span>

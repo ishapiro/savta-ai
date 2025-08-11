@@ -479,16 +479,17 @@
               <i class="pi pi-sparkles text-brand-header text-xl"></i>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-brand-header mb-1">✨ Let Savta help you with your upload your photos ✨</h3>
+              <h3 class="text-lg font-bold text-brand-header mb-1">✨ Let Savta help you with your upload your photos ✨</h3>
             </div>
           </div>
           <div class="bg-white/80 rounded-lg p-4">
             <div class="text-sm text-gray-700 leading-relaxed">
               <ul class="list-disc pl-4 text-xs md:text-sm">
                 <li>Share your special photos with Savta - I'll keep them safe in my workshop</li>
+                <li>The more photos you upload, the better Savta can help you</li>
                 <li>Your memories will be stored securely in your own private collection</li>
                 <li>I'll recognize the faces, places and write sweet notes about each one</li>
-                <li>Then you can tell me which photos you'd like me to use for your beautiful card or book</li>
+                <li>I'll use my special AI powers to select the best photos and captions for your card or book</li>
               </ul>
             </div>
           </div>
@@ -1413,7 +1414,7 @@
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
-          <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1">✨ Help me create a special memory ✨</h3>
+          <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1">✨ Choose your memory ✨</h3>
           <p class="text-sm sm:text-base text-gray-600">Tell me about the memory you want to create. 
             For example, you could say "Photos from our New York trip" or "Our family vacation memories". 
             Savta AI will use this description to select the best photos and create a personalized story for you.
@@ -1510,7 +1511,7 @@
           <div class="flex items-start gap-2 sm:gap-3">
             <i class="pi pi-info-circle text-blue-500 mt-1"></i>
             <div>
-              <h4 class="font-semibold text-blue-900 mb-1">Selection Process</h4>
+              <h4 class="font-semibold text-blue-900 mb-1">Add your photos</h4>
               <p class="text-xs sm:text-sm text-blue-800">
                 You'll select up to 12 photos in the next step, then I'll choose the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your selection. 
                 Your magic card will be split 50% for photos and 50% for text.
@@ -1527,7 +1528,7 @@
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
             <i class="pi pi-palette text-xl sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">What kind of background would you like?</h3>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Pick your style</h3>
           <p class="text-sm sm:text-base text-gray-600 mb-2">Choose a clean white background or let me create a special design that matches your story's theme!</p>
         </div>
         
@@ -1629,7 +1630,7 @@
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
             <i class="pi pi-palette text-lg sm:text-2xl text-white"></i>
           </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Choose a special theme for your memory</h3>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Pick a special theme for your memory</h3>
           <p class="text-sm sm:text-base text-gray-600">Select a beautiful theme to make your memory card extra special. You can also skip this and use the default theme.</p>
         </div>
         

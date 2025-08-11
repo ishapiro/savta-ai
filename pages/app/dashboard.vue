@@ -57,9 +57,11 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-brand-header to-brand-secondary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
               </div>
-              <h3 class="text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Capture a Special Memory</h3>
+              <h3 class="text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Share a Special Memory</h3>
               <p class="text-brand-primary text-lg sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
-                Our AI organizes your moments (photos and posts) into beautiful Memory Cards and Books with custom backgrounds perfect for sharing.
+                Turn your everyday photos into beautiful, printed memory cards and booklets — automatically.
+                Upload your pictures, let our AI do the layout, captions, and selection, 
+                and we&apos;ll mail them to your loved ones. Not interested in printed cards share them digitally.
               </p>
             </div>
             
