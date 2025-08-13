@@ -90,6 +90,7 @@ export default defineNuxtConfig({
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     vpvLicenseKey: process.env.NUXT_VPV_LICENSE_KEY,
     mapboxToken: process.env.MAPBOX_TOKEN,
+    sendgridWebhookSecret: process.env.SENDGRID_WEBHOOK_SECRET,
     
     public: {
       // @ts-ignore

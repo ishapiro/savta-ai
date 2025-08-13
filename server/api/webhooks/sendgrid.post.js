@@ -3,6 +3,28 @@ export default defineEventHandler(async (event) => {
     // Get the request body
     const body = await readBody(event)
     
+    // Verify webhook signature (optional but recommended)
+    const config = useRuntimeConfig()
+    const signature = getHeader(event, 'x-twilio-email-event-webhook-signature')
+    const timestamp = getHeader(event, 'x-twilio-email-event-webhook-timestamp')
+    
+    // If you have a signing secret configured, verify the signature
+    if (config.sendgridWebhookSecret && signature && timestamp) {
+      const crypto = await import('crypto')
+      const expectedSignature = crypto
+        .createHmac('sha256', config.sendgridWebhookSecret)
+        .update(timestamp + body)
+        .digest('base64')
+      
+      if (signature !== expectedSignature) {
+        console.warn('Invalid webhook signature')
+        throw createError({
+          statusCode: 401,
+          statusMessage: 'Invalid signature'
+        })
+      }
+    }
+    
     // SendGrid sends events as an array
     if (!Array.isArray(body)) {
       throw createError({
@@ -12,7 +34,6 @@ export default defineEventHandler(async (event) => {
     }
 
     // Get Supabase client
-    const config = useRuntimeConfig()
     const { createClient } = await import('@supabase/supabase-js')
     const supabase = createClient(
       config.public.supabaseUrl,
