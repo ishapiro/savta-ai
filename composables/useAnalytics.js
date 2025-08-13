@@ -20,10 +20,19 @@ export const useAnalytics = () => {
   const currentPage = ref(null)
   const pageStartTime = ref(null)
   
+  // Phase 2: Enhanced tracking variables
+  const scrollDepth = ref(0)
+  const interactionCount = ref(0)
+  const timeOnPage = ref(0)
+  const lastScrollTime = ref(0)
+  const lastInteractionTime = ref(0)
+  
   // Configuration
   const BATCH_SIZE = 10
   const BATCH_TIMEOUT = 30000 // 30 seconds
   const SESSION_TIMEOUT = 30 * 60 * 1000 // 30 minutes
+  const SCROLL_THROTTLE = 1000 // 1 second
+  const INTERACTION_THROTTLE = 500 // 500ms
 
   // Initialize session
   const initSession = () => {
@@ -44,7 +53,7 @@ export const useAnalytics = () => {
     return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
   }
 
-  // Get device and browser information
+  // Get device and browser information (Phase 2 enhanced)
   const getDeviceInfo = () => {
     const userAgent = navigator.userAgent
     let deviceType = 'desktop'
@@ -71,6 +80,34 @@ export const useAnalytics = () => {
     return { deviceType, browser }
   }
 
+  // Phase 2: Get enhanced device and connection information
+  const getEnhancedDeviceInfo = () => {
+    const { deviceType, browser } = getDeviceInfo()
+    
+    return {
+      device_type: deviceType,
+      browser,
+      screen_resolution: `${screen.width}x${screen.height}`,
+      viewport_size: `${window.innerWidth}x${window.innerHeight}`,
+      connection_type: navigator.connection ? navigator.connection.effectiveType : 'unknown',
+      language: navigator.language || 'unknown',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'
+    }
+  }
+
+  // Phase 2: Get UTM parameters and referrer information
+  const getUTMParameters = () => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const referrer = document.referrer
+    
+    return {
+      utm_source: urlParams.get('utm_source'),
+      utm_medium: urlParams.get('utm_medium'),
+      utm_campaign: urlParams.get('utm_campaign'),
+      referrer_domain: referrer ? new URL(referrer).hostname : null
+    }
+  }
+
   // Hash IP address for privacy (client-side approximation)
   const hashIP = (ip) => {
     // This is a simple hash - in production you'd want a more secure hash
@@ -83,7 +120,38 @@ export const useAnalytics = () => {
     return hash.toString(36)
   }
 
-  // Track page visit
+  // Phase 2: Track scroll depth
+  const trackScroll = () => {
+    const now = Date.now()
+    if (now - lastScrollTime.value < SCROLL_THROTTLE) return
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight
+    const newScrollDepth = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0
+    
+    if (newScrollDepth > scrollDepth.value) {
+      scrollDepth.value = newScrollDepth
+      lastScrollTime.value = now
+    }
+  }
+
+  // Phase 2: Track user interactions
+  const trackInteraction = () => {
+    const now = Date.now()
+    if (now - lastInteractionTime.value < INTERACTION_THROTTLE) return
+    
+    interactionCount.value++
+    lastInteractionTime.value = now
+  }
+
+  // Phase 2: Update time on page
+  const updateTimeOnPage = () => {
+    if (pageStartTime.value) {
+      timeOnPage.value = Math.floor((Date.now() - pageStartTime.value) / 1000)
+    }
+  }
+
+  // Track page visit (Phase 2 enhanced)
   const trackPageVisit = (pagePath) => {
     console.log('🔍 Analytics: Tracking page visit', { pagePath, currentPage: currentPage.value })
     
@@ -95,9 +163,19 @@ export const useAnalytics = () => {
       trackEvent('page_visit', {
         page_path: currentPage.value,
         session_duration: timeSpent,
-        exit_page: true
+        exit_page: true,
+        time_on_page: timeOnPage.value,
+        scroll_depth: scrollDepth.value,
+        interaction_count: interactionCount.value
       })
     }
+
+    // Reset tracking variables for new page
+    scrollDepth.value = 0
+    interactionCount.value = 0
+    timeOnPage.value = 0
+    lastScrollTime.value = 0
+    lastInteractionTime.value = 0
 
     // Start tracking new page
     currentPage.value = pagePath
@@ -107,26 +185,46 @@ export const useAnalytics = () => {
     trackEvent('page_visit', {
       page_path: pagePath,
       session_duration: 0,
-      exit_page: false
+      exit_page: false,
+      time_on_page: 0,
+      scroll_depth: 0,
+      interaction_count: 0
     })
   }
 
-  // Track custom event
+  // Track custom event (Phase 2 enhanced)
   const trackEvent = (action, details = {}) => {
-    const { deviceType, browser } = getDeviceInfo()
+    const deviceInfo = getEnhancedDeviceInfo()
+    const utmInfo = getUTMParameters()
+    
+    // Update time on page before tracking
+    updateTimeOnPage()
     
     const event = {
       action,
       session_id: sessionId.value,
       page_path: currentPage.value || window.location.pathname,
-      device_type: deviceType,
-      browser,
+      device_type: deviceInfo.device_type,
+      browser: deviceInfo.browser,
       timestamp: new Date().toISOString(),
       details: {
         ...details,
         url: window.location.href,
         referrer: document.referrer,
-        user_agent: navigator.userAgent
+        user_agent: navigator.userAgent,
+        // Phase 2: Enhanced engagement metrics
+        time_on_page: timeOnPage.value,
+        scroll_depth: scrollDepth.value,
+        interaction_count: interactionCount.value,
+        referrer_domain: utmInfo.referrer_domain,
+        utm_source: utmInfo.utm_source,
+        utm_medium: utmInfo.utm_medium,
+        utm_campaign: utmInfo.utm_campaign,
+        screen_resolution: deviceInfo.screen_resolution,
+        viewport_size: deviceInfo.viewport_size,
+        connection_type: deviceInfo.connection_type,
+        language: deviceInfo.language,
+        timezone: deviceInfo.timezone
       }
     }
 
@@ -168,11 +266,14 @@ export const useAnalytics = () => {
       console.log('🔍 Analytics: Page hidden, tracking exit')
       // Page hidden - track exit
       if (currentPage.value && pageStartTime.value) {
-        const timeSpent = Math.floor((Date.now() - pageStartTime.value) / 1000)
+        updateTimeOnPage()
         trackEvent('page_visit', {
           page_path: currentPage.value,
-          session_duration: timeSpent,
-          exit_page: true
+          session_duration: Math.floor((Date.now() - pageStartTime.value) / 1000),
+          exit_page: true,
+          time_on_page: timeOnPage.value,
+          scroll_depth: scrollDepth.value,
+          interaction_count: interactionCount.value
         })
       }
     } else {
@@ -189,11 +290,14 @@ export const useAnalytics = () => {
   const handleBeforeUnload = () => {
     console.log('🔍 Analytics: Page unloading, tracking exit')
     if (currentPage.value && pageStartTime.value) {
-      const timeSpent = Math.floor((Date.now() - pageStartTime.value) / 1000)
+      updateTimeOnPage()
       trackEvent('page_visit', {
         page_path: currentPage.value,
-        session_duration: timeSpent,
-        exit_page: true
+        session_duration: Math.floor((Date.now() - pageStartTime.value) / 1000),
+        exit_page: true,
+        time_on_page: timeOnPage.value,
+        scroll_depth: scrollDepth.value,
+        interaction_count: interactionCount.value
       })
     }
     
@@ -210,9 +314,16 @@ export const useAnalytics = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange)
     window.addEventListener('beforeunload', handleBeforeUnload)
     
-    // Set up periodic flush
+    // Phase 2: Enhanced tracking listeners
+    window.addEventListener('scroll', trackScroll, { passive: true })
+    document.addEventListener('click', trackInteraction, { passive: true })
+    document.addEventListener('keydown', trackInteraction, { passive: true })
+    document.addEventListener('touchstart', trackInteraction, { passive: true })
+    
+    // Set up periodic flush and time tracking
     const interval = setInterval(() => {
       console.log('🔍 Analytics: Periodic flush triggered')
+      updateTimeOnPage()
       flushEvents()
     }, BATCH_TIMEOUT)
     
@@ -221,6 +332,10 @@ export const useAnalytics = () => {
       console.log('🔍 Analytics: Composable unmounting, cleaning up')
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('scroll', trackScroll)
+      document.removeEventListener('click', trackInteraction)
+      document.removeEventListener('keydown', trackInteraction)
+      document.removeEventListener('touchstart', trackInteraction)
       clearInterval(interval)
       
       // Final flush

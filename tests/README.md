@@ -31,6 +31,11 @@ This directory contains various test files and scripts for the Savta AI applicat
 - **Usage**: Run after implementing Phase 1 to verify database schema, indexes, and analytics tracking functionality
 - **Contains**: Database schema verification, test data insertion, and analytics query validation
 
+#### `test_analytics_phase2.sql`
+- **Purpose**: Test Phase 2 analytics implementation with geolocation and enhanced engagement metrics
+- **Usage**: Run after implementing Phase 2 to verify geolocation tracking, UTM parameters, and engagement analytics
+- **Contains**: Geolocation data verification, UTM parameter tracking, engagement metrics analysis, and performance testing
+
 #### `test_analytics_debug.sql`
 - **Purpose**: Debug analytics implementation and troubleshoot tracking issues
 - **Usage**: Run to verify analytics data is being written correctly and identify any issues

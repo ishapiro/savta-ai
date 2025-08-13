@@ -633,6 +633,14 @@
 
         <!-- Activity Tab -->
         <TabPanel header="📊 Activity">
+          <div class="mb-4">
+            <Button
+              label="View Analytics Dashboard"
+              icon="pi pi-chart-line"
+              class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-3 py-2"
+              @click="navigateTo('/app/analytics-dashboard')"
+            />
+          </div>
           <div class="space-y-6">
             <!-- Activity Type Toggle -->
             <div class="flex items-center justify-between">
