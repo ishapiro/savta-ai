@@ -27,7 +27,7 @@
     </Dialog>
     <!-- Signup Dialog (email form) -->
     <Dialog v-model:visible="visible" modal :closable="true" :dismissableMask="true" :style="{ width: '100vw', maxWidth: '500px', maxHeight: '100vh' }" class="z-20" @hide="onDialogHide">
-      <div v-if="!providerSelectVisible" class="flex flex-col items-center w-full px-2 sm:px-4 py-3 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
+      <div v-if="!providerSelectVisible" class="flex flex-col items-center w-full px-2 sm:px-4 py-3 pb-6 bg-white rounded-2xl shadow-2xl" style="max-height:90vh;overflow-y:auto;">
         <!-- Header -->
         <div class="flex flex-col items-center mb-2 w-full">
           <div class="flex items-center justify-center">
@@ -87,14 +87,14 @@
             <small v-if="confirmPasswordError" class="text-red-500 text-xs mt-1">{{ confirmPasswordError }}</small>
           </div>
 
-          <div class="flex items-start">
-            <Checkbox
+          <div class="flex items-center">
+            <input
               v-model="agreeToTerms"
-              :binary="true"
-              inputId="terms"
-              class="mt-1"
+              type="checkbox"
+              id="terms"
+              class="mr-2 w-4 h-4 border border-black rounded focus:ring-2 focus:ring-brand-secondary focus:ring-offset-0"
             />
-            <label for="terms" class="text-xs text-brand-primary/70 ml-2">
+            <label for="terms" class="text-xs text-brand-primary/70">
               I agree to the 
               <a href="/terms" class="text-brand-secondary hover:text-brand-header">Terms of Service</a>
               and
@@ -105,7 +105,7 @@
           <Button
             type="submit"
             label="Create Account"
-            class="w-full bg-brand-header hover:bg-brand-secondary text-white font-semibold py-2 rounded-lg shadow transition disabled:opacity-60 border-0"
+            class="mt-3 w-full bg-brand-header hover:bg-brand-secondary text-white font-semibold py-2 rounded-lg shadow transition disabled:opacity-60 border-0"
             :loading="emailLoading"
             :disabled="!email || !password || !confirmPassword || !agreeToTerms"
           />
