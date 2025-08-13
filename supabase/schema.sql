@@ -203,6 +203,16 @@ create table if not exists activity_log (
   action text not null,
   timestamp timestamp with time zone default timezone('utc'::text, now()),
   details jsonb default '{}'::jsonb,
+  session_id text,
+  page_path text,
+  ip_hash text,
+  country text,
+  region text,
+  city text,
+  device_type text,
+  browser text,
+  session_duration integer,
+  exit_page boolean DEFAULT false,
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
 
@@ -229,6 +239,11 @@ create index if not exists idx_pdf_status_user_id on pdf_status(user_id);
 create index if not exists idx_activity_log_user_id on activity_log(user_id);
 create index if not exists idx_activity_log_action on activity_log(action);
 create index if not exists idx_activity_log_timestamp on activity_log(timestamp);
+create index if not exists idx_activity_log_session_time on activity_log(session_id, timestamp DESC);
+create index if not exists idx_activity_log_page_time on activity_log(page_path, timestamp DESC);
+create index if not exists idx_activity_log_geo_time on activity_log(country, region, timestamp DESC);
+create index if not exists idx_activity_log_page_visits on activity_log(page_path, timestamp DESC) WHERE action = 'page_visit';
+create index if not exists idx_activity_log_user_sessions on activity_log(user_id, session_id, timestamp DESC);
 create index if not exists idx_themes_name on themes(name);
 create index if not exists idx_themes_is_active on themes(is_active);
 create index if not exists idx_themes_rounded on themes(rounded);

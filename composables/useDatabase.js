@@ -52,12 +52,19 @@ export const useDatabase = () => {
   const logActivity = async (action, details = {}) => {
     if (!user.value) return
     
+    // Get analytics session info if available
+    const { sessionId } = useAnalytics()
+    
     const { error } = await supabase
       .from('activity_log')
       .insert([{
         user_id: user.value.id,
         action,
-        details
+        details,
+        session_id: sessionId?.value || null,
+        page_path: window?.location?.pathname || null,
+        device_type: details.device_type || null,
+        browser: details.browser || null
       }])
     
     if (error) {

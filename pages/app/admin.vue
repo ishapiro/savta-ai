@@ -723,7 +723,7 @@
               <template v-if="activityType === 'system'">
                 <Column field="action" header="Action" sortable>
                   <template #body="{ data }">
-                    <div class="max-w-xs truncate" :title="data.action">
+                    <div class="max-w-xs truncate" :title="data.action || 'No action'">
                       <Tag
                         :value="formatActivityAction(data.action)"
                         :severity="getActivitySeverity(data.action)"
@@ -734,19 +734,19 @@
 
                 <Column field="user" header="User" sortable>
                   <template #body="{ data }">
-                    <div v-if="data.profiles" class="flex items-center">
+                    <div v-if="data.profiles && data.profiles.email" class="flex items-center">
                       <div class="flex-shrink-0 h-8 w-8">
                         <div class="h-8 w-8 rounded-full bg-brand-primary-100 flex items-center justify-center">
                           <span class="text-brand-primary font-medium text-sm">
-                            {{ data.profiles.first_name ? data.profiles.first_name.charAt(0) : data.profiles.email.charAt(0).toUpperCase() }}
+                            {{ data.profiles.first_name ? data.profiles.first_name.charAt(0) : (data.profiles.email ? data.profiles.email.charAt(0).toUpperCase() : '?') }}
                           </span>
                         </div>
                       </div>
                       <div class="ml-3">
                         <div class="text-sm font-medium text-brand-primary">
-                          {{ data.profiles.first_name }} {{ data.profiles.last_name }}
+                          {{ data.profiles.first_name || '' }} {{ data.profiles.last_name || '' }}
                         </div>
-                        <div class="text-sm text-brand-primary/70">{{ data.profiles.email }}</div>
+                        <div class="text-sm text-brand-primary/70">{{ data.profiles.email || 'No email' }}</div>
                       </div>
                     </div>
                     <div v-else class="text-sm text-brand-primary/50">System</div>
@@ -784,7 +784,7 @@
                 <Column field="event_type" header="Event Type" sortable>
                   <template #body="{ data }">
                     <Tag
-                      :value="data.event_type"
+                      :value="data.event_type || 'Unknown'"
                       :severity="getEmailEventSeverity(data.event_type)"
                     />
                   </template>
@@ -792,27 +792,27 @@
 
                 <Column field="email" header="Email" sortable>
                   <template #body="{ data }">
-                    <div class="max-w-xs truncate" :title="data.email">
-                      {{ data.email }}
+                    <div class="max-w-xs truncate" :title="data.email || 'No email'">
+                      {{ data.email || 'No email' }}
                     </div>
                   </template>
                 </Column>
 
                 <Column field="user" header="User" sortable>
                   <template #body="{ data }">
-                    <div v-if="data.profiles" class="flex items-center">
+                    <div v-if="data.profiles && data.profiles.email" class="flex items-center">
                       <div class="flex-shrink-0 h-8 w-8">
                         <div class="h-8 w-8 rounded-full bg-brand-primary-100 flex items-center justify-center">
                           <span class="text-brand-primary font-medium text-sm">
-                            {{ data.profiles.first_name ? data.profiles.first_name.charAt(0) : data.profiles.email.charAt(0).toUpperCase() }}
+                            {{ data.profiles.first_name ? data.profiles.first_name.charAt(0) : (data.profiles.email ? data.profiles.email.charAt(0).toUpperCase() : '?') }}
                           </span>
                         </div>
                       </div>
                       <div class="ml-3">
                         <div class="text-sm font-medium text-brand-primary">
-                          {{ data.profiles.first_name }} {{ data.profiles.last_name }}
+                          {{ data.profiles.first_name || '' }} {{ data.profiles.last_name || '' }}
                         </div>
-                        <div class="text-sm text-brand-primary/70">{{ data.profiles.email }}</div>
+                        <div class="text-sm text-brand-primary/70">{{ data.profiles.email || 'No email' }}</div>
                       </div>
                     </div>
                     <div v-else class="text-sm text-brand-primary/50">No user</div>
@@ -2663,7 +2663,8 @@ const loadActivityData = async () => {
     }
     
     const result = await res.json()
-    activityData.value = result.data || []
+    // Ensure data is an array and filter out any null/undefined items
+    activityData.value = Array.isArray(result.data) ? result.data.filter(item => item !== null && item !== undefined) : []
     totalActivityRecords.value = result.totalCount || 0
   } catch (error) {
     console.error('Error loading activity data:', error)
@@ -2688,6 +2689,9 @@ const onActivityPage = async (event) => {
 
 // Activity formatting functions
 const formatActivityAction = (action) => {
+  // Handle null/undefined action
+  if (!action) return 'Unknown Action'
+  
   const actionMap = {
     'asset_uploaded': 'Asset Uploaded',
     'asset_approved': 'Asset Approved',
@@ -2700,12 +2704,17 @@ const formatActivityAction = (action) => {
     'user_restored': 'User Restored',
     'theme_created': 'Theme Created',
     'theme_updated': 'Theme Updated',
-    'theme_deleted': 'Theme Deleted'
+    'theme_deleted': 'Theme Deleted',
+    'page_visit': 'Page Visit',
+    'session_start': 'Session Start'
   }
   return actionMap[action] || action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
 const getActivitySeverity = (action) => {
+  // Handle null/undefined action
+  if (!action) return 'info'
+  
   const severityMap = {
     'asset_uploaded': 'info',
     'asset_approved': 'success',
@@ -2718,7 +2727,9 @@ const getActivitySeverity = (action) => {
     'user_restored': 'success',
     'theme_created': 'info',
     'theme_updated': 'warning',
-    'theme_deleted': 'danger'
+    'theme_deleted': 'danger',
+    'page_visit': 'info',
+    'session_start': 'info'
   }
   return severityMap[action] || 'info'
 }
@@ -2740,6 +2751,9 @@ const formatActivityDetails = (details) => {
 }
 
 const getEmailEventSeverity = (eventType) => {
+  // Handle null/undefined eventType
+  if (!eventType) return 'info'
+  
   const severityMap = {
     'delivered': 'success',
     'opened': 'info',

@@ -103,8 +103,11 @@ export default defineEventHandler(async (event) => {
       return { status: 500, body: { error: countError.message } }
     }
 
+    // Ensure data is valid and filter out any null/undefined items
+    const validData = Array.isArray(data) ? data.filter(item => item !== null && item !== undefined) : []
+    
     return {
-      data: data || [],
+      data: validData,
       totalCount: count || 0,
       page,
       rows,

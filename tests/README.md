@@ -26,6 +26,16 @@ This directory contains various test files and scripts for the Savta AI applicat
 - **Usage**: Populate activity_log and email_events tables with test data
 - **Contains**: Sample activity log entries and email events for testing the admin Activity tab
 
+#### `test_analytics_phase1.sql`
+- **Purpose**: Test Phase 1 analytics implementation
+- **Usage**: Run after implementing Phase 1 to verify database schema, indexes, and analytics tracking functionality
+- **Contains**: Database schema verification, test data insertion, and analytics query validation
+
+#### `test_analytics_debug.sql`
+- **Purpose**: Debug analytics implementation and troubleshoot tracking issues
+- **Usage**: Run to verify analytics data is being written correctly and identify any issues
+- **Contains**: Schema verification, recent event analysis, session tracking checks, and data quality validation
+
 ### JavaScript Test Files
 
 #### `test_theme_integration.js`
