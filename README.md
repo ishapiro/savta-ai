@@ -55,6 +55,13 @@ savta-ai/
 ├── composables/            # Vue composables
 ├── plugins/                # Nuxt plugins
 ├── supabase/               # Database schema
+├── tests/                  # Test files and scripts
+│   ├── *.sql              # Database test queries
+│   ├── *.js               # JavaScript test files
+│   └── README.md          # Test documentation
+├── docs/                   # Detailed documentation
+│   ├── *.md               # Feature and setup documentation
+│   └── README.md          # Documentation index
 └── public/                 # Static assets
 ```
 
@@ -304,6 +311,23 @@ const supabase = createClient(
 
 ## 🛠️ Development Tools
 
+### Test Files
+
+All test files are organized in the `tests/` directory:
+
+- **SQL Tests**: Database queries and schema tests
+- **JavaScript Tests**: API and functionality tests
+- **Documentation**: See `tests/README.md` for detailed usage
+
+### Documentation
+
+Detailed documentation is available in the `docs/` directory:
+
+- **Setup Guides**: Environment setup, PrimeVue configuration
+- **Feature Documentation**: Memory books, location features, image processing
+- **Database Guides**: Schema updates, migration instructions
+- **Troubleshooting**: Common issues and solutions
+
 ### Database Access with susql
 
 The project uses a `susql` alias to run PostgreSQL commands against the Supabase database. This provides a convenient way to execute SQL commands and migrations.
@@ -356,7 +380,10 @@ The project uses a `susql` alias to run PostgreSQL commands against the Supabase
 susql -c "SELECT COUNT(*) FROM email_events;"
 
 # Run a migration script
-cat supabase/email_events.sql | susql
+cat supabase/schema.sql | susql
+
+# Run test queries
+cat tests/test_sendgrid_events.sql | susql
 
 # Connect to database interactively
 susql
