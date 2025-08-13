@@ -630,6 +630,223 @@
             <p class="text-brand-primary/70">Admin access required to view user management.</p>
           </div>
         </TabPanel>
+
+        <!-- Activity Tab -->
+        <TabPanel header="📊 Activity">
+          <div class="space-y-6">
+            <!-- Activity Type Toggle -->
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold text-brand-primary">System Activity</h2>
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="radio" 
+                    id="activityTypeSystem" 
+                    v-model="activityType" 
+                    value="system"
+                    class="w-4 h-4 text-brand-primary"
+                  />
+                  <label for="activityTypeSystem" class="text-sm text-brand-primary/70 cursor-pointer">System Activity</label>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="radio" 
+                    id="activityTypeEmail" 
+                    v-model="activityType" 
+                    value="email"
+                    class="w-4 h-4 text-brand-primary"
+                  />
+                  <label for="activityTypeEmail" class="text-sm text-brand-primary/70 cursor-pointer">Email Activity</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- User Filter -->
+            <div class="flex items-center gap-4">
+              <AutoComplete
+                v-model="selectedActivityUser"
+                :suggestions="userSuggestions"
+                @complete="searchUsers"
+                optionLabel="email"
+                :optionDisabled="option => !option.user_id"
+                placeholder="Filter by user (optional)..."
+                class="w-80"
+                inputClass="w-full h-11 px-4 py-2 text-base rounded-lg border border-brand-primary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
+                :dropdown="true"
+                :forceSelection="true"
+                field="email"
+                :itemTemplate="user => `${user.email?.split('@')[0] || ''} (${user.first_name || ''} ${user.last_name || ''})`"
+              />
+              <Button
+                v-if="selectedActivityUser"
+                label="Clear Filter"
+                icon="pi pi-times"
+                @click="selectedActivityUser = null; loadActivityData()"
+                class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-2"
+              />
+            </div>
+
+            <!-- Email Activity Filters (only show for email activity) -->
+            <div v-if="activityType === 'email'" class="flex items-center gap-4">
+              <InputText
+                v-model="emailFilter"
+                placeholder="Filter by email address..."
+                class="w-64"
+              />
+              <Dropdown
+                v-model="emailEventTypeFilter"
+                :options="emailEventTypeOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="All Event Types"
+                class="w-48"
+              />
+            </div>
+
+            <!-- Activity Data Table -->
+            <DataTable
+              :value="activityData"
+              :paginator="true"
+              :rows="activityRows"
+              :rowsPerPageOptions="[10, 25, 50, 100]"
+              :totalRecords="totalActivityRecords"
+              :loading="loadingActivity"
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} activities"
+              responsiveLayout="scroll"
+              class="p-datatable-sm"
+              :rowKey="row => row.id"
+              :lazy="true"
+              @page="onActivityPage"
+            >
+              <!-- System Activity Columns -->
+              <template v-if="activityType === 'system'">
+                <Column field="action" header="Action" sortable>
+                  <template #body="{ data }">
+                    <div class="max-w-xs truncate" :title="data.action">
+                      <Tag
+                        :value="formatActivityAction(data.action)"
+                        :severity="getActivitySeverity(data.action)"
+                      />
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="user" header="User" sortable>
+                  <template #body="{ data }">
+                    <div v-if="data.profiles" class="flex items-center">
+                      <div class="flex-shrink-0 h-8 w-8">
+                        <div class="h-8 w-8 rounded-full bg-brand-primary-100 flex items-center justify-center">
+                          <span class="text-brand-primary font-medium text-sm">
+                            {{ data.profiles.first_name ? data.profiles.first_name.charAt(0) : data.profiles.email.charAt(0).toUpperCase() }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="ml-3">
+                        <div class="text-sm font-medium text-brand-primary">
+                          {{ data.profiles.first_name }} {{ data.profiles.last_name }}
+                        </div>
+                        <div class="text-sm text-brand-primary/70">{{ data.profiles.email }}</div>
+                      </div>
+                    </div>
+                    <div v-else class="text-sm text-brand-primary/50">System</div>
+                  </template>
+                </Column>
+
+                <Column field="details" header="Details">
+                  <template #body="{ data }">
+                    <div class="max-w-xs truncate" :title="JSON.stringify(data.details)">
+                      {{ formatActivityDetails(data.details) }}
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="created_at" header="Timestamp" sortable>
+                  <template #body="{ data }">
+                    <span class="text-sm text-brand-primary/70">{{ formatDate(data.created_at) }}</span>
+                  </template>
+                </Column>
+
+                <Column header="Actions">
+                  <template #body="{ data }">
+                    <Button
+                      icon="pi pi-eye"
+                      class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
+                      @click="viewActivityDetails(data)"
+                      title="View Details"
+                    />
+                  </template>
+                </Column>
+              </template>
+
+              <!-- Email Activity Columns -->
+              <template v-else>
+                <Column field="event_type" header="Event Type" sortable>
+                  <template #body="{ data }">
+                    <Tag
+                      :value="data.event_type"
+                      :severity="getEmailEventSeverity(data.event_type)"
+                    />
+                  </template>
+                </Column>
+
+                <Column field="email" header="Email" sortable>
+                  <template #body="{ data }">
+                    <div class="max-w-xs truncate" :title="data.email">
+                      {{ data.email }}
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="user" header="User" sortable>
+                  <template #body="{ data }">
+                    <div v-if="data.profiles" class="flex items-center">
+                      <div class="flex-shrink-0 h-8 w-8">
+                        <div class="h-8 w-8 rounded-full bg-brand-primary-100 flex items-center justify-center">
+                          <span class="text-brand-primary font-medium text-sm">
+                            {{ data.profiles.first_name ? data.profiles.first_name.charAt(0) : data.profiles.email.charAt(0).toUpperCase() }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="ml-3">
+                        <div class="text-sm font-medium text-brand-primary">
+                          {{ data.profiles.first_name }} {{ data.profiles.last_name }}
+                        </div>
+                        <div class="text-sm text-brand-primary/70">{{ data.profiles.email }}</div>
+                      </div>
+                    </div>
+                    <div v-else class="text-sm text-brand-primary/50">No user</div>
+                  </template>
+                </Column>
+
+                <Column field="message_id" header="Message ID">
+                  <template #body="{ data }">
+                    <div class="max-w-xs truncate" :title="data.message_id">
+                      {{ data.message_id || '—' }}
+                    </div>
+                  </template>
+                </Column>
+
+                <Column field="timestamp" header="Timestamp" sortable>
+                  <template #body="{ data }">
+                    <span class="text-sm text-brand-primary/70">{{ formatDate(data.timestamp) }}</span>
+                  </template>
+                </Column>
+
+                <Column header="Actions">
+                  <template #body="{ data }">
+                    <Button
+                      icon="pi pi-eye"
+                      class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
+                      @click="viewEmailDetails(data)"
+                      title="View Details"
+                    />
+                  </template>
+                </Column>
+              </template>
+            </DataTable>
+          </div>
+        </TabPanel>
       </TabView>
     </div>
 
@@ -1541,6 +1758,160 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- Activity Details Dialog -->
+    <Dialog
+      v-model:visible="showActivityDetailsDialog"
+      modal
+      header="Activity Details"
+      :style="{ width: '800px' }"
+    >
+      <div v-if="selectedActivityItem" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">ID</label>
+            <p class="text-sm text-brand-primary/70 font-mono">{{ selectedActivityItem.id }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Action</label>
+            <div class="flex items-center gap-2">
+              <Tag
+                :value="formatActivityAction(selectedActivityItem.action)"
+                :severity="getActivitySeverity(selectedActivityItem.action)"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">User ID</label>
+            <p class="text-sm text-brand-primary/70 font-mono">{{ selectedActivityItem.user_id || 'System' }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Timestamp</label>
+            <p class="text-sm text-brand-primary/70">{{ formatDate(selectedActivityItem.timestamp) }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Created At</label>
+            <p class="text-sm text-brand-primary/70">{{ formatDate(selectedActivityItem.created_at) }}</p>
+          </div>
+        </div>
+
+        <!-- User Profile Information -->
+        <div v-if="selectedActivityItem.profiles" class="border-t border-gray-200 pt-4">
+          <h4 class="text-sm font-semibold text-brand-primary mb-3">User Profile</h4>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-brand-primary mb-1">Name</label>
+              <p class="text-sm text-brand-primary/70">{{ selectedActivityItem.profiles.first_name }} {{ selectedActivityItem.profiles.last_name }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-brand-primary mb-1">Email</label>
+              <p class="text-sm text-brand-primary/70">{{ selectedActivityItem.profiles.email }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Details JSON -->
+        <div class="border-t border-gray-200 pt-4">
+          <h4 class="text-sm font-semibold text-brand-primary mb-3">Details</h4>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <pre class="text-sm text-brand-primary/70 whitespace-pre-wrap font-mono">{{ formatJsonForDisplay(selectedActivityItem.details) }}</pre>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="flex justify-end">
+          <Button
+            label="Close"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+            @click="showActivityDetailsDialog = false"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Email Details Dialog -->
+    <Dialog
+      v-model:visible="showEmailDetailsDialog"
+      modal
+      header="Email Event Details"
+      :style="{ width: '800px' }"
+    >
+      <div v-if="selectedEmailItem" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">ID</label>
+            <p class="text-sm text-brand-primary/70 font-mono">{{ selectedEmailItem.id }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Event Type</label>
+            <div class="flex items-center gap-2">
+              <Tag
+                :value="selectedEmailItem.event_type"
+                :severity="getEmailEventSeverity(selectedEmailItem.event_type)"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Email</label>
+            <p class="text-sm text-brand-primary/70">{{ selectedEmailItem.email }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">User ID</label>
+            <p class="text-sm text-brand-primary/70 font-mono">{{ selectedEmailItem.user_id || 'No user' }}</p>
+          </div>
+                          <div class="col-span-2">
+                  <label class="block text-sm font-medium text-brand-primary mb-1">Message ID</label>
+                  <p class="text-sm text-brand-primary/70 font-mono break-all">{{ selectedEmailItem.message_id || '—' }}</p>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-brand-primary mb-1">SendGrid Event ID</label>
+                  <p class="text-sm text-brand-primary/70 font-mono break-all">{{ selectedEmailItem.sendgrid_event_id || '—' }}</p>
+                </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Timestamp</label>
+            <p class="text-sm text-brand-primary/70">{{ formatDate(selectedEmailItem.timestamp) }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-1">Created At</label>
+            <p class="text-sm text-brand-primary/70">{{ formatDate(selectedEmailItem.created_at) }}</p>
+          </div>
+        </div>
+
+        <!-- User Profile Information -->
+        <div v-if="selectedEmailItem.profiles" class="border-t border-gray-200 pt-4">
+          <h4 class="text-sm font-semibold text-brand-primary mb-3">User Profile</h4>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-brand-primary mb-1">Name</label>
+              <p class="text-sm text-brand-primary/70">{{ selectedEmailItem.profiles.first_name }} {{ selectedEmailItem.profiles.last_name }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-brand-primary mb-1">Email</label>
+              <p class="text-sm text-brand-primary/70">{{ selectedEmailItem.profiles.email }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Data JSON -->
+        <div class="border-t border-gray-200 pt-4">
+          <h4 class="text-sm font-semibold text-brand-primary mb-3">Event Data</h4>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <pre class="text-sm text-brand-primary/70 whitespace-pre-wrap font-mono">{{ formatJsonForDisplay(selectedEmailItem.event_data) }}</pre>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="flex justify-end">
+          <Button
+            label="Close"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+            @click="showEmailDetailsDialog = false"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -1696,6 +2067,33 @@ const userRoleOptions = ref([
   { label: 'User', value: 'user' },
   { label: 'Editor', value: 'editor' },
   { label: 'Admin', value: 'admin' }
+])
+
+// Activity management variables
+const activityType = ref('system') // 'system' or 'email'
+const selectedActivityUser = ref(null)
+const activityData = ref([])
+const activityPage = ref(1)
+const activityRows = ref(50)
+const totalActivityRecords = ref(0)
+const loadingActivity = ref(false)
+const emailFilter = ref('')
+const emailEventTypeFilter = ref('all')
+
+// Detail dialog variables
+const showActivityDetailsDialog = ref(false)
+const showEmailDetailsDialog = ref(false)
+const selectedActivityItem = ref(null)
+const selectedEmailItem = ref(null)
+
+// Email event type options
+const emailEventTypeOptions = ref([
+  { label: 'All Event Types', value: 'all' },
+  { label: 'Delivered', value: 'delivered' },
+  { label: 'Opened', value: 'opened' },
+  { label: 'Clicked', value: 'clicked' },
+  { label: 'Bounced', value: 'bounced' },
+  { label: 'Dropped', value: 'dropped' }
 ])
 
 // Layout Defaults Modal
@@ -1971,7 +2369,7 @@ onMounted(async () => {
   const route = useRoute()
   if (route.query.tab) {
     const tabIndex = parseInt(route.query.tab)
-    if (tabIndex >= 0 && tabIndex <= 3) { // Updated to include Users tab (index 3)
+    if (tabIndex >= 0 && tabIndex <= 4) { // Updated to include Activity tab (index 4)
       activeTabIndex.value = tabIndex
     }
   }
@@ -2007,6 +2405,12 @@ watch(activeTabIndex, async (newIndex) => {
     console.log('[Tab Change] Loading users for admin user')
     await loadUsers()
   }
+  
+  // If Activity tab is selected (index 4) and user is admin, load activity data
+  if (newIndex === 4 && userProfile.value && userProfile.value.role === 'admin') {
+    console.log('[Tab Change] Loading activity data for admin user')
+    await loadActivityData()
+  }
 })
 
 // Watch for newTheme size changes
@@ -2017,6 +2421,29 @@ watch(() => newTheme.value.size, (newSize) => {
 // Watch for editingTheme size changes
 watch(() => editingTheme.value.size, (newSize) => {
   console.log('[editingTheme] Size changed to:', newSize)
+})
+
+// Watch for activity type changes
+watch(activityType, async (newType) => {
+  console.log('[Activity] Type changed to:', newType)
+  activityPage.value = 1 // Reset to first page
+  await loadActivityData()
+})
+
+// Watch for activity user filter changes
+watch(selectedActivityUser, async (newUser) => {
+  console.log('[Activity] User filter changed:', newUser?.email)
+  activityPage.value = 1 // Reset to first page
+  await loadActivityData()
+})
+
+// Watch for email filters
+watch([emailFilter, emailEventTypeFilter], async () => {
+  if (activityType.value === 'email') {
+    console.log('[Activity] Email filters changed')
+    activityPage.value = 1 // Reset to first page
+    await loadActivityData()
+  }
 })
 
 // Load themes
@@ -2199,6 +2626,161 @@ const disableUser = async (userId) => {
       detail: 'Failed to disable user',
       life: 3000
     })
+  }
+}
+
+// Activity management functions
+const loadActivityData = async () => {
+  loadingActivity.value = true
+  try {
+    const supabase = useNuxtApp().$supabase
+    const { data: { session } } = await supabase.auth.getSession()
+    const accessToken = session?.access_token
+    
+    let url = activityType.value === 'system' 
+      ? `/api/admin/activity?page=${activityPage.value}&rows=${activityRows.value}`
+      : `/api/admin/email-activity?page=${activityPage.value}&rows=${activityRows.value}`
+    
+    // Add filters
+    if (selectedActivityUser.value?.user_id) {
+      url += `&userId=${selectedActivityUser.value.user_id}`
+    }
+    if (activityType.value === 'email') {
+      if (emailFilter.value) {
+        url += `&email=${encodeURIComponent(emailFilter.value)}`
+      }
+      if (emailEventTypeFilter.value !== 'all') {
+        url += `&eventType=${emailEventTypeFilter.value}`
+      }
+    }
+    
+    const res = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    })
+    
+    if (!res.ok) {
+      throw new Error('Failed to fetch activity data')
+    }
+    
+    const result = await res.json()
+    activityData.value = result.data || []
+    totalActivityRecords.value = result.totalCount || 0
+  } catch (error) {
+    console.error('Error loading activity data:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load activity data',
+      life: 3000
+    })
+    activityData.value = []
+    totalActivityRecords.value = 0
+  } finally {
+    loadingActivity.value = false
+  }
+}
+
+const onActivityPage = async (event) => {
+  activityPage.value = event.page + 1 // PrimeVue pages are 0-based
+  activityRows.value = event.rows
+  await loadActivityData()
+}
+
+// Activity formatting functions
+const formatActivityAction = (action) => {
+  const actionMap = {
+    'asset_uploaded': 'Asset Uploaded',
+    'asset_approved': 'Asset Approved',
+    'asset_rejected': 'Asset Rejected',
+    'memory_book_created': 'Memory Book Created',
+    'memory_book_generated': 'Memory Book Generated',
+    'user_registered': 'User Registered',
+    'user_role_updated': 'User Role Updated',
+    'user_disabled': 'User Disabled',
+    'user_restored': 'User Restored',
+    'theme_created': 'Theme Created',
+    'theme_updated': 'Theme Updated',
+    'theme_deleted': 'Theme Deleted'
+  }
+  return actionMap[action] || action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+}
+
+const getActivitySeverity = (action) => {
+  const severityMap = {
+    'asset_uploaded': 'info',
+    'asset_approved': 'success',
+    'asset_rejected': 'danger',
+    'memory_book_created': 'info',
+    'memory_book_generated': 'success',
+    'user_registered': 'info',
+    'user_role_updated': 'warning',
+    'user_disabled': 'danger',
+    'user_restored': 'success',
+    'theme_created': 'info',
+    'theme_updated': 'warning',
+    'theme_deleted': 'danger'
+  }
+  return severityMap[action] || 'info'
+}
+
+const formatActivityDetails = (details) => {
+  if (!details || typeof details !== 'object') return 'No details'
+  
+  try {
+    const detailStrings = []
+    for (const [key, value] of Object.entries(details)) {
+      if (value !== null && value !== undefined) {
+        detailStrings.push(`${key}: ${value}`)
+      }
+    }
+    return detailStrings.join(', ') || 'No details'
+  } catch (error) {
+    return 'Error parsing details'
+  }
+}
+
+const getEmailEventSeverity = (eventType) => {
+  const severityMap = {
+    'delivered': 'success',
+    'opened': 'info',
+    'clicked': 'primary',
+    'bounced': 'danger',
+    'dropped': 'danger'
+  }
+  return severityMap[eventType] || 'info'
+}
+
+// Detail view functions
+const viewActivityDetails = (item) => {
+  selectedActivityItem.value = item
+  showActivityDetailsDialog.value = true
+}
+
+const viewEmailDetails = (item) => {
+  selectedEmailItem.value = item
+  showEmailDetailsDialog.value = true
+}
+
+// JSON formatting function
+const formatJsonForDisplay = (jsonData) => {
+  if (!jsonData) return 'No data'
+  
+  try {
+    // If it's already a string, try to parse it
+    if (typeof jsonData === 'string') {
+      const parsed = JSON.parse(jsonData)
+      return JSON.stringify(parsed, null, 2)
+    }
+    
+    // If it's already an object, stringify it with formatting
+    if (typeof jsonData === 'object') {
+      return JSON.stringify(jsonData, null, 2)
+    }
+    
+    return String(jsonData)
+  } catch (error) {
+    // If parsing fails, return as string
+    return String(jsonData)
   }
 }
 

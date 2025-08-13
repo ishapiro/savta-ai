@@ -21,6 +21,11 @@ This directory contains various test files and scripts for the Savta AI applicat
 - **Usage**: Verify memory book data and relationships
 - **Contains**: Queries for memory book tables and relationships
 
+#### `test_activity_tab.sql`
+- **Purpose**: Test script to add sample activity data for testing the Activity tab
+- **Usage**: Populate activity_log and email_events tables with test data
+- **Contains**: Sample activity log entries and email events for testing the admin Activity tab
+
 ### JavaScript Test Files
 
 #### `test_theme_integration.js`
