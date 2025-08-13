@@ -9,426 +9,481 @@ npm install
 npm run dev
 ```
 
-## 🎨 UI Framework
+## ✨ Features
 
-### PrimeVue Setup
-This project uses a **manual PrimeVue integration** via `plugins/primevue.ts`. 
+- **AI-Powered Memory Books**: Generate beautiful memory books with custom DALL-E 3 backgrounds
+- **Smart Asset Management**: Upload photos and text stories with AI captioning and tagging
+- **Review System**: Approve/reject assets with AI-generated captions
+- **PDF Generation**: Professional PDF creation with arranged assets
+- **Email Analytics**: Track email delivery and engagement via SendGrid webhooks
+- **Responsive Design**: Modern UI with PrimeVue 3 and Tailwind CSS
 
-**Important Notes:**
-- ✅ PrimeVue is configured manually (not via Nuxt modules)
-- ❌ Do NOT install `@nuxtjs/primevue` or `primevue/nuxt` modules
-- ❌ Do NOT add PrimeVue modules to `nuxt.config.ts`
-- ✅ All components are registered in `plugins/primevue.ts`
+## 🛠️ Tech Stack
 
-**If you see PrimeVue component errors:**
-1. Check `plugins/primevue.ts` for missing component registrations
-2. Ensure the plugin is loading correctly
-3. Do NOT attempt to install Nuxt PrimeVue modules
+- **Framework**: Nuxt 3
+- **UI Components**: PrimeVue 3
+- **Styling**: Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **AI Processing**: OpenAI (GPT-4 Vision, DALL-E 3)
+- **Email**: SendGrid SMTP + Webhooks
+- **PDF Generation**: PDF-lib
+- **Deployment**: Railway.com
 
-## 🛠️ Development
+## 📁 Project Structure
 
-## Features & Tech Stack
-- ✨ Animated splash (landing) page with email subscription and insiders access
-- 🏠 Authenticated app dashboard for memory management
-- 📸 **Asset Upload**: Photo and text story upload with AI processing
-- 🔍 **Review System**: Approve/reject assets with AI-generated captions
-- 📚 **Memory Books**: AI-powered memory book generation with custom backgrounds
-- 🎨 **AI Backgrounds**: DALL-E 3 generated backgrounds based on asset themes
-- 📄 **PDF Generation**: Professional PDF creation with arranged assets
-- 🔄 **Regeneration**: Create new memory books with fresh AI backgrounds
-- 🎨 PrimeVue 3 components styled with Tailwind CSS and custom color system
-- 🔒 Supabase authentication and comprehensive database
-- 🚀 Ready for Railway.com deployment
-
-**Tech Stack:**
-- **Framework:** Nuxt 3
-- **UI Components:** PrimeVue 3
-- **Styling:** Tailwind CSS
-- **Database:** Supabase
-- **AI Processing:** OpenAI (GPT-4 Vision, DALL-E 3)
-- **PDF Generation:** PDF-lib
-- **Deployment:** Railway.com
-
-## Project Structure
 ```
 savta-ai/
 ├── app.vue                 # Main application shell
-├── assets/css/main.css     # Custom and Tailwind-based styles
+├── assets/css/main.css     # Custom styles
 ├── layouts/
-│   ├── default.vue         # Main app layout (header, footer, content)
-│   └── landing-page.vue    # Splash/landing page layout
+│   ├── default.vue         # Main app layout
+│   └── landing-page.vue    # Splash page layout
 ├── pages/
-│   ├── index.vue           # Splash/landing page (public)
-│   ├── app/                # App pages (protected)
-│   │   ├── dashboard.vue   # Main dashboard
-│   │   ├── upload.vue      # Asset upload page
-│   │   ├── review.vue      # Asset review and approval
-│   │   ├── memory-books.vue # Memory book management
-│   │   ├── editor.vue      # Content editor (admin/editor only)
-│   │   ├── editor.vue      # Editor dashboard (editor/admin only)
-│   │   ├── login.vue       # Authentication
-│   │   └── signup.vue      # Registration
+│   ├── index.vue           # Public splash page
+│   └── app/                # Protected app pages
+│       ├── dashboard.vue   # Main dashboard
+│       ├── upload.vue      # Asset upload
+│       ├── review.vue      # Asset review
+│       ├── memory-books/   # Memory book management
+│       ├── login.vue       # Authentication
+│       └── signup.vue      # Registration
 ├── server/api/             # Backend API endpoints
-│   ├── ai/process-asset.post.js # AI processing for assets
-│   └── memory-books/       # Memory book generation APIs
-├── plugins/primevue.js     # PrimeVue setup and global config
-├── public/                 # Static assets (images, logo, etc.)
-├── supabase/schema.sql     # DB schema for users, assets, memory books
-├── nuxt.config.ts          # Nuxt and module configuration
-├── tailwind.config.js      # Tailwind CSS and color system
-├── railway.json            # Railway deployment config
-└── README.md               # This file
+│   ├── ai/                 # AI processing endpoints
+│   ├── memory-books/       # Memory book generation
+│   └── webhooks/           # SendGrid webhooks
+├── composables/            # Vue composables
+├── plugins/                # Nuxt plugins
+├── supabase/               # Database schema
+└── public/                 # Static assets
 ```
 
-## Application Flow: Splash Page vs. App
-- **Splash Page (`/`)**: The public landing page (`pages/index.vue`) uses the `landing-page` layout. It features animated backgrounds, a newsletter signup form (email stored in Supabase), and an "Insiders" button for password-protected access.
-- **App (`/app`)**: After successful insiders access or login, users are routed to the main app dashboard (`pages/app/dashboard.vue`), which uses the `default` layout (header, footer, breadcrumbs, etc.). All authenticated/protected content is under `/app`.
+## 🔧 Setup & Configuration
 
-## Routing Structure & Middleware
-
-### App Routes
-The application uses a nested routing structure where all authenticated pages are under `/app`:
-
-- `/app/dashboard` - Main dashboard (home page for authenticated users)
-- `/app/upload` - File upload page with AI processing
-- `/app/review` - Asset review and approval page  
-- `/app/memory-books` - Memory books management and generation
-- `/app/login` - Authentication page
-- `/app/signup` - Registration page
-- `/app/editor` - Content editor (admin/editor only)
-- `/app/admin` - Content editor (admin/editor only)
-
-### Routing Changes
-Originally, the app had a parent route at `pages/app.vue` that nested child routes underneath it. This caused issues where child pages would render below the dashboard content instead of replacing it entirely.
-
-**Solution**: Restructured the routing by:
-1. **Moving dashboard content** from `pages/app.vue` to `pages/app/dashboard.vue`
-2. **Removing the parent route** `pages/app.vue` entirely
-3. **Making all app pages standalone** - each page now replaces the entire content area
-4. **Updating navigation** to point to `/app/dashboard` instead of `/app`
-
-### Middleware Updates
-The authentication middleware (`middleware/auth.js`) was updated to handle the new routing structure:
-
-- **Redirects to dashboard**: Authenticated users accessing auth pages are redirected to `/app/dashboard`
-- **Auth protection**: All `/app/*` routes require authentication (except login/signup)
-- **Role-based access**: Editor and admin pages have additional middleware for role verification
-
-### Navigation Updates
-The main layout (`layouts/default.vue`) navigation was updated to:
-- Point the "Home" button to `/app/dashboard`
-- Maintain all existing app navigation links
-- Keep mobile navigation working with the new structure
-
-This ensures a clean separation between the dashboard and individual app pages, with each page having full control over its content area.
-
-## Memory Book Features
-
-### AI-Powered Memory Book Generation
-The platform features a comprehensive memory book system that creates beautiful, personalized memory books from approved assets:
-
-#### **Two-Step Generation Process**
-1. **Background Generation**: Uses DALL-E 3 to create custom backgrounds based on asset tags
-2. **PDF Generation**: Creates professional PDFs with arranged assets and AI backgrounds
-
-#### **Key Features**
-- **AI Backgrounds**: Custom DALL-E 3 generated backgrounds themed to asset content
-- **Asset Arrangement**: Professional 2x2 grid layout with captions
-- **Real-time Progress**: Detailed status updates during generation
-- **Regeneration**: Create new memory books with fresh AI backgrounds
-- **Download System**: Direct PDF download with proper file naming
-
-#### **Generation Flow**
-1. User uploads photos/text → AI processes with captions and tags
-2. User reviews and approves assets → Assets marked for memory books
-3. User creates memory book → AI generates custom background
-4. System creates PDF → User downloads beautiful memory book
-
-### Asset Management
-- **Upload System**: Drag & drop photo uploads and text story creation
-- **AI Processing**: Automatic caption generation, tagging, and people detection
-- **Review Workflow**: Approve/reject assets with editing capabilities
-- **Organization**: Assets organized by type, status, and approval state
-
-## PrimeVue, Tailwind, and Customization
-- **PrimeVue 3.x**: The app uses PrimeVue 3.x for stability and comprehensive component library. This version provides excellent TypeScript support, modern Vue 3 composition API integration, and a mature ecosystem.
-- **Dual Styling Approach**: PrimeVue 3.x offers both Tailwind CSS overrides and built-in themes, giving maximum flexibility for styling:
-  - **Tailwind Integration**: Direct Tailwind class application to PrimeVue components
-  - **PrimeVue Themes**: Built-in themes like `lara-light-purple` with CSS custom properties
-- **Plugin Architecture**: PrimeVue is configured via `plugins/primevue.ts` which:
-  - Registers components globally for both client and server-side rendering
-  - Configures PrimeVue with ripple effects and filled input style
-  - Sets up services (Toast, Confirmation) for app-wide notifications
-  - Ensures consistent component availability across the entire application
-- **Theme System**: The app uses the `lara-light-purple` theme which defines CSS variables for primary, surface, and text colors.
-- **Tailwind Integration**: In `tailwind.config.js`, custom color names (like `primary`, `surface`) are mapped to these CSS variables. This allows you to use Tailwind classes (e.g., `bg-primary`, `text-surface`) that always match the PrimeVue theme.
-- **Custom Styles**: Additional component and utility styles are defined in `assets/css/main.css`.
-- **Animations**: Custom animations (e.g., `fade-in-up`, `glow`, `pulse-slow`) are defined in `tailwind.config.js` and used throughout the UI.
-
-## Supabase Database & Auth
-
-### Custom Supabase Plugin
-This project uses a **custom Supabase plugin** instead of the official Nuxt Supabase module to resolve development issues.
-
-**Why Custom Plugin:**
-- ✅ Resolves `Ctrl+C` and `npm run dev` issues with auto-imports
-- ✅ More reliable development experience
-- ✅ Better control over Supabase client configuration
-- ❌ Do NOT install `@nuxtjs/supabase` module
-- ❌ Do NOT add Supabase modules to `nuxt.config.ts`
-
-**Implementation:**
-- **Plugin**: `plugins/custom-supabase.ts` - Creates and provides Supabase client
-- **Composable**: `composables/useSupabase.js` - Provides reactive user state
-- **Database**: `composables/useDatabase.js` - Centralized database operations
-
-**If you see Supabase errors:**
-1. Check `plugins/custom-supabase.ts` for client configuration
-2. Ensure environment variables are set correctly
-3. Do NOT attempt to install Nuxt Supabase modules
-
-### Supabase Usage in Nuxt Server API Endpoints
-
-> **Important:** In all Nuxt server API endpoints (in `server/api/`), always use the following pattern to create a Supabase client:
->
-> ```js
-> const config = useRuntimeConfig()
-> const { createClient } = await import('@supabase/supabase-js')
-> const supabase = createClient(
->   config.public.supabaseUrl,
->   config.supabaseServiceRoleKey || config.public.supabaseKey
-> )
-> ```
->
-> - **Do NOT use** `#supabase/server` or any Nuxt module auto-imports for Supabase in server API code.
-> - This ensures compatibility with your custom plugin and avoids import errors.
-> - See working examples in `server/api/memory-books/` endpoints.
-
-### Database Features
-- **Email Subscriptions**: The `supabase/schema.sql` defines a table `email_subscriptions` for storing newsletter signups from the splash page.
-- **User Management**: Comprehensive user system with roles (user, editor, admin)
-- **Asset Storage**: Photos and text stories with AI processing metadata
-- **Memory Books**: Complete memory book system with background and PDF storage
-- **Auth**: The app uses Supabase authentication for user sign up, login, and session management. Auth state is managed via the custom plugin and composables.
-- **Usage**: All `/app` routes are protected by middleware and require authentication or insiders access.
-
-## Supabase Setup
+### Prerequisites
+- Node.js 18+
+- Supabase account
+- OpenAI API key
+- SendGrid account (optional, for email analytics)
 
 ### Environment Variables
-Set up your environment variables in a `.env` file:
+
+Create a `.env` file in the project root:
 
 ```bash
+# Site Configuration
+NUXT_PUBLIC_SITE_URL=http://localhost:3000
+INSIDER_PASSWORD=savta2025
+
 # Supabase Configuration
 NUXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NUXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-# OpenAI Configuration (for AI features)
+# OpenAI Configuration
 OPENAI_API_KEY=your_openai_api_key
 
-# Site Configuration
-NUXT_PUBLIC_SITE_URL=http://localhost:3000
-INSIDER_PASSWORD=savta2025
+# SendGrid Configuration (optional)
+SENDGRID_WEBHOOK_SECRET=your_sendgrid_webhook_secret
 ```
 
-### Database Schema
-1. Run the database schema:
+### Installation
+
+1. **Clone and install**:
    ```bash
-   # First, run the reset script to clean up any existing tables
-   # Copy and paste the contents of supabase/reset.sql into your Supabase SQL Editor
-   
-   # Then run the main schema
-   # Copy and paste the contents of supabase/schema.sql into your Supabase SQL Editor
+   git clone <your-repo-url>
+   cd savta-ai
+   npm install
    ```
 
-### Storage Bucket Setup
-The app uses Supabase Storage for file uploads. You need to create the storage bucket and policies:
+2. **Set up Supabase**:
+   - Create a new Supabase project
+   - Run the database schema (see Supabase Setup section)
+   - Configure storage bucket and policies
 
-1. **Create the Storage Bucket:**
-   - Go to your Supabase Dashboard
-   - Navigate to **Storage** in the left sidebar
-   - Click **"Create a new bucket"**
+3. **Configure SendGrid** (optional):
+   - Set up SMTP for Supabase authentication emails
+   - Configure webhooks for email analytics
+
+4. **Start development**:
+   ```bash
+   npm run dev
+   ```
+
+## 🗄️ Database Setup
+
+### Schema Installation
+
+Run the database schema in your Supabase SQL Editor:
+
+```bash
+# Copy and paste the contents of supabase/schema.sql
+```
+
+### Storage Configuration
+
+1. **Create Storage Bucket**:
    - Name: `assets`
-   - Check **"Public bucket"** (so files can be accessed publicly)
-   - Click **"Create bucket"**
+   - Public bucket: ✅ Enabled
 
-2. **Set up Storage Policies:**
-   - In the Storage section, click on your `assets` bucket
-   - Go to the **Policies** tab
-   - Click **"New Policy"**
-   - Use the **Policy Editor** with these settings:
+2. **Storage Policies**:
+   ```sql
+   -- Upload Policy
+   CREATE POLICY "Users can upload assets" ON storage.objects
+   FOR INSERT TO authenticated
+   USING (bucket_id = 'assets' AND auth.uid()::text = (storage.foldername(name))[1]);
 
-   **Upload Policy:**
-   - Policy Name: `Users can upload assets`
-   - Allowed operation: INSERT
-   - Target roles: authenticated
-   - Using expression: `bucket_id = 'assets' AND auth.uid()::text = (storage.foldername(name))[1]`
+   -- View Policy
+   CREATE POLICY "Users can view own assets" ON storage.objects
+   FOR SELECT TO authenticated
+   USING (bucket_id = 'assets' AND auth.uid()::text = (storage.foldername(name))[1]);
 
-   **View Policy:**
-   - Policy Name: `Users can view own assets`
-   - Allowed operation: SELECT
-   - Target roles: authenticated
-   - Using expression: `bucket_id = 'assets' AND auth.uid()::text = (storage.foldername(name))[1]`
+   -- Update Policy
+   CREATE POLICY "Users can update own assets" ON storage.objects
+   FOR UPDATE TO authenticated
+   USING (bucket_id = 'assets' AND auth.uid()::text = (storage.foldername(name))[1]);
 
-   **Update Policy:**
-   - Policy Name: `Users can update own assets`
-   - Allowed operation: UPDATE
-   - Target roles: authenticated
-   - Using expression: `bucket_id = 'assets' AND auth.uid()::text = (storage.foldername(name))[1]`
+   -- Delete Policy
+   CREATE POLICY "Users can delete own assets" ON storage.objects
+   FOR DELETE TO authenticated
+   USING (bucket_id = 'assets' AND auth.uid()::text = (storage.foldername(name))[1]);
+   ```
 
-   **Delete Policy:**
-   - Policy Name: `Users can delete own assets`
-   - Allowed operation: DELETE
-   - Target roles: authenticated
-   - Using expression: `bucket_id = 'assets' AND auth.uid()::text = (storage.foldername(name))[1]`
-
-### Storage Bucket Structure
-The app uses a single `assets` bucket with a hierarchical folder structure to organize different types of files:
+### Storage Structure
 
 ```
 assets/
 ├── {user_id}/                    # User-specific folders
 │   ├── memory_book/              # Memory book files
-│   │   ├── backgrounds/          # AI-generated background images
-│   │   │   └── {book_id}.jpg    # Background for specific memory book
-│   │   └── pdfs/                # Generated PDF/Image files
-│   │       └── {book_id}.pdf    # PDF for specific memory book (or .jpg for single-page)
-│   └── {timestamp}-{filename}   # User uploaded assets (photos, text)
-│       ├── 1234567890-photo.jpg
-│       ├── 1234567891-story.txt
-│       └── ...
-└── {user_id_2}/
-    ├── memory_book/
-    │   └── ...
-    └── ...
+│   │   ├── backgrounds/          # AI-generated backgrounds
+│   │   └── pdfs/                # Generated PDFs
+│   └── {timestamp}-{filename}   # User uploaded assets
 ```
 
-**File Types:**
-- **User Assets**: Photos and text stories uploaded by users
-- **Background Images**: AI-generated backgrounds for memory books (JPG format)
-- **PDF Files**: Generated memory book PDFs (PDF format) or high-quality JPG images for single-page books
+## 📧 SendGrid Email Configuration
 
-**Security:**
-- Each user can only access files in their own folder (`{user_id}/`)
-- Memory book files are organized in subdirectories for easy management
-- All files are stored in the public `assets` bucket for easy access
+### SMTP Setup for Supabase Auth
 
-## Environment Variables
-Create a `.env` file in the project root with the following variables:
-```
-# Public site URL
-NUXT_PUBLIC_SITE_URL=http://localhost:3000
+1. **Get SendGrid API Key**:
+   - Go to SendGrid Dashboard → Settings → API Keys
+   - Create new API key with Mail Send permissions
 
-# Supabase project credentials
-NUXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NUXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+2. **Configure Supabase SMTP**:
+   - Go to Supabase Dashboard → Authentication → Settings → SMTP Settings
+   - Enable SMTP with these settings:
+     - **Host**: `smtp.sendgrid.net`
+     - **Port**: `587`
+     - **Username**: `apikey`
+     - **Password**: Your SendGrid API key
+     - **Sender**: `noreply@savta.ai`
 
-# OpenAI API key for AI processing
-OPENAI_API_KEY=your-openai-api-key
+3. **Domain Authentication** (Recommended):
+   - SendGrid Dashboard → Settings → Sender Authentication
+   - Authenticate your domain for better deliverability
 
-# (Optional) Insiders password for splash page access
-INSIDER_PASSWORD=your-secret-password
-```
+### Email Analytics Webhook
 
-## Getting Started
-### Prerequisites
-- Node.js 18+
-- npm or yarn
-- Supabase account
-- OpenAI API key (for AI features)
+The app includes webhook tracking for email events:
 
-### Installation & Development
-1. Clone the repository:
-   ```bash
-   git clone <your-repo-url>
-   cd savta-ai
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file as described above.
-4. Set up your Supabase database and storage as described in the Supabase Setup section.
-5. Run the development server:
-   ```bash
-   npm run dev
-   ```
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+#### Webhook Endpoint
+- **URL**: `https://your-domain.com/api/webhooks/sendgrid`
+- **Method**: POST
 
-### Development Troubleshooting
-If you encounter issues after stopping the dev server with Ctrl+C, especially import errors like `useSupabaseSession`, use the cleanup script:
-
-```bash
-npm run cleanup
+#### Database Schema
+```sql
+CREATE TABLE email_events (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_type text NOT NULL, -- 'delivered', 'bounced', 'opened', 'clicked'
+  email text NOT NULL,
+  user_id uuid,
+  message_id text,
+  timestamp timestamp with time zone DEFAULT timezone('utc'::text, now()),
+  sendgrid_event_id text,
+  event_data jsonb,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now())
+);
 ```
 
-This comprehensive cleanup script will:
-- Remove all cache directories (`.nuxt`, `.output`, etc.)
-- Kill all development processes
-- Clear npm cache and temporary files
-- Install dependencies to ensure everything works properly
-- Provide a fresh development environment
+#### Webhook Configuration
+
+1. **In SendGrid Dashboard**:
+   - Settings → Mail Settings → Event Webhook
+   - Enable Event Webhook
+   - URL: `https://your-domain.com/api/webhooks/sendgrid`
+   - Events: `delivered`, `opened`, `clicked`, `bounced`, `dropped`
+
+2. **Optional: Signed Webhooks**:
+   - Enable Signed Webhooks in SendGrid
+   - Add `SENDGRID_WEBHOOK_SECRET` to environment variables
+
+#### Email Analytics Usage
+
+```javascript
+// In Vue components
+const { getUserEmailStats, getUserEmailEvents } = useEmailEvents()
+
+// Get user's email statistics
+const stats = await getUserEmailStats()
+
+// Get recent email events
+const events = await getUserEmailEvents(10)
+```
+
+#### Database Queries
+
+```sql
+-- Check total events
+SELECT COUNT(*) as total_events FROM email_events;
+
+-- View recent events
+SELECT event_type, email, user_id, created_at 
+FROM email_events 
+ORDER BY created_at DESC 
+LIMIT 10;
+
+-- Group events by type
+SELECT event_type, COUNT(*) as count 
+FROM email_events 
+GROUP BY event_type 
+ORDER BY count DESC;
+```
+
+## 🎨 UI Framework Configuration
+
+### PrimeVue Setup
+
+This project uses **manual PrimeVue integration** via `plugins/primevue.ts`.
+
+**Important Notes:**
+- ✅ PrimeVue configured manually (not via Nuxt modules)
+- ❌ Do NOT install `@nuxtjs/primevue` or `primevue/nuxt`
+- ❌ Do NOT add PrimeVue modules to `nuxt.config.ts`
+
+**If you see PrimeVue errors:**
+1. Check `plugins/primevue.ts` for missing component registrations
+2. Ensure the plugin is loading correctly
+3. Do NOT attempt to install Nuxt PrimeVue modules
+
+### Styling System
+
+- **PrimeVue Theme**: `lara-light-purple` with CSS custom properties
+- **Tailwind Integration**: Custom colors mapped to PrimeVue theme variables
+- **Custom Styles**: Additional styles in `assets/css/main.css`
+- **Animations**: Custom animations defined in `tailwind.config.js`
+
+## 🔒 Authentication & Database
+
+### Custom Supabase Plugin
+
+This project uses a **custom Supabase plugin** instead of the official Nuxt module.
+
+**Why Custom Plugin:**
+- ✅ Resolves development issues with auto-imports
+- ✅ More reliable development experience
+- ✅ Better control over client configuration
+
+**Implementation:**
+- **Plugin**: `plugins/custom-supabase.ts` - Creates Supabase client
+- **Composable**: `composables/useSupabase.js` - Reactive user state
+- **Database**: `composables/useDatabase.js` - Database operations
+
+### Server API Pattern
+
+**Important:** In all server API endpoints, use this pattern:
+
+```js
+const config = useRuntimeConfig()
+const { createClient } = await import('@supabase/supabase-js')
+const supabase = createClient(
+  config.public.supabaseUrl,
+  config.supabaseServiceRoleKey || config.public.supabaseKey
+)
+```
+
+**Do NOT use** `#supabase/server` or Nuxt module auto-imports.
 
 ## 🛠️ Development Tools
 
 ### Database Access with susql
 
-The project uses a `susql` alias to run PostgreSQL commands against the cloud database. This alias provides a convenient way to execute SQL commands and migrations.
+The project uses a `susql` alias to run PostgreSQL commands against the Supabase database. This provides a convenient way to execute SQL commands and migrations.
 
-**How to create the susql alias:**
+#### Creating the susql Alias
 
-1. **Add to your shell profile** (`.zshrc`, `.bashrc`, or `.bash_profile`):
+1. **Get your Supabase database credentials**:
+   - Go to your Supabase Dashboard → Settings → Database
+   - Copy the **Host**, **Database name**, **Port**, **User**, and **Password**
+
+2. **Add the alias to your shell profile**:
+   
+   **For macOS/Linux (zsh/bash)**:
    ```bash
+   # Add to ~/.zshrc or ~/.bashrc
    alias susql='psql "postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres"'
    ```
-
-2. **Replace the placeholders** with your actual Supabase database credentials:
-   - `[YOUR-PASSWORD]`: Your Supabase database password
-   - `[YOUR-HOST]`: Your Supabase database host (found in Supabase dashboard)
-
-3. **Reload your shell profile**:
-   ```bash
-   source ~/.zshrc  # or ~/.bashrc
+   
+   **For Windows (PowerShell)**:
+   ```powershell
+   # Add to your PowerShell profile
+   Set-Alias -Name susql -Value "psql `"postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres`""
    ```
 
-4. **Test the alias**:
+3. **Replace the placeholders**:
+   - `[YOUR-PASSWORD]`: Your Supabase database password
+   - `[YOUR-HOST]`: Your Supabase database host (e.g., `db.abcdefghijklmnop.supabase.co`)
+
+4. **Reload your shell profile**:
+   ```bash
+   # For zsh
+   source ~/.zshrc
+   
+   # For bash
+   source ~/.bashrc
+   
+   # For PowerShell
+   . $PROFILE
+   ```
+
+5. **Test the alias**:
    ```bash
    susql -c "SELECT version();"
    ```
 
-**Usage Examples:**
-```bash
-# Run a migration script
-susql < migrate_3x5_to_4x6.sql
+#### Usage Examples
 
+```bash
 # Execute a single command
-susql -c "SELECT COUNT(*) FROM memory_books;"
+susql -c "SELECT COUNT(*) FROM email_events;"
+
+# Run a migration script
+cat supabase/email_events.sql | susql
 
 # Connect to database interactively
 susql
+
+# Run multiple commands from a file
+susql < migration_script.sql
+
+# Check table structure
+susql -c "\d email_events"
+
+# List all tables
+susql -c "\dt"
 ```
 
-**Security Note:** Keep your database credentials secure and never commit them to version control.
+#### Security Notes
+
+- **Keep credentials secure**: Never commit your database credentials to version control
+- **Use environment variables**: Consider using environment variables for the connection string
+- **Limit access**: Only use the service role key for server-side operations
+
+#### Alternative: Using Environment Variables
+
+For better security, you can use environment variables:
+
+```bash
+# Add to your shell profile
+alias susql='psql "postgresql://postgres:$SUPABASE_DB_PASSWORD@$SUPABASE_DB_HOST:5432/postgres"'
+
+# Set environment variables
+export SUPABASE_DB_PASSWORD="your-password"
+export SUPABASE_DB_HOST="db.abcdefghijklmnop.supabase.co"
+```
+
+### Development Troubleshooting
+
+If you encounter issues after stopping the dev server:
+
+```bash
+npm run cleanup
+```
+
+This script will:
+- Remove cache directories
+- Kill development processes
+- Clear npm cache
+- Reinstall dependencies
 
 ## 🚀 Deployment
 
 ### Railway.com Deployment
 
-This project is configured for deployment on Railway.com using the **Nixpacks builder** with a custom build command.
-
-**Custom Build Command:**
+**Build Command:**
 ```bash
 apt-get update && apt-get install -y poppler-utils && npm run build
 ```
 
-**Deployment Configuration:**
+**Configuration:**
 - **Builder**: Nixpacks
-- **Build Command**: Custom command that installs `poppler-utils` (required for PDF processing) and then runs `npm run build`
-- **Runtime**: Node.js environment
+- **Runtime**: Node.js
+- **Dependencies**: `poppler-utils` for PDF processing
 
-**Why poppler-utils?**
-The `poppler-utils` package is required for PDF processing features in the application, specifically for the memory book generation functionality.
+### Why poppler-utils?
 
-## Available Scripts
+The `poppler-utils` package is required for **PDF to JPG conversion** functionality in the memory book generation system. Specifically:
 
-- `
+#### **Modules that use poppler:**
+
+1. **`server/api/pdf-to-jpg.post.js`** - Main PDF conversion endpoint
+   - Uses `pdftoppm` command-line tool from poppler-utils
+   - Converts single-page PDFs to high-quality JPG images
+   - Supports multiple print sizes (7x5, 8x10, 11x14, 12x12, A4)
+   - Generates images at 300 DPI for print quality
+
+2. **`server/api/memory-books/generate-pdf/[id].post.js`** - Memory book generation
+   - Calls the PDF-to-JPG conversion endpoint
+   - Converts single-page memory book PDFs to JPG format
+   - Reduces file size while maintaining print quality
+   - Only converts single-page PDFs (multi-page PDFs remain as PDF)
+
+#### **What poppler-utils provides:**
+- **`pdftoppm`**: Converts PDF pages to image formats (JPG, PNG)
+- **High-quality conversion**: Maintains 300 DPI resolution for print
+- **Precise dimensions**: Generates exact pixel dimensions for different print sizes
+- **System-level performance**: Faster than JavaScript-based PDF processing
+
+#### **Alternative approaches considered:**
+- **JavaScript PDF libraries**: Slower and less reliable for high-quality conversion
+- **Cloud services**: Would add external dependencies and costs
+- **Other tools**: poppler-utils is the industry standard for PDF processing
+
+## 📚 Application Flow
+
+### Routing Structure
+
+- **Splash Page (`/`)**: Public landing page with newsletter signup
+- **App (`/app/*`)**: Protected authenticated pages
+  - `/app/dashboard` - Main dashboard
+  - `/app/upload` - Asset upload
+  - `/app/review` - Asset review
+  - `/app/memory-books` - Memory book management
+  - `/app/login` - Authentication
+  - `/app/signup` - Registration
+
+### Memory Book Generation
+
+1. **Upload Assets**: Photos and text stories with AI processing
+2. **Review & Approve**: Approve assets with AI-generated captions
+3. **Generate Background**: DALL-E 3 creates custom backgrounds
+4. **Create PDF**: Professional PDF with arranged assets
+5. **Download**: Direct download with proper file naming
+
+### Asset Management
+
+- **AI Processing**: Automatic caption generation, tagging, people detection
+- **Review Workflow**: Approve/reject with editing capabilities
+- **Organization**: Assets organized by type, status, and approval state
+
+## 🔧 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run cleanup` - Clean development environment
+- `npm run preview` - Preview production build
+
+## 📖 Additional Resources
+
+- **Supabase Documentation**: [supabase.com/docs](https://supabase.com/docs)
+- **SendGrid Documentation**: [sendgrid.com/docs](https://sendgrid.com/docs)
+- **PrimeVue Documentation**: [primevue.org](https://primevue.org)
+- **Nuxt 3 Documentation**: [nuxt.com/docs](https://nuxt.com/docs)
