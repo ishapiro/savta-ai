@@ -7,32 +7,21 @@ import sharp from 'sharp'
 import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
 import { enhanceImage } from '../../../utils/image-enhancer.js'
+import PdfLogger from '../../../utils/pdf-logger.js'
 
 // Centralized function to save and upload PDF/JPG files
-async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize = '7x5') {
+async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize = '7x5', logger) {
   // Ensure printSize is always a valid string
   if (typeof printSize !== 'string' || !printSize) {
     printSize = (book && book.print_size) || '7x5';
   }
-  console.log('[saveAndUploadFile] Using printSize:', printSize);
   
-  console.log('💾 Saving PDF to buffer...')
+  logger.step('Saving PDF to buffer')
   const pdfBytes = await pdfDoc.save()
-  console.log('✅ PDF saved, size:', pdfBytes.length, 'bytes')
-  
-  // Enhanced logging for debugging JPG conversion
-  console.log('🔍 DEBUG - Book object for JPG conversion:')
-  console.log('   - Book ID:', book.id)
-      console.log('   - Book AI supplemental prompt:', book.ai_supplemental_prompt)
-  console.log('   - Book output field:', book.output)
-  console.log('   - Book output type:', typeof book.output)
-  console.log('   - Book layout_type:', book.layout_type)
-  console.log('   - Book ui field:', book.ui)
+  logger.success(`PDF saved (${pdfBytes.length} bytes)`)
   
   // Check if we should convert to JPG based on output field
   const shouldConvertToJpg = book.output && book.output === 'JPG'
-  console.log(`🔍 Output field check: ${book.output} (convert to JPG: ${shouldConvertToJpg})`)
-  console.log(`🔍 Should convert logic: book.output=${book.output}, comparison=${book.output === 'JPG'}`)
   
   let finalBytes = pdfBytes
   let contentType = 'application/pdf'
@@ -40,34 +29,27 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize
   let fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.pdf`
   
   if (shouldConvertToJpg) {
-    console.log('🔄 JPG conversion is enabled, starting conversion process...')
+    logger.step('JPG conversion enabled, checking PDF page count')
     try {
-      console.log('🔄 Checking PDF page count for JPG conversion...')
-      
       // Load the PDF to check page count
       const pdfDocForCheck = await PDFDocument.load(pdfBytes)
       const pageCount = pdfDocForCheck.getPageCount()
-      console.log(`📄 PDF has ${pageCount} page(s)`)
       
       if (pageCount === 1) {
-        console.log('✅ Single page PDF detected, converting to JPG...')
-        console.log('🔄 Starting pdf-poppler conversion with 300 DPI...')
+        logger.step('Converting single-page PDF to JPG')
         
         try {
-          // Call our new pdf-poppler API endpoint
-          console.log('🔄 Using pdf-poppler to convert PDF to JPG...')
-          
           const conversionResponse = await fetch(`${config.public.siteUrl}/api/pdf-to-jpg`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              pdfBuffer: Array.from(pdfBytes), // Convert Buffer to array for JSON serialization
+              pdfBuffer: Array.from(pdfBytes),
               page: 1,
               quality: 100,
               dpi: 300,
-              printSize: printSize // Pass the print size for correct dimensions
+              printSize: printSize
             })
           })
           
@@ -77,65 +59,35 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize
           }
           
           const jpgBuffer = Buffer.from(await conversionResponse.arrayBuffer())
-          console.log('✅ PDF to JPG conversion completed')
-          console.log(`📊 JPG buffer size: ${jpgBuffer.length} bytes`)
-          
           finalBytes = jpgBuffer
           contentType = 'image/jpeg'
           fileExtension = 'jpg'
           fileName = `${user.id}/memory_book/pdfs/${book.id}_${Date.now()}.jpg`
           
-          console.log('✅ PDF converted to JPG successfully')
-          console.log(`📊 JPG size: ${jpgBuffer.length} bytes`)
-          console.log(`📊 Original PDF size: ${pdfBytes.length} bytes`)
-          console.log(`📊 Compression ratio: ${((1 - jpgBuffer.length / pdfBytes.length) * 100).toFixed(1)}%`)
-          
-          console.log('🖼️ Will upload JPG instead of PDF')
-          console.log('🖼️ Final file details:')
-          console.log('   - File name:', fileName)
-          console.log('   - Content type:', contentType)
-          console.log('   - File extension:', fileExtension)
-          console.log('   - File size:', finalBytes.length, 'bytes')
+          const compressionRatio = ((1 - jpgBuffer.length / pdfBytes.length) * 100).toFixed(1)
+          logger.success(`PDF converted to JPG (${jpgBuffer.length} bytes, ${compressionRatio}% compression)`)
           
         } catch (conversionError) {
-          console.error('❌ pdf-poppler conversion failed:', conversionError)
-          console.error('❌ Conversion error details:', {
-            message: conversionError.message,
-            stack: conversionError.stack,
-            name: conversionError.name
-          })
+          logger.error('JPG conversion failed, keeping as PDF', conversionError.message)
           await updatePdfStatus(supabase, book.id, user.id, 'JPG conversion failed - keeping as PDF')
         }
       } else {
-        console.log(`⚠️ PDF has ${pageCount} pages, keeping as PDF (JPG conversion only for single-page documents)`)
-        console.log(`⚠️ Page count ${pageCount} > 1, skipping JPG conversion`)
-        // Show message to user about multi-page PDF
+        logger.warning(`PDF has ${pageCount} pages, keeping as PDF (JPG conversion only for single-page documents)`)
         await updatePdfStatus(supabase, book.id, user.id, `PDF has ${pageCount} pages - keeping as PDF (JPG conversion only available for single-page documents)`)
       }
     } catch (conversionError) {
-      console.error('❌ JPG conversion failed, keeping as PDF:', conversionError)
-      console.error('❌ Conversion error details:', {
-        message: conversionError.message,
-        stack: conversionError.stack,
-        name: conversionError.name
-      })
+      logger.error('JPG conversion failed, keeping as PDF', conversionError.message)
       await updatePdfStatus(supabase, book.id, user.id, 'JPG conversion failed - keeping as PDF')
     }
   } else {
-    console.log('ℹ️ JPG conversion is disabled, keeping as PDF')
-    console.log('ℹ️ Reasons for not converting:')
-    console.log('   - book.output exists:', !!book.output)
-    console.log('   - book.output value:', book.output)
-    console.log('   - book.output type:', typeof book.output)
-    console.log('   - comparison result:', book.output === 'JPG')
+    logger.step('JPG conversion disabled, keeping as PDF')
   }
   
   const timestamp = Date.now()
   
-  // Delete old PDF files if they exist (try both old and new patterns)
-  console.log('🗑️ Deleting old PDF files...')
+  // Delete old PDF files if they exist
+  logger.step('Cleaning up old PDF files')
   try {
-    // List files in the PDF directory to find old files
     const { data: files, error: listError } = await supabase.storage
       .from('assets')
       .list(`${user.id}/memory_book/pdfs/`)
@@ -151,50 +103,45 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize
           .remove(filesToDelete)
         
         if (deleteError) {
-          console.warn('⚠️ Failed to delete old PDF files:', deleteError.message)
+          logger.warning('Failed to delete old PDF files', deleteError.message)
         } else {
-          console.log('✅ Old PDF files deleted successfully')
+          logger.step('Old PDF files cleaned up')
         }
       }
     }
   } catch (error) {
-    console.warn('⚠️ Error listing/deleting old PDF files:', error.message)
+    logger.warning('Error cleaning up old PDF files', error.message)
   }
   
   await updatePdfStatus(supabase, book.id, user.id, `Uploading ${fileExtension.toUpperCase()} to cloud storage...`)
-  console.log(`📤 Uploading ${fileExtension.toUpperCase()} to Supabase Storage:`, fileName)
+  logger.step(`Uploading ${fileExtension.toUpperCase()} to storage`)
   
-  // Upload to Supabase Storage (using assets bucket with memory_book subdirectory)
+  // Upload to Supabase Storage
   const { data: uploadData, error: uploadError } = await supabase.storage.from('assets').upload(fileName, finalBytes, {
     contentType: contentType,
     upsert: true
   })
   
   if (uploadError) {
-    console.error(`❌ Failed to upload ${fileExtension.toUpperCase()} to storage:`, uploadError)
+    logger.error(`Failed to upload ${fileExtension.toUpperCase()} to storage`, uploadError.message)
     throw new Error(`Failed to upload ${fileExtension.toUpperCase()} to storage: ` + uploadError.message)
   }
-  console.log(`✅ ${fileExtension.toUpperCase()} uploaded to storage successfully:`, uploadData)
+  logger.success(`${fileExtension.toUpperCase()} uploaded to storage`)
   
   // Get public URL
   await updatePdfStatus(supabase, book.id, user.id, 'Generating download link...')
-  console.log('🔗 Getting public URL for uploaded file...')
+  logger.step('Generating public URL')
   const { data: publicUrlData } = supabase.storage.from('assets').getPublicUrl(fileName)
   const publicUrl = publicUrlData?.publicUrl
   if (!publicUrl) {
-    console.error(`❌ Failed to get public URL for ${fileExtension.toUpperCase()}`)
+    logger.error(`Failed to get public URL for ${fileExtension.toUpperCase()}`)
     throw new Error(`Failed to get public URL for ${fileExtension.toUpperCase()}`)
   }
-  console.log('✅ Public URL generated:', publicUrl)
+  logger.success('Public URL generated')
   
   // Update the book with the public URL
   await updatePdfStatus(supabase, book.id, user.id, 'Saving file link to database...')
-  console.log('📝 Updating memory book with file URL...')
-  console.log('📝 Database update details:')
-  console.log('   - Book ID:', book.id)
-  console.log('   - File URL:', publicUrl)
-  console.log('   - File extension:', fileExtension)
-  console.log('   - Content type:', contentType)
+  logger.step('Updating book with file URL')
   
   const { data: updateData, error: updateError } = await supabase
     .from('memory_books')
@@ -205,11 +152,10 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize
     .select()
   
   if (updateError) {
-    console.error('❌ Error updating book with file URL:', updateError)
+    logger.error('Error updating book with file URL', updateError.message)
     // Don't throw here, as the file was successfully uploaded
   } else {
-    console.log('✅ Memory book updated with file URL successfully')
-    console.log('✅ Updated book data:', updateData)
+    logger.success('Book updated with file URL')
   }
   
   return publicUrl
@@ -217,20 +163,11 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize
 
 export default defineEventHandler(async (event) => {
   try {
-    console.log('📄 Starting PDF generation endpoint')
     const config = useRuntimeConfig()
     const { createClient } = await import('@supabase/supabase-js')
     
-    // Use the service role key for server-side operations
-    console.log('🔧 Creating Supabase client with service role')
-    const supabase = createClient(
-      config.public.supabaseUrl,
-      config.supabaseServiceRoleKey || config.public.supabaseKey
-    )
-    
     // Get the book ID from the URL
     const bookId = getRouterParam(event, 'id')
-    console.log('📖 Book ID from URL:', bookId)
     
     if (!bookId) {
       throw createError({
@@ -239,8 +176,19 @@ export default defineEventHandler(async (event) => {
       })
     }
     
+    // Initialize logger
+    const logger = new PdfLogger(bookId, 'unknown') // Will update userId once we get it
+    
+    logger.step('Starting PDF generation')
+    
+    // Use the service role key for server-side operations
+    const supabase = createClient(
+      config.public.supabaseUrl,
+      config.supabaseServiceRoleKey || config.public.supabaseKey
+    )
+    
     // Get user from auth token
-    console.log('🔐 Getting user from auth token')
+    logger.step('Authenticating user')
     const authHeader = getHeader(event, 'authorization')
     if (!authHeader) {
       throw createError({
@@ -250,20 +198,22 @@ export default defineEventHandler(async (event) => {
     }
     
     const token = authHeader.replace('Bearer ', '')
-    console.log('🔑 Token extracted, getting user...')
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
-      console.error('❌ Auth error:', authError)
+      logger.error('Authentication failed', authError?.message)
       throw createError({
         statusCode: 401,
         statusMessage: 'Invalid token'
       })
     }
-    console.log('✅ User authenticated:', user.id)
+    
+    // Update logger with actual user ID
+    logger.userId = user.id
+    logger.success(`User authenticated: ${user.id}`)
     
     // Verify the memory book exists and belongs to the user
-    console.log('📚 Fetching memory book from database...')
+    logger.step('Fetching memory book')
     let { data: book, error: bookError } = await supabase
       .from('memory_books')
       .select('*')
@@ -272,40 +222,29 @@ export default defineEventHandler(async (event) => {
       .single()
     
     if (bookError || !book) {
-      console.error('❌ Book error:', bookError)
+      logger.error('Memory book not found', bookError?.message)
       throw createError({
         statusCode: 404,
         statusMessage: 'Memory book not found'
       })
     }
-    console.log('✅ Memory book found:', book.id, 'Status:', book.status)
     
-    console.log('📚 BOOK DATA - Memory book loaded:', {
-      id: book.id,
-              title: book.ai_supplemental_prompt,
-      background_type: book.background_type,
-      background_color: book.background_color,
-      background_url: book.background_url ? 'exists' : 'none',
+    logger.success(`Memory book found (ID: ${book.id}, Status: ${book.status})`)
+    
+    // Log book summary
+    logger.step('Book details', {
       layout_type: book.layout_type,
-      memory_shape: book.memory_shape,
-      status: book.status,
-      photo_selection_pool_count: book.photo_selection_pool?.length || 0,
-      created_from_assets_count: book.created_from_assets?.length || 0,
+      background_type: book.background_type,
+      assets_count: book.created_from_assets?.length || 0,
       theme_id: book.theme_id || 'none',
-      output: book.output || 'not set',
-      ui: book.ui || 'not set'
+      output: book.output || 'PDF'
     })
-    console.log('🔍 OUTPUT FIELD DEBUG:')
-    console.log('   - book.output value:', book.output)
-    console.log('   - book.output type:', typeof book.output)
-    console.log('   - book.output === "JPG":', book.output === 'JPG')
-    console.log('   - book.output === "PDF":', book.output === 'PDF')
     
 
 
     // Check if the book has background ready
     if (book.status !== 'background_ready' && book.status !== 'ready' && book.status !== 'draft') {
-      console.log('❌ Book not ready for PDF generation, status:', book.status)
+      logger.error('Book not ready for PDF generation', `Status: ${book.status}`)
       throw createError({
         statusCode: 400,
         statusMessage: 'Memory book background is not ready'
@@ -314,20 +253,20 @@ export default defineEventHandler(async (event) => {
 
     // If pdf_url exists, return it directly (fast download)
     if (book.pdf_url && book.pdf_url.startsWith('https://')) {
-      console.log('✅ PDF URL available for download, returning:', book.pdf_url)
+      logger.success('PDF URL available for download')
       return {
         success: true,
         downloadUrl: book.pdf_url
       }
     }
 
-    console.log('🔄 PDF URL not found, generating new PDF...')
+    logger.step('PDF URL not found, generating new PDF')
     
     // Update status
     await updatePdfStatus(supabase, book.id, user.id, 'Retrieving your memories...')
     
     // 1. Fetch approved assets for this book
-    console.log('📸 Fetching assets for book:', book.created_from_assets)
+    logger.step('Fetching approved assets')
     const { data: assets, error: assetsError } = await supabase
       .from('assets')
       .select('*')
@@ -336,48 +275,34 @@ export default defineEventHandler(async (event) => {
       .eq('deleted', false)
 
     if (assetsError) {
-      console.error('❌ Error fetching assets:', assetsError)
+      logger.error('Error fetching assets', assetsError.message)
       throw new Error(`Failed to fetch assets: ${assetsError.message}`)
     }
 
-    console.log('✅ Found assets:', assets?.length || 0)
-
     if (!assets || assets.length === 0) {
+      logger.error('No approved assets found for this book')
       throw new Error('No approved assets found for this book')
     }
 
+    logger.success(`Found ${assets.length} approved assets`)
+
     // Generate fingerprints for assets to help AI avoid duplicates
     const assetsWithFingerprints = generateFingerprintsForAssets(assets)
-    console.log('🔍 Generated fingerprints for', assetsWithFingerprints.length, 'assets')
+    logger.step(`Generated fingerprints for ${assetsWithFingerprints.length} assets`)
 
     // 2. Get the background image from storage
-    console.log('🎨 Loading background image from storage...')
+    logger.step('Loading background image')
 
-    // Check background_type first to determine if we need to show background generation message
-    console.log('🔍 Background type check:', {
-      background_type: book.background_type,
-      background_color: book.background_color,
-      background_url: book.background_url ? 'exists' : 'none'
-    })
-    
     let backgroundBuffer
     
     if (book.background_type === 'solid') {
-      // Handle solid color background - no background image needed, skip background generation message
-      console.log('🎨 SOLID COLOR SELECTED - Using solid color background:', book.background_color)
-      console.log('🎨 Background color details:', {
-        raw: book.background_color,
-        type: typeof book.background_color,
-        length: book.background_color ? book.background_color.length : 0
-      })
+      // Handle solid color background
+      logger.step('Using solid color background')
       await updatePdfStatus(supabase, book.id, user.id, 'Applying solid color background...')
-      // No background buffer needed for solid color - will be applied directly in PDF
       backgroundBuffer = null
-      console.log('🎨 Set backgroundBuffer to null for solid color')
     } else if (book.background_type === 'magical') {
       // Generate background for magical background type
-      console.log('🎨 Generating magical background...')
-      // Update status
+      logger.step('Generating magical background')
       await updatePdfStatus(supabase, book.id, user.id, 'Retrieving background image...')
       await updatePdfStatus(supabase, book.id, user.id, 'Creating magical background...')
       
@@ -391,22 +316,21 @@ export default defineEventHandler(async (event) => {
         })
         
         if (!bgGenRes.ok) {
-          console.error('❌ Background generation failed:', bgGenRes.status)
+          logger.error('Background generation failed', `Status: ${bgGenRes.status}`)
           throw new Error(`Background generation failed: ${bgGenRes.status}`)
         }
         
         const bgGenData = await bgGenRes.json()
-        console.log('✅ Background generated successfully:', bgGenData.backgroundUrl)
+        logger.success('Background generated successfully')
         
         // Download the newly generated background
-        console.log('⬇️ Downloading newly generated background...')
         const bgRes = await fetch(bgGenData.backgroundUrl)
         if (!bgRes.ok) {
-          console.error('❌ Failed to fetch generated background:', bgRes.status, bgRes.statusText)
+          logger.error('Failed to fetch generated background', `Status: ${bgRes.status}`)
           throw new Error(`Failed to fetch generated background: ${bgRes.status}`)
         }
         backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
-        console.log('✅ Generated background downloaded, size:', backgroundBuffer.length, 'bytes')
+        logger.success(`Generated background downloaded (${backgroundBuffer.length} bytes)`)
         
         // Update the book with the new background URL
         const { error: updateError } = await supabase
@@ -415,44 +339,40 @@ export default defineEventHandler(async (event) => {
           .eq('id', book.id)
         
         if (updateError) {
-          console.error('❌ Failed to update book with background URL:', updateError)
+          logger.warning('Failed to update book with background URL', updateError.message)
         } else {
-          console.log('✅ Book updated with new background URL')
+          logger.step('Book updated with new background URL')
         }
       } catch (bgError) {
-        console.error('❌ Background generation error:', bgError)
-        console.warn('⚠️ Proceeding with white background due to generation failure')
-        // Continue with white background if generation fails
+        logger.error('Background generation error', bgError.message)
+        logger.warning('Proceeding with white background due to generation failure')
         backgroundBuffer = null
       }
     } else if (book.background_url && book.background_type !== 'solid') {
-      // Download existing background from storage (for magical or other types)
-      console.log('⬇️ Downloading background from storage:', book.background_url)
-      // Update status
+      // Download existing background from storage
+      logger.step('Downloading existing background')
       await updatePdfStatus(supabase, book.id, user.id, 'Retrieving background image...')
       const bgRes = await fetch(book.background_url)
       if (!bgRes.ok) {
-        console.error('❌ Failed to fetch background:', bgRes.status, bgRes.statusText)
+        logger.error('Failed to fetch background', `Status: ${bgRes.status}`)
         throw new Error(`Failed to fetch background: ${bgRes.status}`)
       }
       backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
-      console.log('✅ Background downloaded, size:', backgroundBuffer.length, 'bytes')
+      logger.success(`Background downloaded (${backgroundBuffer.length} bytes)`)
     } else {
-      console.log('ℹ️ No background URL found and background_type is white, proceeding with white background.')
-      // For white background, skip background generation message since no generation is needed
-      // Continue without throwing; background will be white
+      logger.step('Using white background (no background image)')
       backgroundBuffer = null
     }
     
     // 3. Create PDF document
-    console.log('📄 Creating PDF document...')
+    logger.step('Creating PDF document')
     const pdfDoc = await PDFDocument.create()
     let pdfBgImage = null
     if (backgroundBuffer) {
       pdfBgImage = await pdfDoc.embedPng(backgroundBuffer)
-      console.log('✅ PDF document created with background image')
+      logger.success('PDF document created with background image')
     } else {
-      console.log('✅ PDF document created with blank background')
+      logger.success('PDF document created with blank background')
     }
     
     // Helper function to process image orientation
@@ -1951,7 +1871,7 @@ export default defineEventHandler(async (event) => {
       await updatePdfStatus(supabase, book.id, user.id, '🎨 Theme PDF created!')
       
       // Use centralized function to save and upload file
-      const pdfStorageUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, effectivePrintSize)
+      const pdfStorageUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, effectivePrintSize, logger)
       
       // Update book status and return
       await supabase.from('memory_books').update({ 
@@ -2558,7 +2478,7 @@ export default defineEventHandler(async (event) => {
     await updatePdfStatus(supabase, book.id, user.id, 'Finalizing your memory ...')
     
     // 5. Save PDF and upload to Supabase Storage using centralized function
-    const publicUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, book.print_size || '7x5')
+    const publicUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, book.print_size || '7x5', logger)
     
     await updatePdfStatus(supabase, book.id, user.id, 'Working our magic ...')
     console.log('🎉 PDF generated and uploaded successfully')
@@ -2642,6 +2562,10 @@ export default defineEventHandler(async (event) => {
     }
     // ... existing code ...
     
+    // Log final summary
+    logger.success('PDF generation completed successfully')
+    logger.summary()
+    
     return {
       success: true,
       downloadUrl: publicUrl,
@@ -2649,7 +2573,9 @@ export default defineEventHandler(async (event) => {
     }
     
   } catch (error) {
-    console.error('❌ PDF generation error:', error)
+    logger.error('PDF generation failed', error.message)
+    logger.summary()
+    
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage: error.statusMessage || 'Failed to generate PDF'
