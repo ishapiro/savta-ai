@@ -249,8 +249,16 @@ export const useAnalytics = () => {
     console.log('🔍 Analytics: Flushing events to server', { count: events.length, events })
 
     try {
+      // Get the current user's session token for authentication
+      const supabase = useNuxtApp().$supabase
+      const { data: sessionData } = await supabase.auth.getSession()
+      const authToken = sessionData.session?.access_token
+
       await $fetch('/api/analytics/track', {
         method: 'POST',
+        headers: authToken ? {
+          'Authorization': `Bearer ${authToken}`
+        } : {},
         body: { events }
       })
       console.log('🔍 Analytics: Events sent successfully')

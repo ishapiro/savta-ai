@@ -635,16 +635,16 @@
         <TabPanel header="📊 Activity">
           <div class="mb-4">
             <Button
-              label="View Analytics Dashboard"
+              label="View Analytics Analysis Dashboard"
               icon="pi pi-chart-line"
-              class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-3 py-2"
+              class="bg-brand-dialog-edit border-0 w-auto rounded-full px-6 py-2 shadow"
               @click="navigateTo('/app/analytics-dashboard')"
             />
           </div>
           <div class="space-y-6">
             <!-- Activity Type Toggle -->
             <div class="flex items-center justify-between">
-              <h2 class="text-xl font-semibold text-brand-primary">System Activity</h2>
+              <h2 class="text-xl font-semibold text-brand-primary">Raw System Activity</h2>
               <div class="flex items-center space-x-4">
                 <div class="flex items-center gap-2">
                   <input 
@@ -654,7 +654,7 @@
                     value="system"
                     class="w-4 h-4 text-brand-primary"
                   />
-                  <label for="activityTypeSystem" class="text-sm text-brand-primary/70 cursor-pointer">System Activity</label>
+                  <label for="activityTypeSystem" class="text-sm text-brand-primary/70 cursor-pointer">Raw System Activity</label>
                 </div>
                 <div class="flex items-center gap-2">
                   <input 

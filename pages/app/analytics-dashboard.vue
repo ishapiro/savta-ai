@@ -4,7 +4,7 @@
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-2xl font-bold text-brand-primary">Analytics Dashboard</h1>
-        <p class="text-brand-primary/70">Phase 2 - Enhanced User Analytics & Geolocation</p>
+        <p class="text-brand-primary/70">Enhanced User Analytics & Geolocation</p>
       </div>
       
       <!-- Time Range Selector -->
@@ -25,7 +25,7 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Select Time Range"
-          class="w-32 time-range-dropdown"
+          class="w-45 time-range-dropdown"
           @change="loadAnalytics"
         />
       </div>

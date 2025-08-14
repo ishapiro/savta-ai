@@ -2190,6 +2190,7 @@ import { useToast } from 'primevue/usetoast'
 import { Sparkles, Sparkle, Wand2, Gift } from 'lucide-vue-next'
 import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
 import CaptionRenderer from '~/components/CaptionRenderer.vue'
+import { useAnalytics } from '~/composables/useAnalytics'
 const toast = useToast()
 
 const showPdfModal = ref(false)
@@ -2213,6 +2214,9 @@ const route = useRoute()
 // const user = useSupabaseUser()
 const supabase = useNuxtApp().$supabase
 const user = ref(null)
+
+// Analytics tracking
+const { trackEvent } = useAnalytics()
 
 // Get initial user - use getSession instead of getUser for better error handling
 const getInitialUser = async () => {
@@ -3146,6 +3150,13 @@ const composeNewlyCreatedMemory = async () => {
 // Download PDF
 const downloadPDF = async (book) => {
   try {
+    // Track download attempt
+    trackEvent('memory_book_download_attempt', {
+      book_id: book.id,
+      book_title: book.ai_supplemental_prompt || 'Unknown',
+      component: 'MemoryBooksIndex'
+    })
+
     // Always fetch the latest book from the backend
     const latestBook = await db.memoryBooks.getMemoryBook(book.id)
     if (!latestBook) throw new Error('Could not fetch latest memory book')
@@ -3171,8 +3182,23 @@ const downloadPDF = async (book) => {
       : `${response.downloadUrl}?${cacheBuster}`;
     // Open PDF in modal instead of direct download
     await viewPDF(pdfUrlWithBuster, latestBook.id)
+    
+    // Track successful download
+    trackEvent('memory_book_download_success', {
+      book_id: book.id,
+      book_title: book.ai_supplemental_prompt || 'Unknown',
+      component: 'MemoryBooksIndex',
+      download_url: response.downloadUrl
+    })
   } catch (error) {
     console.error('Error downloading PDF:', error)
+    // Track failed download
+    trackEvent('memory_book_download_failed', {
+      book_id: book.id,
+      book_title: book.ai_supplemental_prompt || 'Unknown',
+      component: 'MemoryBooksIndex',
+      error: error.message
+    })
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'error',
@@ -3187,6 +3213,13 @@ const downloadPDF = async (book) => {
 // Force download PDF (new function for details page)
 const forceDownloadPDF = async (book) => {
   try {
+    // Track force download attempt
+    trackEvent('memory_book_force_download_attempt', {
+      book_id: book.id,
+      book_title: book.ai_supplemental_prompt || 'Unknown',
+      component: 'MemoryBooksIndex'
+    })
+
     // Always fetch the latest book from the backend
     const latestBook = await db.memoryBooks.getMemoryBook(book.id)
     if (!latestBook) throw new Error('Could not fetch latest memory book')
@@ -3221,6 +3254,14 @@ const forceDownloadPDF = async (book) => {
     link.click()
     document.body.removeChild(link)
     
+    // Track successful force download
+    trackEvent('memory_book_force_download_success', {
+      book_id: book.id,
+      book_title: book.ai_supplemental_prompt || 'Unknown',
+      component: 'MemoryBooksIndex',
+      download_url: response.downloadUrl
+    })
+    
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'success',
@@ -3231,6 +3272,13 @@ const forceDownloadPDF = async (book) => {
     }
   } catch (error) {
     console.error('Error downloading PDF:', error)
+    // Track failed force download
+    trackEvent('memory_book_force_download_failed', {
+      book_id: book.id,
+      book_title: book.ai_supplemental_prompt || 'Unknown',
+      component: 'MemoryBooksIndex',
+      error: error.message
+    })
     if ($toast && $toast.add) {
       $toast.add({
         severity: 'error',
@@ -3439,6 +3487,13 @@ const canShare = computed(() => {
 });
 
 const sharePdf = async () => {
+  // Track share attempt
+  trackEvent('memory_book_share_attempt', {
+    book_id: selectedBook.value?.id,
+    book_title: selectedBook.value?.ai_supplemental_prompt || 'Unknown',
+    component: 'MemoryBooksIndex'
+  })
+
   if (pdfBlobUrl.value && process.client && navigator?.share) {
     try {
       // Fetch the PDF as a blob
@@ -3456,12 +3511,34 @@ const sharePdf = async () => {
         text: 'Check out this memory book!',
         files: [file]
       });
+      
+      // Track successful share
+      trackEvent('memory_book_share_success', {
+        book_id: selectedBook.value?.id,
+        book_title: selectedBook.value?.ai_supplemental_prompt || 'Unknown',
+        component: 'MemoryBooksIndex',
+        share_method: 'web_share_api'
+      });
     } catch (error) {
       console.error('Error sharing PDF:', error);
+      // Track failed share
+      trackEvent('memory_book_share_failed', {
+        book_id: selectedBook.value?.id,
+        book_title: selectedBook.value?.ai_supplemental_prompt || 'Unknown',
+        component: 'MemoryBooksIndex',
+        error: error.name || 'unknown'
+      });
       // Fallback to download if sharing fails
       downloadCurrentPdf();
     }
   } else {
+    // Track fallback to download
+    trackEvent('memory_book_share_fallback', {
+      book_id: selectedBook.value?.id,
+      book_title: selectedBook.value?.ai_supplemental_prompt || 'Unknown',
+      component: 'MemoryBooksIndex',
+      fallback_method: 'download'
+    });
     // Fallback to download if Web Share API is not available
     downloadCurrentPdf();
   }

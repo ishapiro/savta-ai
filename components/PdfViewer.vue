@@ -192,6 +192,7 @@ import { ref, watch, computed } from 'vue'
 import VuePdfEmbed from 'vue-pdf-embed'
 import 'vue-pdf-embed/dist/styles/annotationLayer.css'
 import 'vue-pdf-embed/dist/styles/textLayer.css'
+import { useAnalytics } from '~/composables/useAnalytics'
 
 const props = defineProps({
   src: {
@@ -209,6 +210,9 @@ const scale = ref(0.7)
 const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
 const isSharing = ref(false) // Track if we're currently sharing
+
+// Analytics tracking
+const { trackEvent } = useAnalytics()
 
 // Check if the source is a JPG image
 const isJpgImage = computed(() => {
@@ -493,6 +497,13 @@ function downloadPdf() {
     return
   }
   
+  // Track download event
+  trackEvent('pdf_download', {
+    file_type: isJpgImage.value ? 'image' : 'pdf',
+    file_url: props.src,
+    component: 'PdfViewer'
+  })
+  
   if (pdfRef.value?.download) {
     pdfRef.value.download()
   } else {
@@ -506,6 +517,13 @@ function downloadImage() {
     console.log('🔍 Download blocked - currently sharing')
     return
   }
+  
+  // Track download event
+  trackEvent('image_download', {
+    file_type: 'image',
+    file_url: props.src,
+    component: 'PdfViewer'
+  })
   
   // Determine file extension based on URL
   const cleanUrl = props.src ? props.src.split('?')[0].split('#')[0] : ''
@@ -631,6 +649,13 @@ function sharePdf() {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(pdfUrl).then(() => {
           console.log('🔍 PDF URL copied to clipboard')
+          // Track clipboard fallback
+          trackEvent('pdf_share_fallback', {
+            file_type: 'pdf',
+            file_url: pdfUrl,
+            component: 'PdfViewer',
+            fallback_method: 'clipboard'
+          })
         }).catch(err => {
           console.error('🔍 Failed to copy URL:', err)
         })
@@ -654,6 +679,13 @@ function sharePdf() {
       navigator.share(shareData)
         .then(() => {
           console.log('🔍 PDF shared successfully!')
+          // Track successful share
+          trackEvent('pdf_share', {
+            file_type: 'pdf',
+            file_url: pdfUrl,
+            component: 'PdfViewer',
+            share_method: 'web_share_api'
+          })
           clearTimeout(sharingTimeout)
           isSharing.value = false
         })
@@ -662,6 +694,13 @@ function sharePdf() {
           if (error.name !== 'AbortError') {
             // Only log error if it's not a user cancellation
             console.warn('🔍 Share was cancelled or failed')
+            // Track failed share
+            trackEvent('pdf_share_failed', {
+              file_type: 'pdf',
+              file_url: pdfUrl,
+              component: 'PdfViewer',
+              error: error.name || 'unknown'
+            })
           }
           // Explicitly do nothing - don't open any windows
           console.log('🔍 Share cancelled/failed - no window opened')
@@ -674,6 +713,13 @@ function sharePdf() {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(pdfUrl).then(() => {
           console.log('🔍 PDF URL copied to clipboard')
+          // Track clipboard fallback
+          trackEvent('pdf_share_fallback', {
+            file_type: 'pdf',
+            file_url: pdfUrl,
+            component: 'PdfViewer',
+            fallback_method: 'clipboard'
+          })
         }).catch(err => {
           console.error('🔍 Failed to copy URL:', err)
         })
@@ -729,6 +775,13 @@ function shareImage() {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(imageUrl).then(() => {
           console.log('🔍 Image URL copied to clipboard')
+          // Track clipboard fallback
+          trackEvent('image_share_fallback', {
+            file_type: 'image',
+            file_url: imageUrl,
+            component: 'PdfViewer',
+            fallback_method: 'clipboard'
+          })
         }).catch(err => {
           console.error('🔍 Failed to copy URL:', err)
         })
@@ -752,6 +805,13 @@ function shareImage() {
       navigator.share(shareData)
         .then(() => {
           console.log('🔍 Image shared successfully!')
+          // Track successful share
+          trackEvent('image_share', {
+            file_type: 'image',
+            file_url: imageUrl,
+            component: 'PdfViewer',
+            share_method: 'web_share_api'
+          })
           clearTimeout(sharingTimeout)
           isSharing.value = false
         })
@@ -760,6 +820,13 @@ function shareImage() {
           if (error.name !== 'AbortError') {
             // Only log error if it's not a user cancellation
             console.warn('🔍 Share was cancelled or failed')
+            // Track failed share
+            trackEvent('image_share_failed', {
+              file_type: 'image',
+              file_url: imageUrl,
+              component: 'PdfViewer',
+              error: error.name || 'unknown'
+            })
           }
           // Explicitly do nothing - don't open any windows
           console.log('🔍 Share cancelled/failed - no window opened')
@@ -772,6 +839,13 @@ function shareImage() {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(imageUrl).then(() => {
           console.log('🔍 Image URL copied to clipboard')
+          // Track clipboard fallback
+          trackEvent('image_share_fallback', {
+            file_type: 'image',
+            file_url: imageUrl,
+            component: 'PdfViewer',
+            fallback_method: 'clipboard'
+          })
         }).catch(err => {
           console.error('🔍 Failed to copy URL:', err)
         })

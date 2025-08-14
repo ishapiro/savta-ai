@@ -350,7 +350,7 @@
                 icon="pi pi-plus"
                 size="small"
                 @click="openAssetSelector"
-                class="bg-brand-dialog-save border-0 w-auto rounded-full px-6 py-2 shadow"
+                class=""
               />
             </div>
           </div>

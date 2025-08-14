@@ -94,7 +94,17 @@ export default defineEventHandler(async (event) => {
     const { data: downloads, error: downloadsError } = await supabase
       .from('activity_log')
       .select('user_id')
-      .in('action', ['memory_book_downloaded', 'memory_book_shared'])
+      .in('action', [
+        'memory_book_downloaded', 
+        'memory_book_shared',
+        'memory_book_download_success',
+        'memory_book_force_download_success',
+        'memory_book_share_success',
+        'pdf_download',
+        'image_download',
+        'pdf_share',
+        'image_share'
+      ])
       .gte('timestamp', startDate.toISOString())
       .not('user_id', 'is', null)
 

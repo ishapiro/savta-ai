@@ -21,9 +21,9 @@
             <i class="pi pi-info-circle text-sm"></i>
           </button>
           <Button
-            label="View Full Report"
+            label="View Full Funnel Report"
             icon="pi pi-external-link"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+            class="bg-brand-dialog-edit border-0 w-auto rounded-full px-6 py-2 shadow"
             @click="showFunnelReport = true"
           />
         </div>
@@ -95,7 +95,7 @@
                   :suggestions="funnelUserSuggestions"
                   @complete="searchFunnelUsers"
                   placeholder="Search for user..."
-                  class="w-48"
+                  class="w-60"
                   @item-select="loadFunnelData"
                 />
               </div>
@@ -108,7 +108,7 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Date Range"
-                class="w-40"
+                class="w-60"
                 @change="loadFunnelData"
               />
             </div>
