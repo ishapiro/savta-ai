@@ -777,6 +777,13 @@
             </div>
             <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
               <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                <i class="pi pi-file text-brand-secondary text-xs sm:text-sm"></i>
+                <span class="text-xs font-medium text-gray-600">Format</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.format || 'book' }}</p>
+            </div>
+            <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+              <div class="flex items-center gap-1 sm:gap-2 mb-1">
                 <i class="pi pi-calendar-plus text-brand-highlight text-xs sm:text-sm"></i>
                 <span class="text-xs font-medium text-gray-600">Event</span>
               </div>

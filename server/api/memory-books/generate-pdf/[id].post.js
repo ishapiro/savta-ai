@@ -1589,8 +1589,16 @@ export default defineEventHandler(async (event) => {
       const userIntendedPhotoCount = book.created_from_assets?.length || themePhotoCount
       console.log(`📸 Theme layout supports ${themePhotoCount} photos, user intended ${userIntendedPhotoCount} photos`)
       
-      // If user selected more photos than theme supports, use grid layout instead
-      if (userIntendedPhotoCount > themePhotoCount) {
+      // Check if this is a card format - if so, respect the format and limit photos to theme support
+      const isCardFormat = book.format === 'card'
+      if (isCardFormat) {
+        console.log(`🎴 Card format detected - respecting format and limiting to ${themePhotoCount} photos`)
+        // For card format, always use theme layout and limit photos to what the theme supports
+        const limitedAssets = book.created_from_assets?.slice(0, themePhotoCount) || []
+        book.created_from_assets = limitedAssets
+        console.log(`📸 Limited assets for card format: ${limitedAssets.length} photos`)
+      } else if (userIntendedPhotoCount > themePhotoCount) {
+        // Only switch to grid layout for non-card formats
         console.log(`⚠️ User selected ${userIntendedPhotoCount} photos but theme only supports ${themePhotoCount}. Switching to grid layout.`)
         // Change layout type to grid for this generation
         book.layout_type = 'grid'
@@ -1598,13 +1606,16 @@ export default defineEventHandler(async (event) => {
         throw new Error('SWITCH_TO_GRID_LAYOUT')
       }
       
-      const photoCount = themePhotoCount
+      const photoCount = isCardFormat ? book.created_from_assets?.length || themePhotoCount : themePhotoCount
       console.log(`📸 Processing ${photoCount} photos from theme layout`)
 
       // Fetch all assets for the book using photo_selection_pool if available, otherwise created_from_assets
-      const assetIds = book.photo_selection_pool && book.photo_selection_pool.length > 0 
-        ? book.photo_selection_pool 
-        : book.created_from_assets || []
+      // For card format, use the limited assets we just set
+      const assetIds = isCardFormat 
+        ? book.created_from_assets || []
+        : (book.photo_selection_pool && book.photo_selection_pool.length > 0 
+            ? book.photo_selection_pool 
+            : book.created_from_assets || [])
       
       console.log(`📸 Theme PDF - Asset pool: photo_selection_pool=${book.photo_selection_pool?.length || 0}, created_from_assets=${book.created_from_assets?.length || 0}, using ${assetIds.length} assets`)
       
