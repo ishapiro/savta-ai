@@ -135,6 +135,7 @@ create table if not exists memory_books (
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false,
+  deleted_at timestamp with time zone,
   include_captions boolean default true,
   include_tags boolean default true,
   ai_background boolean default true,

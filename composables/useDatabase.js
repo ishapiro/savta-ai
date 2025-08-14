@@ -591,15 +591,25 @@ export const useDatabase = () => {
   // Memory book operations
   const memoryBookOperations = {
     // Get user's memory books
-    getMemoryBooks: async () => {
+    getMemoryBooks: async (options = {}) => {
       if (!user.value) return []
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('memory_books')
         .select('*')
         .eq('user_id', user.value.id)
-        .eq('deleted', false)
-        .order('created_at', { ascending: false })
+      
+      // Handle deleted filter
+      if (options.deleted === true) {
+        query = query.eq('deleted', true)
+      } else if (options.deleted === false) {
+        query = query.eq('deleted', false)
+      } else {
+        // Default behavior: only get non-deleted books
+        query = query.eq('deleted', false)
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false })
       
       if (error) {
         console.error('Error fetching memory books:', error)
@@ -671,6 +681,23 @@ export const useDatabase = () => {
       
       await logActivity('memory_book_updated', { bookId, updates })
       return data
+    },
+
+    // Permanently delete memory book (from trash)
+    deleteMemoryBook: async (bookId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      
+      const { error } = await supabase
+        .from('memory_books')
+        .delete()
+        .eq('id', bookId)
+        .eq('user_id', user.value.id)
+        .eq('deleted', true) // Only allow deleting books that are already in trash
+      
+      if (error) throw error
+      
+      await logActivity('memory_book_permanently_deleted', { bookId })
+      return { success: true }
     },
 
     // Generate memory book from approved assets

@@ -66,6 +66,7 @@
                     <span>Memories</span>
                   </button>
                 </NuxtLink>
+
                 <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
                   <NuxtLink to="/app/admin" class="no-underline" @click="logEditorClick">
                     <button class="border-0flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
@@ -165,6 +166,7 @@
               <i class="pi pi-book text-xl text-brand-header"></i>
               <span class="font-medium text-brand-secondary">Memories</span>
             </NuxtLink>
+
             <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
               <NuxtLink to="/app/admin" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="logEditorClick; closeMobileMenu">
                 <i class="pi pi-palette text-xl text-brand-primary"></i>

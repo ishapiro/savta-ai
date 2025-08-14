@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     // Only allow deleting own books
     const { data: book, error: bookError } = await supabase
       .from('memory_books')
-      .select('id, user_id')
+      .select('id, user_id, deleted')
       .eq('id', bookId)
       .single()
     if (bookError || !book) {
@@ -37,25 +37,25 @@ export default defineEventHandler(async (event) => {
     if (book.user_id !== user.id) {
       throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
     }
+    if (!book.deleted) {
+      throw createError({ statusCode: 400, statusMessage: 'Book is not in trash' })
+    }
 
-    // Soft delete
-    const { error: updateError } = await supabase
+    // Permanently delete the book
+    const { error: deleteError } = await supabase
       .from('memory_books')
-      .update({ 
-        deleted: true,
-        deleted_at: new Date().toISOString()
-      })
+      .delete()
       .eq('id', bookId)
-    if (updateError) {
-      throw createError({ statusCode: 500, statusMessage: updateError.message })
+    if (deleteError) {
+      throw createError({ statusCode: 500, statusMessage: deleteError.message })
     }
 
     return { success: true }
   } catch (error) {
-    console.error('Delete Memory Book error:', error)
+    console.error('Permanent Delete Memory Book error:', error)
     throw createError({
       statusCode: error.statusCode || 500,
-      statusMessage: error.statusMessage || 'Failed to delete Memory Book'
+      statusMessage: error.statusMessage || 'Failed to permanently delete Memory Book'
     })
   }
-}) 
+})

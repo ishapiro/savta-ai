@@ -23,6 +23,14 @@
           >
             <i class="pi pi-info text-sm sm:text-lg text-brand-highlight"></i>
           </button>
+          <button
+            class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-brand-accent shadow hover:bg-brand-accent/80 transition-colors focus:outline-none flex-shrink-0"
+            @click="navigateToTrash"
+            aria-label="View trash"
+            v-tooltip.top="'View Trash'"
+          >
+            <i class="pi pi-trash text-sm sm:text-lg text-white"></i>
+          </button>
         </div>
         <div class="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
           <!-- Memory Cards Card -->
@@ -951,8 +959,8 @@
                 @click="confirmDeleteBook(selectedBook)"
               >
                 <i class="pi pi-trash text-xs sm:text-sm"></i>
-                <span class="hidden sm:inline">Delete</span>
-                <span class="sm:hidden">Delete</span>
+                <span class="hidden sm:inline">Trash</span>
+                <span class="sm:hidden">Trash</span>
               </button>
             </div>
           </div>
@@ -2073,14 +2081,14 @@
     </div>
   </div>
 
-  <Dialog v-model:visible="showDeleteDialog" modal header="Delete Memory?" class="w-full max-w-xs rounded-2xl">
+      <Dialog v-model:visible="showDeleteDialog" modal header="Move to Trash?" class="w-full max-w-xs rounded-2xl">
     <div class="text-center py-4">
       <i class="pi pi-exclamation-triangle text-3xl text-red-500 mb-2"></i>
       <div class="text-lg font-bold text-gray-900 mb-2">Are you sure?</div>
       <div class="text-gray-700 mb-4">This will move the memory to the deleted section. You can restore it later if needed.</div>
       <div class="flex justify-center gap-3">
         <button class="bg-brand-dialog-cancel text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="showDeleteDialog = false">Cancel</button>
-        <button class="bg-gradient-to-r from-red-500 to-brand-secondary hover:from-red-600 hover:to-brand-secondary text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="deleteBookConfirmed">Delete</button>
+        <button class="bg-gradient-to-r from-red-500 to-brand-secondary hover:from-red-600 hover:to-brand-secondary text-white font-bold rounded-full px-5 py-2 text-base shadow border-0" @click="deleteBookConfirmed">Move to Trash</button>
       </div>
     </div>
   </Dialog>
@@ -4560,6 +4568,11 @@ const retryMagicMemory = async () => {
   } finally {
     magicLoading.value = false
   }
+}
+
+// Navigate to trash page
+const navigateToTrash = () => {
+  navigateTo('/app/memory-books/trash')
 }
 
 const openMagicMemoryDialog = async (buttonType = 'full') => {
