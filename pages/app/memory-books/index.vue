@@ -191,7 +191,11 @@
                               <Wand2 v-if="book.format === 'card'" class="w-8 h-8 text-white" />
               <i v-else class="pi pi-book w-8 h-8 text-white flex items-center justify-center text-2xl"></i>
             </div>
-                            <span class="text-xs font-semibold text-white text-center px-2 leading-tight">{{ book.ai_supplemental_prompt || (book.format === 'card' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6))) }}</span>
+                            <span class="text-xs font-semibold text-white text-center px-2 leading-tight">{{ 
+                              book.ai_supplemental_prompt 
+                                ? (book.ai_supplemental_prompt.length > 20 ? book.ai_supplemental_prompt.slice(0, 20) + '...' : book.ai_supplemental_prompt)
+                                : (book.format === 'card' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6)))
+                            }}</span>
           </div>
         </div>
         <!-- Divider -->
@@ -4370,7 +4374,7 @@ async function onMagicMemoryContinue() {
         asset_ids: aiRes.selected_photo_ids,
         photo_selection_pool: photoSelectionPool,
         story: aiRes.story,
-        ai_supplemental_prompt: magicMemoryTitle.value || 'Magic Memory',
+        title: magicMemoryTitle.value || 'Magic Memory',
         memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
         background_type: aiRes.background_type || magicBackgroundType.value,
         background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
@@ -4522,7 +4526,7 @@ const retryMagicMemory = async () => {
         asset_ids: aiRes.selected_photo_ids,
         photo_selection_pool: config.photoSelectionPool,
         story: aiRes.story,
-        ai_supplemental_prompt: config.title || 'Magic Memory',
+        title: config.title || 'Magic Memory',
         memory_event: config.memoryEvent,
         background_type: aiRes.background_type || config.backgroundType,
         photo_count: config.photoCount,

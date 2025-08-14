@@ -390,7 +390,7 @@ that will create the best story together.  Prioritize photos that are related to
 ${memoryBookContext}
 PHOTO SELECTION RULES:
 - You MUST select exactly ${targetPhotoCount} photo${targetPhotoCount > 1 ? 's' : ''} from the provided pool
-- If there is a location named in the user selection prompt, match it against the location data in photo metadata (including landmarks, neighborhoods, cities, states, countries)
+- If there is a location named in the user selection prompt, prioritize photos from that location or nearby areas (including landmarks, neighborhoods, cities, states, countries)
 - Prioritize photos with a recent photo date
 - Select photos that are related to the user selection prompt or event
 - Choose the most meaningful and emotionally connected photos that work well together
@@ -550,7 +550,20 @@ ${photoDataSection}`
     // Validate that we have at least some photos selected
     if (selectedPhotos.length < 1) {
       console.error(`AI selected ${selectedPhotos.length} photos, need at least 1`)
-      throw createError({ statusCode: 500, statusMessage: `AI selected ${selectedPhotos.length} photos, need at least 1` })
+      console.log('🔄 Using fallback selection: selecting first available photos')
+      
+      // Fallback: select the first N photos available
+      const fallbackCount = Math.min(targetPhotoCount, photos.length)
+      const fallbackSelection = Array.from({ length: fallbackCount }, (_, i) => i + 1)
+      selectionResult.selected_photo_numbers = fallbackSelection
+      
+      // Re-select photos using fallback numbers
+      const fallbackPhotos = fallbackSelection.map(num => photos[num - 1])
+      console.log(`✅ Fallback selected ${fallbackPhotos.length} photos:`, fallbackPhotos.map(p => p.id))
+      
+      // Continue with fallback photos
+      selectedPhotos.length = 0
+      selectedPhotos.push(...fallbackPhotos)
     }
     
     // Warn if we have fewer photos than requested, but proceed
