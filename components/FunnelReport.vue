@@ -131,7 +131,11 @@
           </div>
 
           <!-- Visual Funnel -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <div class="bg-gradient-to-b from-gray-50 to-white rounded-xl border border-gray-200 p-6 relative overflow-hidden">
+            <!-- Funnel background pattern -->
+            <div class="absolute inset-0 opacity-5">
+              <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[400px] border-r-[400px] border-b-[600px] border-l-transparent border-r-transparent border-b-gray-300"></div>
+            </div>
             <div class="space-y-4">
               <div 
                 v-for="(stage, index) in funnelData.stages" 
@@ -139,7 +143,17 @@
                 class="relative"
               >
                 <!-- Funnel Stage -->
-                <div class="relative overflow-hidden">
+                <div class="relative overflow-hidden transition-all duration-500 mx-auto"
+                     :style="{ 
+                       width: getFunnelWidth(index, funnelData.stages.length),
+                       maxWidth: '800px',
+                       minWidth: '300px'
+                     }"
+                >
+                  <!-- Debug info (temporary) -->
+                  <div class="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 rounded-bl">
+                    {{ getFunnelWidth(index, funnelData.stages.length) }}
+                  </div>
                   <!-- Background gradient based on stage -->
                   <div 
                     class="absolute inset-0 rounded-lg opacity-10"
@@ -147,7 +161,11 @@
                   ></div>
                   
                   <!-- Stage content -->
-                  <div class="relative flex items-center justify-between p-6 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200">
+                  <div class="relative flex items-center justify-between p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-all duration-200 shadow-sm"
+                       :style="{
+                         boxShadow: `0 4px 6px -1px rgba(0, 0, 0, ${0.05 + (index * 0.02)})`
+                       }"
+                  >
                     <div class="flex items-center space-x-4">
                       <!-- Stage number with gradient -->
                       <div 
@@ -189,10 +207,21 @@
                 
                 <!-- Connection arrow -->
                 <div v-if="index < funnelData.stages.length - 1" class="flex justify-center my-4">
-                  <div class="relative">
-                    <div class="w-0.5 h-12 bg-gradient-to-b from-gray-300 to-gray-400"></div>
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <i class="pi pi-chevron-down text-gray-400 text-lg"></i>
+                  <div class="relative mx-auto"
+                       :style="{ 
+                         width: getFunnelWidth(index + 1, funnelData.stages.length),
+                         maxWidth: '800px',
+                         minWidth: '300px'
+                       }"
+                  >
+                    <!-- Funnel-shaped connection -->
+                    <div class="relative h-8">
+                      <!-- Center line -->
+                      <div class="absolute left-1/2 top-0 w-0.5 h-full bg-gradient-to-b from-gray-400 to-gray-500 transform -translate-x-1/2"></div>
+                      <!-- Arrow -->
+                      <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1">
+                        <i class="pi pi-chevron-down text-gray-500 text-lg"></i>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -368,6 +397,18 @@ const getConversionRateColor = (rate) => {
   if (rate >= 40) return 'bg-yellow-500'
   if (rate >= 20) return 'bg-orange-500'
   return 'bg-red-500'
+}
+
+// Calculate funnel width based on stage index
+const getFunnelWidth = (index, totalStages) => {
+  if (!totalStages || totalStages === 0) return '100%'
+  
+  // Create a more pronounced funnel effect
+  // Start at 100% and decrease more dramatically
+  const baseWidth = 100 - (index * 20) // More dramatic decrease
+  
+  // Ensure minimum width for readability
+  return `${Math.max(baseWidth, 35)}%`
 }
 
 // Show information dialog
