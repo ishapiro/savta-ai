@@ -31,6 +31,9 @@
       </div>
     </div>
 
+    <!-- Funnel Report Component -->
+    <FunnelReport />
+
     <!-- Analytics Info Banner -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
       <div class="flex items-start">
@@ -430,6 +433,8 @@ const error = ref(null)
 const analyticsData = ref(null)
 const selectedTimeRange = ref('7d')
 
+
+
 // Information dialog
 const showInfoDialogVisible = ref(false)
 const currentInfoDialog = ref({ title: '', content: '' })
@@ -806,6 +811,8 @@ const timeRangeOptions = [
   { label: 'Last 90 Days', value: '90d' },
   { label: 'Last Year', value: '1y' }
 ]
+
+
 
 // Computed properties for sorted data
 const sortedTopPages = computed(() => {
