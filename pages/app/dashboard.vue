@@ -352,7 +352,7 @@ function handleCardClick(cardType) {
       navigateTo('/app/review')
       break
     case 'ai':
-      navigateTo('/app/memory-books?openDialog=quick')
+      navigateTo('/app/memory-books')
       break
     case 'monthly':
       navigateTo('/app/monthly-delivery')

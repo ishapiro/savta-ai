@@ -173,7 +173,7 @@ console.log('[LOGIN] Origin from localStorage:', origin)
 watchEffect(() => {
   if (user.value) {
     if (origin === 'home') {
-      navigateTo('/app/memory-books?openDialog=quick')
+      navigateTo('/app/memory-books')
     } else {
       navigateTo('/app/dashboard')
     }

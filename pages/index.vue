@@ -131,6 +131,8 @@ const passwordError = ref('')
 // Get runtime config
 const config = useRuntimeConfig()
 
+
+
 const handleSubscribe = async () => {
   // const supabase = useSupabaseClient()
   const supabase = useNuxtApp().$supabase
@@ -178,7 +180,7 @@ const handleSubscribe = async () => {
   }
 }
 
-const checkPassword = () => {
+const checkPassword = async () => {
   if ((password.value || '').toLowerCase() === (config.public.insidersPassword || '').toLowerCase()) {
     showPasswordDialog.value = false
     password.value = ''
@@ -186,7 +188,24 @@ const checkPassword = () => {
     // Set insiders access using the composable
     const { setInsidersAccess } = useInsidersAccess()
     setInsidersAccess()
-    navigateTo('/app/home')
+    
+    // Check if user is logged in and redirect accordingly
+    const supabase = useNuxtApp().$supabase
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession()
+      
+      if (session && session.user) {
+        console.log('🔐 User is logged in, redirecting to dashboard')
+        await navigateTo('/app/dashboard')
+      } else {
+        console.log('🔐 User not logged in, going to home page')
+        await navigateTo('/app/home')
+      }
+    } catch (error) {
+      console.error('🔐 Error checking authentication:', error)
+      // If there's an error, default to home page
+      await navigateTo('/app/home')
+    }
   } else {
     passwordError.value = 'Incorrect password. Please try again.'
     password.value = ''

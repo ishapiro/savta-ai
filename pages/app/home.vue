@@ -127,12 +127,12 @@ const openMagicMemoryDialog = async (buttonType = 'quick') => {
       if (books && books.length > 0) {
         await navigateTo('/app/dashboard')
       } else {
-        // No memory books, navigate to memory books page
-        await navigateTo('/app/memory-books?openDialog=quick')
+        // No memory books, navigate to memory books page (will auto-handle dialog)
+        await navigateTo('/app/memory-books')
       }
     } catch (error) {
       // Fallback: navigate to memory books page if error
-      await navigateTo('/app/memory-books?openDialog=quick')
+      await navigateTo('/app/memory-books')
     }
   }
 }
@@ -150,9 +150,9 @@ onMounted(async () => {
         const hasApprovedPhotos = assets && assets.length > 0
         localStorage.removeItem('auth_origin')
         if (hasApprovedPhotos) {
-          await navigateTo('/app/memory-books?openDialog=quick')
+          await navigateTo('/app/memory-books')
         } else {
-          await navigateTo('/app/memory-books?openUploadDialog=true')
+          await navigateTo('/app/memory-books')
         }
       } catch (error) {
         localStorage.removeItem('auth_origin')

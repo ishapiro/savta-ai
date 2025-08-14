@@ -180,13 +180,9 @@ const goToDashboard = () => {
   visible.value = false
   console.log('[CONFIRM] goToDashboard called, origin:', origin)
   
-  if (origin === 'home') {
-    console.log('[CONFIRM] Redirecting to home page for enhanced flow')
-    navigateTo('/app/home')
-  } else {
-    console.log('[CONFIRM] Redirecting to memory books with quick dialog for new users')
-    navigateTo('/app/memory-books?openDialog=quick')
-  }
+  // Always go to dashboard for logged-in users
+  console.log('[CONFIRM] Redirecting to dashboard for logged-in user')
+  navigateTo('/app/dashboard')
 }
 
 const goToAbout = () => {
@@ -195,16 +191,12 @@ const goToAbout = () => {
 }
 
 const onDialogHide = () => {
-  // When dialog is closed, navigate based on origin
+  // When dialog is closed, navigate to dashboard for logged-in users
   console.log('[CONFIRM] onDialogHide called, origin:', origin)
   
-  if (origin === 'home') {
-    console.log('[CONFIRM] Dialog hide - redirecting to home page for enhanced flow')
-    navigateTo('/app/home')
-  } else {
-    console.log('[CONFIRM] Dialog hide - redirecting to memory books with quick dialog for new users')
-    navigateTo('/app/memory-books?openDialog=quick')
-  }
+  // Always go to dashboard for logged-in users
+  console.log('[CONFIRM] Dialog hide - redirecting to dashboard for logged-in user')
+  navigateTo('/app/dashboard')
 }
 
 const isUserDisabled = ref(false)

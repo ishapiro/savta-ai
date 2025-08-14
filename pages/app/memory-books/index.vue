@@ -506,14 +506,14 @@
               </ul>
               
               <!-- Special recommendation for new users -->
-              <div v-if="shouldOpenWizardAfterUpload" class="mt-4 p-3 bg-brand-highlight/10 rounded-lg border border-brand-highlight/20">
+              <div v-if="showSpecialUploadMessaging" class="mt-4 p-3 bg-brand-highlight/10 rounded-lg border border-brand-highlight/20">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-lightbulb text-brand-highlight text-lg"></i>
-                  <span class="font-semibold text-brand-highlight">💡 Pro Tip for Best Results</span>
+                  <span class="font-semibold text-brand-highlight">💡 Getting Started Recommendation</span>
                 </div>
                 <p class="text-sm text-brand-primary">
-                  Savta, our special AI, works best when she can select from a library of at least 6 photos. 
-                  This helps her create more meaningful and diverse memory cards for you!
+                  To get started, we recommend loading 6 or more photos from your computer, phone, or tablet. 
+                  This helps Savta create more meaningful and diverse memory cards for you!
                 </p>
               </div>
             </div>
@@ -2652,13 +2652,23 @@ onMounted(async () => {
     /Google Inc/.test(navigator.vendor) &&
     !/Edg|Brave|OPR/.test(ua)
   
-  // Check for assets to determine empty state
+  // Check for assets and memory books to determine what to show
   await checkAssets()
+  
+  // Get memory books count
+  let memoryBooksCount = 0
+  try {
+    const books = await db.memoryBooks.getMemoryBooks()
+    memoryBooksCount = books?.length || 0
+    console.log(`📚 Found ${memoryBooksCount} memory books`)
+  } catch (error) {
+    console.error('❌ Error checking memory books:', error)
+  }
   
   // Check for query parameters to auto-open dialogs
   console.log('[MEMORY-BOOKS] onMounted - route query params:', route.query)
   
-    if (route.query.openDialog === 'quick') {
+  if (route.query.openDialog === 'quick') {
     console.log('[MEMORY-BOOKS] onMounted - checking photo count before opening wizard')
     // Check if user has enough photos before opening wizard
     try {
@@ -2694,7 +2704,31 @@ onMounted(async () => {
       showUploadDialog.value = true
     }, 500)
   } else {
-    console.log('[MEMORY-BOOKS] onMounted - no dialog parameters found')
+    console.log('[MEMORY-BOOKS] onMounted - no dialog parameters found, checking state')
+    
+    // Auto-open appropriate dialog based on user state
+    if (memoryBooksCount === 0) {
+      // No memory books - check if user has assets
+      if (approvedAssetsCount.value === 0) {
+        console.log('[MEMORY-BOOKS] onMounted - no assets, no memory books, showing upload dialog')
+        // No assets and no memory books - show upload dialog with special messaging
+        setTimeout(() => {
+          showUploadDialog.value = true
+          // Set flags for special messaging and wizard after upload
+          shouldOpenWizardAfterUpload.value = true
+          showSpecialUploadMessaging.value = true
+        }, 1000)
+      } else {
+        console.log('[MEMORY-BOOKS] onMounted - has assets, no memory books, opening wizard directly')
+        // Has assets but no memory books - open wizard directly
+        setTimeout(() => {
+          openMagicMemoryDialog('quick')
+        }, 1000)
+      }
+    } else {
+      console.log('[MEMORY-BOOKS] onMounted - has memory books, showing normal page')
+      // Has memory books - show normal page
+    }
   }
   updateIsMobile()
   window.addEventListener('resize', updateIsMobile)
@@ -5095,6 +5129,7 @@ const magicCustomMemoryEvent = ref('')
 // Upload dialog state
 const showUploadDialog = ref(false)
 const shouldOpenWizardAfterUpload = ref(false)
+const showSpecialUploadMessaging = ref(false)
 const uploadProgress = ref(0)
 const uploadStatus = ref('')
 const uploadingFiles = ref([])
@@ -5428,6 +5463,7 @@ const resetUploadDialog = () => {
     failedFiles.value = []
     uploadProgress.value = 0
     uploadStatus.value = ''
+    showSpecialUploadMessaging.value = false
   }
 }
 
