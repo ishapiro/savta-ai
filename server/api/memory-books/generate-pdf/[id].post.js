@@ -423,7 +423,7 @@ export default defineEventHandler(async (event) => {
     // Helper function to perform smart cropping
     async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null) {
       try {
-        console.log('🧠 Performing OpenAI face detection crop...')
+        console.log('🧠 Performing OpenAI person detection crop...')
         console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
         
         // Get image metadata to determine orientation
@@ -488,9 +488,9 @@ export default defineEventHandler(async (event) => {
             if (faceRes.ok) {
               const faceData = await faceRes.json()
               faces = faceData.faces || []
-              console.log(`👥 OpenAI detected ${faces.length} faces`)
+              console.log(`👥 OpenAI detected ${faces.length} people`)
         } else {
-              console.warn('⚠️ OpenAI face detection failed, using fallback')
+              console.warn('⚠️ OpenAI person detection failed, using fallback')
             }
           } catch (faceError) {
             console.warn('⚠️ OpenAI face detection error:', faceError.message)
@@ -502,34 +502,40 @@ export default defineEventHandler(async (event) => {
         let cropArea = null
         
         if (faces.length > 0) {
-          // Calculate crop area based on face centers with generous padding
+          // AI is now correctly detecting people, so we can use face-based cropping for all images
+          console.log('✅ Using AI person detection for cropping')
+          
+          // Calculate crop area based on full person bounding boxes
           let minX = workingMetadata.width
           let minY = workingMetadata.height
           let maxX = 0
           let maxY = 0
           
           faces.forEach(face => {
-            // AI now returns coordinates in pixels, no conversion needed
-            const centerX = face.x
-            const centerY = face.y
-            const faceWidth = face.width
-            const faceHeight = face.height
+            // AI returns normalized coordinates (0-1), convert to pixel coordinates
+            const normalizedX = face.bbox.x
+            const normalizedY = face.bbox.y
+            const normalizedWidth = face.bbox.width
+            const normalizedHeight = face.bbox.height
             
-            // Add generous padding around each face center (25% more area around face)
-            const paddingX = faceWidth * 1.25
-            const paddingY = faceHeight * 1.25
+            // Convert normalized coordinates to pixel coordinates
+            const personMinX = normalizedX * workingMetadata.width
+            const personMaxX = (normalizedX + normalizedWidth) * workingMetadata.width
+            const personMinY = normalizedY * workingMetadata.height
+            const personMaxY = (normalizedY + normalizedHeight) * workingMetadata.height
             
-            const faceMinX = centerX - paddingX
-            const faceMaxX = centerX + paddingX
-            const faceMinY = centerY - paddingY
-            const faceMaxY = centerY + paddingY
+            // Calculate center and dimensions for logging
+            const centerX = (personMinX + personMaxX) / 2
+            const centerY = (personMinY + personMaxY) / 2
+            const personWidth = personMaxX - personMinX
+            const personHeight = personMaxY - personMinY
             
-            minX = Math.min(minX, faceMinX)
-            minY = Math.min(minY, faceMinY)
-            maxX = Math.max(maxX, faceMaxX)
-            maxY = Math.max(maxY, faceMaxY)
+            minX = Math.min(minX, personMinX)
+            minY = Math.min(minY, personMinY)
+            maxX = Math.max(maxX, personMaxX)
+            maxY = Math.max(maxY, personMaxY)
             
-            console.log(`🎯 Face ${faces.indexOf(face) + 1}: center(${centerX},${centerY}), size(${faceWidth}x${faceHeight}), padded(${faceMinX.toFixed(1)},${faceMinY.toFixed(1)}) to (${faceMaxX.toFixed(1)},${faceMaxY.toFixed(1)})`)
+            console.log(`🎯 Person ${faces.indexOf(face) + 1}: center(${centerX},${centerY}), size(${personWidth}x${personHeight}), bounds(${personMinX.toFixed(1)},${personMinY.toFixed(1)}) to (${personMaxX.toFixed(1)},${personMaxY.toFixed(1)})`)
           })
           
           // Ensure crop area stays within image bounds
@@ -543,7 +549,7 @@ export default defineEventHandler(async (event) => {
           const currentWidth = maxX - minX
           const currentHeight = maxY - minY
           
-          console.log('🎯 Face detection crop calculation:', {
+          console.log('🎯 Person detection crop calculation:', {
             targetAspectRatio: targetAspectRatio.toFixed(3),
             currentWidth: currentWidth.toFixed(1),
             currentHeight: currentHeight.toFixed(1),
@@ -551,8 +557,8 @@ export default defineEventHandler(async (event) => {
             minY: minY.toFixed(1),
             maxX: maxX.toFixed(1),
             maxY: maxY.toFixed(1),
-            faceCount: faces.length,
-            paddingMultiplier: '1.25x'
+            personCount: faces.length,
+            boundingBoxMethod: 'full_person'
           })
           
           // Calculate the maximum possible crop area that includes all faces
@@ -570,15 +576,15 @@ export default defineEventHandler(async (event) => {
               finalWidth = finalHeight * targetAspectRatio
             }
             
-            // Calculate the center of the face bounding box
+            // Calculate the center of the person bounding box
             const faceCenterX = (minX + maxX) / 2
             const faceCenterY = (minY + maxY) / 2
             
-            // Center the crop around the face bounding box
+            // Center the crop around the person bounding box
             finalX = Math.max(0, Math.min(faceCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
             finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
             
-            // Ensure the crop includes all faces (adjust if faces would be cut off)
+            // Ensure the crop includes all people (adjust if people would be cut off)
             if (finalX > minX) {
               finalX = minX
             }
@@ -610,24 +616,28 @@ export default defineEventHandler(async (event) => {
               finalHeight = finalWidth / targetAspectRatio
             }
             
-            // Calculate the center of the face bounding box
+            // Calculate the center of the person bounding box
             const faceCenterX = (minX + maxX) / 2
             const faceCenterY = (minY + maxY) / 2
             
-            // Center the crop around the face bounding box
+            // For portrait images, ALWAYS start from the top to avoid cutting off people
+            // This is because person detection might miss people at the very top of the image
             finalX = Math.max(0, Math.min(faceCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
-            finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
+            finalY = 0 // Always start from the top for portrait images
             
-            // Ensure the crop includes all faces (adjust if faces would be cut off)
+            // Ensure we don't cut off people at the bottom
+            if (finalY + finalHeight < maxY) {
+              finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
+            }
+            
+            // Ensure the crop includes all people (adjust if people would be cut off)
             if (finalX > minX) {
               finalX = minX
             }
             if (finalX + finalWidth < maxX) {
               finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
             }
-            if (finalY > minY) {
-              finalY = minY
-            }
+            // Ensure we don't cut off faces at the bottom
             if (finalY + finalHeight < maxY) {
               finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
             }
@@ -640,20 +650,20 @@ export default defineEventHandler(async (event) => {
               cropArea: `${finalX.toFixed(1)},${finalY.toFixed(1)} to ${(finalX + finalWidth).toFixed(1)},${(finalY + finalHeight).toFixed(1)}`
             })
           } else {
-            // For square, use the largest possible square and center around faces
+            // For square, use the largest possible square and center around people
             const maxSize = Math.min(workingMetadata.width, workingMetadata.height)
             finalWidth = maxSize
             finalHeight = maxSize
             
-            // Calculate the center of the face bounding box
+            // Calculate the center of the person bounding box
             const faceCenterX = (minX + maxX) / 2
             const faceCenterY = (minY + maxY) / 2
             
-            // Center the crop around the face bounding box
+            // Center the crop around the person bounding box
             finalX = Math.max(0, Math.min(faceCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
             finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
             
-            // Ensure the crop includes all faces (adjust if faces would be cut off)
+            // Ensure the crop includes all people (adjust if people would be cut off)
             if (finalX > minX) {
               finalX = minX
             }
@@ -684,6 +694,73 @@ export default defineEventHandler(async (event) => {
           if (finalY + finalHeight > workingMetadata.height) {
             finalHeight = workingMetadata.height - finalY
             finalWidth = finalHeight * targetAspectRatio
+          }
+          
+          // Final safety check: ensure all detected people are within the crop area
+          let needsAdjustment = false
+          faces.forEach(face => {
+            const personCenterX = face.x
+            const personCenterY = face.y
+            const personWidth = face.width
+            const personHeight = face.height
+            
+            // Calculate person bounding box
+            const personMinX = personCenterX - (personWidth / 2)
+            const personMaxX = personCenterX + (personWidth / 2)
+            const personMinY = personCenterY - (personHeight / 2)
+            const personMaxY = personCenterY + (personHeight / 2)
+            
+            // Check if person would be cut off
+            if (personMinX < finalX || 
+                personMaxX > finalX + finalWidth ||
+                personMinY < finalY || 
+                personMaxY > finalY + finalHeight) {
+              needsAdjustment = true
+            }
+          })
+          
+          if (needsAdjustment) {
+            console.log('⚠️ Person crop adjustment needed - expanding crop to include all people')
+            // Expand crop to include all people with their full bounding boxes
+            let newMinX = workingMetadata.width
+            let newMinY = workingMetadata.height
+            let newMaxX = 0
+            let newMaxY = 0
+            
+            faces.forEach(face => {
+              const personWidth = face.width
+              const personHeight = face.height
+              const personMinX = face.x - (personWidth / 2)
+              const personMaxX = face.x + (personWidth / 2)
+              const personMinY = face.y - (personHeight / 2)
+              const personMaxY = face.y + (personHeight / 2)
+              
+              newMinX = Math.min(newMinX, personMinX)
+              newMinY = Math.min(newMinY, personMinY)
+              newMaxX = Math.max(newMaxX, personMaxX)
+              newMaxY = Math.max(newMaxY, personMaxY)
+            })
+            
+            // Ensure bounds
+            newMinX = Math.max(0, newMinX)
+            newMinY = Math.max(0, newMinY)
+            newMaxX = Math.min(workingMetadata.width, newMaxX)
+            newMaxY = Math.min(workingMetadata.height, newMaxY)
+            
+            // Recalculate crop with expanded bounds
+            const expandedWidth = newMaxX - newMinX
+            const expandedHeight = newMaxY - newMinY
+            
+            if (isPortrait) {
+              finalHeight = workingMetadata.height
+              finalWidth = finalHeight * targetAspectRatio
+              if (finalWidth > workingMetadata.width) {
+                finalWidth = workingMetadata.width
+                finalHeight = finalWidth / targetAspectRatio
+              }
+              finalX = Math.max(0, Math.min((newMinX + newMaxX) / 2 - finalWidth / 2, workingMetadata.width - finalWidth))
+              finalY = 0 // Start from top for portrait
+            }
           }
           
           cropArea = {
@@ -870,7 +947,7 @@ export default defineEventHandler(async (event) => {
           .jpeg({ quality: 100, progressive: true, mozjpeg: true })
           .toBuffer()
         
-        console.log('✅ OpenAI face detection crop completed successfully')
+        console.log('✅ OpenAI person detection crop completed successfully')
         return croppedImage
       } catch (error) {
         console.warn('⚠️ OpenAI face detection crop failed, using fallback:', error.message)
@@ -1403,7 +1480,7 @@ export default defineEventHandler(async (event) => {
               .jpeg({ quality: 100, progressive: true, mozjpeg: true })
               .toBuffer()
             
-                          console.log(`✅ ${isMagicMemory ? 'SMART CROP + ' : ''}ROUNDED CORNERS PROCESSING COMPLETED`)
+                          console.log(`✅ ROUNDED CORNERS PROCESSING COMPLETED`)
               console.log(`📐 Standardized dimensions used: ${standardizedWidth}x${standardizedHeight} (${isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'})`)
             break
             
@@ -1606,7 +1683,7 @@ export default defineEventHandler(async (event) => {
         throw new Error('SWITCH_TO_GRID_LAYOUT')
       }
       
-      const photoCount = isCardFormat ? book.created_from_assets?.length || themePhotoCount : themePhotoCount
+      const photoCount = themePhotoCount
       console.log(`📸 Processing ${photoCount} photos from theme layout`)
 
       // Fetch all assets for the book using photo_selection_pool if available, otherwise created_from_assets
@@ -1649,6 +1726,7 @@ export default defineEventHandler(async (event) => {
       
       const photos = assets.map(asset => ({
         id: asset.id,
+        storage_url: asset.storage_url, // Add the storage_url field
         ai_caption: asset.ai_caption || '',
         people_detected: asset.people_detected || [],
         tags: asset.tags || [],
@@ -1674,13 +1752,15 @@ export default defineEventHandler(async (event) => {
         },
         body: JSON.stringify({
           photos: photos,
+          userId: user.id,
+          memoryBookId: book.id,
           title: book.ai_supplemental_prompt,
           memory_event: book.memory_event,
           theme: book.theme_id || null,
           photo_count: photoCount,
           background_type: book.background_type || 'white',
           background_color: book.background_color,
-          forceAll: isPhotoLibrarySelection // Force AI to use all photos when user has manually selected them
+          forceAll: isPhotoLibrarySelection || photoCount === photos.length // Force AI to use all photos when user has manually selected them or when count matches
         })
       })
       if (magicRes.ok) {

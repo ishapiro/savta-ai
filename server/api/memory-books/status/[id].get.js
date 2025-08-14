@@ -63,12 +63,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    console.log(`[STATUS] Raw book data from database:`, {
-      id: book.id,
-      status: book.status,
-      pdf_url: book.pdf_url,
-      updated_at: book.updated_at
-    })
+
 
     // Get the PDF status (with error handling for missing table)
     let pdfStatus = null

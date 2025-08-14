@@ -2963,7 +2963,7 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = 'Background ready, creating pages...'
               } else if (status.pdf_status === '🤔 Processing with AI...') {
         currentProgress.value = 8
-        currentProgressMessage.value = 'Generating story and selecting photos...'
+        currentProgressMessage.value = 'Step 1: Selecting best photos...'
               } else if (status.pdf_status === 'Gathering your special memories...') {
         currentProgress.value = 12
         currentProgressMessage.value = 'Gathering memories...'
@@ -4346,9 +4346,9 @@ async function onMagicMemoryContinue() {
       aiBody.forceAll = true
     }
     
-    // Update status for story generation
-    currentProgress.value = 15
-    currentProgressMessage.value = '🔮 Crafting your special story...'
+    // Update status for photo selection
+    currentProgress.value = 10
+    currentProgressMessage.value = 'Step 1: Selecting best photos...'
     
     const aiRes = await $fetch('/api/ai/magic-memory', {
       method: 'POST',
@@ -4361,9 +4361,13 @@ async function onMagicMemoryContinue() {
       throw new Error('I need to try again to create something special for you.')
     }
     
+    // Update status for story generation
+    currentProgress.value = 20
+    currentProgressMessage.value = 'Step 2: Generating story...'
+    
     // Update status for saving the magic memory
     currentProgress.value = 25
-    currentProgressMessage.value = '📚 Saving your magic card...'
+    currentProgressMessage.value = 'Step 3: Saving to your library...'
     
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
@@ -4392,7 +4396,7 @@ async function onMagicMemoryContinue() {
     
     // Update status for PDF generation
     currentProgress.value = 30
-    currentProgressMessage.value = '✨ Creating your magic card...'
+    currentProgressMessage.value = 'Step 4: Finding people in your photos for cropping...'
     
     // Create a book object for the progress dialog with proper asset references
     const book = {
@@ -4496,9 +4500,9 @@ const retryMagicMemory = async () => {
       aiBody.forceAll = true
     }
     
-    // Update status for story generation
-    currentProgress.value = 15
-    currentProgressMessage.value = '🔮 Crafting your special story...'
+    // Update status for photo selection
+    currentProgress.value = 10
+    currentProgressMessage.value = 'Step 1: Selecting best photos...'
     
     const aiRes = await $fetch('/api/ai/magic-memory', {
       method: 'POST',
@@ -4513,9 +4517,13 @@ const retryMagicMemory = async () => {
       throw new Error('I need to try again to create something special for you.')
     }
     
+    // Update status for story generation
+    currentProgress.value = 20
+    currentProgressMessage.value = 'Step 2: Generating story...'
+    
     // Update status for saving the magic memory
     currentProgress.value = 25
-    currentProgressMessage.value = '📚 Saving your magic card...'
+    currentProgressMessage.value = 'Step 3: Saving to your library...'
     
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
@@ -4544,7 +4552,7 @@ const retryMagicMemory = async () => {
     
     // Update status for PDF generation
     currentProgress.value = 30
-    currentProgressMessage.value = '✨ Creating your magic card...'
+    currentProgressMessage.value = 'Step 4: Finding people in your photos for cropping...'
     
     // Create a book object for the progress dialog with proper asset references
     const book = {

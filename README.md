@@ -25,7 +25,7 @@ npm run dev
 - **Styling**: Tailwind CSS
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
-- **AI Processing**: OpenAI (GPT-4 Vision, DALL-E 3)
+- **AI Processing**: OpenAI (GPT-5, DALL-E 3)
 - **Email**: SendGrid SMTP + Webhooks
 - **PDF Generation**: PDF-lib
 - **Deployment**: Railway.com
