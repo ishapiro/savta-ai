@@ -39,14 +39,14 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Memory book not found' })
     }
 
-    // Reset fields for regeneration
+    // Reset fields for regeneration (preserve magic_story for card format)
     const { error: updateError } = await supabase
       .from('memory_books')
       .update({
         status: 'draft',
         background_url: null,
-        pdf_url: null,
-        magic_story: null
+        pdf_url: null
+        // Note: magic_story is preserved to satisfy database trigger requirements
       })
       .eq('id', bookId)
     if (updateError) {

@@ -2922,8 +2922,33 @@ const pollPdfStatus = async () => {
       // Check if pdf_url is available but still wait for completion status
       if (status.pdf_url && status.pdf_url.startsWith('https://')) {
         console.log('✅ PDF URL found, waiting for book status to be ready...')
+        console.log('🔍 Debug - Current status:', {
+          pdf_url: status.pdf_url,
+          book_status: status.book_status,
+          pdf_status: status.pdf_status
+        })
         currentProgress.value = 95
         currentProgressMessage.value = 'Finalizing magic memory status...'
+        return
+      }
+      
+      // Add fallback: if we have a PDF URL but status is not ready, close after a reasonable timeout
+      if (status.pdf_url && status.pdf_url.startsWith('https://') && status.book_status !== 'ready') {
+        console.log('⚠️ PDF URL found but book status is not ready, closing dialog anyway')
+        console.log('🔍 Debug - Status details:', {
+          pdf_url: status.pdf_url,
+          book_status: status.book_status,
+          pdf_status: status.pdf_status
+        })
+        currentProgress.value = 100
+        currentProgressMessage.value = isRegenerating.value 
+          ? 'Your special memory is ready!' 
+          : 'Your memory book is ready!'
+        setTimeout(() => {
+          stopProgressPolling()
+          showProgressDialog.value = false
+          loadMemoryBooks() // Reload to show updated status
+        }, 2000) // Shorter timeout for this fallback case
         return
       }
       
@@ -3095,11 +3120,8 @@ const generatePDF = async (book) => {
   console.log('generatePDF called for book:', book.id)
   
   // Check if the book has assets
-  // For books with stories, check photo_selection_pool (user's original selection) for regeneration
-  // For regular memories, check created_from_assets (user's selected photos)
-          const hasAssets = book.magic_story
-    ? (book.photo_selection_pool && book.photo_selection_pool.length > 0)
-    : (book.created_from_assets && book.created_from_assets.length > 0)
+  // Always check created_from_assets for regeneration (both theme-based and regular memories)
+  const hasAssets = book.created_from_assets && book.created_from_assets.length > 0
   
   if (!hasAssets) {
     console.error('❌ Cannot generate PDF: No assets found in memory book')
@@ -4467,7 +4489,8 @@ async function onMagicMemoryContinue() {
         asset_ids: aiRes.selected_photo_ids,
         story: aiRes.story,
         background_type: aiRes.background_type || magicBackgroundType.value,
-        background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null
+        background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
+        photo_selection_pool: photoSelectionPool
       },
       headers: {
         Authorization: `Bearer ${accessToken}`

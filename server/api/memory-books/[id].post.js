@@ -49,9 +49,15 @@ export default defineEventHandler(async (event) => {
       if (body.background_type) updateData.background_type = body.background_type
       if (body.background_color) updateData.background_color = body.background_color
       
-      // If we're updating a template with real data, change status to draft
+      // If we're updating a template with real data, preserve the photo_selection_pool and change status to draft
       if (book.status === 'template' && body.asset_ids && body.story) {
         updateData.status = 'draft'
+        // Use photo_selection_pool from request body if provided, otherwise preserve from template
+        if (body.photo_selection_pool) {
+          updateData.photo_selection_pool = body.photo_selection_pool
+        } else if (book.photo_selection_pool) {
+          updateData.photo_selection_pool = book.photo_selection_pool
+        }
       }
       
       const { error: updateError } = await supabase

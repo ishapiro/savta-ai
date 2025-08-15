@@ -121,8 +121,8 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    // Validate that all selected numbers are valid indices
-    const validIndices = selectedPhotoNumbers.every(num => num >= 1 && num <= photoUrlsArray.length)
+    // Validate that all selected numbers are valid indices (0-based)
+    const validIndices = selectedPhotoNumbers.every(num => num >= 0 && num < photoUrlsArray.length && !isNaN(num))
     if (!validIndices) {
       console.error('❌ Photo selection contains invalid indices:', selectedPhotoNumbers)
       throw createError({
@@ -133,7 +133,7 @@ export default defineEventHandler(async (event) => {
     
     // Get the actual selected photo URLs
     const selectedPhotoUrls = selectedPhotoNumbers.map(num => {
-      const photo = photoUrlsArray[num - 1];
+      const photo = photoUrlsArray[num];
       if (!photo) return null;
       
       // Extract URL from photo object or use string directly
@@ -177,7 +177,7 @@ export default defineEventHandler(async (event) => {
     
     return {
       success: true,
-      selected_photo_ids: selectedPhotoNumbers.map(num => photoUrlsArray[num - 1].id).filter(Boolean),
+      selected_photo_ids: selectedPhotoNumbers.map(num => photoUrlsArray[num].id).filter(Boolean),
       story: storyResult.story,
       background_type: 'white' // Default background type
     }

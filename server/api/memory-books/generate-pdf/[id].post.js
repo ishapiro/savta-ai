@@ -1431,12 +1431,19 @@ export default defineEventHandler(async (event) => {
       // Check if we already have a real story (not a placeholder)
       let hasExistingStory = aiStory && aiStory.trim().length > 0
       
+      // Check if this is a regeneration (book was previously ready and is being recreated)
+      const isRegeneration = book.status === 'draft' && book.background_url === null && book.pdf_url === null && hasExistingStory
+      
       if (isPhotoLibrarySelection) {
         console.log('📚 Photo library selection detected - using user-selected photos without AI selection')
         // For photo library selection, use the assets as-is (they were pre-selected by the user)
         selectedAssets = assets
         // Still generate a story using the selected photos
         console.log('🎨 Photo library layout detected, generating a story for user-selected photos')
+      } else if (isRegeneration) {
+        // Force story regeneration for recreate operations
+        console.log('🔄 Regeneration detected - generating a new story for recreate')
+        selectedAssets = assets // assets already filtered to created_from_assets
       } else if (book.created_from_assets && book.created_from_assets.length > 0 && hasExistingStory) {
         // Use existing story and assets for newly created magic memory cards (only if we have both assets and a real story)
         console.log('📖 Using existing story and selected assets for magic memory card')
@@ -1494,9 +1501,9 @@ export default defineEventHandler(async (event) => {
         location: asset.location || null
       }))
       
-      // Only call magic memory endpoint for regenerations (when we don't have selected assets yet)
+      // Call magic memory endpoint for regenerations or when we don't have selected assets yet
       // For newly created cards, the magic memory endpoint is already called from the frontend
-      if (!book.created_from_assets || book.created_from_assets.length === 0) {
+      if (isRegeneration || !book.created_from_assets || book.created_from_assets.length === 0) {
         await updatePdfStatus(supabase, book.id, user.id, `🎯 Step 1: Examining ${photos.length} photos to find ${photoCount} best...`)
         
         const requestBody = {
@@ -1734,11 +1741,57 @@ export default defineEventHandler(async (event) => {
       // Use centralized function to save and upload file
       const pdfStorageUrl = await saveAndUploadFile(pdfDoc, book, user, supabase, config, effectivePrintSize, logger)
       
-      // Update book status and return
-      await supabase.from('memory_books').update({ 
-        status: 'ready', 
-        generated_at: new Date().toISOString() 
-      }).eq('id', book.id)
+      // Update book status and return with comprehensive error checking
+      console.log('🔧 CRITICAL: Updating book status to ready...')
+      console.log('🔧 Book ID:', book.id)
+      console.log('🔧 User ID:', user.id)
+      
+      try {
+        const { data: updateData, error: updateError } = await supabase
+          .from('memory_books')
+          .update({ 
+            status: 'ready', 
+            generated_at: new Date().toISOString() 
+          })
+          .eq('id', book.id)
+          .select()
+        
+        if (updateError) {
+          console.error('❌ CRITICAL ERROR: Failed to update book status to ready:', updateError)
+          console.error('❌ Error details:', {
+            code: updateError.code,
+            message: updateError.message,
+            details: updateError.details,
+            hint: updateError.hint
+          })
+          throw updateError
+        } else {
+          console.log('✅ SUCCESS: Book status updated to ready:', updateData)
+        }
+        
+        // Verify the update worked
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('memory_books')
+          .select('status, pdf_url')
+          .eq('id', book.id)
+          .single()
+        
+        if (verifyError) {
+          console.error('❌ CRITICAL ERROR: Failed to verify book status update:', verifyError)
+        } else {
+          console.log('✅ VERIFICATION: Book status is now:', verifyData.status)
+          console.log('✅ VERIFICATION: Book pdf_url is:', verifyData.pdf_url)
+        }
+        
+      } catch (statusError) {
+        console.error('❌ CRITICAL EXCEPTION during book status update:', statusError)
+        console.error('❌ Exception details:', {
+          message: statusError.message,
+          stack: statusError.stack
+        })
+        // Don't throw here - we still want to return the PDF even if status update fails
+      }
+      
       await updatePdfStatus(supabase, book.id, user.id, '🎨 Your themed memory is ready!')
       return { success: true, downloadUrl: pdfStorageUrl }
       } catch (themeError) {
@@ -2347,36 +2400,7 @@ export default defineEventHandler(async (event) => {
     // Set a final status that the frontend can wait for
     await updatePdfStatus(supabase, book.id, user.id, 'PDF generation completed successfully')
     
-    // Immediately clean up and update book status (no delays)
-    console.log('🧹 Cleaning up PDF status...')
-    await supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
     
-    // Now update the book status to ready immediately
-    console.log('📝 Final update: setting memory book status to ready')
-    const { data: finalUpdateData, error: finalUpdateError } = await supabase
-      .from('memory_books')
-      .update({ status: 'ready' })
-      .eq('id', book.id)
-      .select()
-    
-    if (finalUpdateError) {
-      console.error('❌ Error updating book status to ready:', finalUpdateError)
-    } else {
-      console.log('✅ Book status updated to ready successfully:', finalUpdateData)
-    }
-    
-    // Verify the update worked
-    const { data: verifyData, error: verifyError } = await supabase
-      .from('memory_books')
-      .select('status')
-      .eq('id', book.id)
-      .single()
-    
-    if (verifyError) {
-      console.error('❌ Error verifying book status update:', verifyError)
-    } else {
-      console.log('✅ Verified book status is now:', verifyData.status)
-    }
     
     // Small delay to ensure database transaction is committed
     await new Promise(resolve => setTimeout(resolve, 1000))
@@ -2427,6 +2451,82 @@ export default defineEventHandler(async (event) => {
       logger.success('PDF generation completed successfully')
       await updatePdfStatus(supabase, book.id, user.id, 'completed')
     logger.summary()
+    
+    console.log('🔍 PDF generation completed, about to clean up and update status...')
+    console.log('🔍 About to start status update process...')
+    
+    // Immediately clean up and update book status (no delays)
+    console.log('🧹 Cleaning up PDF status...')
+    console.log('🔍 Status update section reached!')
+    await supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
+    
+    console.log('🔍 About to update book status to ready...')
+    
+    try {
+      // Now update the book status to ready immediately
+      console.log('📝 Final update: setting memory book status to ready')
+      console.log('🔍 Debug - Book data before status update:', {
+        id: book.id,
+        status: book.status,
+        magic_story: book.magic_story ? 'present' : 'missing',
+        created_from_assets: book.created_from_assets ? `${book.created_from_assets.length} assets` : 'missing',
+        format: book.format
+      })
+      
+      // Ensure the book has the required fields before updating status to ready
+      const updateData = { status: 'ready' }
+      
+      // For card format, ensure magic_story is set
+      if (book.format === 'card' && (!book.magic_story || book.magic_story === '')) {
+        console.log('⚠️ Card format book missing magic_story, setting default')
+        updateData.magic_story = 'A beautiful memory created with love'
+      }
+      
+      // Ensure created_from_assets is set
+      if (!book.created_from_assets || book.created_from_assets.length === 0) {
+        console.log('⚠️ Book missing created_from_assets, using selected assets')
+        updateData.created_from_assets = selectedAssets.map(asset => asset.id)
+      }
+      
+      console.log('🔧 Update data:', updateData)
+      
+      const { data: finalUpdateData, error: finalUpdateError } = await supabase
+        .from('memory_books')
+        .update(updateData)
+        .eq('id', book.id)
+        .select()
+      
+      if (finalUpdateError) {
+        console.error('❌ Error updating book status to ready:', finalUpdateError)
+        console.error('❌ Error details:', {
+          code: finalUpdateError.code,
+          message: finalUpdateError.message,
+          details: finalUpdateError.details,
+          hint: finalUpdateError.hint
+        })
+      } else {
+        console.log('✅ Book status updated to ready successfully:', finalUpdateData)
+      }
+      
+      // Verify the update worked
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('memory_books')
+        .select('status')
+        .eq('id', book.id)
+        .single()
+      
+      if (verifyError) {
+        console.error('❌ Error verifying book status update:', verifyError)
+      } else {
+        console.log('✅ Verified book status is now:', verifyData.status)
+      }
+    } catch (statusUpdateError) {
+      console.error('❌ Exception during status update:', statusUpdateError)
+      console.error('❌ Status update error details:', {
+        message: statusUpdateError.message,
+        stack: statusUpdateError.stack
+      })
+    }
     
     return {
       success: true,

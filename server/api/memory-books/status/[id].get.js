@@ -105,7 +105,7 @@ export default defineEventHandler(async (event) => {
       updated_at: pdfStatus?.updated_at || null
     }
 
-    // console.log(`[STATUS] Status for book ${id}:`, status)
+    console.log(`[STATUS] Status for book ${id}:`, status)
 
     return status
   } catch (error) {

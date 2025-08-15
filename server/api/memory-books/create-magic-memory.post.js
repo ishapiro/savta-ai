@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
         ui: 'wizard',
         format: 'card',
         created_from_assets: isTemplate ? null : asset_ids,
-        photo_selection_pool: isTemplate ? null : (photo_selection_pool || asset_ids),
+        photo_selection_pool: photo_selection_pool || (isTemplate ? null : asset_ids),
         magic_story: isTemplate ? null : story,
         background_type: background_type,
         background_color: background_color,

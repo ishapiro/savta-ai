@@ -3,6 +3,10 @@
  * Handles all OpenAI API calls using the Responses API format
  */
 
+// Load environment variables
+import dotenv from 'dotenv';
+dotenv.config();
+
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_BASE_URL = 'https://api.openai.com/v1';
 
@@ -116,11 +120,13 @@ function parseOpenAIResponse(openaiData) {
 }
 
 /**
- * Create a face detection request
+ * AI-powered smart cropping recommendation function
  * @param {string} imageUrl - The URL of the image to analyze
- * @returns {Promise<Object>} The face detection results
+ * @param {number} targetWidth - The target width for the crop
+ * @param {number} targetHeight - The target height for the crop
+ * @returns {Promise<Object>} The crop recommendation with optimal crop area
  */
-async function detectFaces(imageUrl) {
+async function aiCropRecommendation(imageUrl, targetWidth, targetHeight) {
   // Validate the image URL before sending to OpenAI
   const isValid = await validateImageUrl(imageUrl);
   if (!isValid) {
@@ -129,11 +135,11 @@ async function detectFaces(imageUrl) {
   
   const payload = {
     model: 'gpt-4o',
-    instructions: 'You are a precise vision detector. Return ONLY JSON that matches the schema.',
+    instructions: 'You are an expert image cropping specialist. Analyze the image and recommend the optimal crop area that prioritizes important subjects while maintaining good composition. Return ONLY JSON that matches the schema.',
     text: {
       format: {
         type: 'json_schema',
-        name: 'person_detections',
+        name: 'crop_recommendation',
         schema: {
           type: 'object',
           additionalProperties: false,
@@ -147,14 +153,25 @@ async function detectFaces(imageUrl) {
               },
               required: ['width_px', 'height_px']
             },
-            detections: {
+            crop_area: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                x: { type: 'number', minimum: 0, maximum: 1 },
+                y: { type: 'number', minimum: 0, maximum: 1 },
+                width: { type: 'number', minimum: 0, maximum: 1 },
+                height: { type: 'number', minimum: 0, maximum: 1 }
+              },
+              required: ['x', 'y', 'width', 'height']
+            },
+            priority_subjects: {
               type: 'array',
               items: {
                 type: 'object',
                 additionalProperties: false,
                 properties: {
-                  id: { type: 'string' },
-                  label: { type: 'string', enum: ['person'] },
+                  type: { type: 'string', enum: ['face', 'person', 'animal', 'object'] },
+                  confidence: { type: 'number', minimum: 0, maximum: 1 },
                   bbox: {
                     type: 'object',
                     additionalProperties: false,
@@ -165,14 +182,15 @@ async function detectFaces(imageUrl) {
                       height: { type: 'number', minimum: 0, maximum: 1 }
                     },
                     required: ['x', 'y', 'width', 'height']
-                  },
-                  confidence: { type: 'number', minimum: 0, maximum: 1 }
+                  }
                 },
-                required: ['id', 'label', 'bbox', 'confidence']
+                required: ['type', 'confidence', 'bbox']
               }
-            }
+            },
+            reasoning: { type: 'string' },
+            confidence: { type: 'number', minimum: 0, maximum: 1 }
           },
-          required: ['image', 'detections']
+          required: ['image', 'crop_area', 'priority_subjects', 'reasoning', 'confidence']
         }
       }
     },
@@ -182,7 +200,27 @@ async function detectFaces(imageUrl) {
         content: [
           {
             type: 'input_text',
-            text: 'Detect all PEOPLE in this image by finding their HEADS and SHOULDERS. Draw bounding boxes around the head and upper torso area of each person. Focus on the face, head, and shoulder region - this is the most important part for cropping. Be thorough and include all visible people, even if partially visible. Return ONLY JSON that matches the schema. Use normalized [0..1] coordinates for bbox with origin at top-left. If no people are present, return {"image":{"width_px":2619,"height_px":3492},"detections":[]}.'
+            text: `Analyze this image and recommend the optimal crop area to fit dimensions ${targetWidth}x${targetHeight}. 
+
+PRIORITY ORDER (most important first):
+1. NEVER cut off faces - faces are the most important subjects
+2. Avoid cutting off people - include full bodies when possible
+3. Preserve animals - include complete animals when present
+4. Maintain good composition - follow rule of thirds, avoid awkward crops
+
+CROP GUIDELINES:
+- The crop_area should maintain the target aspect ratio of ${targetWidth}:${targetHeight}
+- Use normalized [0..1] coordinates with origin at top-left
+- Include the most visually important parts of the image
+- Center on faces if present, otherwise on the main subject
+- Avoid cutting off important elements at the edges
+- Consider the overall composition and visual balance
+
+Return a detailed analysis including:
+- The recommended crop area coordinates
+- List of priority subjects found (faces, people, animals, objects)
+- Reasoning for the crop decision
+- Confidence level in the recommendation`
           },
           {
             type: 'input_image',
@@ -205,7 +243,7 @@ async function detectFaces(imageUrl) {
  */
 async function validateImageUrl(imageUrl) {
   try {
-    console.log(`🔍 Validating image URL: ${imageUrl}`);
+;
     
     // Basic URL validation
     if (!imageUrl || typeof imageUrl !== 'string') {
@@ -239,7 +277,7 @@ async function validateImageUrl(imageUrl) {
     const contentType = response.headers.get('content-type');
     const contentLength = response.headers.get('content-length');
     
-    console.log(`✅ Image URL accessible: ${imageUrl} (Content-Type: ${contentType}, Size: ${contentLength} bytes)`);
+;
     
     if (!contentType || !contentType.startsWith('image/')) {
       console.warn(`⚠️ URL does not point to an image: ${imageUrl} (Content-Type: ${contentType})`);
@@ -356,8 +394,8 @@ async function selectPhotos(photoUrls, photoCount = null) {
       }
     }
     
-    // Convert selected photo numbers to original indices
-    result.selected_photo_numbers = result.selected_photo_numbers.map(num => originalIndices[num - 1] + 1);
+    // Convert selected photo numbers to original indices (0-based)
+    result.selected_photo_numbers = result.selected_photo_numbers.map(num => originalIndices[num - 1]);
   }
   
   return result;
@@ -729,8 +767,8 @@ async function analyzeLocation(imageUrl) {
   return parseOpenAIResponse(response);
 }
 
-module.exports = {
-  detectFaces,
+export {
+  aiCropRecommendation,
   selectPhotos,
   generateStory,
   analyzePhotoShape,
