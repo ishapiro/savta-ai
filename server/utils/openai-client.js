@@ -153,7 +153,7 @@ async function detectFaces(imageUrl) {
         content: [
           {
             type: 'input_text',
-            text: 'Detect all PEOPLE in this image. Return ONLY JSON that matches the schema. Use normalized [0..1] coordinates for bbox with origin at top-left. If no people are present, return {"image":{"width_px":2619,"height_px":3492},"detections":[]}.'
+            text: 'Detect all PEOPLE in this image by finding their HEADS and SHOULDERS. Draw bounding boxes around the head and upper torso area of each person. Focus on the face, head, and shoulder region - this is the most important part for cropping. Be thorough and include all visible people, even if partially visible. Return ONLY JSON that matches the schema. Use normalized [0..1] coordinates for bbox with origin at top-left. If no people are present, return {"image":{"width_px":2619,"height_px":3492},"detections":[]}.'
           },
           {
             type: 'input_image',
@@ -174,7 +174,7 @@ async function detectFaces(imageUrl) {
  * @param {Array} photoUrls - Array of photo URLs or photo objects
  * @returns {Promise<Object>} The photo selection results
  */
-async function selectPhotos(photoUrls) {
+async function selectPhotos(photoUrls, photoCount = null) {
   // Handle both URL strings and photo objects with URLs
   const photoInputs = photoUrls.map((photo, index) => {
     const imageUrl = typeof photo === 'string' ? photo : photo.storage_url || photo.asset_url || photo.url;
@@ -183,6 +183,9 @@ async function selectPhotos(photoUrls) {
       image_url: imageUrl
     };
   });
+
+  // Determine how many photos to select
+  const targetCount = photoCount || Math.min(3, photoUrls.length);
 
   const payload = {
     model: 'gpt-5',
@@ -201,7 +204,7 @@ async function selectPhotos(photoUrls) {
                 type: 'integer',
                 minimum: 1
               },
-              description: 'Array of photo numbers (1, 2, 3, etc.) selected from the provided pool'
+              description: `Array of exactly ${targetCount} photo numbers (1, 2, 3, etc.) selected from the provided pool`
             }
           },
           required: ['selected_photo_numbers']
@@ -214,7 +217,7 @@ async function selectPhotos(photoUrls) {
         content: [
           {
             type: 'input_text',
-            text: `Select the most meaningful and visually appealing photos from this collection of ${photoUrls.length} family photos. Choose photos that tell a story together and would make a beautiful memory book. Return ONLY JSON with the selected photo numbers.`
+            text: `Select exactly ${targetCount} of the most meaningful and visually appealing photos from this collection of ${photoUrls.length} family photos. Choose photos that tell a story together and would make a beautiful memory book. You must select exactly ${targetCount} photos. Return ONLY JSON with the selected photo numbers.`
           },
           ...photoInputs
         ]

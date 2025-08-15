@@ -41,7 +41,11 @@ export default defineEventHandler(async (event) => {
     
     // Step 1: Use centralized OpenAI client for photo selection
     console.log('🎯 Step 1: Selecting best photos...')
-    const photoSelectionResult = await selectPhotos(photoUrlsArray)
+    
+    // Get photo count from request body or use default
+    const photoCount = body.photo_count || 3
+    
+    const photoSelectionResult = await selectPhotos(photoUrlsArray, photoCount)
     
     if (!photoSelectionResult || !photoSelectionResult.selected_photo_numbers) {
       console.error('❌ No photo selection result returned')
@@ -53,6 +57,25 @@ export default defineEventHandler(async (event) => {
     
     const selectedPhotoNumbers = photoSelectionResult.selected_photo_numbers
     console.log('✅ Selected photo numbers:', selectedPhotoNumbers)
+    
+    // Validate that we got exactly the requested number of photos
+    if (selectedPhotoNumbers.length !== photoCount) {
+      console.error(`❌ Photo selection returned ${selectedPhotoNumbers.length} photos, expected ${photoCount}`)
+      throw createError({
+        statusCode: 500,
+        statusMessage: `Photo selection returned ${selectedPhotoNumbers.length} photos, expected ${photoCount}`
+      })
+    }
+    
+    // Validate that all selected numbers are valid indices
+    const validIndices = selectedPhotoNumbers.every(num => num >= 1 && num <= photoUrlsArray.length)
+    if (!validIndices) {
+      console.error('❌ Photo selection contains invalid indices:', selectedPhotoNumbers)
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Photo selection contains invalid indices'
+      })
+    }
     
     // Get the actual selected photo URLs
     const selectedPhotoUrls = selectedPhotoNumbers.map(num => {

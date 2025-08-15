@@ -558,7 +558,7 @@ export default defineEventHandler(async (event) => {
             maxX: maxX.toFixed(1),
             maxY: maxY.toFixed(1),
             personCount: faces.length,
-            boundingBoxMethod: 'full_person'
+            boundingBoxMethod: 'super_bounding_box'
           })
           
           // Calculate the maximum possible crop area that includes all faces
@@ -566,36 +566,59 @@ export default defineEventHandler(async (event) => {
           let finalX, finalY
           
           if (isLandscape) {
-            // For landscape, use the full image width and center around faces
-            finalWidth = workingMetadata.width
-            finalHeight = finalWidth / targetAspectRatio
+            // HEAD & SHOULDERS APPROACH: Detect heads/shoulders, then expand to maximum coverage
+            // Calculate the center of all detected heads/shoulders
+            const headsCenterX = (minX + maxX) / 2
+            const headsCenterY = (minY + maxY) / 2
             
-            // If height exceeds image bounds, reduce width
-            if (finalHeight > workingMetadata.height) {
+            // CHECK: Is the image aspect ratio within 20% of the target aspect ratio?
+            const imageAspectRatio = workingMetadata.width / workingMetadata.height
+            const targetAspectRatio = targetWidth / targetHeight
+            
+            // Calculate the difference in aspect ratios
+            const aspectRatioDifference = Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio
+            
+            // Check if aspect ratios are within 20% of each other
+            const isWithin20Percent = aspectRatioDifference <= 0.2
+            
+            if (isWithin20Percent) {
+              // Simple center crop - image aspect ratio is close enough to target
+              finalWidth = workingMetadata.width
               finalHeight = workingMetadata.height
-              finalWidth = finalHeight * targetAspectRatio
-            }
-            
-            // Calculate the center of the person bounding box
-            const faceCenterX = (minX + maxX) / 2
-            const faceCenterY = (minY + maxY) / 2
-            
-            // Center the crop around the person bounding box
-            finalX = Math.max(0, Math.min(faceCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
-            finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
-            
-            // Ensure the crop includes all people (adjust if people would be cut off)
-            if (finalX > minX) {
-              finalX = minX
-            }
-            if (finalX + finalWidth < maxX) {
-              finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
-            }
-            if (finalY > minY) {
-              finalY = minY
-            }
-            if (finalY + finalHeight < maxY) {
-              finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
+              finalX = 0
+              finalY = 0
+              console.log('🎯 Using complete image - aspect ratio within 20% of target')
+            } else {
+              // For landscape, use the full image width and expand to maximum height
+              finalWidth = workingMetadata.width
+              finalHeight = finalWidth / targetAspectRatio
+              
+              // If height exceeds image bounds, reduce width
+              if (finalHeight > workingMetadata.height) {
+                finalHeight = workingMetadata.height
+                finalWidth = finalHeight * targetAspectRatio
+              }
+              
+              // Center horizontally on the heads
+              finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
+              
+              // CRITICAL RULE: NEVER crop into the top of head bounding boxes
+              // Start from the minimum Y coordinate of all detected people, or 0 if no people detected
+              finalY = Math.max(0, minY - 50) // 50px buffer above the highest detected person
+              
+              // Expand to include more of the image if possible, but prioritize top space
+              if (finalHeight < workingMetadata.height) {
+                const expandedHeight = Math.min(workingMetadata.height, finalHeight * 1.3) // 30% more height
+                const expandedWidth = expandedHeight * targetAspectRatio
+                
+                if (expandedWidth <= workingMetadata.width) {
+                  finalHeight = expandedHeight
+                  finalWidth = expandedWidth
+                  // Re-center horizontally with new dimensions, but keep Y at 0
+                  finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
+                  finalY = 0 // Always prioritize top space
+                }
+              }
             }
             
             console.log('🎯 Final crop calculation (landscape):', {
@@ -606,40 +629,61 @@ export default defineEventHandler(async (event) => {
               cropArea: `${finalX.toFixed(1)},${finalY.toFixed(1)} to ${(finalX + finalWidth).toFixed(1)},${(finalY + finalHeight).toFixed(1)}`
             })
           } else if (isPortrait) {
-            // For portrait, use the full image height and center around faces
-            finalHeight = workingMetadata.height
-            finalWidth = finalHeight * targetAspectRatio
+            // HEAD & SHOULDERS APPROACH: Detect heads/shoulders, then expand to maximum coverage
+            // Calculate the center of all detected heads/shoulders
+            const headsCenterX = (minX + maxX) / 2
+            const headsCenterY = (minY + maxY) / 2
             
-            // If width exceeds image bounds, reduce height
-            if (finalWidth > workingMetadata.width) {
+            // CHECK: Is the image aspect ratio within 20% of the target aspect ratio?
+            const imageAspectRatio = workingMetadata.width / workingMetadata.height
+            const targetAspectRatio = targetWidth / targetHeight
+            
+            // Calculate the difference in aspect ratios
+            const aspectRatioDifference = Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio
+            
+            // Check if aspect ratios are within 20% of each other
+            const isWithin20Percent = aspectRatioDifference <= 0.2
+            
+            if (isWithin20Percent) {
+              // Simple center crop - image aspect ratio is close enough to target
+              finalWidth = workingMetadata.width
+              finalHeight = workingMetadata.height
+              finalX = 0
+              finalY = 0
+              console.log('🎯 Using complete image - aspect ratio within 20% of target')
+            } else {
+              // For portrait, use the full image width and expand to maximum height
               finalWidth = workingMetadata.width
               finalHeight = finalWidth / targetAspectRatio
-            }
-            
-            // Calculate the center of the person bounding box
-            const faceCenterX = (minX + maxX) / 2
-            const faceCenterY = (minY + maxY) / 2
-            
-            // For portrait images, ALWAYS start from the top to avoid cutting off people
-            // This is because person detection might miss people at the very top of the image
-            finalX = Math.max(0, Math.min(faceCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
-            finalY = 0 // Always start from the top for portrait images
-            
-            // Ensure we don't cut off people at the bottom
-            if (finalY + finalHeight < maxY) {
-              finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
-            }
-            
-            // Ensure the crop includes all people (adjust if people would be cut off)
-            if (finalX > minX) {
-              finalX = minX
-            }
-            if (finalX + finalWidth < maxX) {
-              finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
-            }
-            // Ensure we don't cut off faces at the bottom
-            if (finalY + finalHeight < maxY) {
-              finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
+              
+              // If height exceeds image bounds, reduce both dimensions
+              if (finalHeight > workingMetadata.height) {
+                finalHeight = workingMetadata.height
+                finalWidth = finalHeight * targetAspectRatio
+              }
+              
+              // Center horizontally on the heads
+              finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
+              
+              // CRITICAL RULE: NEVER crop into the top of head bounding boxes
+              // Start from the minimum Y coordinate of all detected people, or 0 if no people detected
+              finalY = Math.max(0, minY - 50) // 50px buffer above the highest detected person
+              
+              // If the calculated height doesn't reach the bottom, extend it downward
+              if (finalY + finalHeight < workingMetadata.height) {
+                finalHeight = Math.min(workingMetadata.height, finalHeight * 1.5) // 50% more height
+                finalWidth = finalHeight * targetAspectRatio
+                
+                // Recalculate width if it exceeds image bounds
+                if (finalWidth > workingMetadata.width) {
+                  finalWidth = workingMetadata.width
+                  finalHeight = finalWidth / targetAspectRatio
+                }
+                
+                // Re-center horizontally with new dimensions, but keep Y at 0
+                finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
+                finalY = 0 // Always prioritize top space
+              }
             }
             
             console.log('🎯 Final crop calculation (portrait):', {
@@ -650,31 +694,58 @@ export default defineEventHandler(async (event) => {
               cropArea: `${finalX.toFixed(1)},${finalY.toFixed(1)} to ${(finalX + finalWidth).toFixed(1)},${(finalY + finalHeight).toFixed(1)}`
             })
           } else {
-            // For square, use the largest possible square and center around people
-            const maxSize = Math.min(workingMetadata.width, workingMetadata.height)
-            finalWidth = maxSize
-            finalHeight = maxSize
+            // HEAD & SHOULDERS APPROACH: Detect heads/shoulders, then expand to maximum coverage
+            // Calculate the center of all detected heads/shoulders
+            const headsCenterX = (minX + maxX) / 2
+            const headsCenterY = (minY + maxY) / 2
             
-            // Calculate the center of the person bounding box
-            const faceCenterX = (minX + maxX) / 2
-            const faceCenterY = (minY + maxY) / 2
+            // CHECK: Is the image aspect ratio within 20% of the target aspect ratio?
+            const imageAspectRatio = workingMetadata.width / workingMetadata.height
+            const targetAspectRatio = targetWidth / targetHeight
             
-            // Center the crop around the person bounding box
-            finalX = Math.max(0, Math.min(faceCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
-            finalY = Math.max(0, Math.min(faceCenterY - finalHeight / 2, workingMetadata.height - finalHeight))
+            // Calculate the difference in aspect ratios
+            const aspectRatioDifference = Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio
             
-            // Ensure the crop includes all people (adjust if people would be cut off)
-            if (finalX > minX) {
-              finalX = minX
-            }
-            if (finalX + finalWidth < maxX) {
-              finalX = Math.min(workingMetadata.width - finalWidth, maxX - finalWidth)
-            }
-            if (finalY > minY) {
-              finalY = minY
-            }
-            if (finalY + finalHeight < maxY) {
-              finalY = Math.min(workingMetadata.height - finalHeight, maxY - finalHeight)
+            // Check if aspect ratios are within 20% of each other
+            const isWithin20Percent = aspectRatioDifference <= 0.2
+            
+            if (isWithin20Percent) {
+              // Simple center crop - image aspect ratio is close enough to target
+              finalWidth = workingMetadata.width
+              finalHeight = workingMetadata.height
+              finalX = 0
+              finalY = 0
+              console.log('🎯 Using complete image - aspect ratio within 20% of target')
+            } else {
+              // Use the largest possible square and prioritize top space
+              const maxSize = Math.min(workingMetadata.width, workingMetadata.height)
+              finalWidth = maxSize
+              finalHeight = maxSize
+              
+              // Center horizontally on the heads, but NEVER crop into the top of head bounding boxes
+              finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
+              finalY = Math.max(0, minY - 50) // 50px buffer above the highest detected person
+              
+              // Expand to include more of the image if possible, but prioritize top space
+              const expandFactor = 1.2 // 20% larger square if possible
+              const expandedSize = Math.min(workingMetadata.width, workingMetadata.height, maxSize * expandFactor)
+              
+              if (expandedSize > maxSize) {
+                const expandedWidth = expandedSize
+                const expandedHeight = expandedSize
+                
+                // Re-center horizontally with expanded dimensions, but keep Y at 0
+                const newX = Math.max(0, Math.min(headsCenterX - expandedWidth / 2, workingMetadata.width - expandedWidth))
+                const newY = 0 // Always prioritize top space
+                
+                // Only use expanded size if it doesn't go outside image bounds
+                if (newX >= 0 && newY >= 0 && newX + expandedWidth <= workingMetadata.width && newY + expandedHeight <= workingMetadata.height) {
+                  finalWidth = expandedWidth
+                  finalHeight = expandedHeight
+                  finalX = newX
+                  finalY = newY
+                }
+              }
             }
             
             console.log('🎯 Final crop calculation (square):', {
@@ -1687,14 +1758,15 @@ export default defineEventHandler(async (event) => {
       console.log(`📸 Processing ${photoCount} photos from theme layout`)
 
       // Fetch all assets for the book using photo_selection_pool if available, otherwise created_from_assets
-      // For card format, use the limited assets we just set
-      const assetIds = isCardFormat 
-        ? book.created_from_assets || []
-        : (book.photo_selection_pool && book.photo_selection_pool.length > 0 
-            ? book.photo_selection_pool 
-            : book.created_from_assets || [])
+      // Always use the full photo selection pool for AI selection, even for card format
+            // Use the full photo selection pool for AI selection, but limit to 25 max
+      let assetIds = book.photo_selection_pool || book.created_from_assets || []
+      if (assetIds.length > 25) {
+        assetIds = assetIds.slice(0, 25)
+        console.log(`📸 Theme PDF - Limited photo selection pool to first 25 photos (from ${book.photo_selection_pool?.length || 0} total)`)
+      }
       
-      console.log(`📸 Theme PDF - Asset pool: photo_selection_pool=${book.photo_selection_pool?.length || 0}, created_from_assets=${book.created_from_assets?.length || 0}, using ${assetIds.length} assets`)
+      console.log(`📸 Theme PDF - Using photo selection pool: ${assetIds.length} assets for AI selection`)
       
       const { data: assets, error: assetsError } = await supabase
         .from('assets')
@@ -1754,10 +1826,10 @@ export default defineEventHandler(async (event) => {
           photos: photos,
           userId: user.id,
           memoryBookId: book.id,
+          photo_count: photoCount, // Pass the dynamic photo count from theme
           title: book.ai_supplemental_prompt,
           memory_event: book.memory_event,
           theme: book.theme_id || null,
-          photo_count: photoCount,
           background_type: book.background_type || 'white',
           background_color: book.background_color,
           forceAll: isPhotoLibrarySelection || photoCount === photos.length // Force AI to use all photos when user has manually selected them or when count matches
@@ -2663,15 +2735,14 @@ export default defineEventHandler(async (event) => {
       message: 'PDF generated successfully'
     }
     
-  } catch (error) {
-    logger.error('PDF generation failed', error.message)
-    logger.summary()
-    
-    throw createError({
-      statusCode: error.statusCode || 500,
-      statusMessage: error.statusMessage || 'Failed to generate PDF'
-    })
-  }
+      } catch (error) {
+      console.error('PDF generation failed:', error.message)
+      
+      throw createError({
+        statusCode: error.statusCode || 500,
+        statusMessage: error.statusMessage || 'Failed to generate PDF'
+      })
+    }
 })
 
 async function updatePdfStatus(supabase, bookId, userId, status) {

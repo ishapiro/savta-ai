@@ -4104,7 +4104,7 @@ const MAGIC_STEPS = {
 }
 
 // Photo pool size constant for easy configuration
-const PHOTO_POOL_SIZE = 50
+const PHOTO_POOL_SIZE = 25
 
 // Step definitions with required/optional flags
 const stepDefinitions = {

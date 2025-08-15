@@ -48,4 +48,4 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Photo analysis failed'
     });
   }
-}); 
+});
