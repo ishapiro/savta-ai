@@ -3,7 +3,8 @@
 
 import { PDFDocument, rgb } from 'pdf-lib'
 import sharp from 'sharp'
-import smartcrop from 'smartcrop'
+import smartcropGm from 'smartcrop-gm'
+import gm from '@fatchan/gm'
 
 import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
@@ -477,86 +478,62 @@ export default defineEventHandler(async (event) => {
         let faces = []
         let cropArea = null
         
-        console.log('👥 No faces detected, using smartcrop fallback')
+                console.log('👥 No faces detected, using smartcrop-gm as primary method')
         
         try {
-          // Use smartcrop with Sharp for intelligent cropping
-          console.log('🎯 Using smartcrop fallback')
+          // Use smartcrop-gm for intelligent cropping
+          console.log('🎯 Using smartcrop-gm as primary cropping method')
           
-          // Convert image buffer to raw RGBA data for smartcrop
-          const rawBuffer = await sharp(imageBuffer)
-            .ensureAlpha()
-            .raw()
-            .toBuffer()
+          // Create a temporary file for GraphicsMagick to work with
+          const tempInputPath = `/tmp/smartcrop-input-${Date.now()}.jpg`
+          const tempOutputPath = `/tmp/smartcrop-output-${Date.now()}.jpg`
           
-          const imgData = { 
-            width: metadata.width, 
-            height: metadata.height, 
-            data: new Uint8ClampedArray(rawBuffer) // smartcrop requires this format
-          }
+          // Write the image buffer to a temporary file
+          await sharp(imageBuffer)
+            .jpeg({ quality: 100 })
+            .toFile(tempInputPath)
           
-          console.log('🔍 Smartcrop input:', { width: imgData.width, height: imgData.height, dataLength: imgData.data.length })
+          console.log('🔍 Smartcrop-gm input:', { width: metadata.width, height: metadata.height, tempPath: tempInputPath })
           
-          // Use smartcrop to find the best crop area
-          // Pass the target dimensions for the crop we want
-          const result = await smartcrop.crop(imgData, { 
+          // Use smartcrop-gm to find the best crop area
+          const result = await smartcropGm.crop(tempInputPath, { 
             width: targetWidth, 
             height: targetHeight 
           })
           
-          console.log('🔍 Smartcrop result:', result)
+          console.log('🔍 Smartcrop-gm result:', result)
           
           if (result && result.topCrop) {
+            // Use smartcrop-gm's intelligent cropping result
             const { x, y, width: w, height: h } = result.topCrop
             
-            // smartcrop returns coordinates relative to the original image
-            // Scale them to maximize the crop area while maintaining aspect ratio
-            const targetAspectRatio = targetWidth / targetHeight
-            const currentAspectRatio = w / h
+            console.log('🔍 Smartcrop-gm intelligent crop result:', { x, y, width: w, height: h })
             
-            let finalWidth, finalHeight
-            
-            if (currentAspectRatio > targetAspectRatio) {
-              // Current crop is too wide, expand height
-              finalWidth = w
-              finalHeight = w / targetAspectRatio
-            } else {
-              // Current crop is too tall, expand width
-              finalHeight = h
-              finalWidth = h * targetAspectRatio
-            }
-            
-            // Ensure the expanded crop fits within image bounds
-            if (x + finalWidth > metadata.width) {
-              finalWidth = metadata.width - x
-              finalHeight = finalWidth / targetAspectRatio
-            }
-            if (y + finalHeight > metadata.height) {
-              finalHeight = metadata.height - y
-              finalWidth = finalHeight * targetAspectRatio
-            }
-            
+            // smartcrop-gm returns coordinates relative to the original image
+            // Use them directly for intelligent cropping
             cropArea = {
-              x: x,
-              y: y,
-              width: Math.floor(finalWidth),
-              height: Math.floor(finalHeight)
+              x: Math.max(0, Math.floor(x)),
+              y: Math.max(0, Math.floor(y)),
+              width: Math.max(1, Math.floor(w)),
+              height: Math.max(1, Math.floor(h))
             }
             
-            // Ensure all values are positive integers (handle any remaining decimals)
-            cropArea.x = Math.max(0, Math.floor(cropArea.x))
-            cropArea.y = Math.max(0, Math.floor(cropArea.y))
-            cropArea.width = Math.max(1, Math.floor(cropArea.width))
-            cropArea.height = Math.max(1, Math.floor(cropArea.height))
+            console.log('🎯 Smartcrop-gm intelligent crop area:', cropArea)
             
-            console.log('🎯 Smartcrop fallback crop area (maximized):', cropArea)
+            // Clean up temporary files
+            try {
+              await sharp(tempInputPath).metadata() // Check if file exists
+              await sharp(tempInputPath).toFile('/dev/null') // Delete by overwriting
+            } catch (e) {
+              // File might already be deleted
+            }
           } else {
-            throw new Error('Smartcrop failed to return valid crop area')
+            throw new Error('Smartcrop-gm failed to return valid crop area')
           }
         } catch (smartcropError) {
-          console.warn('⚠️ Smartcrop failed, using orientation-based fallback:', smartcropError.message)
+          console.warn('⚠️ Smartcrop-gm failed, using orientation-based fallback:', smartcropError.message)
           
-          // Fallback to orientation-based cropping with maximized area
+          // Use orientation-based cropping with maximized area
           const targetAspectRatio = targetWidth / targetHeight
           
           if (isLandscape) {
@@ -571,16 +548,15 @@ export default defineEventHandler(async (event) => {
               cropWidth = cropHeight * targetAspectRatio
             }
             
-            // Center the crop horizontally, prioritize top 1/3rd vertically
-            const topThirdHeight = Math.floor(metadata.height / 3)
-            const maxCropHeight = Math.min(cropHeight, topThirdHeight)
+            // Center the crop both horizontally and vertically to use maximum area
             const centerX = Math.floor((metadata.width - cropWidth) / 2)
+            const centerY = Math.floor((metadata.height - cropHeight) / 2)
             
             cropArea = {
               x: Math.max(0, centerX),
-              y: 0,
+              y: Math.max(0, centerY),
               width: Math.floor(cropWidth),
-              height: Math.floor(maxCropHeight)
+              height: Math.floor(cropHeight)
             }
           } else if (isPortrait) {
             // For portrait, use the largest possible area that fits the target aspect ratio
@@ -594,16 +570,15 @@ export default defineEventHandler(async (event) => {
               cropHeight = cropWidth / targetAspectRatio
             }
             
-            // Center the crop horizontally, prioritize top half vertically
-            const topHalfHeight = Math.floor(metadata.height / 2)
-            const maxCropHeight = Math.min(cropHeight, topHalfHeight)
+            // Center the crop both horizontally and vertically to use maximum area
             const centerX = Math.floor((metadata.width - cropWidth) / 2)
+            const centerY = Math.floor((metadata.height - cropHeight) / 2)
             
             cropArea = {
               x: Math.max(0, centerX),
-              y: 0,
+              y: Math.max(0, centerY),
               width: Math.floor(cropWidth),
-              height: Math.floor(maxCropHeight)
+              height: Math.floor(cropHeight)
             }
           } else {
             // For square, use the largest possible square that fits
@@ -2533,15 +2508,14 @@ export default defineEventHandler(async (event) => {
       downloadUrl: publicUrl,
       message: 'PDF generated successfully'
     }
+  } catch (error) {
+    console.error('PDF generation failed:', error.message)
     
-      } catch (error) {
-      console.error('PDF generation failed:', error.message)
-      
-      throw createError({
-        statusCode: error.statusCode || 500,
-        statusMessage: error.statusMessage || 'Failed to generate PDF'
-      })
-    }
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || 'Failed to generate PDF'
+    })
+  }
 })
 
 async function updatePdfStatus(supabase, bookId, userId, status) {
