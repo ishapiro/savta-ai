@@ -1,9 +1,43 @@
 import { selectPhotos, generateStory } from '~/server/utils/openai-client.js';
 
+// Helper function to update PDF status
+async function updatePdfStatus(supabase, bookId, userId, status) {
+  try {
+    const { error } = await supabase
+      .from('pdf_status')
+      .upsert({
+        book_id: bookId,
+        user_id: userId,
+        status: status,
+        updated_at: new Date().toISOString()
+      }, { 
+        onConflict: ['book_id', 'user_id'] 
+      })
+    if (error) {
+      console.error('Error updating PDF status:', error)
+    }
+  } catch (error) {
+    console.error('Error updating PDF status:', error)
+  }
+}
+
 export default defineEventHandler(async (event) => {
   try {
     console.log('🎭 Starting magic memory generation endpoint')
     const config = useRuntimeConfig()
+    
+    // Create Supabase client
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      config.public.supabaseUrl,
+      config.supabaseServiceRoleKey || config.public.supabaseKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
     
     // Get OpenAI API key
     const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
@@ -42,8 +76,18 @@ export default defineEventHandler(async (event) => {
     // Step 1: Use centralized OpenAI client for photo selection
     console.log('🎯 Step 1: Selecting best photos...')
     
+    // Update status if we have a book ID
+    if (memoryBookId) {
+      await updatePdfStatus(supabase, memoryBookId, userId, `🎯 Step 1: Examining ${photoUrlsArray.length} photos to find ${body.photo_count || 3} best...`)
+    }
+    
     // Get photo count from request body or use default
     const photoCount = body.photo_count || 3
+    
+    // Check if we have enough photos to proceed
+    if (photoUrlsArray.length < photoCount) {
+      console.warn(`⚠️ Only ${photoUrlsArray.length} photos provided, but ${photoCount} requested. Using all available photos.`);
+    }
     
     const photoSelectionResult = await selectPhotos(photoUrlsArray, photoCount)
     
@@ -51,19 +95,29 @@ export default defineEventHandler(async (event) => {
       console.error('❌ No photo selection result returned')
       throw createError({
         statusCode: 500,
-        statusMessage: 'Photo selection failed'
+        statusMessage: 'Photo selection failed - no valid images found. Please check that your images are accessible and not too large.'
       })
     }
     
     const selectedPhotoNumbers = photoSelectionResult.selected_photo_numbers
     console.log('✅ Selected photo numbers:', selectedPhotoNumbers)
     
-    // Validate that we got exactly the requested number of photos
-    if (selectedPhotoNumbers.length !== photoCount) {
-      console.error(`❌ Photo selection returned ${selectedPhotoNumbers.length} photos, expected ${photoCount}`)
+    // Validate that we got at least some photos
+    if (selectedPhotoNumbers.length === 0) {
+      console.error('❌ No photos selected')
       throw createError({
         statusCode: 500,
-        statusMessage: `Photo selection returned ${selectedPhotoNumbers.length} photos, expected ${photoCount}`
+        statusMessage: 'No photos could be selected. Please check that your images are accessible and not too large.'
+      })
+    }
+    
+    // Validate that we got the requested number of photos (or at least 1 if fewer were requested)
+    const expectedCount = Math.min(photoCount, photoUrlsArray.length);
+    if (selectedPhotoNumbers.length < Math.min(1, expectedCount)) {
+      console.error(`❌ Photo selection returned ${selectedPhotoNumbers.length} photos, expected at least ${Math.min(1, expectedCount)}`)
+      throw createError({
+        statusCode: 500,
+        statusMessage: `Photo selection returned ${selectedPhotoNumbers.length} photos, expected at least ${Math.min(1, expectedCount)}`
       })
     }
     
@@ -99,6 +153,12 @@ export default defineEventHandler(async (event) => {
     
     // Step 2: Use centralized OpenAI client for story generation
     console.log('📖 Step 2: Generating story...')
+    
+    // Update status if we have a book ID
+    if (memoryBookId) {
+      await updatePdfStatus(supabase, memoryBookId, userId, '📖 Step 2: Generating story...')
+    }
+    
     const storyResult = await generateStory(selectedPhotoUrls)
     
     if (!storyResult || !storyResult.story) {

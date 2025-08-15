@@ -23,8 +23,15 @@ export default defineEventHandler(async (event) => {
 
     const body = await readBody(event)
     const { asset_ids, photo_selection_pool, story, title, background_type = 'white', background_color, photo_count = 4, theme_id, output = 'PDF', print_size = '8.5x11', photo_selection_method } = body
-    if (!asset_ids || !Array.isArray(asset_ids) || asset_ids.length < 1 || asset_ids.length > 6 || !story) {
-      throw createError({ statusCode: 400, statusMessage: '1-6 asset_ids and story are required' })
+    
+    // Check if this is a template creation (no story or assets yet)
+    const isTemplate = !story || story.trim() === '' || !asset_ids || !Array.isArray(asset_ids) || asset_ids.length === 0
+    
+    // For non-template creation, validate required fields
+    if (!isTemplate) {
+      if (!asset_ids || !Array.isArray(asset_ids) || asset_ids.length < 1 || asset_ids.length > 6 || !story) {
+        throw createError({ statusCode: 400, statusMessage: '1-6 asset_ids and story are required' })
+      }
     }
 
     // Determine grid layout based on photo count
@@ -53,13 +60,13 @@ export default defineEventHandler(async (event) => {
         layout_type: layoutType,
         ui: 'wizard',
         format: 'card',
-        created_from_assets: asset_ids,
-        photo_selection_pool: photo_selection_pool || asset_ids,
-        magic_story: story,
+        created_from_assets: isTemplate ? null : asset_ids,
+        photo_selection_pool: isTemplate ? null : (photo_selection_pool || asset_ids),
+        magic_story: isTemplate ? null : story,
         background_type: background_type,
         background_color: background_color,
         theme_id: theme_id || null,
-        status: 'draft',
+        status: isTemplate ? 'template' : 'draft',
         grid_layout: gridLayout,
         print_size: print_size,
         include_captions: true,

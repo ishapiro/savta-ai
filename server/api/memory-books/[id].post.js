@@ -1,4 +1,4 @@
-// Reset a memory book for regeneration (clears background, PDF, and story)
+// Update or reset a memory book
 import { createError, getHeader, getRouterParam, defineEventHandler, readBody } from 'h3'
 
 export default defineEventHandler(async (event) => {
@@ -38,26 +38,51 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Memory book not found' })
     }
 
-    // Reset fields for regeneration
-    const { error: updateError } = await supabase
-      .from('memory_books')
-      .update({
-        status: 'draft',
-        background_url: null,
-        pdf_url: null,
-        magic_story: null
-      })
-      .eq('id', bookId)
-    if (updateError) {
-      throw createError({ statusCode: 500, statusMessage: updateError.message })
+    // Get request body to determine if this is an update or reset
+    const body = await readBody(event)
+    
+    if (body && (body.asset_ids || body.story || body.background_type)) {
+      // This is an update with AI results
+      const updateData = {}
+      if (body.asset_ids) updateData.created_from_assets = body.asset_ids
+      if (body.story) updateData.magic_story = body.story
+      if (body.background_type) updateData.background_type = body.background_type
+      if (body.background_color) updateData.background_color = body.background_color
+      
+      // If we're updating a template with real data, change status to draft
+      if (book.status === 'template' && body.asset_ids && body.story) {
+        updateData.status = 'draft'
+      }
+      
+      const { error: updateError } = await supabase
+        .from('memory_books')
+        .update(updateData)
+        .eq('id', bookId)
+      if (updateError) {
+        throw createError({ statusCode: 500, statusMessage: updateError.message })
+      }
+    } else {
+      // This is a reset for regeneration
+      const { error: updateError } = await supabase
+        .from('memory_books')
+        .update({
+          status: 'draft',
+          background_url: null,
+          pdf_url: null,
+          magic_story: null
+        })
+        .eq('id', bookId)
+      if (updateError) {
+        throw createError({ statusCode: 500, statusMessage: updateError.message })
+      }
     }
 
     return { success: true }
   } catch (error) {
-    console.error('Reset for regeneration error:', error)
+    console.error('Memory book update/reset error:', error)
     throw createError({
       statusCode: error.statusCode || 500,
-      statusMessage: error.statusMessage || 'Failed to reset memory book for regeneration'
+      statusMessage: error.statusMessage || 'Failed to update/reset memory book'
     })
   }
 }) 

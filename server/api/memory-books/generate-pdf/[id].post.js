@@ -1394,16 +1394,22 @@ export default defineEventHandler(async (event) => {
       const photoCount = themePhotoCount
       console.log(`📸 Processing ${photoCount} photos from theme layout`)
 
-      // Fetch all assets for the book using photo_selection_pool if available, otherwise created_from_assets
-      // Always use the full photo selection pool for AI selection, even for card format
-            // Use the full photo selection pool for AI selection, but limit to 25 max
-      let assetIds = book.photo_selection_pool || book.created_from_assets || []
-      if (assetIds.length > 25) {
-        assetIds = assetIds.slice(0, 25)
-        console.log(`📸 Theme PDF - Limited photo selection pool to first 25 photos (from ${book.photo_selection_pool?.length || 0} total)`)
+      // For newly created magic memory cards, use the already selected assets
+      // For regenerations, use the full photo selection pool
+      let assetIds
+      if (book.created_from_assets && book.created_from_assets.length > 0) {
+        // Use the assets that were already selected during creation
+        assetIds = book.created_from_assets
+        console.log(`📸 Theme PDF - Using already selected assets: ${assetIds.length} assets`)
+      } else {
+        // Use the full photo selection pool for regenerations, but limit to 25 max
+        assetIds = book.photo_selection_pool || []
+        if (assetIds.length > 25) {
+          assetIds = assetIds.slice(0, 25)
+          console.log(`📸 Theme PDF - Limited photo selection pool to first 25 photos (from ${book.photo_selection_pool?.length || 0} total)`)
+        }
+        console.log(`📸 Theme PDF - Using photo selection pool: ${assetIds.length} assets for AI selection`)
       }
-      
-      console.log(`📸 Theme PDF - Using photo selection pool: ${assetIds.length} assets for AI selection`)
       
       const { data: assets, error: assetsError } = await supabase
         .from('assets')
@@ -1422,15 +1428,50 @@ export default defineEventHandler(async (event) => {
       // Check if this is a photo library selection (user manually selected photos)
       const isPhotoLibrarySelection = book.photo_selection_method === 'photo_library'
       
+      // Check if we already have a real story (not a placeholder)
+      let hasExistingStory = aiStory && aiStory.trim().length > 0
+      
       if (isPhotoLibrarySelection) {
         console.log('📚 Photo library selection detected - using user-selected photos without AI selection')
         // For photo library selection, use the assets as-is (they were pre-selected by the user)
         selectedAssets = assets
         // Still generate a story using the selected photos
         console.log('🎨 Photo library layout detected, generating a story for user-selected photos')
+      } else if (book.created_from_assets && book.created_from_assets.length > 0 && hasExistingStory) {
+        // Use existing story and assets for newly created magic memory cards (only if we have both assets and a real story)
+        console.log('📖 Using existing story and selected assets for magic memory card')
+        selectedAssets = assets // assets already filtered to created_from_assets
       } else {
-        // Always call AI for theme layouts to ensure fresh story generation
+        // Only call AI for theme layouts that don't have selected assets yet (regenerations) or have placeholder stories
         console.log('🎨 Theme layout detected, generating a new story for regeneration')
+      }
+      
+      // If book is in template status, wait for it to be updated with real data
+      if (book.status === 'template') {
+        console.log('⏳ Book is in template status, waiting for frontend to update with real data...')
+        await updatePdfStatus(supabase, book.id, user.id, '⏳ Waiting for AI results...')
+        
+        // Wait a bit and check again
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        
+        // Re-fetch the book to get updated values
+        const { data: updatedBook, error: bookError } = await supabase
+          .from('memory_books')
+          .select('*')
+          .eq('id', book.id)
+          .single()
+        
+        if (!bookError && updatedBook) {
+          book = updatedBook
+          aiStory = book.magic_story || null
+          hasExistingStory = aiStory && aiStory.trim().length > 0
+          
+          // Re-evaluate the logic with updated book data
+          if (book.created_from_assets && book.created_from_assets.length > 0 && hasExistingStory) {
+            console.log('📖 Book updated with real data, using existing story and assets')
+            selectedAssets = assets.filter(a => book.created_from_assets.includes(a.id))
+          }
+        }
       }
       
       const photos = assets.map(asset => ({
@@ -1453,47 +1494,57 @@ export default defineEventHandler(async (event) => {
         location: asset.location || null
       }))
       
-      await updatePdfStatus(supabase, book.id, user.id, `🎯 Step 1: Examining ${photos.length} photos to find ${photoCount} best...`)
-      
-      const requestBody = {
-        photos: photos,
-        userId: user.id,
-        memoryBookId: book.id,
-        photo_count: photoCount, // Pass the dynamic photo count from theme
-        title: book.ai_supplemental_prompt,
-        memory_event: book.memory_event,
-        theme: book.theme_id || null,
-        background_type: book.background_type || 'white',
-        background_color: book.background_color,
-        forceAll: isPhotoLibrarySelection || photoCount === photos.length // Force AI to use all photos when user has manually selected them or when count matches
-      }
-      
-      const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(requestBody)
-      })
-      if (magicRes.ok) {
-        const magicData = await magicRes.json()
-      
-      if (!magicData.success) {
-        throw new Error('Magic memory generation failed: ' + magicData.error)
-      }
-      
-      await updatePdfStatus(supabase, book.id, user.id, '📖 Step 2: Generating story...')
-        // Use selected_photo_ids (array of asset IDs) from AI response, unless it's photo library selection
-        if (!isPhotoLibrarySelection && magicData.selected_photo_ids && Array.isArray(magicData.selected_photo_ids)) {
-          selectedAssets = assets.filter(a => magicData.selected_photo_ids.includes(a.id))
+      // Only call magic memory endpoint for regenerations (when we don't have selected assets yet)
+      // For newly created cards, the magic memory endpoint is already called from the frontend
+      if (!book.created_from_assets || book.created_from_assets.length === 0) {
+        await updatePdfStatus(supabase, book.id, user.id, `🎯 Step 1: Examining ${photos.length} photos to find ${photoCount} best...`)
+        
+        const requestBody = {
+          photos: photos,
+          userId: user.id,
+          memoryBookId: book.id,
+          photo_count: photoCount, // Pass the dynamic photo count from theme
+          title: book.ai_supplemental_prompt,
+          memory_event: book.memory_event,
+          theme: book.theme_id || null,
+          background_type: book.background_type || 'white',
+          background_color: book.background_color,
+          forceAll: isPhotoLibrarySelection || photoCount === photos.length // Force AI to use all photos when user has manually selected them or when count matches
         }
-        aiStory = magicData.story
-        // Update the book with the new story and asset IDs
-        await supabase.from('memory_books').update({
-          magic_story: aiStory,
-          created_from_assets: selectedAssets.map(a => a.id)
-        }).eq('id', book.id)
+        
+        const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(requestBody)
+        })
+        if (magicRes.ok) {
+          const magicData = await magicRes.json()
+        
+        if (!magicData.success) {
+          throw new Error('Magic memory generation failed: ' + magicData.error)
+        }
+        
+        await updatePdfStatus(supabase, book.id, user.id, '📖 Step 2: Generating story...')
+          // Use selected_photo_ids (array of asset IDs) from AI response, unless it's photo library selection
+          if (!isPhotoLibrarySelection && magicData.selected_photo_ids && Array.isArray(magicData.selected_photo_ids)) {
+            selectedAssets = assets.filter(a => magicData.selected_photo_ids.includes(a.id))
+          }
+          aiStory = magicData.story
+          // Update the book with the new story and asset IDs
+          await supabase.from('memory_books').update({
+            magic_story: aiStory,
+            created_from_assets: selectedAssets.map(a => a.id)
+          }).eq('id', book.id)
+          
+          // Update status to indicate we're moving to photo processing
+          await updatePdfStatus(supabase, book.id, user.id, '🎯 Processing photos for layout...')
+        }
+      } else {
+        // Skip to photo processing step since we already have a story
+        await updatePdfStatus(supabase, book.id, user.id, '🎯 Processing photos for layout...')
       }
 
       // Match photos to positions based on aspect ratio to minimize cropping

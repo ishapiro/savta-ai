@@ -16,23 +16,46 @@ async function makeOpenAIRequest(payload) {
     throw new Error('OpenAI API key not configured');
   }
 
-  const response = await fetch(`${OPENAI_BASE_URL}/responses`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_API_KEY}`
-    },
-    body: JSON.stringify(payload)
-  });
+  // Add timeout configuration
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('OpenAI API Error Response:', errorText);
-    throw new Error(`OpenAI API error: ${response.status}`);
+  try {
+    const response = await fetch(`${OPENAI_BASE_URL}/responses`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API Error Response:', errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    return responseData;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error.name === 'AbortError') {
+      throw new Error('OpenAI API request timed out after 2 minutes');
+    }
+    
+    // Check if it's a timeout error from OpenAI
+    if (error.message && error.message.includes('Timeout while downloading')) {
+      console.error('❌ Image download timeout detected. This usually means the image URL is not accessible or the image is too large.');
+      throw new Error('Image download timeout - please check that your images are accessible and not too large');
+    }
+    
+    throw error;
   }
-
-  const responseData = await response.json();
-  return responseData;
 }
 
 /**
@@ -98,6 +121,12 @@ function parseOpenAIResponse(openaiData) {
  * @returns {Promise<Object>} The face detection results
  */
 async function detectFaces(imageUrl) {
+  // Validate the image URL before sending to OpenAI
+  const isValid = await validateImageUrl(imageUrl);
+  if (!isValid) {
+    throw new Error(`Image URL is not accessible: ${imageUrl}`);
+  }
+  
   const payload = {
     model: 'gpt-4o',
     instructions: 'You are a precise vision detector. Return ONLY JSON that matches the schema.',
@@ -170,22 +199,101 @@ async function detectFaces(imageUrl) {
 }
 
 /**
+ * Validate that an image URL is accessible
+ * @param {string} imageUrl - The URL to validate
+ * @returns {Promise<boolean>} Whether the URL is accessible
+ */
+async function validateImageUrl(imageUrl) {
+  try {
+    console.log(`🔍 Validating image URL: ${imageUrl}`);
+    
+    // Basic URL validation
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      console.warn(`⚠️ Invalid image URL: ${imageUrl}`);
+      return false;
+    }
+    
+    // Check if URL is properly formatted
+    try {
+      new URL(imageUrl);
+    } catch (e) {
+      console.warn(`⚠️ Malformed image URL: ${imageUrl}`);
+      return false;
+    }
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(imageUrl, {
+      method: 'HEAD',
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      console.warn(`⚠️ Image URL not accessible: ${imageUrl} (Status: ${response.status})`);
+      return false;
+    }
+    
+    const contentType = response.headers.get('content-type');
+    const contentLength = response.headers.get('content-length');
+    
+    console.log(`✅ Image URL accessible: ${imageUrl} (Content-Type: ${contentType}, Size: ${contentLength} bytes)`);
+    
+    if (!contentType || !contentType.startsWith('image/')) {
+      console.warn(`⚠️ URL does not point to an image: ${imageUrl} (Content-Type: ${contentType})`);
+      return false;
+    }
+    
+    // Check if image is too large (over 20MB)
+    if (contentLength && parseInt(contentLength) > 20 * 1024 * 1024) {
+      console.warn(`⚠️ Image too large: ${imageUrl} (Size: ${contentLength} bytes)`);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.warn(`⚠️ Failed to validate image URL ${imageUrl}:`, error.message);
+    return false;
+  }
+}
+
+/**
  * Create a photo selection request
  * @param {Array} photoUrls - Array of photo URLs or photo objects
  * @returns {Promise<Object>} The photo selection results
  */
 async function selectPhotos(photoUrls, photoCount = null) {
   // Handle both URL strings and photo objects with URLs
-  const photoInputs = photoUrls.map((photo, index) => {
+  const validPhotos = [];
+  const photoInputs = [];
+  
+  for (let i = 0; i < photoUrls.length; i++) {
+    const photo = photoUrls[i];
     const imageUrl = typeof photo === 'string' ? photo : photo.storage_url || photo.asset_url || photo.url;
-    return {
-      type: 'input_image',
-      image_url: imageUrl
-    };
-  });
+    
+    // Validate the image URL before adding it
+    const isValid = await validateImageUrl(imageUrl);
+    if (isValid) {
+      validPhotos.push(photo);
+      photoInputs.push({
+        type: 'input_image',
+        image_url: imageUrl
+      });
+    } else {
+      console.warn(`⚠️ Skipping invalid image URL: ${imageUrl}`);
+    }
+  }
+  
+  if (validPhotos.length === 0) {
+    throw new Error('No valid image URLs found. Please check that your images are accessible.');
+  }
+  
+  console.log(`✅ Validated ${validPhotos.length} out of ${photoUrls.length} images`);
 
   // Determine how many photos to select
-  const targetCount = photoCount || Math.min(3, photoUrls.length);
+  const targetCount = photoCount || Math.min(3, validPhotos.length);
 
   const payload = {
     model: 'gpt-4o',
@@ -217,7 +325,7 @@ async function selectPhotos(photoUrls, photoCount = null) {
         content: [
           {
             type: 'input_text',
-            text: `Select exactly ${targetCount} of the most meaningful and visually appealing photos from this collection of ${photoUrls.length} family photos. Choose photos that tell a story together and would make a beautiful memory book. You must select exactly ${targetCount} photos. Return ONLY JSON with the selected photo numbers.`
+            text: `Select exactly ${targetCount} of the most meaningful and visually appealing photos from this collection of ${validPhotos.length} family photos. Choose photos that tell a story together and would make a beautiful memory book. You must select exactly ${targetCount} photos. Return ONLY JSON with the selected photo numbers.`
           },
           ...photoInputs
         ]
@@ -227,7 +335,32 @@ async function selectPhotos(photoUrls, photoCount = null) {
   };
 
   const response = await makeOpenAIRequest(payload);
-  return parseOpenAIResponse(response);
+  const result = parseOpenAIResponse(response);
+  
+  // Map the selected photo numbers back to the original photo array indices
+  if (result && result.selected_photo_numbers) {
+    // Create a mapping from valid photos back to original indices
+    const originalIndices = [];
+    for (let i = 0; i < photoUrls.length; i++) {
+      const photo = photoUrls[i];
+      const imageUrl = typeof photo === 'string' ? photo : photo.storage_url || photo.asset_url || photo.url;
+      
+      // Find this URL in the valid photos
+      const validIndex = validPhotos.findIndex(validPhoto => {
+        const validUrl = typeof validPhoto === 'string' ? validPhoto : validPhoto.storage_url || validPhoto.asset_url || validPhoto.url;
+        return validUrl === imageUrl;
+      });
+      
+      if (validIndex !== -1) {
+        originalIndices[validIndex] = i;
+      }
+    }
+    
+    // Convert selected photo numbers to original indices
+    result.selected_photo_numbers = result.selected_photo_numbers.map(num => originalIndices[num - 1] + 1);
+  }
+  
+  return result;
 }
 
 /**
@@ -236,10 +369,28 @@ async function selectPhotos(photoUrls, photoCount = null) {
  * @returns {Promise<Object>} The story generation results
  */
 async function generateStory(selectedPhotoUrls) {
-  const photoInputs = selectedPhotoUrls.map(url => ({
-    type: 'input_image',
-    image_url: url
-  }));
+  // Validate all photo URLs before sending to OpenAI
+  const validPhotoInputs = [];
+  
+  for (const url of selectedPhotoUrls) {
+    const imageUrl = typeof url === 'string' ? url : url.storage_url || url.asset_url || url.url;
+    
+    const isValid = await validateImageUrl(imageUrl);
+    if (isValid) {
+      validPhotoInputs.push({
+        type: 'input_image',
+        image_url: imageUrl
+      });
+    } else {
+      console.warn(`⚠️ Skipping invalid image URL in story generation: ${imageUrl}`);
+    }
+  }
+  
+  if (validPhotoInputs.length === 0) {
+    throw new Error('No valid image URLs found for story generation. Please check that your images are accessible.');
+  }
+  
+  console.log(`✅ Using ${validPhotoInputs.length} valid images for story generation`);
 
   const payload = {
     model: 'gpt-5',
@@ -269,7 +420,7 @@ async function generateStory(selectedPhotoUrls) {
             type: 'input_text',
             text: 'Create a warm, heartfelt story that connects these family photos into a beautiful narrative. Make it personal and touching, like something a grandmother would write. Return ONLY JSON with the story.'
           },
-          ...photoInputs
+          ...validPhotoInputs
         ]
       }
     ],
@@ -286,6 +437,12 @@ async function generateStory(selectedPhotoUrls) {
  * @returns {Promise<Object>} The photo analysis results
  */
 async function analyzePhotoShape(imageUrl) {
+  // Validate the image URL before sending to OpenAI
+  const isValid = await validateImageUrl(imageUrl);
+  if (!isValid) {
+    throw new Error(`Image URL is not accessible: ${imageUrl}`);
+  }
+  
   const payload = {
     model: 'gpt-4o',
     instructions: 'You are a precise image analysis tool. Return ONLY JSON that matches the schema.',
@@ -378,6 +535,12 @@ async function analyzePhotoShape(imageUrl) {
  * @returns {Promise<Object>} The image analysis results
  */
 async function analyzeImage(imageUrl) {
+  // Validate the image URL before sending to OpenAI
+  const isValid = await validateImageUrl(imageUrl);
+  if (!isValid) {
+    throw new Error(`Image URL is not accessible: ${imageUrl}`);
+  }
+  
   const payload = {
     model: 'gpt-4o',
     instructions: 'You are a precise image analysis tool. Return ONLY JSON that matches the schema.',

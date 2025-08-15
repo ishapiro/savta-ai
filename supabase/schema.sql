@@ -774,3 +774,79 @@ BEGIN
   END IF;
 END $$; 
 
+-- Add missing fields and make fields optional for draft/template status (safe to rerun)
+DO $$
+BEGIN
+  -- Add photo_selection_method column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'photo_selection_method'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN photo_selection_method text;
+  END IF;
+  
+  -- Update status check constraint to include 'template' status
+  IF EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE constraint_name = 'memory_books_status_check' 
+    AND table_name = 'memory_books'
+    AND constraint_type = 'CHECK'
+  ) THEN
+    ALTER TABLE memory_books DROP CONSTRAINT memory_books_status_check;
+  END IF;
+  
+  ALTER TABLE memory_books ADD CONSTRAINT memory_books_status_check 
+    CHECK (status in ('draft', 'template', 'ready', 'background_ready', 'approved', 'distributed'));
+    
+  -- Create a function to validate optional fields based on status
+  CREATE OR REPLACE FUNCTION validate_memory_book_fields()
+  RETURNS TRIGGER AS $$
+  BEGIN
+    -- For draft and template status, allow empty/null values for certain fields
+    IF NEW.status IN ('draft', 'template') THEN
+      -- Allow empty magic_story for draft/template status
+      IF NEW.magic_story IS NOT NULL AND NEW.magic_story = '' THEN
+        NEW.magic_story := NULL;
+      END IF;
+      
+      -- Allow empty created_from_assets for draft/template status
+      IF NEW.created_from_assets IS NOT NULL AND array_length(NEW.created_from_assets, 1) = 0 THEN
+        NEW.created_from_assets := NULL;
+      END IF;
+      
+      -- Allow empty photo_selection_pool for draft/template status
+      IF NEW.photo_selection_pool IS NOT NULL AND array_length(NEW.photo_selection_pool, 1) = 0 THEN
+        NEW.photo_selection_pool := NULL;
+      END IF;
+      
+      RETURN NEW;
+    END IF;
+    
+    -- For other statuses, ensure required fields are present
+    IF NEW.status NOT IN ('draft', 'template') THEN
+      -- Require magic_story for non-draft statuses (except for certain formats)
+      IF NEW.format = 'card' AND (NEW.magic_story IS NULL OR NEW.magic_story = '') THEN
+        RAISE EXCEPTION 'Magic story is required for card format when status is not draft/template';
+      END IF;
+      
+      -- Require created_from_assets for non-draft statuses
+      IF NEW.created_from_assets IS NULL OR array_length(NEW.created_from_assets, 1) = 0 THEN
+        RAISE EXCEPTION 'Created from assets is required when status is not draft/template';
+      END IF;
+    END IF;
+    
+    RETURN NEW;
+  END;
+  $$ LANGUAGE plpgsql;
+  
+  -- Create trigger to validate fields based on status
+  DROP TRIGGER IF EXISTS validate_memory_book_fields_trigger ON memory_books;
+  CREATE TRIGGER validate_memory_book_fields_trigger
+    BEFORE INSERT OR UPDATE ON memory_books
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_memory_book_fields();
+    
+END $$; 
+

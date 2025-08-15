@@ -2122,8 +2122,16 @@
       <p class="text-gray-600 mb-6">
         {{ errorDialogMessage || "Something went wrong while creating your memory card. Let's try again!" }}
       </p>
-      <p class="text-gray-600 mb-6">Please try a different description for your memory. For example, if your description mentioned a location and we couldn't find matching photos, try being more specific or using different keywords.
-        you can change the location or upload a photo with this location.
+      <p class="text-gray-600 mb-6" v-if="errorDialogMessage && (errorDialogMessage.includes('timeout') || errorDialogMessage.includes('not accessible') || errorDialogMessage.includes('too large'))">
+        <strong>Tips to fix this:</strong><br>
+        • Try with smaller image files (under 10MB each)<br>
+        • Check your internet connection<br>
+        • Try with different photos<br>
+        • Make sure your photos are in JPG, PNG, or GIF format
+      </p>
+      <p class="text-gray-600 mb-6" v-else>
+        Please try a different description for your memory. For example, if your description mentioned a location and we couldn't find matching photos, try being more specific or using different keywords.
+        You can change the location or upload a photo with this location.
       </p>
       <div class="flex justify-center gap-3"> 
         <Button
@@ -2859,6 +2867,9 @@ const pollPdfStatus = async () => {
     return
   }
 
+  // Add a small delay to ensure backend updates are committed
+  await new Promise(resolve => setTimeout(resolve, 100))
+
   try {
     const supabase = useNuxtApp().$supabase
     const { data: sessionData } = await supabase.auth.getSession()
@@ -2970,6 +2981,9 @@ const pollPdfStatus = async () => {
       } else if (status.pdf_status && status.pdf_status.startsWith('📖 Step 2: Generating story')) {
         currentProgress.value = 25
         currentProgressMessage.value = status.pdf_status
+      } else if (status.pdf_status && status.pdf_status.startsWith('🎯 Processing photos for layout')) {
+        currentProgress.value = 30
+        currentProgressMessage.value = status.pdf_status
       } else if (status.pdf_status === 'Gathering your special memories...') {
         currentProgress.value = 12
         currentProgressMessage.value = 'Gathering your special memories...'
@@ -3066,6 +3080,14 @@ const stopProgressPolling = () => {
   }
   // Only now set currentBookId.value to null
   currentBookId.value = null
+}
+
+// Trigger an immediate poll of PDF status
+const triggerPdfStatusPoll = () => {
+  if (currentBookId.value && showProgressDialog.value) {
+    console.log('Triggering immediate PDF status poll')
+    pollPdfStatus()
+  }
 }
 
 // Generate PDF
@@ -4305,8 +4327,6 @@ async function onMagicMemoryContinue() {
   
   // Show initial status dialog for story generation
   showProgressDialog.value = true
-  currentProgress.value = 5
-  currentProgressMessage.value = '🧙 Looking through your beautiful memories...'
   isRegenerating.value = false
   
   try {
@@ -4366,57 +4386,25 @@ async function onMagicMemoryContinue() {
       throw new Error('User not authenticated')
     }
     
-    let aiBody = { 
-      photos,
-      userId: user.id,
-      title: magicMemoryTitle.value,
-      memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
-      photo_count: magicPhotoCount.value,
-      background_type: magicBackgroundType.value,
-      background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
-              theme_id: magicSelectedTheme.value // Use selected theme (which will be default if none selected)
-    }
-    if (photos.length <= magicPhotoCount.value) {
-      aiBody.forceAll = true
-    }
+    // Get the correct photo count - use theme photo count if theme is selected, otherwise use user selection
+    const selectedTheme = magicThemeOptions.value.find(theme => theme.value === magicSelectedTheme.value)
+    const effectivePhotoCount = selectedTheme ? selectedTheme.photoCount : magicPhotoCount.value
     
-    // Update status for photo selection
-    currentProgress.value = 10
-    currentProgressMessage.value = 'Step 1: Selecting best photos...'
-    
-    const aiRes = await $fetch('/api/ai/magic-memory', {
-      method: 'POST',
-      body: aiBody
-    })
-    if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1 || aiRes.selected_photo_ids.length > magicPhotoCount.value) {
-      throw new Error(`I need a bit more to work with. Let me try again with different photos.`)
-    }
-    if (!aiRes.story || typeof aiRes.story !== 'string' || aiRes.story.trim().length < 10) {
-      throw new Error('I need to try again to create something special for you.')
-    }
-    
-    // Update status for story generation
-    currentProgress.value = 20
-    currentProgressMessage.value = 'Step 2: Generating story...'
-    
-    // Update status for saving the magic memory
-    currentProgress.value = 25
-    currentProgressMessage.value = 'Step 3: Saving to your library...'
-    
+    // First, create a template memory book in the database
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
     
     const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
       method: 'POST',
       body: {
-        asset_ids: aiRes.selected_photo_ids,
+        asset_ids: [], // Template - will be populated after AI selection
         photo_selection_pool: photoSelectionPool,
-        story: aiRes.story,
+        story: '', // Template - will be populated after AI generation
         title: magicMemoryTitle.value || 'Magic Memory',
         memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
-        background_type: aiRes.background_type || magicBackgroundType.value,
+        background_type: magicBackgroundType.value,
         background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
-        photo_count: magicPhotoCount.value,
+        photo_count: effectivePhotoCount,
         theme_id: magicSelectedTheme.value,
         print_size: '8.5x11', // Default print size for magic memories
         output: 'JPG', // Wizard creates single-page memories, so always use JPG
@@ -4428,9 +4416,68 @@ async function onMagicMemoryContinue() {
     })
     if (!dbRes.success) throw new Error('I need to try again to save your magic card.')
     
-    // Update status for PDF generation
-    currentProgress.value = 30
-    currentProgressMessage.value = 'Step 4: Finding people in your photos for cropping...'
+    // Start progress polling for the newly created book (before calling AI endpoint)
+    currentBookId.value = dbRes.book_id
+    startProgressPolling()
+    
+    // Update status and trigger poll for photo selection step
+    currentProgressMessage.value = '🎯 Step 1: Selecting best photos...'
+    setTimeout(pollPdfStatus, 100)
+    
+    // Now call the magic memory endpoint with the book ID
+    let aiBody = { 
+      photos,
+      userId: user.id,
+      memoryBookId: dbRes.book_id, // Now we have the book ID
+      title: magicMemoryTitle.value,
+      memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+      photo_count: effectivePhotoCount,
+      background_type: magicBackgroundType.value,
+      background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
+      theme_id: magicSelectedTheme.value // Use selected theme (which will be default if none selected)
+    }
+    if (photos.length <= effectivePhotoCount) {
+      aiBody.forceAll = true
+    }
+    
+    const aiRes = await $fetch('/api/ai/magic-memory', {
+      method: 'POST',
+      body: aiBody
+    })
+    
+    // Update status and trigger poll for story generation step
+    currentProgressMessage.value = '📖 Step 2: Generating story...'
+    setTimeout(pollPdfStatus, 100)
+    
+    if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1 || aiRes.selected_photo_ids.length > effectivePhotoCount) {
+      throw new Error(`I need a bit more to work with. Let me try again with different photos.`)
+    }
+    if (!aiRes.story || typeof aiRes.story !== 'string' || aiRes.story.trim().length < 10) {
+      throw new Error('I need to try again to create something special for you.')
+    }
+    
+    // Update status for saving step
+    currentProgressMessage.value = '💾 Step 3: Saving to your library...'
+    setTimeout(pollPdfStatus, 100)
+    
+    // Update the template book with the AI results
+    const updateRes = await $fetch(`/api/memory-books/${dbRes.book_id}`, {
+      method: 'POST',
+      body: {
+        asset_ids: aiRes.selected_photo_ids,
+        story: aiRes.story,
+        background_type: aiRes.background_type || magicBackgroundType.value,
+        background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null
+      },
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+    if (!updateRes.success) throw new Error('I need to try again to save your magic card.')
+    
+    // Update status for PDF generation step
+    currentProgressMessage.value = '🎨 Step 4: Creating your memory...'
+    setTimeout(pollPdfStatus, 100)
     
     // Create a book object for the progress dialog with proper asset references
     const book = {
@@ -4474,11 +4521,22 @@ async function onMagicMemoryContinue() {
     }
     
     // Show user-friendly error dialog
-    errorDialogMessage.value = err.message || 'Something went wrong while creating your magic memory. Let\'s try again!'
+    let errorMessage = err.message || 'Something went wrong while creating your magic memory. Let\'s try again!'
+    
+    // Provide more specific error messages for common issues
+    if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+      errorMessage = 'Some of your photos are taking too long to process. This usually happens when images are very large or there\'s a network issue. Please try with smaller images or check your internet connection.'
+    } else if (errorMessage.includes('not accessible') || errorMessage.includes('too large')) {
+      errorMessage = 'Some of your photos couldn\'t be accessed or are too large. Please try with different photos or smaller image files.'
+    } else if (errorMessage.includes('No valid image URLs')) {
+      errorMessage = 'None of your photos could be processed. Please check that your images are accessible and try again.'
+    }
+    
+    errorDialogMessage.value = errorMessage
     showErrorDialog.value = true
     
     // Also show toast for immediate feedback
-    toast.add({ severity: 'error', summary: 'Let me try again', detail: err.message || 'I need to try again to create something special for you.', life: 10000 })
+    toast.add({ severity: 'error', summary: 'Let me try again', detail: errorMessage, life: 10000 })
   } finally {
     magicLoading.value = false
   }
@@ -4496,8 +4554,6 @@ const retryMagicMemory = async () => {
   
   // Show progress dialog
   showProgressDialog.value = true
-  currentProgress.value = 5
-  currentProgressMessage.value = '🧙 Looking through your beautiful memories...'
   isRegenerating.value = false
   
   try {
@@ -4528,30 +4584,38 @@ const retryMagicMemory = async () => {
       throw new Error('User not authenticated')
     }
     
+    // Get the correct photo count - use theme photo count if theme is selected, otherwise use config photo count
+    const selectedTheme = magicThemeOptions.value.find(theme => theme.value === config.selectedTheme)
+    const effectivePhotoCount = selectedTheme ? selectedTheme.photoCount : config.photoCount
+    
     let aiBody = { 
       photos,
       userId: user.id,
       title: config.title,
       memory_event: config.memoryEvent,
-      photo_count: config.photoCount,
+      photo_count: effectivePhotoCount,
       background_type: config.backgroundType,
               theme_id: config.selectedTheme || null
     }
     
-    if (photos.length <= config.photoCount) {
+    if (photos.length <= effectivePhotoCount) {
       aiBody.forceAll = true
     }
     
-    // Update status for photo selection
-    currentProgress.value = 10
-    currentProgressMessage.value = 'Step 1: Selecting best photos...'
+    // Update status for photo selection step
+    currentProgressMessage.value = '🎯 Step 1: Selecting best photos...'
+    setTimeout(pollPdfStatus, 100)
     
     const aiRes = await $fetch('/api/ai/magic-memory', {
       method: 'POST',
       body: aiBody
     })
     
-    if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1 || aiRes.selected_photo_ids.length > config.photoCount) {
+    // Update status for story generation step
+    currentProgressMessage.value = '📖 Step 2: Generating story...'
+    setTimeout(pollPdfStatus, 100)
+    
+    if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1 || aiRes.selected_photo_ids.length > effectivePhotoCount) {
       throw new Error(`I need a bit more to work with. Let me try again with different photos.`)
     }
     
@@ -4559,13 +4623,9 @@ const retryMagicMemory = async () => {
       throw new Error('I need to try again to create something special for you.')
     }
     
-    // Update status for story generation
-    currentProgress.value = 20
-    currentProgressMessage.value = 'Step 2: Generating story...'
-    
-    // Update status for saving the magic memory
-    currentProgress.value = 25
-    currentProgressMessage.value = 'Step 3: Saving to your library...'
+    // Update status for saving step
+    currentProgressMessage.value = '💾 Step 3: Saving to your library...'
+    setTimeout(pollPdfStatus, 100)
     
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
@@ -4579,7 +4639,7 @@ const retryMagicMemory = async () => {
         title: config.title || 'Magic Memory',
         memory_event: config.memoryEvent,
         background_type: aiRes.background_type || config.backgroundType,
-        photo_count: config.photoCount,
+        photo_count: effectivePhotoCount,
         theme_id: config.selectedTheme || null,
         print_size: '8.5x11', // Default print size for magic memories
         output: 'JPG', // Wizard creates single-page memories, so always use JPG
@@ -4591,10 +4651,6 @@ const retryMagicMemory = async () => {
     })
     
     if (!dbRes.success) throw new Error('I need to try again to save your magic card.')
-    
-    // Update status for PDF generation
-    currentProgress.value = 30
-    currentProgressMessage.value = 'Step 4: Finding people in your photos for cropping...'
     
     // Create a book object for the progress dialog with proper asset references
     const book = {
@@ -4621,11 +4677,22 @@ const retryMagicMemory = async () => {
     stopProgressPolling()
     
     // Show user-friendly error dialog again
-    errorDialogMessage.value = err.message || 'Something went wrong while creating your magic memory. Let\'s try again!'
+    let errorMessage = err.message || 'Something went wrong while creating your magic memory. Let\'s try again!'
+    
+    // Provide more specific error messages for common issues
+    if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+      errorMessage = 'Some of your photos are taking too long to process. This usually happens when images are very large or there\'s a network issue. Please try with smaller images or check your internet connection.'
+    } else if (errorMessage.includes('not accessible') || errorMessage.includes('too large')) {
+      errorMessage = 'Some of your photos couldn\'t be accessed or are too large. Please try with different photos or smaller image files.'
+    } else if (errorMessage.includes('No valid image URLs')) {
+      errorMessage = 'None of your photos could be processed. Please check that your images are accessible and try again.'
+    }
+    
+    errorDialogMessage.value = errorMessage
     showErrorDialog.value = true
     
     // Also show toast for immediate feedback
-    toast.add({ severity: 'error', summary: 'Let me try again', detail: err.message || 'I need to try again to create something special for you.', life: 10000 })
+    toast.add({ severity: 'error', summary: 'Let me try again', detail: errorMessage, life: 10000 })
   } finally {
     magicLoading.value = false
   }
