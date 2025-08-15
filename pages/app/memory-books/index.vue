@@ -4337,6 +4337,7 @@ async function onMagicMemoryContinue() {
     }
     const photos = selectedAssets.map(a => ({
       id: a.id,
+      storage_url: a.storage_url || a.asset_url || a.url,
       ai_caption: a.ai_caption || '',
       people_detected: a.people_detected || [],
       tags: a.tags || [],
@@ -4359,8 +4360,15 @@ async function onMagicMemoryContinue() {
       isEmpty: !magicMemoryTitle.value.trim()
     })
     
+    // Get current user ID
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+    
     let aiBody = { 
       photos,
+      userId: user.id,
       title: magicMemoryTitle.value,
       memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
       photo_count: magicPhotoCount.value,
@@ -4496,6 +4504,7 @@ const retryMagicMemory = async () => {
     const config = lastMagicMemoryConfig.value
     const photos = config.selectedAssets.map(a => ({
       id: a.id,
+      storage_url: a.storage_url || a.asset_url || a.url,
       ai_caption: a.ai_caption || '',
       people_detected: a.people_detected || [],
       tags: a.tags || [],
@@ -4513,8 +4522,15 @@ const retryMagicMemory = async () => {
       location: a.location || null
     }))
     
+    // Get current user ID
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+    
     let aiBody = { 
       photos,
+      userId: user.id,
       title: config.title,
       memory_event: config.memoryEvent,
       photo_count: config.photoCount,

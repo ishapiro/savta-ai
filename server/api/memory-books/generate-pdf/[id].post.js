@@ -3,6 +3,7 @@
 
 import { PDFDocument, rgb } from 'pdf-lib'
 import sharp from 'sharp'
+import smartcrop from 'smartcrop'
 
 import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
@@ -473,530 +474,73 @@ export default defineEventHandler(async (event) => {
         const workingImageBuffer = processedImageBuffer || imageBuffer
         const workingMetadata = await sharp(workingImageBuffer).metadata()
         
-        // Try OpenAI face detection first
         let faces = []
-        if (storageUrl) {
-          try {
-            console.log('🔍 Using OpenAI face detection with storage URL:', storageUrl)
-            
-            // Call our face detection endpoint
-            const faceRes = await fetch(`${config.public.siteUrl}/api/ai/detect-faces`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                imageUrl: storageUrl,
-                imageWidth: workingMetadata.width,
-                imageHeight: workingMetadata.height
-              })
-            })
-            
-            if (faceRes.ok) {
-              const faceData = await faceRes.json()
-              faces = faceData.faces || []
-              console.log(`👥 OpenAI detected ${faces.length} people`)
-        } else {
-              console.warn('⚠️ OpenAI person detection failed, using fallback')
-            }
-          } catch (faceError) {
-            console.warn('⚠️ OpenAI face detection error:', faceError.message)
-          }
-        } else {
-          console.log('⚠️ No storage URL provided, using fallback')
-        }
-        
         let cropArea = null
         
-        if (faces.length > 0) {
-          // AI is now correctly detecting people, so we can use face-based cropping for all images
-          console.log('✅ Using AI person detection for cropping')
+        console.log('👥 No faces detected, using smartcrop fallback')
+        
+        try {
+          // Use smartcrop with Sharp for intelligent cropping
+          console.log('🎯 Using smartcrop fallback')
           
-          // Calculate crop area based on full person bounding boxes
-          let minX = workingMetadata.width
-          let minY = workingMetadata.height
-          let maxX = 0
-          let maxY = 0
+          // Convert image buffer to raw RGBA data for smartcrop
+          const rawBuffer = await sharp(imageBuffer)
+            .ensureAlpha()
+            .raw()
+            .toBuffer()
           
-          faces.forEach(face => {
-            // AI returns normalized coordinates (0-1), convert to pixel coordinates
-            const normalizedX = face.bbox.x
-            const normalizedY = face.bbox.y
-            const normalizedWidth = face.bbox.width
-            const normalizedHeight = face.bbox.height
-            
-            // Convert normalized coordinates to pixel coordinates
-            const personMinX = normalizedX * workingMetadata.width
-            const personMaxX = (normalizedX + normalizedWidth) * workingMetadata.width
-            const personMinY = normalizedY * workingMetadata.height
-            const personMaxY = (normalizedY + normalizedHeight) * workingMetadata.height
-            
-            // Calculate center and dimensions for logging
-            const centerX = (personMinX + personMaxX) / 2
-            const centerY = (personMinY + personMaxY) / 2
-            const personWidth = personMaxX - personMinX
-            const personHeight = personMaxY - personMinY
-            
-            minX = Math.min(minX, personMinX)
-            minY = Math.min(minY, personMinY)
-            maxX = Math.max(maxX, personMaxX)
-            maxY = Math.max(maxY, personMaxY)
-            
-            console.log(`🎯 Person ${faces.indexOf(face) + 1}: center(${centerX},${centerY}), size(${personWidth}x${personHeight}), bounds(${personMinX.toFixed(1)},${personMinY.toFixed(1)}) to (${personMaxX.toFixed(1)},${personMaxY.toFixed(1)})`)
+          const imgData = { 
+            width: metadata.width, 
+            height: metadata.height, 
+            data: new Uint8ClampedArray(rawBuffer) // smartcrop requires this format
+          }
+          
+          console.log('🔍 Smartcrop input:', { width: imgData.width, height: imgData.height, dataLength: imgData.data.length })
+          
+          // Use smartcrop to find the best crop area
+          // Pass the target dimensions for the crop we want
+          const result = await smartcrop.crop(imgData, { 
+            width: targetWidth, 
+            height: targetHeight 
           })
           
-          // Ensure crop area stays within image bounds
-          minX = Math.max(0, minX)
-          minY = Math.max(0, minY)
-          maxX = Math.min(workingMetadata.width, maxX)
-          maxY = Math.min(workingMetadata.height, maxY)
+          console.log('🔍 Smartcrop result:', result)
           
-          // Calculate the largest possible crop area that maintains target aspect ratio
-          const targetAspectRatio = targetWidth / targetHeight
-          const currentWidth = maxX - minX
-          const currentHeight = maxY - minY
-          
-          console.log('🎯 Person detection crop calculation:', {
-            targetAspectRatio: targetAspectRatio.toFixed(3),
-            currentWidth: currentWidth.toFixed(1),
-            currentHeight: currentHeight.toFixed(1),
-            minX: minX.toFixed(1),
-            minY: minY.toFixed(1),
-            maxX: maxX.toFixed(1),
-            maxY: maxY.toFixed(1),
-            personCount: faces.length,
-            boundingBoxMethod: 'super_bounding_box'
-          })
-          
-          // Calculate the maximum possible crop area that includes all faces
-          let finalWidth, finalHeight
-          let finalX, finalY
-          
-          if (isLandscape) {
-            // HEAD & SHOULDERS APPROACH: Detect heads/shoulders, then expand to maximum coverage
-            // Calculate the center of all detected heads/shoulders
-            const headsCenterX = (minX + maxX) / 2
-            const headsCenterY = (minY + maxY) / 2
+          if (result && result.topCrop) {
+            const { x, y, width: w, height: h } = result.topCrop
             
-            // CHECK: Is the image aspect ratio within 20% of the target aspect ratio?
-            const imageAspectRatio = workingMetadata.width / workingMetadata.height
+            // smartcrop returns coordinates relative to the original image
+            // Scale them to maximize the crop area while maintaining aspect ratio
             const targetAspectRatio = targetWidth / targetHeight
+            const currentAspectRatio = w / h
             
-            // Calculate the difference in aspect ratios
-            const aspectRatioDifference = Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio
+            let finalWidth, finalHeight
             
-            // Check if aspect ratios are within 20% of each other
-            const isWithin20Percent = aspectRatioDifference <= 0.2
-            
-            if (isWithin20Percent) {
-              // Simple center crop - image aspect ratio is close enough to target
-              finalWidth = workingMetadata.width
-              finalHeight = workingMetadata.height
-              finalX = 0
-              finalY = 0
-              console.log('🎯 Using complete image - aspect ratio within 20% of target')
+            if (currentAspectRatio > targetAspectRatio) {
+              // Current crop is too wide, expand height
+              finalWidth = w
+              finalHeight = w / targetAspectRatio
             } else {
-              // For landscape, use the full image width and expand to maximum height
-              finalWidth = workingMetadata.width
+              // Current crop is too tall, expand width
+              finalHeight = h
+              finalWidth = h * targetAspectRatio
+            }
+            
+            // Ensure the expanded crop fits within image bounds
+            if (x + finalWidth > metadata.width) {
+              finalWidth = metadata.width - x
               finalHeight = finalWidth / targetAspectRatio
-              
-              // If height exceeds image bounds, reduce width
-              if (finalHeight > workingMetadata.height) {
-                finalHeight = workingMetadata.height
-                finalWidth = finalHeight * targetAspectRatio
-              }
-              
-              // Center horizontally on the heads
-              finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
-              
-              // CRITICAL RULE: NEVER crop into the top of head bounding boxes
-              // Start from the minimum Y coordinate of all detected people, or 0 if no people detected
-              finalY = Math.max(0, minY - 50) // 50px buffer above the highest detected person
-              
-              // Expand to include more of the image if possible, but prioritize top space
-              if (finalHeight < workingMetadata.height) {
-                const expandedHeight = Math.min(workingMetadata.height, finalHeight * 1.3) // 30% more height
-                const expandedWidth = expandedHeight * targetAspectRatio
-                
-                if (expandedWidth <= workingMetadata.width) {
-                  finalHeight = expandedHeight
-                  finalWidth = expandedWidth
-                  // Re-center horizontally with new dimensions, but keep Y at 0
-                  finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
-                  finalY = 0 // Always prioritize top space
-                }
-              }
             }
-            
-            console.log('🎯 Final crop calculation (landscape):', {
-              finalX: finalX.toFixed(1),
-              finalY: finalY.toFixed(1),
-              finalWidth: finalWidth.toFixed(1),
-              finalHeight: finalHeight.toFixed(1),
-              cropArea: `${finalX.toFixed(1)},${finalY.toFixed(1)} to ${(finalX + finalWidth).toFixed(1)},${(finalY + finalHeight).toFixed(1)}`
-            })
-          } else if (isPortrait) {
-            // HEAD & SHOULDERS APPROACH: Detect heads/shoulders, then expand to maximum coverage
-            // Calculate the center of all detected heads/shoulders
-            const headsCenterX = (minX + maxX) / 2
-            const headsCenterY = (minY + maxY) / 2
-            
-            // CHECK: Is the image aspect ratio within 20% of the target aspect ratio?
-            const imageAspectRatio = workingMetadata.width / workingMetadata.height
-            const targetAspectRatio = targetWidth / targetHeight
-            
-            // Calculate the difference in aspect ratios
-            const aspectRatioDifference = Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio
-            
-            // Check if aspect ratios are within 20% of each other
-            const isWithin20Percent = aspectRatioDifference <= 0.2
-            
-            if (isWithin20Percent) {
-              // Simple center crop - image aspect ratio is close enough to target
-              finalWidth = workingMetadata.width
-              finalHeight = workingMetadata.height
-              finalX = 0
-              finalY = 0
-              console.log('🎯 Using complete image - aspect ratio within 20% of target')
-            } else {
-              // For portrait, use the full image width and expand to maximum height
-              finalWidth = workingMetadata.width
-              finalHeight = finalWidth / targetAspectRatio
-              
-              // If height exceeds image bounds, reduce both dimensions
-              if (finalHeight > workingMetadata.height) {
-                finalHeight = workingMetadata.height
-                finalWidth = finalHeight * targetAspectRatio
-              }
-              
-              // Center horizontally on the heads
-              finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
-              
-              // CRITICAL RULE: NEVER crop into the top of head bounding boxes
-              // Start from the minimum Y coordinate of all detected people, or 0 if no people detected
-              finalY = Math.max(0, minY - 50) // 50px buffer above the highest detected person
-              
-              // If the calculated height doesn't reach the bottom, extend it downward
-              if (finalY + finalHeight < workingMetadata.height) {
-                finalHeight = Math.min(workingMetadata.height, finalHeight * 1.5) // 50% more height
-                finalWidth = finalHeight * targetAspectRatio
-                
-                // Recalculate width if it exceeds image bounds
-                if (finalWidth > workingMetadata.width) {
-                  finalWidth = workingMetadata.width
-                  finalHeight = finalWidth / targetAspectRatio
-                }
-                
-                // Re-center horizontally with new dimensions, but keep Y at 0
-                finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
-                finalY = 0 // Always prioritize top space
-              }
-            }
-            
-            console.log('🎯 Final crop calculation (portrait):', {
-              finalX: finalX.toFixed(1),
-              finalY: finalY.toFixed(1),
-              finalWidth: finalWidth.toFixed(1),
-              finalHeight: finalHeight.toFixed(1),
-              cropArea: `${finalX.toFixed(1)},${finalY.toFixed(1)} to ${(finalX + finalWidth).toFixed(1)},${(finalY + finalHeight).toFixed(1)}`
-            })
-          } else {
-            // HEAD & SHOULDERS APPROACH: Detect heads/shoulders, then expand to maximum coverage
-            // Calculate the center of all detected heads/shoulders
-            const headsCenterX = (minX + maxX) / 2
-            const headsCenterY = (minY + maxY) / 2
-            
-            // CHECK: Is the image aspect ratio within 20% of the target aspect ratio?
-            const imageAspectRatio = workingMetadata.width / workingMetadata.height
-            const targetAspectRatio = targetWidth / targetHeight
-            
-            // Calculate the difference in aspect ratios
-            const aspectRatioDifference = Math.abs(imageAspectRatio - targetAspectRatio) / targetAspectRatio
-            
-            // Check if aspect ratios are within 20% of each other
-            const isWithin20Percent = aspectRatioDifference <= 0.2
-            
-            if (isWithin20Percent) {
-              // Simple center crop - image aspect ratio is close enough to target
-              finalWidth = workingMetadata.width
-              finalHeight = workingMetadata.height
-              finalX = 0
-              finalY = 0
-              console.log('🎯 Using complete image - aspect ratio within 20% of target')
-            } else {
-              // Use the largest possible square and prioritize top space
-              const maxSize = Math.min(workingMetadata.width, workingMetadata.height)
-              finalWidth = maxSize
-              finalHeight = maxSize
-              
-              // Center horizontally on the heads, but NEVER crop into the top of head bounding boxes
-              finalX = Math.max(0, Math.min(headsCenterX - finalWidth / 2, workingMetadata.width - finalWidth))
-              finalY = Math.max(0, minY - 50) // 50px buffer above the highest detected person
-              
-              // Expand to include more of the image if possible, but prioritize top space
-              const expandFactor = 1.2 // 20% larger square if possible
-              const expandedSize = Math.min(workingMetadata.width, workingMetadata.height, maxSize * expandFactor)
-              
-              if (expandedSize > maxSize) {
-                const expandedWidth = expandedSize
-                const expandedHeight = expandedSize
-                
-                // Re-center horizontally with expanded dimensions, but keep Y at 0
-                const newX = Math.max(0, Math.min(headsCenterX - expandedWidth / 2, workingMetadata.width - expandedWidth))
-                const newY = 0 // Always prioritize top space
-                
-                // Only use expanded size if it doesn't go outside image bounds
-                if (newX >= 0 && newY >= 0 && newX + expandedWidth <= workingMetadata.width && newY + expandedHeight <= workingMetadata.height) {
-                  finalWidth = expandedWidth
-                  finalHeight = expandedHeight
-                  finalX = newX
-                  finalY = newY
-                }
-              }
-            }
-            
-            console.log('🎯 Final crop calculation (square):', {
-              finalX: finalX.toFixed(1),
-              finalY: finalY.toFixed(1),
-              finalWidth: finalWidth.toFixed(1),
-              finalHeight: finalHeight.toFixed(1),
-              cropArea: `${finalX.toFixed(1)},${finalY.toFixed(1)} to ${(finalX + finalWidth).toFixed(1)},${(finalY + finalHeight).toFixed(1)}`
-            })
-          }
-          
-          // Ensure the crop fits within image bounds
-          if (finalX + finalWidth > workingMetadata.width) {
-            finalWidth = workingMetadata.width - finalX
-            finalHeight = finalWidth / targetAspectRatio
-          }
-          if (finalY + finalHeight > workingMetadata.height) {
-            finalHeight = workingMetadata.height - finalY
-            finalWidth = finalHeight * targetAspectRatio
-          }
-          
-          // Final safety check: ensure all detected people are within the crop area
-          let needsAdjustment = false
-          faces.forEach(face => {
-            const personCenterX = face.x
-            const personCenterY = face.y
-            const personWidth = face.width
-            const personHeight = face.height
-            
-            // Calculate person bounding box
-            const personMinX = personCenterX - (personWidth / 2)
-            const personMaxX = personCenterX + (personWidth / 2)
-            const personMinY = personCenterY - (personHeight / 2)
-            const personMaxY = personCenterY + (personHeight / 2)
-            
-            // Check if person would be cut off
-            if (personMinX < finalX || 
-                personMaxX > finalX + finalWidth ||
-                personMinY < finalY || 
-                personMaxY > finalY + finalHeight) {
-              needsAdjustment = true
-            }
-          })
-          
-          if (needsAdjustment) {
-            console.log('⚠️ Person crop adjustment needed - expanding crop to include all people')
-            // Expand crop to include all people with their full bounding boxes
-            let newMinX = workingMetadata.width
-            let newMinY = workingMetadata.height
-            let newMaxX = 0
-            let newMaxY = 0
-            
-            faces.forEach(face => {
-              const personWidth = face.width
-              const personHeight = face.height
-              const personMinX = face.x - (personWidth / 2)
-              const personMaxX = face.x + (personWidth / 2)
-              const personMinY = face.y - (personHeight / 2)
-              const personMaxY = face.y + (personHeight / 2)
-              
-              newMinX = Math.min(newMinX, personMinX)
-              newMinY = Math.min(newMinY, personMinY)
-              newMaxX = Math.max(newMaxX, personMaxX)
-              newMaxY = Math.max(newMaxY, personMaxY)
-            })
-            
-            // Ensure bounds
-            newMinX = Math.max(0, newMinX)
-            newMinY = Math.max(0, newMinY)
-            newMaxX = Math.min(workingMetadata.width, newMaxX)
-            newMaxY = Math.min(workingMetadata.height, newMaxY)
-            
-            // Recalculate crop with expanded bounds
-            const expandedWidth = newMaxX - newMinX
-            const expandedHeight = newMaxY - newMinY
-            
-            if (isPortrait) {
-              finalHeight = workingMetadata.height
+            if (y + finalHeight > metadata.height) {
+              finalHeight = metadata.height - y
               finalWidth = finalHeight * targetAspectRatio
-              if (finalWidth > workingMetadata.width) {
-                finalWidth = workingMetadata.width
-                finalHeight = finalWidth / targetAspectRatio
-              }
-              finalX = Math.max(0, Math.min((newMinX + newMaxX) / 2 - finalWidth / 2, workingMetadata.width - finalWidth))
-              finalY = 0 // Start from top for portrait
-            }
-          }
-          
-          cropArea = {
-            x: Math.floor(finalX),
-            y: Math.floor(finalY),
-            width: Math.floor(finalWidth),
-            height: Math.floor(finalHeight)
-          }
-          
-          // Ensure all values are positive integers (handle any remaining decimals)
-          cropArea.x = Math.max(0, Math.floor(cropArea.x))
-          cropArea.y = Math.max(0, Math.floor(cropArea.y))
-          cropArea.width = Math.max(1, Math.floor(cropArea.width))
-          cropArea.height = Math.max(1, Math.floor(cropArea.height))
-          
-          console.log('🎯 Face-based crop area (maximized):', cropArea)
-        } else {
-          // No faces detected, use smartcrop fallback
-          console.log('👥 No faces detected, using smartcrop fallback')
-          
-          try {
-            // Use smartcrop with Sharp for intelligent cropping
-            console.log('🎯 Using smartcrop fallback')
-            
-            // Convert image buffer to raw RGBA data for smartcrop
-            const rawBuffer = await sharp(imageBuffer)
-              .ensureAlpha()
-              .raw()
-              .toBuffer()
-            
-            const imgData = { 
-              width: metadata.width, 
-              height: metadata.height, 
-              data: new Uint8ClampedArray(rawBuffer) // smartcrop requires this format
             }
             
-            console.log('🔍 Smartcrop input:', { width: imgData.width, height: imgData.height, dataLength: imgData.data.length })
-            
-            // Use smartcrop to find the best crop area
-            // Pass the target dimensions for the crop we want
-            const result = await smartcrop.crop(imgData, { 
-              width: targetWidth, 
-              height: targetHeight 
-            })
-            
-            console.log('🔍 Smartcrop result:', result)
-            
-            if (result && result.topCrop) {
-              const { x, y, width: w, height: h } = result.topCrop
-              
-              // smartcrop returns coordinates relative to the original image
-              // Scale them to maximize the crop area while maintaining aspect ratio
-              const targetAspectRatio = targetWidth / targetHeight
-              const currentAspectRatio = w / h
-              
-              let finalWidth, finalHeight
-              
-              if (currentAspectRatio > targetAspectRatio) {
-                // Current crop is too wide, expand height
-                finalWidth = w
-                finalHeight = w / targetAspectRatio
-              } else {
-                // Current crop is too tall, expand width
-                finalHeight = h
-                finalWidth = h * targetAspectRatio
-              }
-              
-              // Ensure the expanded crop fits within image bounds
-              if (x + finalWidth > metadata.width) {
-                finalWidth = metadata.width - x
-                finalHeight = finalWidth / targetAspectRatio
-              }
-              if (y + finalHeight > metadata.height) {
-                finalHeight = metadata.height - y
-                finalWidth = finalHeight * targetAspectRatio
-              }
-              
-              cropArea = {
-                x: x,
-                y: y,
-                width: Math.floor(finalWidth),
-                height: Math.floor(finalHeight)
-              }
-              
-              // Ensure all values are positive integers (handle any remaining decimals)
-              cropArea.x = Math.max(0, Math.floor(cropArea.x))
-              cropArea.y = Math.max(0, Math.floor(cropArea.y))
-              cropArea.width = Math.max(1, Math.floor(cropArea.width))
-              cropArea.height = Math.max(1, Math.floor(cropArea.height))
-              
-              console.log('🎯 Smartcrop fallback crop area (maximized):', cropArea)
-            } else {
-              throw new Error('Smartcrop failed to return valid crop area')
-            }
-          } catch (smartcropError) {
-            console.warn('⚠️ Smartcrop failed, using orientation-based fallback:', smartcropError.message)
-            
-            // Fallback to orientation-based cropping with maximized area
-            const targetAspectRatio = targetWidth / targetHeight
-            
-            if (isLandscape) {
-              // For landscape, use the largest possible area that fits the target aspect ratio
-              // Start with the full width and calculate height
-              let cropWidth = metadata.width
-              let cropHeight = cropWidth / targetAspectRatio
-              
-              // If height exceeds image bounds, reduce width
-              if (cropHeight > metadata.height) {
-                cropHeight = metadata.height
-                cropWidth = cropHeight * targetAspectRatio
-              }
-              
-              // Center the crop horizontally, prioritize top 1/3rd vertically
-              const topThirdHeight = Math.floor(metadata.height / 3)
-              const maxCropHeight = Math.min(cropHeight, topThirdHeight)
-              const centerX = Math.floor((metadata.width - cropWidth) / 2)
-              
-              cropArea = {
-                x: Math.max(0, centerX),
-                y: 0,
-                width: Math.floor(cropWidth),
-                height: Math.floor(maxCropHeight)
-              }
-            } else if (isPortrait) {
-              // For portrait, use the largest possible area that fits the target aspect ratio
-              // Start with the full height and calculate width
-              let cropHeight = metadata.height
-              let cropWidth = cropHeight * targetAspectRatio
-              
-              // If width exceeds image bounds, reduce height
-              if (cropWidth > metadata.width) {
-                cropWidth = metadata.width
-                cropHeight = cropWidth / targetAspectRatio
-              }
-              
-              // Center the crop horizontally, prioritize top half vertically
-              const topHalfHeight = Math.floor(metadata.height / 2)
-              const maxCropHeight = Math.min(cropHeight, topHalfHeight)
-              const centerX = Math.floor((metadata.width - cropWidth) / 2)
-              
-              cropArea = {
-                x: Math.max(0, centerX),
-                y: 0,
-                width: Math.floor(cropWidth),
-                height: Math.floor(maxCropHeight)
-              }
-            } else {
-              // For square, use the largest possible square that fits
-              const maxSize = Math.min(metadata.width, metadata.height)
-              const centerX = Math.floor((metadata.width - maxSize) / 2)
-              const centerY = Math.floor((metadata.height - maxSize) / 2)
-              
-              cropArea = {
-                x: centerX,
-                y: centerY,
-                width: maxSize,
-                height: maxSize
-              }
+            cropArea = {
+              x: x,
+              y: y,
+              width: Math.floor(finalWidth),
+              height: Math.floor(finalHeight)
             }
             
             // Ensure all values are positive integers (handle any remaining decimals)
@@ -1005,7 +549,93 @@ export default defineEventHandler(async (event) => {
             cropArea.width = Math.max(1, Math.floor(cropArea.width))
             cropArea.height = Math.max(1, Math.floor(cropArea.height))
             
-            console.log('🎯 Orientation-based fallback crop area (maximized):', cropArea)
+            console.log('🎯 Smartcrop fallback crop area (maximized):', cropArea)
+          } else {
+            throw new Error('Smartcrop failed to return valid crop area')
+          }
+        } catch (smartcropError) {
+          console.warn('⚠️ Smartcrop failed, using orientation-based fallback:', smartcropError.message)
+          
+          // Fallback to orientation-based cropping with maximized area
+          const targetAspectRatio = targetWidth / targetHeight
+          
+          if (isLandscape) {
+            // For landscape, use the largest possible area that fits the target aspect ratio
+            // Start with the full width and calculate height
+            let cropWidth = metadata.width
+            let cropHeight = cropWidth / targetAspectRatio
+            
+            // If height exceeds image bounds, reduce width
+            if (cropHeight > metadata.height) {
+              cropHeight = metadata.height
+              cropWidth = cropHeight * targetAspectRatio
+            }
+            
+            // Center the crop horizontally, prioritize top 1/3rd vertically
+            const topThirdHeight = Math.floor(metadata.height / 3)
+            const maxCropHeight = Math.min(cropHeight, topThirdHeight)
+            const centerX = Math.floor((metadata.width - cropWidth) / 2)
+            
+            cropArea = {
+              x: Math.max(0, centerX),
+              y: 0,
+              width: Math.floor(cropWidth),
+              height: Math.floor(maxCropHeight)
+            }
+          } else if (isPortrait) {
+            // For portrait, use the largest possible area that fits the target aspect ratio
+            // Start with the full height and calculate width
+            let cropHeight = metadata.height
+            let cropWidth = cropHeight * targetAspectRatio
+            
+            // If width exceeds image bounds, reduce height
+            if (cropWidth > metadata.width) {
+              cropWidth = metadata.width
+              cropHeight = cropWidth / targetAspectRatio
+            }
+            
+            // Center the crop horizontally, prioritize top half vertically
+            const topHalfHeight = Math.floor(metadata.height / 2)
+            const maxCropHeight = Math.min(cropHeight, topHalfHeight)
+            const centerX = Math.floor((metadata.width - cropWidth) / 2)
+            
+            cropArea = {
+              x: Math.max(0, centerX),
+              y: 0,
+              width: Math.floor(cropWidth),
+              height: Math.floor(maxCropHeight)
+            }
+          } else {
+            // For square, use the largest possible square that fits
+            const maxSize = Math.min(metadata.width, metadata.height)
+            const centerX = Math.floor((metadata.width - maxSize) / 2)
+            const centerY = Math.floor((metadata.height - maxSize) / 2)
+            
+            cropArea = {
+              x: centerX,
+              y: centerY,
+              width: maxSize,
+              height: maxSize
+            }
+          }
+          
+          // Ensure all values are positive integers (handle any remaining decimals)
+          cropArea.x = Math.max(0, Math.floor(cropArea.x))
+          cropArea.y = Math.max(0, Math.floor(cropArea.y))
+          cropArea.width = Math.max(1, Math.floor(cropArea.width))
+          cropArea.height = Math.max(1, Math.floor(cropArea.height))
+          
+          console.log('🎯 Orientation-based fallback crop area (maximized):', cropArea)
+        }
+        
+        // Final safety check - ensure cropArea is defined
+        if (!cropArea) {
+          console.warn('⚠️ No crop area defined, using center crop fallback')
+          cropArea = {
+            x: 0,
+            y: 0,
+            width: metadata.width,
+            height: metadata.height
           }
         }
         
@@ -1824,24 +1454,27 @@ export default defineEventHandler(async (event) => {
       }))
       
       await updatePdfStatus(supabase, book.id, user.id, `🎯 Step 1: Examining ${photos.length} photos to find ${photoCount} best...`)
+      
+      const requestBody = {
+        photos: photos,
+        userId: user.id,
+        memoryBookId: book.id,
+        photo_count: photoCount, // Pass the dynamic photo count from theme
+        title: book.ai_supplemental_prompt,
+        memory_event: book.memory_event,
+        theme: book.theme_id || null,
+        background_type: book.background_type || 'white',
+        background_color: book.background_color,
+        forceAll: isPhotoLibrarySelection || photoCount === photos.length // Force AI to use all photos when user has manually selected them or when count matches
+      }
+      
       const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          photos: photos,
-          userId: user.id,
-          memoryBookId: book.id,
-          photo_count: photoCount, // Pass the dynamic photo count from theme
-          title: book.ai_supplemental_prompt,
-          memory_event: book.memory_event,
-          theme: book.theme_id || null,
-          background_type: book.background_type || 'white',
-          background_color: book.background_color,
-          forceAll: isPhotoLibrarySelection || photoCount === photos.length // Force AI to use all photos when user has manually selected them or when count matches
-        })
+        body: JSON.stringify(requestBody)
       })
       if (magicRes.ok) {
         const magicData = await magicRes.json()
