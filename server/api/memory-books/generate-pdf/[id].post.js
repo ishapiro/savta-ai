@@ -429,7 +429,7 @@ export default defineEventHandler(async (event) => {
       try {
         console.log('🧠 Performing OpenAI person detection crop...')
         if (photoIndex !== null && totalPhotos !== null) {
-          await updatePdfStatus(supabase, book.id, user.id, `👥 Processing photo ${photoIndex + 1} of ${totalPhotos}...`)
+          await updatePdfStatus(supabase, book.id, user.id, `👥 Cropping photo ${photoIndex + 1} of ${totalPhotos}...`)
         }
         console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
         
@@ -1823,7 +1823,7 @@ export default defineEventHandler(async (event) => {
         location: asset.location || null
       }))
       
-      await updatePdfStatus(supabase, book.id, user.id, '🎯 Step 1: Selecting best photos...')
+      await updatePdfStatus(supabase, book.id, user.id, `🎯 Step 1: Examining ${photos.length} photos to find ${photoCount} best...`)
       const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
         method: 'POST',
         headers: {

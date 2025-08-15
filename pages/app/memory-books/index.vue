@@ -1022,7 +1022,7 @@
           <!-- Progress Section -->
           <div class="bg-white/90 backdrop-blur-sm rounded-xl p-4 sm:p-6 border-2 border-brand-highlight shadow-lg">
             <div class="text-center">
-              <h3 class="text-lg sm:text-xl font-semibold text-brand-header mb-3">
+              <h3 class="text-sm sm:text-base font-semibold text-brand-header mb-3 leading-tight">
                 {{ currentProgressMessage }}
               </h3>
               
@@ -2964,12 +2964,12 @@ const pollPdfStatus = async () => {
                     } else if (status.pdf_status === '🤔 Processing with AI...') {
         currentProgress.value = 8
         currentProgressMessage.value = '🤔 Processing with AI...'
-      } else if (status.pdf_status === '🎯 Step 1: Selecting best photos...') {
+      } else if (status.pdf_status && status.pdf_status.startsWith('🎯 Step 1: Selecting best photos')) {
         currentProgress.value = 15
-        currentProgressMessage.value = '🎯 Step 1: Selecting best photos...'
-      } else if (status.pdf_status === '📖 Step 2: Generating story...') {
+        currentProgressMessage.value = status.pdf_status
+      } else if (status.pdf_status && status.pdf_status.startsWith('📖 Step 2: Generating story')) {
         currentProgress.value = 25
-        currentProgressMessage.value = '📖 Step 2: Generating story...'
+        currentProgressMessage.value = status.pdf_status
       } else if (status.pdf_status === 'Gathering your special memories...') {
         currentProgress.value = 12
         currentProgressMessage.value = 'Gathering your special memories...'
@@ -2985,9 +2985,9 @@ const pollPdfStatus = async () => {
       } else if (status.pdf_status === 'Weaving your memories into pages...') {
         currentProgress.value = 55
         currentProgressMessage.value = 'Weaving your memories into pages...'
-      } else if (status.pdf_status && status.pdf_status.startsWith('👥 Processing photo')) {
+      } else if (status.pdf_status && status.pdf_status.startsWith('👥 Cropping photo')) {
         // Extract photo number and total from status message
-        const match = status.pdf_status.match(/👥 Processing photo (\d+) of (\d+)\.\.\./)
+        const match = status.pdf_status.match(/👥 Cropping photo (\d+) of (\d+)\.\.\./)
         if (match) {
           const currentPhoto = parseInt(match[1])
           const totalPhotos = parseInt(match[2])
@@ -3101,6 +3101,9 @@ const generatePDF = async (book) => {
     const isRegeneratingBook = book.status === 'ready' || book.status === 'background_ready'
     startProgressPolling(book.id, isRegeneratingBook)
     console.log('Progress dialog should be visible:', showProgressDialog.value)
+    
+    // Set initial status immediately to avoid showing old status
+    currentProgressMessage.value = '🚀 Getting started...'
     
     // For regeneration, clear existing background and PDF URLs first
     if (book.status === 'ready' && (book.background_url || book.pdf_url)) {
