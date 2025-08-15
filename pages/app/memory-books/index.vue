@@ -2961,12 +2961,18 @@ const pollPdfStatus = async () => {
       } else if (status.pdf_status === 'Background ready, creating pages...') {
         currentProgress.value = 45
         currentProgressMessage.value = 'Background ready, creating pages...'
-              } else if (status.pdf_status === '🤔 Processing with AI...') {
+                    } else if (status.pdf_status === '🤔 Processing with AI...') {
         currentProgress.value = 8
-        currentProgressMessage.value = 'Step 1: Selecting best photos...'
-              } else if (status.pdf_status === 'Gathering your special memories...') {
+        currentProgressMessage.value = '🤔 Processing with AI...'
+      } else if (status.pdf_status === '🎯 Step 1: Selecting best photos...') {
+        currentProgress.value = 15
+        currentProgressMessage.value = '🎯 Step 1: Selecting best photos...'
+      } else if (status.pdf_status === '📖 Step 2: Generating story...') {
+        currentProgress.value = 25
+        currentProgressMessage.value = '📖 Step 2: Generating story...'
+      } else if (status.pdf_status === 'Gathering your special memories...') {
         currentProgress.value = 12
-        currentProgressMessage.value = 'Gathering memories...'
+        currentProgressMessage.value = 'Gathering your special memories...'
               } else if (status.pdf_status === 'Retrieving special background...') {
         currentProgress.value = 18
         currentProgressMessage.value = 'Retrieving background...'
@@ -2978,8 +2984,25 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = 'Creating background...'
       } else if (status.pdf_status === 'Weaving your memories into pages...') {
         currentProgress.value = 55
-        currentProgressMessage.value = 'Creating PDF pages...'
-              } else if (status.pdf_status === 'Adding the final special touches...') {
+        currentProgressMessage.value = 'Weaving your memories into pages...'
+      } else if (status.pdf_status && status.pdf_status.startsWith('👥 Processing photo')) {
+        // Extract photo number and total from status message
+        const match = status.pdf_status.match(/👥 Processing photo (\d+) of (\d+)\.\.\./)
+        if (match) {
+          const currentPhoto = parseInt(match[1])
+          const totalPhotos = parseInt(match[2])
+          // Calculate progress: 60% base + up to 20% for photo processing
+          const photoProgress = (currentPhoto / totalPhotos) * 20
+          currentProgress.value = 60 + photoProgress
+          currentProgressMessage.value = status.pdf_status
+        } else {
+          currentProgress.value = 70
+          currentProgressMessage.value = status.pdf_status
+        }
+      } else if (status.pdf_status === '📄 Creating PDF...') {
+        currentProgress.value = 80
+        currentProgressMessage.value = '📄 Creating PDF...'
+      } else if (status.pdf_status === 'Adding the final special touches...') {
         currentProgress.value = 85
         currentProgressMessage.value = 'Adding final touches...'
       } else if (status.pdf_status === 'Finalizing magic memory status...') {

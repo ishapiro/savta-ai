@@ -212,6 +212,9 @@ export default defineEventHandler(async (event) => {
     logger.userId = user.id
     logger.success(`User authenticated: ${user.id}`)
     
+    // Update status to show AI processing has started
+    await updatePdfStatus(supabase, bookId, user.id, '🤔 Processing with AI...')
+    
     // Verify the memory book exists and belongs to the user
     logger.step('Fetching memory book')
     let { data: book, error: bookError } = await supabase
@@ -364,8 +367,9 @@ export default defineEventHandler(async (event) => {
       backgroundBuffer = null
     }
     
-    // 3. Create PDF document
-    logger.step('Creating PDF document')
+          // 3. Create PDF document
+      logger.step('Creating PDF document')
+      await updatePdfStatus(supabase, book.id, user.id, '📄 Creating PDF...')
     const pdfDoc = await PDFDocument.create()
     let pdfBgImage = null
     if (backgroundBuffer) {
@@ -424,6 +428,7 @@ export default defineEventHandler(async (event) => {
     async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null) {
       try {
         console.log('🧠 Performing OpenAI person detection crop...')
+        await updatePdfStatus(supabase, book.id, user.id, `👥 Processing photo ${photoIndex + 1} of ${selectedAssets.length}...`)
         console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
         
         // Get image metadata to determine orientation
@@ -1816,6 +1821,7 @@ export default defineEventHandler(async (event) => {
         location: asset.location || null
       }))
       
+      await updatePdfStatus(supabase, book.id, user.id, '🎯 Step 1: Selecting best photos...')
       const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
         method: 'POST',
         headers: {
@@ -1837,6 +1843,12 @@ export default defineEventHandler(async (event) => {
       })
       if (magicRes.ok) {
         const magicData = await magicRes.json()
+      
+      if (!magicData.success) {
+        throw new Error('Magic memory generation failed: ' + magicData.error)
+      }
+      
+      await updatePdfStatus(supabase, book.id, user.id, '📖 Step 2: Generating story...')
         // Use selected_photo_ids (array of asset IDs) from AI response, unless it's photo library selection
         if (!isPhotoLibrarySelection && magicData.selected_photo_ids && Array.isArray(magicData.selected_photo_ids)) {
           selectedAssets = assets.filter(a => magicData.selected_photo_ids.includes(a.id))
@@ -2725,8 +2737,9 @@ export default defineEventHandler(async (event) => {
     }
     // ... existing code ...
     
-    // Log final summary
-    logger.success('PDF generation completed successfully')
+          // Log final summary
+      logger.success('PDF generation completed successfully')
+      await updatePdfStatus(supabase, book.id, user.id, 'completed')
     logger.summary()
     
     return {
@@ -2764,5 +2777,7 @@ async function updatePdfStatus(supabase, bookId, userId, status) {
     console.log('⚠️ PDF status table might not exist yet, continuing without status updates:', error.message)
   }
 } 
+
+
 
  
