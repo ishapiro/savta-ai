@@ -425,10 +425,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // Helper function to perform smart cropping
-    async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null) {
+    async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null, photoIndex = null, totalPhotos = null) {
       try {
         console.log('🧠 Performing OpenAI person detection crop...')
-        await updatePdfStatus(supabase, book.id, user.id, `👥 Processing photo ${photoIndex + 1} of ${selectedAssets.length}...`)
+        if (photoIndex !== null && totalPhotos !== null) {
+          await updatePdfStatus(supabase, book.id, user.id, `👥 Processing photo ${photoIndex + 1} of ${totalPhotos}...`)
+        }
         console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
         
         // Get image metadata to determine orientation
@@ -1492,7 +1494,7 @@ export default defineEventHandler(async (event) => {
                 console.log('🎯 Smart crop will prioritize faces in center area')
                 console.log('🔍 Debug: imageUrl for smartCropImage:', imageUrl)
                 // First apply smart cropping to ensure subject is properly positioned
-                const smartCroppedImage = await smartCropImage(imageBuffer, highResWidth, highResHeight, imageUrl)
+                const smartCroppedImage = await smartCropImage(imageBuffer, highResWidth, highResHeight, imageUrl, null, null)
                 resizedImage = smartCroppedImage
               } else {
                 console.log('📚 Regular memory book - using standard resize for rounded shape')
@@ -1952,7 +1954,7 @@ export default defineEventHandler(async (event) => {
           let finalImageBuffer
           console.log(`🔍 Debug: Asset ${i + 1} storage_url:`, asset.storage_url)
           try {
-            finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight, asset.storage_url)
+            finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight, asset.storage_url, i, matchedAssets.length)
           } catch (smartCropError) {
             finalImageBuffer = await sharp(imageBuffer)
               .resize(targetWidth, targetHeight, { fit: 'cover' })

@@ -99,7 +99,7 @@ function parseOpenAIResponse(openaiData) {
  */
 async function detectFaces(imageUrl) {
   const payload = {
-    model: 'gpt-5',
+    model: 'gpt-4o',
     instructions: 'You are a precise vision detector. Return ONLY JSON that matches the schema.',
     text: {
       format: {
@@ -188,7 +188,7 @@ async function selectPhotos(photoUrls, photoCount = null) {
   const targetCount = photoCount || Math.min(3, photoUrls.length);
 
   const payload = {
-    model: 'gpt-5',
+    model: 'gpt-4o',
     instructions: 'You are a warm, caring grandmother selecting meaningful family photos. Return ONLY JSON that matches the schema.',
     text: {
       format: {
@@ -243,7 +243,7 @@ async function generateStory(selectedPhotoUrls) {
 
   const payload = {
     model: 'gpt-5',
-    instructions: 'You are a warm, witty Hallmark card writer. Return ONLY JSON that matches the schema.',
+    instructions: 'You are a warm, caring grandmother. Return ONLY JSON that matches the schema.',
     text: {
       format: {
         type: 'json_schema',
@@ -287,7 +287,7 @@ async function generateStory(selectedPhotoUrls) {
  */
 async function analyzePhotoShape(imageUrl) {
   const payload = {
-    model: 'gpt-5',
+    model: 'gpt-4o',
     instructions: 'You are a precise image analysis tool. Return ONLY JSON that matches the schema.',
     text: {
       format: {
@@ -379,7 +379,7 @@ async function analyzePhotoShape(imageUrl) {
  */
 async function analyzeImage(imageUrl) {
   const payload = {
-    model: 'gpt-5',
+    model: 'gpt-4o',
     instructions: 'You are a precise image analysis tool. Return ONLY JSON that matches the schema.',
     text: {
       format: {
@@ -495,7 +495,7 @@ async function analyzeText(text) {
  */
 async function analyzeLocation(imageUrl) {
   const payload = {
-    model: 'gpt-5',
+    model: 'gpt-4o',
     instructions: 'You are a precise location detection tool. Return ONLY JSON that matches the schema.',
     text: {
       format: {
