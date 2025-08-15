@@ -456,7 +456,17 @@ async function generateStory(selectedPhotoUrls) {
         content: [
           {
             type: 'input_text',
-            text: 'Create a warm, heartfelt story that connects these family photos into a beautiful narrative. Make it personal and touching, like something a grandmother would write. Return ONLY JSON with the story.'
+            text: `Create a warm, 1-2 sentence, funny, and meaningful caption that connects these family 
+            photos into a beautiful narrative. 
+            Make it personal and touching, like something a grandmother would write. 
+            The caption can be funny but not sarcastic.
+            Use an 8th grade reading level. 
+            Use modern language.  
+            Use simple grammar.
+            The prose can be sentimental or nostalgic but not sappy.
+            The prose can be happy but not cheesy. 
+            Shorter is better than longer.
+            Return ONLY JSON with the story.`
           },
           ...validPhotoInputs
         ]
