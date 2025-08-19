@@ -1,4 +1,4 @@
-import { selectPhotosByAttributes, generateStory } from '~/server/utils/openai-client.js';
+import { selectPhotosByAttributes, generateStoryFromAttributes } from '~/server/utils/openai-client.js';
 
 // Helper function to update PDF status
 async function updatePdfStatus(supabase, bookId, userId, status) {
@@ -167,26 +167,13 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    // Get the selected photo URLs for story generation
-    const selectedPhotoUrls = selectedAssets.map(asset => asset.storage_url || asset.asset_url || asset.url).filter(Boolean)
-    
-    if (selectedPhotoUrls.length === 0) {
-      console.error('❌ No valid photo URLs found from selection')
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'No valid photo URLs found from selection'
-      })
-    }
-    
-    console.log('📸 Selected photo URLs:', selectedPhotoUrls)
-    
-    // Step 4: Generate story
-    console.log('📖 Step 4: Generating story...')
+    // Step 4: Generate story from asset attributes
+    console.log('📖 Step 4: Generating story from asset attributes...')
     
     // Update status if we have a book ID
     await updatePdfStatus(supabase, memoryBookId, userId, '📖 Step 2: Generating story...')
     
-    const storyResult = await generateStory(selectedPhotoUrls)
+    const storyResult = await generateStoryFromAttributes(selectedAssets)
     
     if (!storyResult || !storyResult.story) {
       console.error('❌ No story result returned')

@@ -402,7 +402,89 @@ async function selectPhotos(photoUrls, photoCount = null) {
 }
 
 /**
- * Create a story generation request
+ * Create a story generation request based on asset attributes
+ * @param {Array} selectedAssets - Array of selected asset objects with attributes
+ * @returns {Promise<Object>} The story generation results
+ */
+async function generateStoryFromAttributes(selectedAssets) {
+  if (!selectedAssets || selectedAssets.length === 0) {
+    throw new Error('No assets provided for story generation');
+  }
+  
+  console.log(`✅ Generating story from ${selectedAssets.length} selected assets`);
+
+  // Create asset data for the prompt
+  const assetData = selectedAssets.map((asset, index) => `
+Photo ${index + 1}:
+- Title: ${asset.title || 'Untitled'}
+- AI Caption: ${asset.ai_caption || 'No AI caption'}
+- User Caption: ${asset.user_caption || 'No user caption'}
+- Tags: ${asset.tags || 'No tags'}
+- User Tags: ${asset.user_tags || 'No user tags'}
+- People: ${asset.user_people || 'No people identified'}
+- Location: ${asset.city}${asset.state ? ', ' + asset.state : ''}${asset.country ? ', ' + asset.country : ''}
+- Date: ${asset.asset_date || 'No date'}
+`).join('\n');
+
+  const payload = {
+    model: 'gpt-4o',
+    instructions: 'You are a warm, caring grandmother. Return ONLY JSON that matches the schema.',
+    text: {
+      format: {
+        type: 'json_schema',
+        name: 'story_response',
+        schema: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            story: {
+              type: 'string',
+              description: 'A 1-2 sentence caption that connects the selected photos into a cohesive narrative'
+            }
+          },
+          required: ['story']
+        }
+      }
+    },
+    input: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: `Create a warm, 1-2 sentence, funny, and meaningful caption that connects these family photos into a beautiful narrative.
+
+CRITICAL REQUIREMENTS:
+- Keep it SHORT: 1-2 sentences maximum
+- Make it personal and touching, like something a grandmother would write
+- The caption can be funny but not sarcastic
+- Use an 8th grade reading level
+- Use modern language
+- Use simple grammar
+- The prose can be sentimental or nostalgic but not sappy
+- The prose can be happy but not cheesy
+- Shorter is better than longer
+- Focus on the people, places, and moments shown in the photos
+- Connect the photos into a cohesive story
+
+Here are the selected photos:
+
+${assetData}
+
+Return ONLY JSON with the story.`
+          }
+        ]
+      }
+    ],
+    max_output_tokens: 1000
+  };
+
+  const response = await makeOpenAIRequest(payload);
+  return parseOpenAIResponse(response);
+}
+
+/**
+ * Create a story generation request (legacy function for backward compatibility)
  * @param {Array} selectedPhotoUrls - Array of selected photo URLs
  * @returns {Promise<Object>} The story generation results
  */
@@ -940,6 +1022,7 @@ export {
   aiCropRecommendation,
   selectPhotos,
   generateStory,
+  generateStoryFromAttributes,
   analyzePhotoShape,
   analyzeImage,
   analyzeText,
