@@ -5,7 +5,7 @@
 
 // Load environment variables
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_BASE_URL = 'https://api.openai.com/v1';
@@ -406,12 +406,19 @@ async function selectPhotos(photoUrls, photoCount = null) {
  * @param {Array} selectedAssets - Array of selected asset objects with attributes
  * @returns {Promise<Object>} The story generation results
  */
-async function generateStoryFromAttributes(selectedAssets) {
+async function generateStoryFromAttributes(selectedAssets, aiSupplementalPrompt) {
+  console.log('📝 STEP 2: STORY GENERATION - generateStoryFromAttributes function called')
+  console.log('📝 STEP 2: STORY GENERATION - Function parameters:', {
+    selectedAssetsCount: selectedAssets?.length || 0,
+    aiSupplementalPrompt: aiSupplementalPrompt || 'none'
+  })
+  
   if (!selectedAssets || selectedAssets.length === 0) {
+    console.error('❌ STEP 2: STORY GENERATION - No assets provided for story generation')
     throw new Error('No assets provided for story generation');
   }
   
-  console.log(`✅ Generating story from ${selectedAssets.length} selected assets`);
+  console.log(`📝 STEP 2: STORY GENERATION - Generating story from ${selectedAssets.length} selected assets`);
 
   // Create asset data for the prompt
   const assetData = selectedAssets.map((asset, index) => `
@@ -452,10 +459,10 @@ Photo ${index + 1}:
         content: [
           {
             type: 'input_text',
-            text: `Create a warm, 1-2 sentence, funny, and meaningful caption that connects these family photos into a beautiful narrative.
+            text: `Based on the following ${selectedAssets.length} photos and the memory book theme "${aiSupplementalPrompt}", generate a concise, engaging, and creative caption (max 2-3 sentences) that tells a story about these photos. The caption should be based ONLY on the provided photo attributes and should not invent details. Focus on creating a cohesive narrative that ties the photos together.
 
 CRITICAL REQUIREMENTS:
-- Keep it SHORT: 1-2 sentences maximum
+- Keep it SHORT: 2-3 sentences maximum
 - Make it personal and touching, like something a grandmother would write
 - The caption can be funny but not sarcastic
 - Use an 8th grade reading level
@@ -466,6 +473,7 @@ CRITICAL REQUIREMENTS:
 - Shorter is better than longer
 - Focus on the people, places, and moments shown in the photos
 - Connect the photos into a cohesive story
+- Base the story on the memory book theme: "${aiSupplementalPrompt}"
 
 Here are the selected photos:
 
@@ -479,8 +487,14 @@ Return ONLY JSON with the story.`
     max_output_tokens: 1000
   };
 
+  console.log('📝 STEP 2: STORY GENERATION - Making OpenAI request')
   const response = await makeOpenAIRequest(payload);
-  return parseOpenAIResponse(response);
+  console.log('📝 STEP 2: STORY GENERATION - OpenAI response received')
+  
+  const result = parseOpenAIResponse(response);
+  console.log('📝 STEP 2: STORY GENERATION - Response parsed successfully')
+  
+  return result;
 }
 
 /**

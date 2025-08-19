@@ -974,6 +974,15 @@
               <button
                 v-if="selectedBook"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                @click="openSelectMemoriesDialog"
+              >
+                <i class="pi pi-images text-xs sm:text-sm"></i>
+                <span class="hidden sm:inline">Select Assets</span>
+                <span class="sm:hidden">Assets</span>
+              </button>
+              <button
+                v-if="selectedBook"
+                class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="openEditSettings(selectedBook)"
               >
                 <i class="pi pi-cog text-xs sm:text-sm"></i>
@@ -2149,6 +2158,12 @@
         Please try a different description for your memory. For example, if your description mentioned a location and we couldn't find matching photos, try being more specific or using different keywords.
         You can change the location or upload a photo with this location.
       </p>
+      
+      <!-- Debug information (only show in development) -->
+      <div v-if="process.dev && errorDialogMessage" class="mt-4 p-3 bg-gray-100 rounded-lg text-left">
+        <p class="text-xs text-gray-600 mb-2"><strong>Debug Info:</strong></p>
+        <p class="text-xs text-gray-600 font-mono break-all">{{ errorDialogMessage }}</p>
+      </div>
       <div class="flex justify-center gap-3"> 
         <Button
           label="Try Again"
@@ -2792,11 +2807,11 @@ const createMemoryBook = async () => {
   }
   creatingBook.value = true
   try {
-    // Use selected assets if any, otherwise get all approved assets
+    // Use selected assets from dialog if any, otherwise get all approved assets
     let assetsToUse = [];
-    if (newBook.value.created_from_assets && newBook.value.created_from_assets.length > 0) {
-      assetsToUse = newBook.value.created_from_assets;
-      console.log('🔧 [createMemoryBook] Using selected assets from newBook:', assetsToUse);
+    if (newBook.value.selectedAssetIds && newBook.value.selectedAssetIds.length > 0) {
+      assetsToUse = newBook.value.selectedAssetIds;
+      console.log('🔧 [createMemoryBook] Using selected assets from dialog:', assetsToUse);
     } else if (selectedAssets.value.length > 0) {
       assetsToUse = selectedAssets.value;
       console.log('🔧 [createMemoryBook] Using selected assets from selectedAssets:', assetsToUse);
@@ -2818,7 +2833,7 @@ const createMemoryBook = async () => {
       }
       return
     }
-    // Prepare data for API
+    // Prepare data for API - follow same pattern as memory cards
     const bookData = {
               ai_supplemental_prompt: newBook.value.ai_supplemental_prompt,
       layout_type: newBook.value.layoutType,
@@ -2836,8 +2851,10 @@ const createMemoryBook = async () => {
       background_type: newBook.value.aiBackground ? 'magical' : 'white', // Set background_type based on ai_background
       background_opacity: newBook.value.backgroundOpacity || 30, // Set background opacity with default
       memory_event: newBook.value.memoryEvent === 'custom' ? newBook.value.customMemoryEvent : newBook.value.memoryEvent,
-      // Store selected assets
-      created_from_assets: assetsToUse,
+      // Set up photo selection pool - same pattern as memory cards
+      photo_selection_pool: assetsToUse,
+      created_from_assets: [], // Start empty, will be populated by photo selection
+      photo_selection_method: 'photo_library', // Indicate this was manual selection
       status: 'draft'
     }
     console.log('🔧 [createMemoryBook] Calling db.memoryBooks.createMemoryBook with:', JSON.parse(JSON.stringify(bookData)))
@@ -2847,12 +2864,12 @@ const createMemoryBook = async () => {
       $toast.add({
         severity: 'success',
         summary: 'Created',
-        detail: 'Memory card created successfully',
+        detail: 'Memory book created successfully',
         life: 3000
       })
     }
     newlyCreatedBook.value = memoryBook
-    showSuccessDialog.value = true
+    // Don't show success dialog for memory books - they auto-generate immediately
     resetCreateModal()
     await loadMemoryBooks()
   } catch (error) {
@@ -2861,7 +2878,7 @@ const createMemoryBook = async () => {
       $toast.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to create memory card',
+        detail: 'Failed to create memory book',
         life: 3000
       })
     }
@@ -2922,16 +2939,27 @@ const pollPdfStatus = async () => {
       
       // Only close the dialog when the PDF generation is truly completed
       if (status.pdf_url && status.book_status === 'ready') {
-        console.log('✅ PDF URL found and book status is ready, closing dialog')
+        console.log('✅ PDF URL found and book status is ready, closing dialog and displaying PDF')
         currentProgress.value = 100
         currentProgressMessage.value = isRegenerating.value 
           ? 'Your special memory is ready!' 
           : 'Your memory book is ready!'
-        setTimeout(() => {
+        setTimeout(async () => {
           stopProgressPolling()
           showProgressDialog.value = false
-          loadMemoryBooks() // Reload to show updated status
-        }, 4000) // Wait 4 seconds to give system time to save the generated PDF
+          await loadMemoryBooks() // Reload to show updated status
+          
+          // Display the PDF in the viewer
+          try {
+            const cacheBuster = `cb=${Date.now()}`;
+            const pdfUrlWithBuster = status.pdf_url.includes('?')
+              ? `${status.pdf_url}&${cacheBuster}`
+              : `${status.pdf_url}?${cacheBuster}`;
+            await viewPDF(pdfUrlWithBuster, currentBookId.value)
+          } catch (error) {
+            console.error('Error displaying PDF:', error)
+          }
+        }, 2000) // Reduced wait time since we're displaying the PDF
         return
       }
       
@@ -2960,10 +2988,21 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = isRegenerating.value 
           ? 'Your special memory is ready!' 
           : 'Your memory book is ready!'
-        setTimeout(() => {
+        setTimeout(async () => {
           stopProgressPolling()
           showProgressDialog.value = false
-          loadMemoryBooks() // Reload to show updated status
+          await loadMemoryBooks() // Reload to show updated status
+          
+          // Display the PDF in the viewer
+          try {
+            const cacheBuster = `cb=${Date.now()}`;
+            const pdfUrlWithBuster = status.pdf_url.includes('?')
+              ? `${status.pdf_url}&${cacheBuster}`
+              : `${status.pdf_url}?${cacheBuster}`;
+            await viewPDF(pdfUrlWithBuster, currentBookId.value)
+          } catch (error) {
+            console.error('Error displaying PDF:', error)
+          }
         }, 2000) // Shorter timeout for this fallback case
         return
       }
@@ -3016,6 +3055,24 @@ const pollPdfStatus = async () => {
                     } else if (status.pdf_status === '🤔 Processing with AI...') {
         currentProgress.value = 8
         currentProgressMessage.value = '🤔 Processing with AI...'
+      } else if (status.pdf_status && status.pdf_status.startsWith('🎯 STEP 1: PHOTO SELECTION')) {
+        currentProgress.value = 15
+        currentProgressMessage.value = status.pdf_status
+      } else if (status.pdf_status && status.pdf_status.startsWith('📝 STEP 2: STORY GENERATION')) {
+        currentProgress.value = 25
+        currentProgressMessage.value = status.pdf_status
+      } else if (status.pdf_status && status.pdf_status.startsWith('🎨 STEP 3: BACKGROUND GENERATION')) {
+        currentProgress.value = 35
+        currentProgressMessage.value = status.pdf_status
+      } else if (status.pdf_status && status.pdf_status.startsWith('📸 STEP 4: ASSET FETCHING')) {
+        currentProgress.value = 45
+        currentProgressMessage.value = status.pdf_status
+      } else if (status.pdf_status && status.pdf_status.startsWith('🎨 STEP 5: BACKGROUND PROCESSING')) {
+        currentProgress.value = 55
+        currentProgressMessage.value = status.pdf_status
+      } else if (status.pdf_status && status.pdf_status.startsWith('📄 STEP 6: PDF CREATION')) {
+        currentProgress.value = 65
+        currentProgressMessage.value = status.pdf_status
       } else if (status.pdf_status && status.pdf_status.startsWith('🎯 Step 1: Selecting best photos')) {
         currentProgress.value = 15
         currentProgressMessage.value = status.pdf_status
@@ -3269,8 +3326,7 @@ const composeNewlyCreatedMemory = async () => {
     return
   }
   
-  // Close the success dialog
-  showSuccessDialog.value = false
+  // No success dialog to close for memory books
   
   // Find the book in the current memory books list
   const book = memoryBooks.value.find(b => b.id === newlyCreatedBook.value.id)
@@ -3279,11 +3335,72 @@ const composeNewlyCreatedMemory = async () => {
     return
   }
   
-  // Trigger PDF generation
-  await generatePDF(book)
-  
-  // Clear the reference
-  newlyCreatedBook.value = null
+  // Follow the same flow as memory cards: photo selection -> PDF generation
+  try {
+    // Set the book ID first, then start progress polling
+    currentBookId.value = book.id
+    isRegenerating.value = false
+    startProgressPolling(book.id, false)
+    
+    // Step 1: Photo Selection (if needed)
+    if (!book.created_from_assets || book.created_from_assets.length === 0) {
+      console.log('🔧 [composeNewlyCreatedMemory] Setting up photo selection...')
+      currentProgressMessage.value = '🎯 Step 1: Setting up your selected photos...'
+      
+      // For memory books, we use manual photo selection (photo_library)
+      // The photos are already in photo_selection_pool, we just need to populate created_from_assets
+      if (book.photo_selection_pool && book.photo_selection_pool.length > 0) {
+        // Update the book to set created_from_assets from photo_selection_pool
+        const supabase = useNuxtApp().$supabase
+        await supabase
+          .from('memory_books')
+          .update({ 
+            created_from_assets: book.photo_selection_pool,
+            ai_photo_selection_reasoning: `You manually selected ${book.photo_selection_pool.length} photos for this memory book.`
+          })
+          .eq('id', book.id)
+        
+        console.log('🔧 [composeNewlyCreatedMemory] Photo selection completed - using manually selected photos')
+      } else {
+        throw new Error('No photos available for memory book')
+      }
+    }
+    
+    // Step 2: PDF Generation (includes story generation)
+    console.log('🔧 [composeNewlyCreatedMemory] Starting PDF generation...')
+    currentProgressMessage.value = '📝 Step 2: Generating story and creating your memory...'
+    
+    // Fetch the latest book data to ensure we have the updated created_from_assets
+    const supabase = useNuxtApp().$supabase
+    const { data: latestBook, error: bookError } = await supabase
+      .from('memory_books')
+      .select('*')
+      .eq('id', book.id)
+      .single()
+    
+    if (bookError || !latestBook) {
+      throw new Error('Failed to fetch updated book data')
+    }
+    
+    await generatePDF(latestBook)
+    
+  } catch (error) {
+    console.error('❌ [composeNewlyCreatedMemory] Error:', error)
+    stopProgressPolling()
+    showProgressDialog.value = false
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to create memory book',
+        life: 3000
+      })
+    }
+  } finally {
+    // Clear the reference
+    newlyCreatedBook.value = null
+  }
 }
 
 // Download PDF
@@ -4472,19 +4589,15 @@ async function onMagicMemoryContinue() {
       }
     })
     
-    // Update status and trigger poll for story generation step
-    currentProgressMessage.value = '📖 Step 2: Generating story...'
-    setTimeout(pollPdfStatus, 100)
-    
     if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1 || aiRes.selected_photo_ids.length > effectivePhotoCount) {
       throw new Error(`I need a bit more to work with. Let me try again with different photos.`)
     }
-    if (!aiRes.story || typeof aiRes.story !== 'string' || aiRes.story.trim().length < 10) {
-      throw new Error('I need to try again to create something special for you.')
-    }
     
-    // Update status for PDF generation step
-    currentProgressMessage.value = '🎨 Step 3: Creating your memory...'
+    // Note: Story generation now happens in the PDF generation step, not here
+    console.log('✅ Photo selection completed, proceeding to PDF generation')
+    
+    // Update status for PDF generation step (which will handle story generation internally)
+    currentProgressMessage.value = '🎨 Step 2: Creating your memory...'
     setTimeout(pollPdfStatus, 100)
     
     // Create a book object for the progress dialog with proper asset references
@@ -4495,7 +4608,12 @@ async function onMagicMemoryContinue() {
       format: 'card',
       status: 'draft',
       photo_selection_pool: photoSelectionPool,
-      created_from_assets: aiRes.selected_photo_ids || []
+      created_from_assets: aiRes.selected_photo_ids || [],
+      theme_id: magicSelectedTheme.value,
+      background_type: magicBackgroundType.value,
+      ai_supplemental_prompt: magicMemoryTitle.value,
+      output: 'JPG',
+      print_size: '8.5x11'
     }
     
     // Close the magic memory dialog and clean up
@@ -4621,20 +4739,15 @@ const retryMagicMemory = async () => {
       }
     })
     
-    // Update status and trigger poll for story generation step
-    currentProgressMessage.value = '📖 Step 2: Generating story...'
-    setTimeout(pollPdfStatus, 100)
-    
     if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1 || aiRes.selected_photo_ids.length > effectivePhotoCount) {
       throw new Error(`I need a bit more to work with. Let me try again with different photos.`)
     }
     
-    if (!aiRes.story || typeof aiRes.story !== 'string' || aiRes.story.trim().length < 10) {
-      throw new Error('I need to try again to create something special for you.')
-    }
+    // Note: Story generation now happens in the PDF generation step, not here
+    console.log('✅ Photo selection completed, proceeding to PDF generation')
     
-    // Update status for PDF generation step
-    currentProgressMessage.value = '🎨 Step 3: Creating your memory...'
+    // Update status for PDF generation step (which will handle story generation internally)
+    currentProgressMessage.value = '🎨 Step 2: Creating your memory...'
     setTimeout(pollPdfStatus, 100)
     
     // Create a book object for the progress dialog with proper asset references
@@ -4645,7 +4758,12 @@ const retryMagicMemory = async () => {
       format: 'card',
       status: 'draft',
       photo_selection_pool: config.photoSelectionPool,
-      created_from_assets: aiRes.selected_photo_ids || []
+      created_from_assets: aiRes.selected_photo_ids || [],
+      theme_id: config.selectedTheme,
+      background_type: config.backgroundType,
+      ai_supplemental_prompt: config.title,
+      output: 'JPG',
+      print_size: '8.5x11'
     }
     
     // Use the unified progress dialog system for PDF generation
@@ -4661,6 +4779,15 @@ const retryMagicMemory = async () => {
     showProgressDialog.value = false
     stopProgressPolling()
     
+    // Log detailed error information for debugging
+    console.error('❌ Magic memory creation error:', {
+      message: err.message,
+      stack: err.stack,
+      response: err.response,
+      status: err.status,
+      statusText: err.statusText
+    })
+    
     // Show user-friendly error dialog again
     let errorMessage = err.message || 'Something went wrong while creating your magic memory. Let\'s try again!'
     
@@ -4671,6 +4798,11 @@ const retryMagicMemory = async () => {
       errorMessage = 'Some of your photos couldn\'t be accessed or are too large. Please try with different photos or smaller image files.'
     } else if (errorMessage.includes('No valid image URLs')) {
       errorMessage = 'None of your photos could be processed. Please check that your images are accessible and try again.'
+    }
+    
+    // Include additional debug information in development
+    if (process.dev) {
+      errorMessage += `\n\nDebug: ${err.message}\nStatus: ${err.status || 'N/A'}\nResponse: ${JSON.stringify(err.response || {}, null, 2)}`
     }
     
     errorDialogMessage.value = errorMessage
@@ -5189,8 +5321,9 @@ async function createMemoryBookFromDialog(data) {
       backgroundOpacity: data.backgroundOpacity || 30,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
-      // Store selected asset IDs for the book
-      created_from_assets: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
+      // Store selected asset IDs for the photo selection pool
+      // The new flow will use this to populate created_from_assets via photo selection
+      selectedAssetIds: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
     }
     
     console.log('🔧 [createMemoryBookFromDialog] Mapped newBook.value:', newBook.value)
@@ -5203,9 +5336,9 @@ async function createMemoryBookFromDialog(data) {
     // Close the create dialog after successful creation
     showCreateModal.value = false
     
-    // Skip the success dialog and directly start book generation
+    // Auto-generate and display the PDF immediately
     if (newlyCreatedBook.value) {
-      console.log('🔧 [createMemoryBookFromDialog] Starting direct book generation...')
+      console.log('🔧 [createMemoryBookFromDialog] Starting auto-generation and display...')
       await composeNewlyCreatedMemory()
     }
   } catch (error) {

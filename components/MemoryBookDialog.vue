@@ -346,11 +346,11 @@
                 </div>
               </div>
               <Button
-                label="Select Memories"
-                icon="pi pi-plus"
+                label="Select Assets"
+                icon="pi pi-images"
                 size="small"
                 @click="openAssetSelector"
-                class=""
+                class="bg-brand-dialog-save border-0 text-white font-semibold rounded-full px-4 py-2 shadow-lg transition-all duration-200 hover:scale-105"
               />
             </div>
           </div>

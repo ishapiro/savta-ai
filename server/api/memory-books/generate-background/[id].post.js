@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
     
     // Verify the memory book exists and belongs to the user
     console.log('📚 Fetching memory book from database...')
-    const { data: book, error: bookError } = await supabase
+    let { data: book, error: bookError } = await supabase
       .from('memory_books')
       .select('*')
       .eq('id', bookId)
@@ -111,6 +111,119 @@ export default defineEventHandler(async (event) => {
       }
     } catch (error) {
       console.warn('⚠️ Error deleting old background files:', error.message)
+    }
+    
+    // Check if we need to call magic memory first (missing assets or story)
+    const needsMagicMemory = (!book.created_from_assets || book.created_from_assets.length === 0) || (!book.magic_story || book.magic_story.trim() === '')
+    
+    console.log('🔍 Magic memory check for background generation:', {
+      hasCreatedFromAssets: !!book.created_from_assets,
+      createdFromAssetsLength: book.created_from_assets?.length || 0,
+      hasMagicStory: !!book.magic_story,
+      magicStoryLength: book.magic_story?.length || 0,
+      needsMagicMemory,
+      bookId: book.id,
+      bookStatus: book.status
+    })
+    
+    // Force magic memory if created_from_assets is null/empty, regardless of story
+    const forceMagicMemory = !book.created_from_assets || book.created_from_assets.length === 0
+    console.log('🔍 Force magic memory check:', { forceMagicMemory })
+    
+    if (needsMagicMemory || forceMagicMemory) {
+      console.log('🔄 Missing assets or story, calling magic memory endpoint first')
+      
+      // Calculate photo count for magic memory
+      let photoCount = 3 // Default fallback
+      if (book.layout_type === 'theme' && book.theme_id) {
+        const { data: theme, error: themeError } = await supabase
+          .from('themes')
+          .select('*')
+          .eq('id', book.theme_id)
+          .single()
+        
+        if (!themeError && theme) {
+          const layoutConfig = typeof theme.layout_config === 'string' 
+            ? JSON.parse(theme.layout_config) 
+            : theme.layout_config
+          
+          if (layoutConfig && layoutConfig.photos) {
+            photoCount = layoutConfig.photos.length
+          }
+        }
+      }
+      
+      // Call magic memory endpoint
+      console.log('🔄 Calling magic memory endpoint with:', {
+        memoryBookId: book.id,
+        userId: user.id,
+        photoCount: photoCount
+      })
+      
+      const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          memoryBookId: book.id,
+          userId: user.id,
+          photoCount: photoCount
+        })
+      })
+      
+      console.log('🔄 Magic memory response status:', magicRes.status)
+      
+      if (!magicRes.ok) {
+        const errorText = await magicRes.text()
+        console.error('❌ Magic memory generation failed', `Status: ${magicRes.status}`, errorText)
+        throw new Error(`Magic memory generation failed: ${magicRes.status} - ${errorText}`)
+      }
+      
+      const magicData = await magicRes.json()
+      
+      console.log('🔄 Magic memory response data:', {
+        success: magicData.success,
+        hasStory: !!magicData.story,
+        storyLength: magicData.story?.length || 0,
+        hasSelectedPhotoIds: !!magicData.selected_photo_ids,
+        selectedPhotoIdsLength: magicData.selected_photo_ids?.length || 0,
+        hasReasoning: !!magicData.reasoning,
+        reasoningLength: magicData.reasoning?.length || 0
+      })
+      
+      if (!magicData.success) {
+        console.error('❌ Magic memory generation failed', magicData.error)
+        throw new Error('Magic memory generation failed: ' + magicData.error)
+      }
+      
+      // Update the book with the new story and asset IDs
+      const { error: updateError } = await supabase.from('memory_books').update({
+        magic_story: magicData.story,
+        created_from_assets: magicData.selected_photo_ids || [],
+        ai_photo_selection_reasoning: magicData.reasoning || null
+      }).eq('id', book.id)
+      
+      if (updateError) {
+        console.error('❌ Failed to update book with magic memory results', updateError.message)
+        throw new Error(`Failed to update book: ${updateError.message}`)
+      }
+      
+      // Re-fetch the book to get updated values
+      const { data: updatedBook, error: bookError } = await supabase
+        .from('memory_books')
+        .select('*')
+        .eq('id', book.id)
+        .single()
+      
+      if (!bookError && updatedBook) {
+        book = updatedBook
+        console.log('✅ Book updated with magic memory results')
+      } else {
+        console.error('❌ Failed to re-fetch updated book', bookError?.message)
+        throw new Error(`Failed to re-fetch book: ${bookError?.message}`)
+      }
     }
     
     // 1. Fetch approved assets for this book to get tags

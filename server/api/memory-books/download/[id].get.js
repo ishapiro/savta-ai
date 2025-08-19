@@ -3,12 +3,10 @@
 
 export default defineEventHandler(async (event) => {
   try {
-    console.log('🚀 Starting memory book download endpoint')
     const config = useRuntimeConfig()
     const { createClient } = await import('@supabase/supabase-js')
     
     // Use the service role key for server-side operations
-    console.log('🔧 Creating Supabase client with service role')
     const supabase = createClient(
       config.public.supabaseUrl,
       config.supabaseServiceRoleKey || config.public.supabaseKey
@@ -16,7 +14,6 @@ export default defineEventHandler(async (event) => {
     
     // Get the book ID from the URL
     const bookId = getRouterParam(event, 'id')
-    console.log('📖 Book ID from URL:', bookId)
     
     if (!bookId) {
       throw createError({
@@ -26,7 +23,6 @@ export default defineEventHandler(async (event) => {
     }
     
     // Get user from auth token
-    console.log('🔐 Getting user from auth token')
     const authHeader = getHeader(event, 'authorization')
     if (!authHeader) {
       throw createError({
@@ -36,7 +32,6 @@ export default defineEventHandler(async (event) => {
     }
     
     const token = authHeader.replace('Bearer ', '')
-    console.log('🔑 Token extracted, getting user...')
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
@@ -46,10 +41,8 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Invalid token'
       })
     }
-    console.log('✅ User authenticated:', user.id)
     
     // Verify the memory book exists and belongs to the user (or user is editor)
-    console.log('📚 Fetching memory book from database...')
     
     // First, get the user's profile to check their role
     const { data: profile, error: profileError } = await supabase
@@ -77,7 +70,7 @@ export default defineEventHandler(async (event) => {
       bookQuery = bookQuery.eq('user_id', user.id)
     }
     
-    const { data: book, error: bookError } = await bookQuery.single()
+    let { data: book, error: bookError } = await bookQuery.single()
     
     if (bookError || !book) {
       console.error('❌ Book error:', bookError)
@@ -86,18 +79,10 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Memory book not found'
       })
     }
-    console.log('✅ Memory book found:', book.id, 'Status:', book.status, 'User role:', profile.role)
     
     // Check if the book is ready for download
-    console.log('📋 Checking book status for download...')
-    console.log('📋 Book status:', book.status)
-    console.log('📋 Book pdf_url:', book.pdf_url)
-    console.log('📋 Book background_url:', book.background_url)
     
     if (book.status !== 'ready' && book.status !== 'draft' && book.status !== 'approved') {
-      console.log('❌ Book not ready for download, status:', book.status)
-      console.log('❌ Allowed statuses: ready, draft, approved')
-      console.log('❌ Current status:', book.status)
       throw createError({
         statusCode: 400,
         statusMessage: 'Memory book is not ready for download'
@@ -106,18 +91,55 @@ export default defineEventHandler(async (event) => {
 
     // If pdf_url exists, return it directly (fast download)
     if (book.pdf_url && book.pdf_url.startsWith('https://')) {
-      console.log('✅ PDF URL available for download, returning:', book.pdf_url)
       return {
         success: true,
         downloadUrl: book.pdf_url
       }
     }
-
-    console.log('🔄 PDF URL not found, starting generation process...')
+    
+    // Step 0: Always run photo selection first (for both creates and recreates)
+      
+      try {
+        // Update status to indicate photo selection
+        await updatePdfStatus(supabase, book.id, user.id, '🎯 Selecting the best photos for your memory...')
+        
+        // Call the magic memory endpoint to run photo selection
+        const magicMemoryResponse = await $fetch('/api/ai/magic-memory', {
+          method: 'POST',
+          body: {
+            memoryBookId: book.id,
+            userId: user.id,
+            photoCount: 3 // Default to 3 photos for theme layouts
+          }
+        })
+        
+        if (!magicMemoryResponse.success) {
+          throw new Error('Photo selection failed')
+        }
+        
+        // Refresh the book data to get the updated created_from_assets
+        const { data: updatedBook, error: refreshError } = await supabase
+          .from('memory_books')
+          .select('*')
+          .eq('id', book.id)
+          .single()
+        
+        if (refreshError || !updatedBook) {
+          throw new Error('Failed to refresh book data after photo selection')
+        }
+        
+        book = updatedBook
+        
+      } catch (photoSelectionError) {
+        console.error('❌ Photo selection failed:', photoSelectionError)
+        throw createError({
+          statusCode: 500,
+          statusMessage: `Photo selection failed: ${photoSelectionError.message}`
+        })
+      }
     
     // For regeneration, clear existing files from storage
     if (book.status === 'ready' && (book.background_url || book.pdf_url)) {
-      console.log('🔄 Regenerating memory book, clearing existing files...')
       
       // Clear background files if they exist
       if (book.background_url) {
@@ -134,7 +156,6 @@ export default defineEventHandler(async (event) => {
             
             if (bgFilesToDelete.length > 0) {
               await supabase.storage.from('assets').remove(bgFilesToDelete)
-              console.log('✅ Cleared existing background files:', bgFilesToDelete.length, 'files')
             }
           }
         } catch (clearError) {
@@ -157,7 +178,6 @@ export default defineEventHandler(async (event) => {
             
             if (pdfFilesToDelete.length > 0) {
               await supabase.storage.from('assets').remove(pdfFilesToDelete)
-              console.log('✅ Cleared existing PDF files:', pdfFilesToDelete.length, 'files')
             }
           }
         } catch (clearError) {
@@ -174,13 +194,10 @@ export default defineEventHandler(async (event) => {
           status: 'draft'
         })
         .eq('id', book.id)
-      
-      console.log('✅ Cleared existing URLs from database')
     }
     
     // Step 1: Generate background if not already present, AI background is enabled, and background type is not white or solid
     if (!book.background_url && book.ai_background !== false && book.background_type !== 'white' && book.background_type !== 'solid') {
-      console.log('🎨 Background not ready, AI background enabled, and background type is not white or solid, generating background...')
       
       try {
         // Update status to indicate background generation
@@ -188,11 +205,6 @@ export default defineEventHandler(async (event) => {
         
         // Fetch approved assets for this book to get tags
         const assetIds = book.created_from_assets || []
-        
-        console.log('📸 Fetching assets for book:', assetIds)
-        console.log('Book layout type:', book.layout_type)
-        console.log('Photo selection pool:', book.photo_selection_pool)
-        console.log('Created from assets:', book.created_from_assets)
         
         const { data: assets, error: assetsError } = await supabase
           .from('assets')
@@ -206,15 +218,7 @@ export default defineEventHandler(async (event) => {
           throw new Error(`Failed to fetch assets: ${assetsError.message}`)
         }
 
-        console.log('✅ Found assets:', assets?.length || 0)
-
         if (!assets || assets.length === 0) {
-          console.error('❌ No assets found for book:', {
-            layout_type: book.layout_type,
-            photo_selection_pool: book.photo_selection_pool,
-            created_from_assets: book.created_from_assets,
-            assetIds: assetIds
-          })
           throw new Error('No approved assets found for this book')
         }
 
@@ -248,7 +252,6 @@ export default defineEventHandler(async (event) => {
         }
         
         // Generate a DALL-E 3 background image
-        console.log('🎨 Generating DALL-E background image...')
         const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
         if (!openaiApiKey) throw new Error('Missing OpenAI API key')
         
@@ -259,11 +262,8 @@ export default defineEventHandler(async (event) => {
         
         // Ensure prompt doesn't exceed DALL-E's 4000 character limit (using 3500 to be safe)
         if (dallePrompt.length > 3500) { // Leave some buffer
-          console.warn(`⚠️ Prompt too long (${dallePrompt.length} chars), truncating to fit DALL-E limits`)
           dallePrompt = dallePrompt.substring(0, 3500) + '...'
         }
-        
-        console.log(`📝 DALL-E prompt length: ${dallePrompt.length} characters`)
         
         const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
           method: 'POST',

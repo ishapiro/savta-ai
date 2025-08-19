@@ -4,7 +4,6 @@
 import { PDFDocument, rgb } from 'pdf-lib'
 import sharp from 'sharp'
 import smartcropGm from 'smartcrop-gm'
-import gm from '@fatchan/gm'
 
 import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
@@ -181,7 +180,7 @@ export default defineEventHandler(async (event) => {
     // Initialize logger
     const logger = new PdfLogger(bookId, 'unknown') // Will update userId once we get it
     
-    logger.step('Starting PDF generation')
+    logger.step('🚀 STARTING PDF GENERATION PROCESS')
     
     // Use the service role key for server-side operations
     const supabase = createClient(
@@ -245,32 +244,12 @@ export default defineEventHandler(async (event) => {
       output: book.output || 'PDF'
     })
     
-
-
-    // Check if the book has background ready
-    if (book.status !== 'background_ready' && book.status !== 'ready' && book.status !== 'draft') {
-      logger.error('Book not ready for PDF generation', `Status: ${book.status}`)
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Memory book background is not ready'
-      })
-    }
-
-    // If pdf_url exists, return it directly (fast download)
-    if (book.pdf_url && book.pdf_url.startsWith('https://')) {
-      logger.success('PDF URL available for download')
-      return {
-        success: true,
-        downloadUrl: book.pdf_url
-      }
-    }
-
-    logger.step('PDF URL not found, generating new PDF')
+    // ========================================
+    // STEP 1: SELECT PHOTOS FROM THE LARGER PHOTO POOL
+    // ========================================
+    logger.step('🎯 STEP 1: PHOTO SELECTION - Starting photo selection process')
     
-    // Update status
-    await updatePdfStatus(supabase, book.id, user.id, 'Retrieving your memories...')
-    
-    // Calculate photo count early for magic memory calls
+    // Calculate photo count for the layout
     let photoCount = 3 // Default fallback
     if (book.layout_type === 'theme' && book.theme_id) {
       // Fetch theme to get layout config
@@ -291,13 +270,26 @@ export default defineEventHandler(async (event) => {
       }
     }
     
-    // Check if we need to call magic memory first (missing assets or story)
-    const needsMagicMemory = (!book.created_from_assets || book.created_from_assets.length === 0) || (!book.magic_story || book.magic_story.trim() === '')
+    // Check if we need to select photos (missing selected assets)
+    const needsPhotoSelection = !book.created_from_assets || book.created_from_assets.length === 0
     
-    if (needsMagicMemory) {
-      logger.step('Missing assets or story, calling magic memory endpoint first')
+    logger.step('Photo selection check', {
+      hasCreatedFromAssets: !!book.created_from_assets,
+      createdFromAssetsLength: book.created_from_assets?.length || 0,
+      needsPhotoSelection,
+      bookId: book.id,
+      bookStatus: book.status
+    })
+    
+    if (needsPhotoSelection) {
+      logger.step('🎯 STEP 1: PHOTO SELECTION - Executing photo selection (needed)')
+      logger.step('📸 Photo selection details', {
+        photoCount,
+        photoSelectionPoolSize: book.photo_selection_pool?.length || 0,
+        aiSupplementalPrompt: book.ai_supplemental_prompt
+      })
       
-      // Fetch all assets from photo selection pool for magic memory
+      // Fetch all assets from photo selection pool
       const { data: allAssets, error: allAssetsError } = await supabase
         .from('assets')
         .select('*')
@@ -317,28 +309,18 @@ export default defineEventHandler(async (event) => {
       
       logger.success(`Found ${allAssets.length} assets in photo selection pool`)
       
-      // Call magic memory endpoint
-      await updatePdfStatus(supabase, book.id, user.id, `🎯 Step 1: Examining ${allAssets.length} photos to find ${photoCount} best...`)
+      // Call magic memory endpoint for photo selection
+      logger.step('🎯 STEP 1: PHOTO SELECTION - Calling magic memory API')
+      logger.step('📡 API call details', {
+        endpoint: '/api/ai/magic-memory',
+        requestBody: {
+          memoryBookId: book.id,
+          userId: user.id,
+          photoCount: photoCount
+        }
+      })
       
-      const photos = allAssets.map(asset => ({
-        id: asset.id,
-        storage_url: asset.storage_url,
-        ai_caption: asset.ai_caption || '',
-        people_detected: asset.people_detected || [],
-        tags: asset.tags || [],
-        user_tags: asset.user_tags || [],
-        city: asset.city || null,
-        state: asset.state || null,
-        country: asset.country || null,
-        zip_code: asset.zip_code || null,
-        width: asset.width || null,
-        height: asset.height || null,
-        orientation: asset.orientation || 'unknown',
-        asset_date: asset.asset_date || null,
-        fingerprint: asset.fingerprint || null,
-        created_at: asset.created_at || null,
-        location: asset.location || null
-      }))
+      await updatePdfStatus(supabase, book.id, user.id, `🎯 Step 1: Selecting ${photoCount} photos from ${allAssets.length} available...`)
       
       const requestBody = {
         memoryBookId: book.id,
@@ -356,26 +338,48 @@ export default defineEventHandler(async (event) => {
       })
       
       if (!magicRes.ok) {
-        logger.error('Magic memory generation failed', `Status: ${magicRes.status}`)
-        throw new Error(`Magic memory generation failed: ${magicRes.status}`)
+        logger.error('Photo selection failed', `Status: ${magicRes.status}`)
+        throw new Error(`Photo selection failed: ${magicRes.status}`)
       }
       
       const magicData = await magicRes.json()
       
+      logger.step('🎯 STEP 1: PHOTO SELECTION - Magic memory API response received')
+      logger.step('📡 API response details', {
+        status: magicRes.status,
+        success: magicData.success,
+        hasSelectedPhotoIds: !!magicData.selected_photo_ids,
+        selectedPhotoIdsLength: magicData.selected_photo_ids?.length || 0,
+        hasReasoning: !!magicData.reasoning,
+        reasoningLength: magicData.reasoning?.length || 0,
+        error: magicData.error || null
+      })
+      
       if (!magicData.success) {
-        throw new Error('Magic memory generation failed: ' + magicData.error)
+        logger.error('Photo selection failed', magicData.error)
+        throw new Error('Photo selection failed: ' + magicData.error)
       }
       
-      await updatePdfStatus(supabase, book.id, user.id, '📖 Step 2: Generating story...')
+      // Update the book with the selected photo IDs
+      logger.step('🎯 STEP 1: PHOTO SELECTION - Updating book with selected photos')
+      logger.step('💾 Database update details', {
+        selectedPhotoIds: magicData.selected_photo_ids || [],
+        reasoningLength: magicData.reasoning?.length || 0
+      })
       
-      // Update the book with the new story and asset IDs
-      await supabase.from('memory_books').update({
-        magic_story: magicData.story,
+      const { error: updateError } = await supabase.from('memory_books').update({
         created_from_assets: magicData.selected_photo_ids || [],
         ai_photo_selection_reasoning: magicData.reasoning || null
       }).eq('id', book.id)
       
+      if (updateError) {
+        logger.error('Failed to update book with selected photos', updateError.message)
+        throw new Error(`Failed to update book: ${updateError.message}`)
+      }
+      
       // Re-fetch the book to get updated values
+      logger.step('🎯 STEP 1: PHOTO SELECTION - Re-fetching updated book')
+      
       const { data: updatedBook, error: bookError } = await supabase
         .from('memory_books')
         .select('*')
@@ -383,13 +387,190 @@ export default defineEventHandler(async (event) => {
         .single()
       
       if (!bookError && updatedBook) {
-        book = updatedBook
-        logger.success('Book updated with new story and selected assets')
+        book = updatedBook // Reassign the 'book' variable
+        logger.success('🎯 STEP 1: PHOTO SELECTION - ✅ COMPLETED - Book updated with selected photos')
+        logger.step('📊 Updated book details', {
+          createdFromAssetsLength: book.created_from_assets?.length || 0,
+          hasReasoning: !!book.ai_photo_selection_reasoning
+        })
+      } else {
+        logger.error('❌ STEP 1: PHOTO SELECTION - Failed to re-fetch updated book', bookError?.message)
+        throw new Error(`Failed to re-fetch book: ${bookError?.message}`)
+      }
+    } else {
+      logger.step('🎯 STEP 1: PHOTO SELECTION - Skipped (not needed)')
+      logger.step('📊 Existing photo selection details', {
+        createdFromAssetsLength: book.created_from_assets?.length || 0,
+        hasReasoning: !!book.ai_photo_selection_reasoning
+      })
+    }
+
+    // ========================================
+    // STEP 2: GENERATE STORY (if needed)
+    // ========================================
+    const needsStoryGeneration = !book.magic_story || book.magic_story.trim() === ''
+    
+    logger.step('📝 STEP 2: STORY GENERATION - Starting story generation check')
+    logger.step('📊 Story generation check details', {
+      hasMagicStory: !!book.magic_story,
+      magicStoryLength: book.magic_story?.length || 0,
+      needsStoryGeneration,
+      bookId: book.id,
+      bookStatus: book.status,
+      aiSupplementalPrompt: book.ai_supplemental_prompt
+    })
+    
+    if (needsStoryGeneration) {
+      logger.step('📝 STEP 2: STORY GENERATION - Executing story generation (needed)')
+      
+      // Fetch the selected assets for story generation
+      const { data: selectedAssets, error: selectedAssetsError } = await supabase
+        .from('assets')
+        .select('*')
+        .in('id', book.created_from_assets || [])
+        .eq('approved', true)
+        .eq('deleted', false)
+      
+      if (selectedAssetsError) {
+        logger.error('Error fetching selected assets for story generation', selectedAssetsError.message)
+        throw new Error(`Failed to fetch selected assets: ${selectedAssetsError.message}`)
+      }
+      
+      if (!selectedAssets || selectedAssets.length === 0) {
+        logger.error('No selected assets found for story generation')
+        throw new Error('No selected assets found for story generation')
+      }
+      
+      logger.success(`Found ${selectedAssets.length} selected assets for story generation`)
+      
+      // Call story generation endpoint
+      logger.step('📝 STEP 2: STORY GENERATION - Calling story generation API')
+      logger.step('📡 Story API call details', {
+        endpoint: '/api/ai/generate-story',
+        selectedAssetsCount: selectedAssets.length,
+        aiSupplementalPrompt: book.ai_supplemental_prompt
+      })
+      
+      await updatePdfStatus(supabase, book.id, user.id, `📝 Step 2: Generating story from ${selectedAssets.length} selected photos...`)
+      
+      const storyRequestBody = {
+        selectedAssets: selectedAssets,
+        aiSupplementalPrompt: book.ai_supplemental_prompt
+      }
+      
+      const storyRes = await fetch(`${config.public.siteUrl}/api/ai/generate-story`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(storyRequestBody)
+      })
+      
+      if (!storyRes.ok) {
+        logger.error('Story generation failed', `Status: ${storyRes.status}`)
+        throw new Error(`Story generation failed: ${storyRes.status}`)
+      }
+      
+      const storyData = await storyRes.json()
+      
+      logger.step('📝 STEP 2: STORY GENERATION - Story generation API response received')
+      logger.step('📡 Story API response details', {
+        status: storyRes.status,
+        success: storyData.success,
+        hasStory: !!storyData.story,
+        storyLength: storyData.story?.length || 0,
+        error: storyData.error || null
+      })
+      
+      if (!storyData.success) {
+        logger.error('Story generation failed', storyData.error)
+        throw new Error('Story generation failed: ' + storyData.error)
+      }
+      
+      // Update the book with the generated story
+      logger.step('📝 STEP 2: STORY GENERATION - Updating book with generated story')
+      logger.step('💾 Story update details', {
+        storyLength: storyData.story?.length || 0
+      })
+      
+      const { error: storyUpdateError } = await supabase.from('memory_books').update({
+        magic_story: storyData.story
+      }).eq('id', book.id)
+      
+      if (storyUpdateError) {
+        logger.error('❌ STEP 2: STORY GENERATION - Failed to update book with generated story', storyUpdateError.message)
+        throw new Error(`Failed to update book: ${storyUpdateError.message}`)
+      }
+      
+      // Re-fetch the book to get updated values
+      logger.step('📝 STEP 2: STORY GENERATION - Re-fetching updated book')
+      
+      const { data: updatedBook, error: bookError } = await supabase
+        .from('memory_books')
+        .select('*')
+        .eq('id', book.id)
+        .single()
+      
+      if (!bookError && updatedBook) {
+        book = updatedBook // Reassign the 'book' variable
+        logger.success('📝 STEP 2: STORY GENERATION - ✅ COMPLETED - Book updated with generated story')
+        console.log('STORY: Generated story:', book.magic_story)
+        logger.step('📊 Updated book details', {
+          magicStoryLength: book.magic_story?.length || 0
+        })
+      } else {
+        logger.error('❌ STEP 2: STORY GENERATION - Failed to re-fetch updated book', bookError?.message)
+        throw new Error(`Failed to re-fetch book: ${bookError?.message}`)
+      }
+    } else {
+      logger.step('📝 STEP 2: STORY GENERATION - Skipped (not needed)')
+      logger.step('📊 Existing story details', {
+        magicStoryLength: book.magic_story?.length || 0
+      })
+    }
+
+    // ========================================
+    // STEP 3: BACKGROUND GENERATION (if needed)
+    // ========================================
+    logger.step('🎨 STEP 3: BACKGROUND GENERATION - Starting background generation check')
+    logger.step('📊 Background check details', {
+      bookStatus: book.status,
+      backgroundType: book.background_type,
+      hasBackgroundUrl: !!book.background_url
+    })
+    
+    // Check if the book has background ready
+    if (book.status !== 'background_ready' && book.status !== 'ready' && book.status !== 'draft') {
+      logger.error('❌ STEP 3: BACKGROUND GENERATION - Book not ready for PDF generation', `Status: ${book.status}`)
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Memory book background is not ready'
+      })
+    }
+
+    // If pdf_url exists, return it directly (fast download)
+    if (book.pdf_url && book.pdf_url.startsWith('https://')) {
+      logger.success('🎨 STEP 3: BACKGROUND GENERATION - PDF URL available for download')
+      return {
+        success: true,
+        downloadUrl: book.pdf_url
       }
     }
+
+    logger.step('🎨 STEP 3: BACKGROUND GENERATION - PDF URL not found, generating new PDF')
     
-    // Now fetch the approved assets for this book (either existing or newly selected)
-    logger.step('Fetching approved assets')
+    // Update status
+    await updatePdfStatus(supabase, book.id, user.id, 'Retrieving your memories...')
+    
+    // ========================================
+    // STEP 4: FETCH ASSETS FOR PROCESSING
+    // ========================================
+    logger.step('📸 STEP 4: ASSET FETCHING - Fetching approved assets for processing')
+    logger.step('📊 Asset fetching details', {
+      createdFromAssets: book.created_from_assets,
+      createdFromAssetsLength: book.created_from_assets?.length || 0
+    })
     const { data: assets, error: assetsError } = await supabase
       .from('assets')
       .select('*')
@@ -398,38 +579,51 @@ export default defineEventHandler(async (event) => {
       .eq('deleted', false)
 
     if (assetsError) {
-      logger.error('Error fetching assets', assetsError.message)
+      logger.error('❌ STEP 4: ASSET FETCHING - Error fetching assets', assetsError.message)
       throw new Error(`Failed to fetch assets: ${assetsError.message}`)
     }
 
     if (!assets || assets.length === 0) {
-      logger.error('No approved assets found for this book')
+      logger.error('❌ STEP 4: ASSET FETCHING - No approved assets found for this book')
       throw new Error('No approved assets found for this book')
     }
 
-    logger.success(`Found ${assets.length} approved assets`)
+    logger.success(`📸 STEP 4: ASSET FETCHING - ✅ COMPLETED - Found ${assets.length} approved assets`)
 
     // Generate fingerprints for assets to help AI avoid duplicates
     const assetsWithFingerprints = generateFingerprintsForAssets(assets)
     logger.step(`Generated fingerprints for ${assetsWithFingerprints.length} assets`)
 
-    // 2. Get the background image from storage
-    logger.step('Loading background image')
+    // ========================================
+    // STEP 5: BACKGROUND IMAGE PROCESSING
+    // ========================================
+    logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Loading background image')
 
     let backgroundBuffer
     
+    logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Background type details', {
+      backgroundType: book.background_type,
+      hasBackgroundUrl: !!book.background_url
+    })
+    
     if (book.background_type === 'solid') {
       // Handle solid color background
-      logger.step('Using solid color background')
+      logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Using solid color background')
       await updatePdfStatus(supabase, book.id, user.id, 'Applying solid color background...')
       backgroundBuffer = null
     } else if (book.background_type === 'magical') {
       // Generate background for magical background type
-      logger.step('Generating magical background')
+      logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Generating magical background')
       await updatePdfStatus(supabase, book.id, user.id, 'Retrieving background image...')
       await updatePdfStatus(supabase, book.id, user.id, 'Creating magical background...')
       
       try {
+        logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Calling background generation API')
+        logger.step('📡 Background API call details', {
+          endpoint: `/api/memory-books/generate-background/${book.id}`,
+          method: 'POST'
+        })
+        
         const bgGenRes = await fetch(`${config.public.siteUrl}/api/memory-books/generate-background/${book.id}`, {
           method: 'POST',
           headers: {
@@ -439,64 +633,88 @@ export default defineEventHandler(async (event) => {
         })
         
         if (!bgGenRes.ok) {
-          logger.error('Background generation failed', `Status: ${bgGenRes.status}`)
+          logger.error('❌ STEP 5: BACKGROUND PROCESSING - Background generation failed', `Status: ${bgGenRes.status}`)
           throw new Error(`Background generation failed: ${bgGenRes.status}`)
         }
         
         const bgGenData = await bgGenRes.json()
-        logger.success('Background generated successfully')
+        logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Background generation API response received')
+        logger.step('📡 Background API response details', {
+          status: bgGenRes.status,
+          hasBackgroundUrl: !!bgGenData.backgroundUrl,
+          backgroundUrl: bgGenData.backgroundUrl || null
+        })
+        logger.success('🎨 STEP 5: BACKGROUND PROCESSING - Background generated successfully')
         
         // Download the newly generated background
+        logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Downloading generated background')
+        logger.step('📡 Background download details', {
+          backgroundUrl: bgGenData.backgroundUrl
+        })
+        
         const bgRes = await fetch(bgGenData.backgroundUrl)
         if (!bgRes.ok) {
-          logger.error('Failed to fetch generated background', `Status: ${bgRes.status}`)
+          logger.error('❌ STEP 5: BACKGROUND PROCESSING - Failed to fetch generated background', `Status: ${bgRes.status}`)
           throw new Error(`Failed to fetch generated background: ${bgRes.status}`)
         }
         backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
-        logger.success(`Generated background downloaded (${backgroundBuffer.length} bytes)`)
+        logger.success(`🎨 STEP 5: BACKGROUND PROCESSING - Generated background downloaded (${backgroundBuffer.length} bytes)`)
         
         // Update the book with the new background URL
+        logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Updating book with new background URL')
+        
         const { error: updateError } = await supabase
           .from('memory_books')
           .update({ background_url: bgGenData.backgroundUrl })
           .eq('id', book.id)
         
         if (updateError) {
-          logger.warning('Failed to update book with background URL', updateError.message)
+          logger.warning('⚠️ STEP 5: BACKGROUND PROCESSING - Failed to update book with background URL', updateError.message)
         } else {
-          logger.step('Book updated with new background URL')
+          logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Book updated with new background URL')
         }
       } catch (bgError) {
-        logger.error('Background generation error', bgError.message)
-        logger.warning('Proceeding with white background due to generation failure')
+        logger.error('❌ STEP 5: BACKGROUND PROCESSING - Background generation error', bgError.message)
+        logger.warning('⚠️ STEP 5: BACKGROUND PROCESSING - Proceeding with white background due to generation failure')
         backgroundBuffer = null
       }
     } else if (book.background_url && book.background_type !== 'solid') {
       // Download existing background from storage
-      logger.step('Downloading existing background')
+      logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Downloading existing background')
+      logger.step('📡 Existing background details', {
+        backgroundUrl: book.background_url,
+        backgroundType: book.background_type
+      })
+      
       await updatePdfStatus(supabase, book.id, user.id, 'Retrieving background image...')
       const bgRes = await fetch(book.background_url)
       if (!bgRes.ok) {
-        logger.error('Failed to fetch background', `Status: ${bgRes.status}`)
+        logger.error('❌ STEP 5: BACKGROUND PROCESSING - Failed to fetch background', `Status: ${bgRes.status}`)
         throw new Error(`Failed to fetch background: ${bgRes.status}`)
       }
       backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
-      logger.success(`Background downloaded (${backgroundBuffer.length} bytes)`)
+      logger.success(`🎨 STEP 5: BACKGROUND PROCESSING - Background downloaded (${backgroundBuffer.length} bytes)`)
     } else {
-      logger.step('Using white background (no background image)')
+      logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Using white background (no background image)')
       backgroundBuffer = null
     }
     
-          // 3. Create PDF document
-      logger.step('Creating PDF document')
-      await updatePdfStatus(supabase, book.id, user.id, '📄 Creating PDF...')
+    logger.success('🎨 STEP 5: BACKGROUND PROCESSING - ✅ COMPLETED')
+    
+    // ========================================
+    // STEP 6: PDF CREATION AND LAYOUT
+    // ========================================
+    logger.step('📄 STEP 6: PDF CREATION - Creating PDF document')
+    await updatePdfStatus(supabase, book.id, user.id, '📄 Creating PDF...')
+    
     const pdfDoc = await PDFDocument.create()
     let pdfBgImage = null
     if (backgroundBuffer) {
+      logger.step('📄 STEP 6: PDF CREATION - Embedding background image')
       pdfBgImage = await pdfDoc.embedPng(backgroundBuffer)
-      logger.success('PDF document created with background image')
+      logger.success('📄 STEP 6: PDF CREATION - PDF document created with background image')
     } else {
-      logger.success('PDF document created with blank background')
+      logger.success('📄 STEP 6: PDF CREATION - PDF document created with blank background')
     }
     
     // Helper function to process image orientation
@@ -606,12 +824,14 @@ export default defineEventHandler(async (event) => {
           const tempInputPath = `/tmp/smartcrop-input-${Date.now()}.jpg`
           const tempOutputPath = `/tmp/smartcrop-output-${Date.now()}.jpg`
           
-          // Write the image buffer to a temporary file
-          await sharp(imageBuffer)
+          // Write the processed image buffer (with orientation correction) to a temporary file
+          await sharp(processedImageBuffer || imageBuffer)
             .jpeg({ quality: 100 })
             .toFile(tempInputPath)
           
-          console.log('🔍 Smartcrop-gm input:', { width: metadata.width, height: metadata.height, tempPath: tempInputPath })
+          // Get the dimensions of the processed image for logging
+          const processedMetadata = await sharp(processedImageBuffer || imageBuffer).metadata()
+          console.log('🔍 Smartcrop-gm input:', { width: processedMetadata.width, height: processedMetadata.height, tempPath: tempInputPath })
           
           // Use smartcrop-gm to find the best crop area
           const result = await smartcropGm.crop(tempInputPath, { 
@@ -2497,43 +2717,24 @@ export default defineEventHandler(async (event) => {
       await updatePdfStatus(supabase, book.id, user.id, 'completed')
     logger.summary()
     
-    console.log('🔍 PDF generation completed, about to clean up and update status...')
-    console.log('🔍 About to start status update process...')
-    
     // Immediately clean up and update book status (no delays)
-    console.log('🧹 Cleaning up PDF status...')
-    console.log('🔍 Status update section reached!')
     await supabase.from('pdf_status').delete().eq('book_id', book.id).eq('user_id', user.id)
-    
-    console.log('🔍 About to update book status to ready...')
     
     try {
       // Now update the book status to ready immediately
-      console.log('📝 Final update: setting memory book status to ready')
-      console.log('🔍 Debug - Book data before status update:', {
-        id: book.id,
-        status: book.status,
-        magic_story: book.magic_story ? 'present' : 'missing',
-        created_from_assets: book.created_from_assets ? `${book.created_from_assets.length} assets` : 'missing',
-        format: book.format
-      })
       
       // Ensure the book has the required fields before updating status to ready
       const updateData = { status: 'ready' }
       
       // For card format, ensure magic_story is set
       if (book.format === 'card' && (!book.magic_story || book.magic_story === '')) {
-        console.log('⚠️ Card format book missing magic_story, setting default')
         updateData.magic_story = 'A beautiful memory created with love'
       }
       
       // Ensure created_from_assets is set
       if (!book.created_from_assets || book.created_from_assets.length === 0) {
-        console.log('⚠️ Book missing created_from_assets, using selected assets')
         updateData.created_from_assets = selectedAssets.map(asset => asset.id)
       }
-      
-      console.log('🔧 Update data:', updateData)
       
       const { data: finalUpdateData, error: finalUpdateError } = await supabase
         .from('memory_books')
@@ -2543,35 +2744,15 @@ export default defineEventHandler(async (event) => {
       
       if (finalUpdateError) {
         console.error('❌ Error updating book status to ready:', finalUpdateError)
-        console.error('❌ Error details:', {
-          code: finalUpdateError.code,
-          message: finalUpdateError.message,
-          details: finalUpdateError.details,
-          hint: finalUpdateError.hint
-        })
       } else {
-        console.log('✅ Book status updated to ready successfully:', finalUpdateData)
-      }
-      
-      // Verify the update worked
-      const { data: verifyData, error: verifyError } = await supabase
-        .from('memory_books')
-        .select('status')
-        .eq('id', book.id)
-        .single()
-      
-      if (verifyError) {
-        console.error('❌ Error verifying book status update:', verifyError)
-      } else {
-        console.log('✅ Verified book status is now:', verifyData.status)
+        console.log('SUCCESS: Book status updated to ready:', finalUpdateData)
       }
     } catch (statusUpdateError) {
       console.error('❌ Exception during status update:', statusUpdateError)
-      console.error('❌ Status update error details:', {
-        message: statusUpdateError.message,
-        stack: statusUpdateError.stack
-      })
     }
+    
+    logger.success('📄 STEP 6: PDF CREATION - ✅ COMPLETED - PDF generated successfully')
+    logger.step('🎉 PDF GENERATION PROCESS - ✅ COMPLETED SUCCESSFULLY')
     
     return {
       success: true,
@@ -2579,7 +2760,12 @@ export default defineEventHandler(async (event) => {
       message: 'PDF generated successfully'
     }
   } catch (error) {
-    console.error('PDF generation failed:', error.message)
+    logger.error('❌ PDF GENERATION PROCESS - FAILED', error.message)
+    logger.step('📊 Error details', {
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || 'Failed to generate PDF',
+      stack: error.stack
+    })
     
     throw createError({
       statusCode: error.statusCode || 500,
@@ -2590,7 +2776,6 @@ export default defineEventHandler(async (event) => {
 
 async function updatePdfStatus(supabase, bookId, userId, status) {
   try {
-    console.log('📊 Updating PDF status:', status, 'for book:', bookId)
     const { data, error } = await supabase.from('pdf_status').upsert({
       book_id: bookId,
       user_id: userId,
@@ -2600,11 +2785,9 @@ async function updatePdfStatus(supabase, bookId, userId, status) {
     
     if (error) {
       console.error('❌ PDF status update error:', error)
-    } else {
-      console.log('✅ PDF status updated successfully')
     }
   } catch (error) {
-    console.log('⚠️ PDF status table might not exist yet, continuing without status updates:', error.message)
+    // PDF status table might not exist yet, continuing without status updates
   }
 } 
 

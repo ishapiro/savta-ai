@@ -805,6 +805,11 @@ BEGIN
   CREATE OR REPLACE FUNCTION validate_memory_book_fields()
   RETURNS TRIGGER AS $$
   BEGIN
+    -- Skip validation if we're just marking as deleted
+    IF NEW.deleted = true AND (OLD.deleted = false OR OLD.deleted IS NULL) THEN
+      RETURN NEW;
+    END IF;
+    
     -- For draft and template status, allow empty/null values for certain fields
     IF NEW.status IN ('draft', 'template') THEN
       -- Allow empty magic_story for draft/template status
@@ -827,11 +832,6 @@ BEGIN
     
     -- For other statuses, ensure required fields are present
     IF NEW.status NOT IN ('draft', 'template') THEN
-      -- Require magic_story for non-draft statuses (except for certain formats)
-      IF NEW.format = 'card' AND (NEW.magic_story IS NULL OR NEW.magic_story = '') THEN
-        RAISE EXCEPTION 'Magic story is required for card format when status is not draft/template';
-      END IF;
-      
       -- Require created_from_assets for non-draft statuses
       IF NEW.created_from_assets IS NULL OR array_length(NEW.created_from_assets, 1) = 0 THEN
         RAISE EXCEPTION 'Created from assets is required when status is not draft/template';
