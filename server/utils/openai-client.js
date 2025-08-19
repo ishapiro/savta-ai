@@ -404,13 +404,16 @@ async function selectPhotos(photoUrls, photoCount = null) {
 /**
  * Create a story generation request based on asset attributes
  * @param {Array} selectedAssets - Array of selected asset objects with attributes
+ * @param {string} aiSupplementalPrompt - The memory book's AI supplemental prompt
+ * @param {string|null} photoSelectionReasoning - The reasoning for why these photos were selected
  * @returns {Promise<Object>} The story generation results
  */
-async function generateStoryFromAttributes(selectedAssets, aiSupplementalPrompt) {
+async function generateStoryFromAttributes(selectedAssets, aiSupplementalPrompt, photoSelectionReasoning = null) {
   console.log('📝 STEP 2: STORY GENERATION - generateStoryFromAttributes function called')
   console.log('📝 STEP 2: STORY GENERATION - Function parameters:', {
     selectedAssetsCount: selectedAssets?.length || 0,
-    aiSupplementalPrompt: aiSupplementalPrompt || 'none'
+    aiSupplementalPrompt: aiSupplementalPrompt || 'none',
+    photoSelectionReasoning: photoSelectionReasoning || 'none'
   })
   
   if (!selectedAssets || selectedAssets.length === 0) {
@@ -461,6 +464,10 @@ Photo ${index + 1}:
             type: 'input_text',
             text: `Based on the following ${selectedAssets.length} photos and the memory book theme "${aiSupplementalPrompt}", generate a concise, engaging, and creative caption (max 2-3 sentences) that tells a story about these photos. The caption should be based ONLY on the provided photo attributes and should not invent details. Focus on creating a cohesive narrative that ties the photos together.
 
+${photoSelectionReasoning ? `PHOTO SELECTION REASONING: ${photoSelectionReasoning}
+
+This reasoning explains why these specific photos were chosen for your memory book. Use this context to help create a more meaningful and connected story.` : ''}
+
 CRITICAL REQUIREMENTS:
 - Keep it SHORT: 2-3 sentences maximum
 - Make it personal and touching, like something a grandmother would write
@@ -474,6 +481,7 @@ CRITICAL REQUIREMENTS:
 - Focus on the people, places, and moments shown in the photos
 - Connect the photos into a cohesive story
 - Base the story on the memory book theme: "${aiSupplementalPrompt}"
+${photoSelectionReasoning ? '- Consider the photo selection reasoning when crafting your story' : ''}
 
 Here are the selected photos:
 

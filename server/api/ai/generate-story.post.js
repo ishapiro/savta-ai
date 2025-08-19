@@ -3,7 +3,7 @@ import { generateStoryFromAttributes } from '~/server/utils/openai-client'
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
-    const { selectedAssets, aiSupplementalPrompt } = body
+    const { selectedAssets, aiSupplementalPrompt, photoSelectionReasoning } = body
 
     // Create Supabase client
     const { createClient } = await import('@supabase/supabase-js')
@@ -26,8 +26,15 @@ export default defineEventHandler(async (event) => {
       })
     }
     
+    console.log('📝 STEP 2: STORY GENERATION - Request details:', {
+      selectedAssetsCount: selectedAssets?.length || 0,
+      aiSupplementalPrompt: aiSupplementalPrompt,
+      hasPhotoSelectionReasoning: !!photoSelectionReasoning,
+      photoSelectionReasoning: photoSelectionReasoning || 'none'
+    })
+    
     // Generate story from selected assets
-    const storyResult = await generateStoryFromAttributes(selectedAssets, aiSupplementalPrompt)
+    const storyResult = await generateStoryFromAttributes(selectedAssets, aiSupplementalPrompt, photoSelectionReasoning)
     
     return {
       success: true,

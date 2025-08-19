@@ -448,14 +448,16 @@ export default defineEventHandler(async (event) => {
       logger.step('📡 Story API call details', {
         endpoint: '/api/ai/generate-story',
         selectedAssetsCount: selectedAssets.length,
-        aiSupplementalPrompt: book.ai_supplemental_prompt
+        aiSupplementalPrompt: book.ai_supplemental_prompt,
+        hasPhotoSelectionReasoning: !!book.ai_photo_selection_reasoning
       })
       
       await updatePdfStatus(supabase, book.id, user.id, `📝 Step 2: Generating story from ${selectedAssets.length} selected photos...`)
       
       const storyRequestBody = {
         selectedAssets: selectedAssets,
-        aiSupplementalPrompt: book.ai_supplemental_prompt
+        aiSupplementalPrompt: book.ai_supplemental_prompt,
+        photoSelectionReasoning: book.ai_photo_selection_reasoning
       }
       
       const storyRes = await fetch(`${config.public.siteUrl}/api/ai/generate-story`, {
