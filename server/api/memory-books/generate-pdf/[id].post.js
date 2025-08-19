@@ -1981,20 +1981,35 @@ export default defineEventHandler(async (event) => {
       // Process story if layout_config includes story area
       if (layoutConfig.story) {
         let story = aiStory || 'A special family story.'
-        const storyX = cardX + (layoutConfig.story.position.x * mmToPoints)
-        const storyY = cardY + (cardHeightPoints - (layoutConfig.story.position.y + layoutConfig.story.size.height) * mmToPoints)
-        const storyWidth = layoutConfig.story.size.width * mmToPoints
-        const storyHeight = layoutConfig.story.size.height * mmToPoints
+        
+        // Add padding around story text to prevent cutoff
+        const storyPaddingMm = 2 // 2mm padding on all sides
+        const storyPaddingPoints = storyPaddingMm * mmToPoints
+        
+        const storyX = cardX + (layoutConfig.story.position.x * mmToPoints) + storyPaddingPoints
+        const storyY = cardY + (cardHeightPoints - (layoutConfig.story.position.y + layoutConfig.story.size.height) * mmToPoints) + storyPaddingPoints
+        const storyWidth = (layoutConfig.story.size.width * mmToPoints) - (storyPaddingPoints * 2)
+        const storyHeight = (layoutConfig.story.size.height * mmToPoints) - (storyPaddingPoints * 2)
+        
         try {
           const pointsToPixels = 96 / 72
           const storyWidthPixels = Math.round(storyWidth * pointsToPixels)
           const storyHeightPixels = Math.round(storyHeight * pointsToPixels)
+          
           // Ensure font color has # prefix for text rendering
           let fontColor = theme.body_font_color || '#2D1810'
           if (fontColor && !fontColor.startsWith('#')) {
             fontColor = '#' + fontColor
           }
-          const storyTextBuffer = await renderTextToImage(story, storyWidthPixels, storyHeightPixels, { color: fontColor })
+          
+          // Use theme's body font if available
+          const fontFamily = theme.body_font || 'EB Garamond'
+          
+          const storyTextBuffer = await renderTextToImage(story, storyWidthPixels, storyHeightPixels, { 
+            color: fontColor,
+            fontFamily: fontFamily,
+            padding: 4 // Additional internal padding within the text renderer
+          })
           const storyTextImage = await pdfDoc.embedPng(storyTextBuffer)
           page.drawImage(storyTextImage, { x: storyX, y: storyY, width: storyWidth, height: storyHeight })
         } catch (textError) {

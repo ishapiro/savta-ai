@@ -164,6 +164,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
     lineHeight = 1.4,
     padding = 2, // Reduced from 8 to 2 for much tighter margins
     color = '#2D1810',
+    fontFamily = 'EB Garamond', // Allow custom font family from theme
     dpi = 2400, // Ultra high-quality DPI for embedded fonts (doubled for better printing)
     scale = 32,  // High scale for embedded font quality (doubled for better printing)
     backgroundColor = 'transparent' // Background color (default transparent for stories)
@@ -191,16 +192,16 @@ export async function renderTextToImage(text, width, height, options = {}) {
     const scaledFontSize = fontSize * scale
     const scaledPadding = padding * scale
     
-    // Create SVG with embedded font for optimal quality
-    const fontFamily = embeddedFont ? 'EB Garamond' : 'EB Garamond, Times New Roman, serif'
-    const fontImport = embeddedFont ? '' : '@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@1,400&amp;display=swap");'
+    // Create SVG with theme font or fallback to embedded font
+    const actualFontFamily = embeddedFont ? fontFamily : `${fontFamily}, Times New Roman, serif`
+    const fontImport = embeddedFont ? '' : `@import url("https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:ital,wght@1,400&amp;display=swap");`
     
     const svgContent = `<svg width="${scaledWidth}" height="${scaledHeight}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <style>
           ${fontImport}
           .text { 
-            font-family: ${fontFamily}; 
+            font-family: ${actualFontFamily}; 
             font-style: italic;
             fill: ${color}; 
             text-rendering: geometricPrecision;
