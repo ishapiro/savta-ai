@@ -855,6 +855,22 @@
             </div>
           </div>
 
+          <!-- AI Photo Selection Reasoning Section -->
+          <div v-if="selectedBook.ai_photo_selection_reasoning" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent/20 to-brand-highlight/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-lightbulb text-brand-accent text-sm sm:text-base"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="text-base sm:text-lg font-bold text-brand-primary">Photo Selection Reasoning</h3>
+                <p class="text-xs sm:text-sm text-gray-600">Why these photos were chosen for your memory</p>
+              </div>
+            </div>
+            <div class="overflow-y-auto max-h-48 sm:max-h-64 bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 rounded-xl p-3 sm:p-4 border border-brand-accent/20 text-brand-primary text-sm" style="word-break: break-word; line-height: 1.5;">
+              {{ selectedBook.ai_photo_selection_reasoning }}
+            </div>
+          </div>
+
           <!-- Memory Assets Section -->
           <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
@@ -4447,24 +4463,13 @@ async function onMagicMemoryContinue() {
     setTimeout(pollPdfStatus, 100)
     
     // Now call the magic memory endpoint with the book ID
-    let aiBody = { 
-      photos,
-      userId: user.id,
-      memoryBookId: dbRes.book_id, // Now we have the book ID
-      title: magicMemoryTitle.value,
-      memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
-      photo_count: effectivePhotoCount,
-      background_type: magicBackgroundType.value,
-      background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
-      theme_id: magicSelectedTheme.value // Use selected theme (which will be default if none selected)
-    }
-    if (photos.length <= effectivePhotoCount) {
-      aiBody.forceAll = true
-    }
-    
     const aiRes = await $fetch('/api/ai/magic-memory', {
       method: 'POST',
-      body: aiBody
+      body: {
+        memoryBookId: dbRes.book_id,
+        userId: user.id,
+        photoCount: effectivePhotoCount
+      }
     })
     
     // Update status and trigger poll for story generation step
@@ -4478,28 +4483,8 @@ async function onMagicMemoryContinue() {
       throw new Error('I need to try again to create something special for you.')
     }
     
-    // Update status for saving step
-    currentProgressMessage.value = '💾 Step 3: Saving to your library...'
-    setTimeout(pollPdfStatus, 100)
-    
-    // Update the template book with the AI results
-    const updateRes = await $fetch(`/api/memory-books/${dbRes.book_id}`, {
-      method: 'POST',
-      body: {
-        asset_ids: aiRes.selected_photo_ids,
-        story: aiRes.story,
-        background_type: aiRes.background_type || magicBackgroundType.value,
-        background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
-        photo_selection_pool: photoSelectionPool
-      },
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
-    if (!updateRes.success) throw new Error('I need to try again to save your magic card.')
-    
     // Update status for PDF generation step
-    currentProgressMessage.value = '🎨 Step 4: Creating your memory...'
+    currentProgressMessage.value = '🎨 Step 3: Creating your memory...'
     setTimeout(pollPdfStatus, 100)
     
     // Create a book object for the progress dialog with proper asset references
@@ -4581,25 +4566,6 @@ const retryMagicMemory = async () => {
   
   try {
     const config = lastMagicMemoryConfig.value
-    const photos = config.selectedAssets.map(a => ({
-      id: a.id,
-      storage_url: a.storage_url || a.asset_url || a.url,
-      ai_caption: a.ai_caption || '',
-      people_detected: a.people_detected || [],
-      tags: a.tags || [],
-      user_tags: a.user_tags || [],
-      city: a.city || null,
-      state: a.state || null,
-      country: a.country || null,
-      zip_code: a.zip_code || null,
-      width: a.width || null,
-      height: a.height || null,
-      orientation: a.orientation || 'unknown',
-      asset_date: a.asset_date || null,
-      fingerprint: a.fingerprint || null,
-      created_at: a.created_at || null,
-      location: a.location || null
-    }))
     
     // Get current user ID
     const { data: { user } } = await supabase.auth.getUser()
@@ -4611,30 +4577,51 @@ const retryMagicMemory = async () => {
     const selectedTheme = magicThemeOptions.value.find(theme => theme.value === config.selectedTheme)
     const effectivePhotoCount = selectedTheme ? selectedTheme.photoCount : config.photoCount
     
-    let aiBody = { 
-      photos,
-      userId: user.id,
-      title: config.title,
-      memory_event: config.memoryEvent,
-      photo_count: effectivePhotoCount,
-      background_type: config.backgroundType,
-              theme_id: config.selectedTheme || null
-    }
+    // First, create a template memory book in the database
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData.session?.access_token
     
-    if (photos.length <= effectivePhotoCount) {
-      aiBody.forceAll = true
-    }
+    const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
+      method: 'POST',
+      body: {
+        asset_ids: [], // Template - will be populated after AI selection
+        photo_selection_pool: config.photoSelectionPool,
+        story: '', // Template - will be populated after AI generation
+        title: config.title || 'Magic Memory',
+        memory_event: config.memoryEvent,
+        background_type: config.backgroundType,
+        background_color: config.backgroundType === 'solid' ? config.backgroundColor : null,
+        photo_count: effectivePhotoCount,
+        theme_id: config.selectedTheme,
+        print_size: '8.5x11', // Default print size for magic memories
+        output: 'JPG', // Wizard creates single-page memories, so always use JPG
+        photo_selection_method: config.photoSelectionMethod
+      },
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+    if (!dbRes.success) throw new Error('I need to try again to save your magic card.')
     
-    // Update status for photo selection step
+    // Start progress polling for the newly created book
+    currentBookId.value = dbRes.book_id
+    startProgressPolling()
+    
+    // Update status and trigger poll for photo selection step
     currentProgressMessage.value = '🎯 Step 1: Selecting best photos...'
     setTimeout(pollPdfStatus, 100)
     
+    // Now call the magic memory endpoint with the book ID
     const aiRes = await $fetch('/api/ai/magic-memory', {
       method: 'POST',
-      body: aiBody
+      body: {
+        memoryBookId: dbRes.book_id,
+        userId: user.id,
+        photoCount: effectivePhotoCount
+      }
     })
     
-    // Update status for story generation step
+    // Update status and trigger poll for story generation step
     currentProgressMessage.value = '📖 Step 2: Generating story...'
     setTimeout(pollPdfStatus, 100)
     
@@ -4646,34 +4633,9 @@ const retryMagicMemory = async () => {
       throw new Error('I need to try again to create something special for you.')
     }
     
-    // Update status for saving step
-    currentProgressMessage.value = '💾 Step 3: Saving to your library...'
+    // Update status for PDF generation step
+    currentProgressMessage.value = '🎨 Step 3: Creating your memory...'
     setTimeout(pollPdfStatus, 100)
-    
-    const { data: sessionData } = await supabase.auth.getSession()
-    const accessToken = sessionData.session?.access_token
-    
-    const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
-      method: 'POST',
-      body: {
-        asset_ids: aiRes.selected_photo_ids,
-        photo_selection_pool: config.photoSelectionPool,
-        story: aiRes.story,
-        title: config.title || 'Magic Memory',
-        memory_event: config.memoryEvent,
-        background_type: aiRes.background_type || config.backgroundType,
-        photo_count: effectivePhotoCount,
-        theme_id: config.selectedTheme || null,
-        print_size: '8.5x11', // Default print size for magic memories
-        output: 'JPG', // Wizard creates single-page memories, so always use JPG
-        photo_selection_method: config.photoSelectionMethod
-      },
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
-    
-    if (!dbRes.success) throw new Error('I need to try again to save your magic card.')
     
     // Create a book object for the progress dialog with proper asset references
     const book = {

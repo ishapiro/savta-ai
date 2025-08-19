@@ -777,6 +777,165 @@ async function analyzeLocation(imageUrl) {
   return parseOpenAIResponse(response);
 }
 
+/**
+ * Create a photo selection request based on asset attributes and memory book prompt
+ * @param {Array} assets - Array of asset objects with database attributes
+ * @param {string} aiSupplementalPrompt - The memory book's AI supplemental prompt
+ * @param {number} targetCount - Number of photos to select
+ * @returns {Promise<Object>} The photo selection results
+ */
+async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCount = 3) {
+  if (!assets || assets.length === 0) {
+    throw new Error('No assets provided for selection');
+  }
+
+  if (!aiSupplementalPrompt || aiSupplementalPrompt.trim() === '') {
+    throw new Error('AI supplemental prompt is required for photo selection');
+  }
+
+  console.log(`🎯 Selecting ${targetCount} photos from ${assets.length} assets based on prompt: "${aiSupplementalPrompt}"`);
+
+  // Prepare asset data for AI analysis
+  const assetData = assets.map((asset, index) => ({
+    number: index + 1,
+    id: asset.id,
+    title: asset.title || '',
+    ai_caption: asset.ai_caption || '',
+    user_caption: asset.user_caption || '',
+    tags: Array.isArray(asset.tags) ? asset.tags.join(', ') : '',
+    user_tags: Array.isArray(asset.user_tags) ? asset.user_tags.join(', ') : '',
+    user_people: Array.isArray(asset.user_people) ? asset.user_people.join(', ') : '',
+    city: asset.city || '',
+    state: asset.state || '',
+    country: asset.country || '',
+    asset_date: asset.asset_date ? new Date(asset.asset_date).toLocaleDateString() : '',
+    location: asset.location || ''
+  }));
+
+  const payload = {
+    model: 'gpt-4o',
+    instructions: 'You are a warm, caring grandmother selecting meaningful family photos based on their attributes and a specific prompt. Return ONLY JSON that matches the schema.',
+    text: {
+      format: {
+        type: 'json_schema',
+        name: 'photo_selection_by_attributes',
+        schema: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            selected_photo_numbers: {
+              type: 'array',
+              items: {
+                type: 'integer',
+                minimum: 1
+              },
+              description: `Array of exactly ${targetCount} photo numbers (1, 2, 3, etc.) selected from the provided pool`
+            },
+            reasoning: {
+              type: 'string',
+              description: 'Brief explanation of why these photos were selected'
+            }
+          },
+          required: ['selected_photo_numbers', 'reasoning']
+        }
+      }
+    },
+    input: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: `I want to create a memory book with the theme: "${aiSupplementalPrompt}"
+
+I have ${assets.length} photos to choose from. Please select exactly ${targetCount} photos that would work best together to tell a story for this memory book.
+
+For each photo, I have the following information:
+- Title
+- AI-generated caption
+- User caption
+- Tags (AI and user-generated)
+- People identified
+- Location (city, state, country)
+- Date taken
+
+CRITICAL SELECTION PRIORITY (in order of importance):
+1. **EXACT LOCATION MATCH**: If the prompt mentions a specific location (city, state, or country), you MUST prioritize photos from that exact location first. For example, if the prompt says "Chicago Vacation", look for photos from Chicago, Illinois, or the greater Chicago area first.
+
+2. **DATE MATCH**: If the prompt mentions a specific date or time period, prioritize photos with dates close to that time.
+
+3. **THEMATIC CONTENT**: Choose photos that tell a cohesive story together and relate to the theme.
+
+4. **PEOPLE & EVENTS**: Consider the people, places, and events mentioned in the prompt.
+
+5. **RELEVANT TAGS/CAPTIONS**: Look for photos with meaningful captions or tags that relate to the prompt.
+
+LOCATION MATCHING RULES:
+- For city names: Match exact city name (e.g., "Chicago" matches "Chicago, Illinois")
+- For state names: Match photos from that state
+- For country names: Match photos from that country
+- For regional terms: Match photos from the general area (e.g., "Chicago area" includes nearby suburbs)
+- If no location-specific photos exist, then fall back to thematic matching
+
+Here are the available photos:
+
+${assetData.map(asset => `
+Photo ${asset.number}:
+- Title: ${asset.title}
+- AI Caption: ${asset.ai_caption}
+- User Caption: ${asset.user_caption}
+- Tags: ${asset.tags}
+- User Tags: ${asset.user_tags}
+- People: ${asset.user_people}
+- Location: ${asset.city}${asset.state ? ', ' + asset.state : ''}${asset.country ? ', ' + asset.country : ''}
+- Date: ${asset.asset_date}
+`).join('\n')}
+
+Select exactly ${targetCount} photos that best match the theme "${aiSupplementalPrompt}". 
+
+CRITICAL: You MUST select exactly ${targetCount} photos - never fewer, never more.
+
+LOCATION PRIORITY RULES:
+- If the prompt mentions a specific location, prioritize photos from that location first
+- If you have enough location-specific photos to fill the quota (${targetCount} photos), use only those
+- If you don't have enough location-specific photos, fill the remaining slots with the most thematically relevant photos from other locations
+- When mixing location and thematic photos, prioritize location photos first, then fill remaining slots with thematic photos
+- EXAMPLE: If prompt is "Miami Vacation" and you only have 1 Miami photo but need 2 photos, select the Miami photo + 1 most relevant non-Miami photo
+
+FINAL REMINDER: You MUST return exactly ${targetCount} photo numbers, even if it means selecting photos from different locations or themes.
+
+Return ONLY JSON with the selected photo numbers and your reasoning.`
+          }
+        ]
+      }
+    ],
+    max_output_tokens: 2000
+  };
+
+  const response = await makeOpenAIRequest(payload);
+  const result = parseOpenAIResponse(response);
+  
+  // Map the selected photo numbers back to the original asset array indices
+  if (result && result.selected_photo_numbers) {
+    // Convert selected photo numbers to original indices (0-based)
+    result.selected_photo_numbers = result.selected_photo_numbers.map(num => num - 1);
+    
+    // Validate that all selected indices are valid
+    const validIndices = result.selected_photo_numbers.every(num => 
+      num >= 0 && num < assets.length && !isNaN(num)
+    );
+    
+    if (!validIndices) {
+      throw new Error('AI returned invalid photo selection indices');
+    }
+  }
+  
+  console.log(`✅ Selected photos: ${result.selected_photo_numbers?.join(', ')}`);
+  console.log(`📝 Reasoning: ${result.reasoning}`);
+  
+  return result;
+}
+
 export {
   aiCropRecommendation,
   selectPhotos,
@@ -785,6 +944,7 @@ export {
   analyzeImage,
   analyzeText,
   analyzeLocation,
+  selectPhotosByAttributes,
   makeOpenAIRequest,
   parseOpenAIResponse
 };

@@ -270,7 +270,125 @@ export default defineEventHandler(async (event) => {
     // Update status
     await updatePdfStatus(supabase, book.id, user.id, 'Retrieving your memories...')
     
-    // 1. Fetch approved assets for this book
+    // Calculate photo count early for magic memory calls
+    let photoCount = 3 // Default fallback
+    if (book.layout_type === 'theme' && book.theme_id) {
+      // Fetch theme to get layout config
+      const { data: theme, error: themeError } = await supabase
+        .from('themes')
+        .select('*')
+        .eq('id', book.theme_id)
+        .single()
+      
+      if (!themeError && theme) {
+        const layoutConfig = typeof theme.layout_config === 'string' 
+          ? JSON.parse(theme.layout_config) 
+          : theme.layout_config
+        
+        if (layoutConfig && layoutConfig.photos) {
+          photoCount = layoutConfig.photos.length
+        }
+      }
+    }
+    
+    // Check if we need to call magic memory first (missing assets or story)
+    const needsMagicMemory = (!book.created_from_assets || book.created_from_assets.length === 0) || (!book.magic_story || book.magic_story.trim() === '')
+    
+    if (needsMagicMemory) {
+      logger.step('Missing assets or story, calling magic memory endpoint first')
+      
+      // Fetch all assets from photo selection pool for magic memory
+      const { data: allAssets, error: allAssetsError } = await supabase
+        .from('assets')
+        .select('*')
+        .in('id', book.photo_selection_pool || [])
+        .eq('approved', true)
+        .eq('deleted', false)
+      
+      if (allAssetsError) {
+        logger.error('Error fetching photo selection pool assets', allAssetsError.message)
+        throw new Error(`Failed to fetch photo selection pool assets: ${allAssetsError.message}`)
+      }
+      
+      if (!allAssets || allAssets.length === 0) {
+        logger.error('No assets found in photo selection pool')
+        throw new Error('No assets found in photo selection pool')
+      }
+      
+      logger.success(`Found ${allAssets.length} assets in photo selection pool`)
+      
+      // Call magic memory endpoint
+      await updatePdfStatus(supabase, book.id, user.id, `🎯 Step 1: Examining ${allAssets.length} photos to find ${photoCount} best...`)
+      
+      const photos = allAssets.map(asset => ({
+        id: asset.id,
+        storage_url: asset.storage_url,
+        ai_caption: asset.ai_caption || '',
+        people_detected: asset.people_detected || [],
+        tags: asset.tags || [],
+        user_tags: asset.user_tags || [],
+        city: asset.city || null,
+        state: asset.state || null,
+        country: asset.country || null,
+        zip_code: asset.zip_code || null,
+        width: asset.width || null,
+        height: asset.height || null,
+        orientation: asset.orientation || 'unknown',
+        asset_date: asset.asset_date || null,
+        fingerprint: asset.fingerprint || null,
+        created_at: asset.created_at || null,
+        location: asset.location || null
+      }))
+      
+      const requestBody = {
+        memoryBookId: book.id,
+        userId: user.id,
+        photoCount: photoCount
+      }
+      
+      const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestBody)
+      })
+      
+      if (!magicRes.ok) {
+        logger.error('Magic memory generation failed', `Status: ${magicRes.status}`)
+        throw new Error(`Magic memory generation failed: ${magicRes.status}`)
+      }
+      
+      const magicData = await magicRes.json()
+      
+      if (!magicData.success) {
+        throw new Error('Magic memory generation failed: ' + magicData.error)
+      }
+      
+      await updatePdfStatus(supabase, book.id, user.id, '📖 Step 2: Generating story...')
+      
+      // Update the book with the new story and asset IDs
+      await supabase.from('memory_books').update({
+        magic_story: magicData.story,
+        created_from_assets: magicData.selected_photo_ids || [],
+        ai_photo_selection_reasoning: magicData.reasoning || null
+      }).eq('id', book.id)
+      
+      // Re-fetch the book to get updated values
+      const { data: updatedBook, error: bookError } = await supabase
+        .from('memory_books')
+        .select('*')
+        .eq('id', book.id)
+        .single()
+      
+      if (!bookError && updatedBook) {
+        book = updatedBook
+        logger.success('Book updated with new story and selected assets')
+      }
+    }
+    
+    // Now fetch the approved assets for this book (either existing or newly selected)
     logger.step('Fetching approved assets')
     const { data: assets, error: assetsError } = await supabase
       .from('assets')
@@ -1476,58 +1594,10 @@ export default defineEventHandler(async (event) => {
         location: asset.location || null
       }))
       
-      // Call magic memory endpoint for regenerations or when we don't have selected assets yet
-      // For newly created cards, the magic memory endpoint is already called from the frontend
-      if (isRegeneration || !book.created_from_assets || book.created_from_assets.length === 0) {
-        await updatePdfStatus(supabase, book.id, user.id, `🎯 Step 1: Examining ${photos.length} photos to find ${photoCount} best...`)
-        
-        const requestBody = {
-          photos: photos,
-          userId: user.id,
-          memoryBookId: book.id,
-          photo_count: photoCount, // Pass the dynamic photo count from theme
-          title: book.ai_supplemental_prompt,
-          memory_event: book.memory_event,
-          theme: book.theme_id || null,
-          background_type: book.background_type || 'white',
-          background_color: book.background_color,
-          forceAll: isPhotoLibrarySelection || photoCount === photos.length // Force AI to use all photos when user has manually selected them or when count matches
-        }
-        
-        const magicRes = await fetch(`${config.public.siteUrl}/api/ai/magic-memory`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(requestBody)
-        })
-        if (magicRes.ok) {
-          const magicData = await magicRes.json()
-        
-        if (!magicData.success) {
-          throw new Error('Magic memory generation failed: ' + magicData.error)
-        }
-        
-        await updatePdfStatus(supabase, book.id, user.id, '📖 Step 2: Generating story...')
-          // Use selected_photo_ids (array of asset IDs) from AI response, unless it's photo library selection
-          if (!isPhotoLibrarySelection && magicData.selected_photo_ids && Array.isArray(magicData.selected_photo_ids)) {
-            selectedAssets = assets.filter(a => magicData.selected_photo_ids.includes(a.id))
-          }
-          aiStory = magicData.story
-          // Update the book with the new story and asset IDs
-          await supabase.from('memory_books').update({
-            magic_story: aiStory,
-            created_from_assets: selectedAssets.map(a => a.id)
-          }).eq('id', book.id)
-          
-          // Update status to indicate we're moving to photo processing
-          await updatePdfStatus(supabase, book.id, user.id, '🎯 Processing photos for layout...')
-        }
-      } else {
-        // Skip to photo processing step since we already have a story
-        await updatePdfStatus(supabase, book.id, user.id, '🎯 Processing photos for layout...')
-      }
+      // Magic memory logic is now handled at the beginning of the function
+      // Skip to photo processing step since we already have selected assets and story
+      console.log('✅ Using existing selected assets and story for PDF generation')
+      await updatePdfStatus(supabase, book.id, user.id, '🎯 Processing photos for layout...')
 
       // Match photos to positions based on aspect ratio to minimize cropping
       console.log('🎯 Matching photos to positions based on aspect ratio...')

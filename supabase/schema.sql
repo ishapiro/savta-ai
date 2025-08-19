@@ -113,6 +113,7 @@ create table if not exists memory_books (
   user_id uuid not null,
   ai_supplemental_prompt text,
   magic_story text,
+  ai_photo_selection_reasoning text,
   layout_type text,
   ui text default 'form' check (ui in ('wizard', 'form')),
   format text default 'book' check (format in ('card', 'book')),
@@ -848,5 +849,19 @@ BEGIN
     FOR EACH ROW
     EXECUTE FUNCTION validate_memory_book_fields();
     
+END $$; 
+
+
+-- Add ai_photo_selection_reasoning column if it doesn't exist (safe to rerun)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'ai_photo_selection_reasoning'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN ai_photo_selection_reasoning text;
+  END IF;
 END $$; 
 

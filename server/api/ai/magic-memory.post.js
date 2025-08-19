@@ -1,4 +1,4 @@
-import { selectPhotos, generateStory } from '~/server/utils/openai-client.js';
+import { selectPhotosByAttributes, generateStory } from '~/server/utils/openai-client.js';
 
 // Helper function to update PDF status
 async function updatePdfStatus(supabase, bookId, userId, status) {
@@ -50,15 +50,12 @@ export default defineEventHandler(async (event) => {
     
     // Get request body
     const body = await readBody(event)
-    const { photoUrls, photos, userId, memoryBookId } = body
+    const { memoryBookId, userId, photoCount = 3 } = body
     
-    // Support both 'photoUrls' and 'photos' parameter names for compatibility
-    const photoUrlsArray = photoUrls || photos
-    
-    if (!photoUrlsArray || !Array.isArray(photoUrlsArray) || photoUrlsArray.length === 0) {
+    if (!memoryBookId) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Photo URLs array is required'
+        statusMessage: 'Memory book ID is required'
       })
     }
     
@@ -69,95 +66,125 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    console.log('📸 Processing', photoUrlsArray.length, 'photos for magic memory')
-    console.log('👤 User ID:', userId)
     console.log('📚 Memory Book ID:', memoryBookId)
+    console.log('👤 User ID:', userId)
     
-    // Step 1: Use centralized OpenAI client for photo selection
-    console.log('🎯 Step 1: Selecting best photos...')
+    // Step 1: Fetch the memory book and validate ai_supplemental_prompt
+    console.log('📖 Step 1: Fetching memory book and validating prompt...')
+    
+    const { data: memoryBook, error: bookError } = await supabase
+      .from('memory_books')
+      .select('*')
+      .eq('id', memoryBookId)
+      .eq('user_id', userId)
+      .single()
+    
+    if (bookError || !memoryBook) {
+      console.error('❌ Error fetching memory book:', bookError)
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Memory book not found'
+      })
+    }
+    
+    // Validate that ai_supplemental_prompt is set
+    if (!memoryBook.ai_supplemental_prompt || memoryBook.ai_supplemental_prompt.trim() === '') {
+      console.error('❌ Memory book ai_supplemental_prompt is empty')
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Memory book prompt is required. Please set a description for your memory book before generating.'
+      })
+    }
+    
+    console.log('✅ Memory book prompt:', memoryBook.ai_supplemental_prompt)
+    
+    // Step 2: Fetch assets from photo_selection_pool
+    console.log('📸 Step 2: Fetching assets from photo selection pool...')
+    
+    if (!memoryBook.photo_selection_pool || memoryBook.photo_selection_pool.length === 0) {
+      console.error('❌ No photo selection pool found')
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'No photos available for selection. Please add photos to your library first.'
+      })
+    }
+    
+    const { data: assets, error: assetsError } = await supabase
+      .from('assets')
+      .select('*')
+      .in('id', memoryBook.photo_selection_pool)
+      .eq('user_id', userId)
+      .eq('approved', true)
+      .eq('deleted', false)
+    
+    if (assetsError || !assets || assets.length === 0) {
+      console.error('❌ Error fetching assets:', assetsError)
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'No approved photos found in selection pool'
+      })
+    }
+    
+    console.log(`✅ Found ${assets.length} assets in photo selection pool`)
     
     // Update status if we have a book ID
-    if (memoryBookId) {
-      await updatePdfStatus(supabase, memoryBookId, userId, `🎯 Step 1: Examining ${photoUrlsArray.length} photos to find ${body.photo_count || 3} best...`)
-    }
+    await updatePdfStatus(supabase, memoryBookId, userId, `🎯 Step 1: Analyzing ${assets.length} photos to find ${photoCount} best matches for "${memoryBook.ai_supplemental_prompt}"...`)
     
-    // Get photo count from request body or use default
-    const photoCount = body.photo_count || 3
+    // Step 3: Use attribute-based photo selection
+    console.log('🎯 Step 3: Selecting photos based on attributes...')
     
-    // Check if we have enough photos to proceed
-    if (photoUrlsArray.length < photoCount) {
-      console.warn(`⚠️ Only ${photoUrlsArray.length} photos provided, but ${photoCount} requested. Using all available photos.`);
-    }
-    
-    const photoSelectionResult = await selectPhotos(photoUrlsArray, photoCount)
+    const photoSelectionResult = await selectPhotosByAttributes(assets, memoryBook.ai_supplemental_prompt, photoCount)
     
     if (!photoSelectionResult || !photoSelectionResult.selected_photo_numbers) {
       console.error('❌ No photo selection result returned')
       throw createError({
         statusCode: 500,
-        statusMessage: 'Photo selection failed - no valid images found. Please check that your images are accessible and not too large.'
+        statusMessage: 'Photo selection failed - unable to find suitable photos for your prompt.'
       })
     }
     
-    const selectedPhotoNumbers = photoSelectionResult.selected_photo_numbers
-    console.log('✅ Selected photo numbers:', selectedPhotoNumbers)
+    const selectedPhotoIndices = photoSelectionResult.selected_photo_numbers
+    console.log('✅ Selected photo indices:', selectedPhotoIndices)
     
-    // Validate that we got at least some photos
-    if (selectedPhotoNumbers.length === 0) {
-      console.error('❌ No photos selected')
+    // Validate that we got the requested number of photos
+    if (selectedPhotoIndices.length !== photoCount) {
+      console.error(`❌ Photo selection returned ${selectedPhotoIndices.length} photos, expected ${photoCount}`)
       throw createError({
         statusCode: 500,
-        statusMessage: 'No photos could be selected. Please check that your images are accessible and not too large.'
+        statusMessage: `Photo selection returned ${selectedPhotoIndices.length} photos, expected ${photoCount}`
       })
     }
     
-    // Validate that we got the requested number of photos (or at least 1 if fewer were requested)
-    const expectedCount = Math.min(photoCount, photoUrlsArray.length);
-    if (selectedPhotoNumbers.length < Math.min(1, expectedCount)) {
-      console.error(`❌ Photo selection returned ${selectedPhotoNumbers.length} photos, expected at least ${Math.min(1, expectedCount)}`)
-      throw createError({
-        statusCode: 500,
-        statusMessage: `Photo selection returned ${selectedPhotoNumbers.length} photos, expected at least ${Math.min(1, expectedCount)}`
-      })
-    }
+    // Get the selected assets
+    const selectedAssets = selectedPhotoIndices.map(index => assets[index]).filter(Boolean)
+    console.log('✅ Selected assets count:', selectedAssets.length)
     
-    // Validate that all selected numbers are valid indices (0-based)
-    const validIndices = selectedPhotoNumbers.every(num => num >= 0 && num < photoUrlsArray.length && !isNaN(num))
-    if (!validIndices) {
-      console.error('❌ Photo selection contains invalid indices:', selectedPhotoNumbers)
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Photo selection contains invalid indices'
-      })
-    }
-    
-    // Get the actual selected photo URLs
-    const selectedPhotoUrls = selectedPhotoNumbers.map(num => {
-      const photo = photoUrlsArray[num];
-      if (!photo) return null;
-      
-      // Extract URL from photo object or use string directly
-      const imageUrl = typeof photo === 'string' ? photo : photo.storage_url || photo.asset_url || photo.url;
-      return imageUrl;
-    }).filter(Boolean);
-    
-    console.log('📸 Selected photo URLs:', selectedPhotoUrls)
-    
-    if (selectedPhotoUrls.length === 0) {
-      console.error('❌ No valid photo URLs found from selection')
+    if (selectedAssets.length === 0) {
+      console.error('❌ No valid assets found from selection')
       throw createError({
         statusCode: 500,
         statusMessage: 'No valid photos selected'
       })
     }
     
-    // Step 2: Use centralized OpenAI client for story generation
-    console.log('📖 Step 2: Generating story...')
+    // Get the selected photo URLs for story generation
+    const selectedPhotoUrls = selectedAssets.map(asset => asset.storage_url || asset.asset_url || asset.url).filter(Boolean)
+    
+    if (selectedPhotoUrls.length === 0) {
+      console.error('❌ No valid photo URLs found from selection')
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'No valid photo URLs found from selection'
+      })
+    }
+    
+    console.log('📸 Selected photo URLs:', selectedPhotoUrls)
+    
+    // Step 4: Generate story
+    console.log('📖 Step 4: Generating story...')
     
     // Update status if we have a book ID
-    if (memoryBookId) {
-      await updatePdfStatus(supabase, memoryBookId, userId, '📖 Step 2: Generating story...')
-    }
+    await updatePdfStatus(supabase, memoryBookId, userId, '📖 Step 2: Generating story...')
     
     const storyResult = await generateStory(selectedPhotoUrls)
     
@@ -172,14 +199,38 @@ export default defineEventHandler(async (event) => {
     const story = storyResult.story
     console.log('✅ Generated story:', storyResult.story)
     
-    // Step 3: Return the results (database saving is handled by the caller)
-    console.log('💾 Step 3: Returning results...')
+    // Step 5: Update the memory book with results
+    console.log('💾 Step 5: Updating memory book with results...')
+    
+    const { error: updateError } = await supabase
+      .from('memory_books')
+      .update({
+        created_from_assets: selectedAssets.map(asset => asset.id),
+        magic_story: story,
+        ai_photo_selection_reasoning: photoSelectionResult.reasoning,
+        status: 'draft',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', memoryBookId)
+      .eq('user_id', userId)
+    
+    if (updateError) {
+      console.error('❌ Error updating memory book:', updateError)
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Failed to save memory book results'
+      })
+    }
+    
+    // Step 6: Return the results
+    console.log('✅ Magic memory generation completed successfully')
     
     return {
       success: true,
-      selected_photo_ids: selectedPhotoNumbers.map(num => photoUrlsArray[num].id).filter(Boolean),
-      story: storyResult.story,
-      background_type: 'white' // Default background type
+      selected_photo_ids: selectedAssets.map(asset => asset.id),
+      story: story,
+      background_type: 'white', // Default background type
+      reasoning: photoSelectionResult.reasoning
     }
     
   } catch (error) {

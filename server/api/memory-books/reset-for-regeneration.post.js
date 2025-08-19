@@ -39,14 +39,17 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Memory book not found' })
     }
 
-    // Reset fields for regeneration (preserve magic_story for card format)
+    // Reset fields for regeneration - clear photo selection and story to force regeneration
     const { error: updateError } = await supabase
       .from('memory_books')
       .update({
         status: 'draft',
         background_url: null,
-        pdf_url: null
-        // Note: magic_story is preserved to satisfy database trigger requirements
+        pdf_url: null,
+        created_from_assets: null,
+        magic_story: null,
+        ai_photo_selection_reasoning: null
+        // Clear photo selection and story to force AI to rerun with updated prompt
       })
       .eq('id', bookId)
     if (updateError) {
