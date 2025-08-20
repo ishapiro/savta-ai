@@ -162,7 +162,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
   const {
     startFontSize = 16,
     lineHeight = 1.4,
-    padding = 2, // Reduced from 8 to 2 for much tighter margins
+    padding = 4, // Increased from 2 to 4 for better story text spacing
     color = '#2D1810',
     fontFamily = 'EB Garamond', // Allow custom font family from theme
     dpi = 2400, // Ultra high-quality DPI for embedded fonts (doubled for better printing)

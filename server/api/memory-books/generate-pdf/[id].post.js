@@ -1983,7 +1983,7 @@ export default defineEventHandler(async (event) => {
         let story = aiStory || 'A special family story.'
         
         // Add padding around story text to prevent cutoff
-        const storyPaddingMm = 2 // 2mm padding on all sides
+        const storyPaddingMm = 4 // 4mm padding on all sides (increased from 2mm)
         const storyPaddingPoints = storyPaddingMm * mmToPoints
         
         const storyX = cardX + (layoutConfig.story.position.x * mmToPoints) + storyPaddingPoints
@@ -2008,7 +2008,7 @@ export default defineEventHandler(async (event) => {
           const storyTextBuffer = await renderTextToImage(story, storyWidthPixels, storyHeightPixels, { 
             color: fontColor,
             fontFamily: fontFamily,
-            padding: 4 // Additional internal padding within the text renderer
+            padding: 8 // Additional internal padding within the text renderer (increased from 4)
           })
           const storyTextImage = await pdfDoc.embedPng(storyTextBuffer)
           page.drawImage(storyTextImage, { x: storyX, y: storyY, width: storyWidth, height: storyHeight })
