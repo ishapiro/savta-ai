@@ -620,6 +620,7 @@ definePageMeta({
 })
 
 const db = useDatabase()
+const user = useSupabaseUser()
 
 // Reactive data
 const activeTabIndex = ref(0)
@@ -906,7 +907,8 @@ const uploadFiles = async (files) => {
         body: {
           assetId: asset.id,
           assetType: 'photo',
-          storageUrl: asset.storage_url
+          storageUrl: asset.storage_url,
+          userId: user.value?.id
         }
       })
 
@@ -957,7 +959,8 @@ const submitTextStory = async () => {
       body: {
         assetId: asset.id,
         assetType: 'text',
-        userCaption: textStory.value.content
+        userCaption: textStory.value.content,
+        userId: user.value?.id
       }
     })
 

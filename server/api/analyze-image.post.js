@@ -2,8 +2,31 @@ import { analyzeLocation } from '~/server/utils/openai-client.js';
 
 export default defineEventHandler(async (event) => {
   try {
+    // Check if this is a FormData request
+    const contentType = event.req.headers['content-type'] || '';
+    
+    if (contentType.includes('multipart/form-data')) {
+      // Handle FormData case where file is sent instead of URL
+      console.log('⚠️ FormData provided, skipping location analysis');
+      return {
+        success: true,
+        metadata: {
+          width: null,
+          height: null,
+          orientation: null,
+          location: null,
+          city: null,
+          state: null,
+          country: null,
+          zip_code: null,
+          asset_date: null
+        }
+      };
+    }
+    
+    // Handle JSON request
     const body = await readBody(event);
-    const { imageUrl } = body;
+    let imageUrl = body.imageUrl;
 
     if (!imageUrl) {
       throw createError({

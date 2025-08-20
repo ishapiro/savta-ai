@@ -5,6 +5,7 @@
 
 // Load environment variables
 import dotenv from 'dotenv';
+import exifr from 'exifr';
 dotenv.config({ quiet: true });
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -693,9 +694,95 @@ async function analyzeImage(imageUrl) {
     throw new Error(`Image URL is not accessible: ${imageUrl}`);
   }
   
+  // Extract EXIF data before sending to AI
+  console.log('🔍 Extracting EXIF data from image:', imageUrl);
+  let exifData = null;
+  
+  try {
+    // Use exifr library to extract EXIF data
+    const exifResult = await exifr.parse(imageUrl, {
+      gps: true,
+      exif: true,
+      ifd0: true,
+      ifd1: true,
+      iptc: true,
+      xmp: true,
+      icc: true,
+      ihdr: true,
+      thumb: false,
+      tiff: true,
+      jfif: true,
+      sof: true,
+      sof2: true,
+      sof3: true,
+      sof5: true,
+      sof6: true,
+      sof7: true,
+      sof9: true,
+      sof10: true,
+      sof11: true,
+      sof13: true,
+      sof14: true,
+      sof15: true
+    });
+    
+    if (exifResult) {
+      console.log('✅ EXIF data extracted successfully');
+              exifData = {
+          has_exif: true,
+          extracted_at: new Date().toISOString(),
+          gps_latitude: exifResult.latitude || null,
+          gps_longitude: exifResult.longitude || null,
+          date_taken: exifResult.DateTimeOriginal || exifResult.DateTime || exifResult.CreateDate || null,
+          camera_make: exifResult.Make || null,
+          camera_model: exifResult.Model || null,
+          original_width: exifResult.ImageWidth || exifResult.ExifImageWidth || null,
+          original_height: exifResult.ImageHeight || exifResult.ExifImageHeight || null,
+          orientation: exifResult.Orientation || null,
+          software: exifResult.Software || null,
+          artist: exifResult.Artist || null,
+          copyright: exifResult.Copyright || null
+        };
+      
+      // Log key EXIF fields
+      if (exifResult.latitude && exifResult.longitude) {
+        console.log(`📍 GPS Coordinates: ${exifResult.latitude}, ${exifResult.longitude}`);
+      }
+      if (exifResult.DateTimeOriginal) {
+        console.log(`📅 Date Taken: ${exifResult.DateTimeOriginal}`);
+      }
+      if (exifResult.Make && exifResult.Model) {
+        console.log(`📷 Camera: ${exifResult.Make} ${exifResult.Model}`);
+      }
+    } else {
+      console.log('❌ No EXIF data found in image');
+      exifData = {
+        has_exif: false,
+        extracted_at: new Date().toISOString()
+      };
+    }
+  } catch (exifError) {
+    console.warn('⚠️ Error extracting EXIF data:', exifError.message);
+    exifData = {
+      error: exifError.message,
+      extracted_at: new Date().toISOString()
+    };
+  }
+  
+          console.log('📊 EXIF extraction summary:', {
+          has_exif: exifData.has_exif,
+          gps_latitude: exifData.gps_latitude,
+          gps_longitude: exifData.gps_longitude,
+          date_taken: exifData.date_taken,
+          camera_make: exifData.camera_make,
+          camera_model: exifData.camera_model,
+          original_width: exifData.original_width,
+          original_height: exifData.original_height
+        });
+  
   const payload = {
     model: 'gpt-4o',
-    instructions: 'You are a precise image analysis tool. Return ONLY JSON that matches the schema.',
+    instructions: 'You are a hip grandmother with precise image analysis skills. Return ONLY JSON that matches the schema.',
     text: {
       format: {
         type: 'json_schema',
@@ -726,9 +813,24 @@ async function analyzeImage(imageUrl) {
             location: {
               type: 'string',
               description: 'Location information if visible in the image'
+            },
+            exif_data: {
+              type: 'object',
+              additionalProperties: false,
+              description: 'Raw EXIF metadata from the image including GPS coordinates, date, camera info, etc.',
+              properties: {
+                gps_latitude: { type: 'number', description: 'GPS latitude if available' },
+                gps_longitude: { type: 'number', description: 'GPS longitude if available' },
+                date_taken: { type: 'string', description: 'Date and time photo was taken' },
+                camera_make: { type: 'string', description: 'Camera manufacturer' },
+                camera_model: { type: 'string', description: 'Camera model' },
+                original_width: { type: 'number', description: 'Original image width' },
+                original_height: { type: 'number', description: 'Original image height' }
+              },
+              required: ['gps_latitude', 'gps_longitude', 'date_taken', 'camera_make', 'camera_model', 'original_width', 'original_height']
             }
           },
-          required: ['caption', 'tags', 'people_detected', 'objects']
+          required: ['caption', 'tags', 'people_detected', 'objects', 'location', 'exif_data']
         }
       }
     },
@@ -738,7 +840,43 @@ async function analyzeImage(imageUrl) {
         content: [
           {
             type: 'input_text',
-            text: 'Analyze this image and provide a caption, tags, detected people, objects, and location information. Return ONLY JSON with the analysis.'
+            text: `Analyze this image and provide a caption, tags, detected people, objects, location information, and EXIF metadata.
+            Return ONLY JSON with the analysis.
+            
+            PRE-EXTRACTED EXIF DATA (use this exact data):
+            - GPS Coordinates: ${exifData.gps_latitude}, ${exifData.gps_longitude}
+            - Date Taken: ${exifData.date_taken}
+            - Camera: ${exifData.camera_make} ${exifData.camera_model}
+            - Dimensions: ${exifData.original_width} x ${exifData.original_height}
+            - Has EXIF: ${exifData.has_exif}
+            
+            The caption should be one to two sentences that describes the image in a fun, playful way.
+            The people_detected should be a list of people detected in the image.
+            The objects should be a list of objects detected in the image.
+            The location should be the location of the image including the city, state, country and key landmarks. 
+            
+            CRITICAL LOCATION INSTRUCTIONS:
+            - Use the PRE-EXTRACTED GPS coordinates above to determine the actual geographic location
+            - Use the GPS coordinates to identify the city, state/province, and country where the photo was taken
+            - Do NOT return "Unknown location" if GPS coordinates are available in the pre-extracted data
+            - Only return "Unknown location" if no GPS coordinates are present AND no location is visible in the image
+            
+            Examples:
+            - If GPS shows 42.0139, -87.7158, return "Evanston, Illinois, United States"
+            - If GPS shows 40.7128, -74.006, return "New York City, New York, United States"
+            - If GPS shows 51.5074, -0.1278, return "London, England, United Kingdom"
+            
+            For the exif_data field, use the PRE-EXTRACTED values:
+            - gps_latitude: ${exifData.gps_latitude}
+            - gps_longitude: ${exifData.gps_longitude}
+            - date_taken: ${exifData.date_taken}
+            - camera_make: ${exifData.camera_make}
+            - camera_model: ${exifData.camera_model}
+            - original_width: ${exifData.original_width}
+            - original_height: ${exifData.original_height}
+            
+            IMPORTANT: Use the exact GPS coordinates from the pre-extracted EXIF data for location determination.
+            `
           },
           {
             type: 'input_image',

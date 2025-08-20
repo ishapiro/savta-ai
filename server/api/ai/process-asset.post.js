@@ -2,8 +2,15 @@
 // Handles image analysis, caption generation, and tagging using OpenAI
 
 import { analyzeImage, analyzeText } from '~/server/utils/openai-client.js';
+import { createClient } from '@supabase/supabase-js'
 
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig()
+  const supabase = createClient(
+    config.public.supabaseUrl,
+    config.supabaseServiceRoleKey || config.public.supabaseKey
+  )
+  
   try {
     console.log('🔄 Starting asset processing endpoint')
     const config = useRuntimeConfig()
@@ -19,9 +26,12 @@ export default defineEventHandler(async (event) => {
     
     // Get request body
     const body = await readBody(event)
-    const { assetUrl, assetType, userId, memoryBookId } = body
+    const { assetUrl, storageUrl, assetType, assetId, userId, memoryBookId } = body
     
-    if (!assetUrl) {
+    // Support both assetUrl and storageUrl for backward compatibility
+    const finalAssetUrl = assetUrl || storageUrl
+    
+    if (!finalAssetUrl) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Asset URL is required'
@@ -35,31 +45,58 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    if (!userId) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'User ID is required'
-      })
+    // Get user ID from request body or from request context
+    let finalUserId = userId
+    if (!finalUserId) {
+      // Try to get user from request headers (JWT token)
+      const authHeader = event.req.headers['authorization'] || event.req.headers['Authorization']
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.replace('Bearer ', '').trim()
+        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser(token)
+        if (!userError && currentUser) {
+          finalUserId = currentUser.id
+        }
+      }
+      
+      // If still no user ID, try to get it from the asset record itself
+      if (!finalUserId && assetId) {
+        const { data: assetData, error: assetError } = await supabase
+          .from('assets')
+          .select('user_id')
+          .eq('id', assetId)
+          .single()
+        
+        if (!assetError && assetData) {
+          finalUserId = assetData.user_id
+        }
+      }
+      
+      if (!finalUserId) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'User ID is required'
+        })
+      }
     }
     
-    console.log('📁 Processing asset:', assetUrl)
+    console.log('📁 Processing asset:', finalAssetUrl)
     console.log('📋 Asset type:', assetType)
-    console.log('👤 User ID:', userId)
+    console.log('👤 User ID:', finalUserId)
     console.log('📚 Memory Book ID:', memoryBookId)
     
     let analysisResult = null
     
     // Use centralized OpenAI client based on asset type
-    if (assetType === 'image') {
+    if (assetType === 'image' || assetType === 'photo') {
       console.log('🖼️ Processing image asset...')
-      analysisResult = await analyzeImage(assetUrl)
+      analysisResult = await analyzeImage(finalAssetUrl)
     } else if (assetType === 'text') {
       console.log('📝 Processing text asset...')
-      analysisResult = await analyzeText(assetUrl) // assetUrl contains the text content
+      analysisResult = await analyzeText(finalAssetUrl) // finalAssetUrl contains the text content
     } else {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Unsupported asset type. Must be "image" or "text"'
+        statusMessage: 'Unsupported asset type. Must be "image", "photo", or "text"'
       })
     }
     
@@ -73,43 +110,52 @@ export default defineEventHandler(async (event) => {
     
     console.log('✅ Asset analysis completed:', analysisResult)
     
-    // Save to database
-    console.log('💾 Saving asset to database...')
-    const { data: supabase } = await $fetch('/api/supabase/client')
+    // Update existing asset with AI analysis results
+    console.log('💾 Updating asset with AI analysis...')
     
-    const assetData = {
-      user_id: userId,
-      memory_book_id: memoryBookId,
-      asset_url: assetUrl,
-      asset_type: assetType,
-      caption: analysisResult.caption || '',
-      tags: analysisResult.tags || [],
-      people_detected: analysisResult.people_detected || [],
-      objects: analysisResult.objects || [],
-      location: analysisResult.location || '',
-      created_at: new Date().toISOString()
-    }
-    
-    const { data: newAsset, error: insertError } = await supabase
-      .from('assets')
-      .insert(assetData)
-      .select()
-      .single()
-    
-    if (insertError) {
-      console.error('❌ Error saving asset:', insertError)
+    // Get the asset ID from the request
+    if (!assetId) {
       throw createError({
-        statusCode: 500,
-        statusMessage: 'Failed to save asset'
+        statusCode: 400,
+        statusMessage: 'Asset ID is required'
       })
     }
     
-    console.log('✅ Asset saved to database:', newAsset.id)
+    const updateData = {
+      ai_caption: analysisResult.caption || '',
+      tags: analysisResult.tags || [],
+      people_detected: analysisResult.people_detected || [],
+      ai_processed: true,
+      updated_at: new Date().toISOString()
+    }
+    
+    // Add location data if available
+    if (analysisResult.location) {
+      updateData.location = analysisResult.location
+    }
+    
+    const { data: updatedAsset, error: updateError } = await supabase
+      .from('assets')
+      .update(updateData)
+      .eq('id', assetId)
+      .eq('user_id', finalUserId)
+      .select()
+      .single()
+    
+    if (updateError) {
+      console.error('❌ Error updating asset:', updateError)
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Failed to update asset'
+      })
+    }
+    
+    console.log('✅ Asset updated with AI analysis:', updatedAsset.id)
     
     return {
       success: true,
       data: {
-        asset_id: newAsset.id,
+        asset_id: updatedAsset.id,
         analysis: analysisResult
       }
     }
