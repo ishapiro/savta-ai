@@ -6,7 +6,7 @@
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
           <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Review Family Photos</h1>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
             v-tooltip.top="'How to review family photos'"
             @click="showHelpModal = true"
             aria-label="Information about reviewing family photos"
@@ -14,10 +14,10 @@
             <i class="pi pi-info text-lg text-brand-highlight"></i>
           </button>
         </div>
-        <div class="flex gap-2 w-full sm:w-auto">
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-2 w-full sm:w-auto">
           <button
             v-if="stats.pending > 0"
-            class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
             @click="approveAllPending"
             :disabled="approvingAll"
           >
@@ -26,7 +26,7 @@
             <span class="sm:hidden">Approve All</span>
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
             @click="showRerunAIDialog = true"
             :disabled="rerunningAI"
           >
@@ -35,7 +35,7 @@
             <span class="sm:hidden">Rerun AI</span>
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
             @click="navigateTo('/app/deleted-memories')"
           >
             <i class="pi pi-trash text-lg sm:text-2xl animate-bounce"></i>
@@ -47,22 +47,22 @@
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+        <div class="bg-white rounded-xl shadow p-4 sm:p-4 flex flex-col items-center">
           <i class="pi pi-image text-brand-secondary text-2xl mb-2"></i>
           <div class="text-sm text-brand-primary/70">All Photos</div>
           <div class="text-xl font-bold text-brand-primary">{{ stats.total }}</div>
         </div>
-        <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+        <div class="bg-white rounded-xl shadow p-4 sm:p-4 flex flex-col items-center">
           <i class="pi pi-clock text-yellow-500 text-2xl mb-2"></i>
           <div class="text-sm text-brand-primary/70">Need Review</div>
           <div class="text-xl font-bold text-brand-primary">{{ stats.pending }}</div>
         </div>
-        <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+        <div class="bg-white rounded-xl shadow p-4 sm:p-4 flex flex-col items-center">
           <i class="pi pi-check text-brand-highlight text-2xl mb-2"></i>
           <div class="text-sm text-brand-primary/70">Approved</div>
           <div class="text-xl font-bold text-brand-primary">{{ stats.approved }}</div>
         </div>
-        <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+        <div class="bg-white rounded-xl shadow p-4 sm:p-4 flex flex-col items-center">
           <i class="pi pi-book text-brand-secondary text-2xl mb-2"></i>
           <div class="text-sm text-brand-primary/70">Ready for Cards</div>
           <div class="text-xl font-bold text-brand-primary">{{ stats.readyForBook }}</div>
@@ -72,8 +72,8 @@
       <!-- Filters -->
       <Card class="mb-8">
         <template #content>
-          <div class="flex flex-wrap items-center gap-4">
-            <div class="flex items-center space-x-2">
+          <div class="flex flex-col sm:flex-wrap items-start sm:items-center gap-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-2 w-full sm:w-auto">
               <label class="text-sm font-medium text-brand-primary">Filter:</label>
               <Dropdown
                 v-model="activeFilter"
@@ -81,10 +81,10 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Filter"
-                class="w-60"
+                class="w-full sm:w-60"
               />
             </div>
-            <div class="flex items-center space-x-2">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-2 w-full sm:w-auto">
               <label class="text-sm font-medium text-brand-primary">Type:</label>
               <Dropdown
                 v-model="typeFilter"
@@ -92,10 +92,10 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Type"
-                class="w-60"
+                class="w-full sm:w-60"
               />
             </div>
-            <div class="flex items-center space-x-2">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-2 w-full sm:w-auto">
               <label class="text-sm font-medium text-brand-primary">Sort:</label>
               <Dropdown
                 v-model="sortBy"
@@ -103,7 +103,7 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Sort"
-                class="w-60"
+                class="w-full sm:w-60"
               />
             </div>
           </div>
@@ -131,37 +131,37 @@
           </div>
 
           <!-- Action Bar - Fixed at Bottom -->
-          <div class="rounded-b-xl sm:rounded-b-2xl bg-brand-navigation px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 border-t border-brand-primary/20" style="flex-shrink: 0; margin-top: auto;">
-            <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-center">
+          <div class="rounded-b-xl sm:rounded-b-2xl bg-brand-navigation px-3 sm:px-4 py-3 sm:py-3 flex items-center justify-between gap-3 sm:gap-4 border-t border-brand-primary/20" style="flex-shrink: 0; margin-top: auto;">
+            <div class="flex items-center gap-3 sm:gap-3 flex-1 justify-center">
               <div class="flex flex-col items-center cursor-pointer group" @click="openDetailsDialog(asset)" v-tooltip.top="'Details'">
-                <button class="bg-brand-dialog-edit text-white w-9 h-9 flex items-center justify-center rounded-full">
+                <button class="bg-brand-dialog-edit text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full min-h-[40px] sm:min-h-0">
                   <i class="pi pi-info-circle text-base sm:text-lg"></i>
                 </button>
-                <span class="text-[10px] text-brand-secondary mt-0.5 sm:mt-1">Details</span>
+                <span class="text-xs sm:text-[10px] text-brand-secondary mt-1 sm:mt-0.5">Details</span>
               </div>
               <div v-if="!asset.approved" class="flex flex-col items-center cursor-pointer group" @click="approveAsset(asset.id)" v-tooltip.top="'Approve'">
-                <button class="bg-brand-dialog-save text-white w-9 h-9 flex items-center justify-center rounded-full">
+                <button class="bg-brand-dialog-save text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full min-h-[40px] sm:min-h-0">
                   <i class="pi pi-check text-base sm:text-lg"></i>
                 </button>
-                <span class="text-[10px] text-brand-highlight mt-0.5 sm:mt-1">Approve</span>
+                <span class="text-xs sm:text-[10px] text-brand-highlight mt-1 sm:mt-0.5">Approve</span>
               </div>
               <div class="flex flex-col items-center cursor-pointer group" @click="openEditDialog(asset)" v-tooltip.top="'Edit'">
-                <button class="bg-brand-dialog-edit text-white w-9 h-9 flex items-center justify-center rounded-full">
+                <button class="bg-brand-dialog-edit text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full min-h-[40px] sm:min-h-0">
                   <i class="pi pi-pencil text-base sm:text-lg"></i>
                 </button>
-                <span class="text-[10px] text-brand-secondary mt-0.5 sm:mt-1">Edit</span>
+                <span class="text-xs sm:text-[10px] text-brand-secondary mt-1 sm:mt-0.5">Edit</span>
               </div>
               <div class="flex flex-col items-center cursor-pointer group" @click="deleteAsset(asset.id)" v-tooltip.top="'Trash'">
-                <button class="bg-brand-dialog-delete text-white w-9 h-9 flex items-center justify-center rounded-full">
+                <button class="bg-brand-dialog-delete text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full min-h-[40px] sm:min-h-0">
                   <i class="pi pi-trash text-base sm:text-lg"></i>
                 </button>
-                <span class="text-[10px] text-red-700 mt-0.5 sm:mt-1">Trash</span>
+                <span class="text-xs sm:text-[10px] text-red-700 mt-1 sm:mt-0.5">Trash</span>
               </div>
             </div>
             <div>
-              <span v-if="!asset.approved && !asset.rejected" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-yellow-200 text-yellow-800 font-semibold text-xs shadow">Pending</span>
-              <span v-else-if="asset.approved" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-brand-highlight/20 text-brand-highlight font-semibold text-xs shadow">Approved</span>
-              <span v-else-if="asset.rejected" class="inline-block px-2 sm:px-3 py-1 rounded-full bg-red-200 text-red-800 font-semibold text-xs shadow">Rejected</span>
+              <span v-if="!asset.approved && !asset.rejected" class="inline-block px-3 sm:px-3 py-1 rounded-full bg-yellow-200 text-yellow-800 font-semibold text-xs shadow">Pending</span>
+              <span v-else-if="asset.approved" class="inline-block px-3 sm:px-3 py-1 rounded-full bg-brand-highlight/20 text-brand-highlight font-semibold text-xs shadow">Approved</span>
+              <span v-else-if="asset.rejected" class="inline-block px-3 sm:px-3 py-1 rounded-full bg-red-200 text-red-800 font-semibold text-xs shadow">Rejected</span>
             </div>
           </div>
         </div>
@@ -191,14 +191,14 @@
               </div>
             </div>
             
-            <div class="w-full lg:w-2/3 space-y-4">
+            <div class="w-full lg:w-2/3 space-y-6 sm:space-y-4">
               <!-- Title -->
               <div>
                 <label class="block text-sm font-semibold text-brand-primary mb-2">Title</label>
                 <InputText
                   v-model="editingAsset.title"
                   placeholder="Add a title for this memory"
-                  class="w-full"
+                  class="w-full py-3 sm:py-2 text-base"
                 />
               </div>
 
@@ -208,7 +208,7 @@
                 <Textarea
                   v-model="editingAsset.user_caption"
                   placeholder="Add your caption"
-                  class="w-full"
+                  class="w-full py-3 sm:py-2 text-base"
                   rows="3"
                 />
               </div>
@@ -231,7 +231,7 @@
                   :suggestions="tagSuggestions"
                   @complete="searchTags"
                   placeholder="Add a tag"
-                  class="w-full"
+                  class="w-full py-3 sm:py-2 text-base"
                   @keydown.enter="addUserTag"
                 />
               </div>
@@ -254,7 +254,7 @@
                   :suggestions="peopleSuggestions"
                   @complete="searchPeople"
                   placeholder="Add a person or object"
-                  class="w-full"
+                  class="w-full py-3 sm:py-2 text-base"
                   @keydown.enter="addUserPerson"
                 />
               </div>
@@ -368,17 +368,17 @@
                 Rerun AI
               </button>
             </div>
-            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-2 w-full sm:w-auto">
               <button
                 @click="showEditDialog = false"
-                class="bg-brand-dialog-cancel text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-dialog-cancel/80 w-full sm:w-auto"
+                class="bg-brand-dialog-cancel text-white px-6 py-3 sm:py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-dialog-cancel/80 w-full sm:w-auto min-h-[48px] sm:min-h-0"
               >
                 <i class="pi pi-times text-xl"></i>
                 Cancel
               </button>
               <button
                 @click="saveAssetChanges"
-                class="bg-brand-dialog-save text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-header/80 w-full sm:w-auto"
+                class="bg-brand-dialog-save text-white px-6 py-3 sm:py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-header/80 w-full sm:w-auto min-h-[48px] sm:min-h-0"
               >
                 <i class="pi pi-check text-xl"></i>
                 Save Changes

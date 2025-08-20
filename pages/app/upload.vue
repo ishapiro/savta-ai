@@ -6,7 +6,7 @@
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
           <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Add Your Photos</h1>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-brand-background transition-colors focus:outline-none flex-shrink-0"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-brand-background transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
             v-tooltip.top="'How to add photos'"
             @click="showHelpModal = true"
             aria-label="Information about adding photos"
@@ -16,7 +16,7 @@
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
           <button
-            class="flex items-center justify-center gap-2 bg-brand-secondary hover:bg-brand-header text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-secondary hover:bg-brand-header text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
             @click="navigateTo('/app/review')"
           >
             <i class="pi pi-list text-lg sm:text-2xl animate-bounce"></i>
@@ -27,25 +27,25 @@
       </div>
 
       <!-- Upload Progress (Always Visible When Uploading) -->
-      <div v-if="uploadingFiles.length > 0" class="mb-6 space-y-3">
+      <div v-if="uploadingFiles.length > 0" class="mb-6 space-y-4 sm:space-y-3">
         <!-- Upload Warning -->
-        <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200">
-          <div class="flex items-center gap-2">
-            <i class="pi pi-exclamation-triangle text-amber-600 text-sm"></i>
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-4 sm:p-3 border border-amber-200">
+          <div class="flex items-center gap-3 sm:gap-2">
+            <i class="pi pi-exclamation-triangle text-amber-600 text-base sm:text-sm"></i>
             <span class="text-sm font-semibold text-amber-800">⚠️ Please stay on this page while photos are uploading</span>
           </div>
         </div>
 
         <!-- Oversized Files Warning -->
-        <div v-if="oversizedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-brand-navigation rounded-lg p-3 border border-red-200">
-          <div class="flex items-center gap-2 mb-2">
-            <i class="pi pi-times-circle text-red-600 text-sm"></i>
+        <div v-if="oversizedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-brand-navigation rounded-lg p-4 sm:p-3 border border-red-200">
+          <div class="flex items-center gap-3 sm:gap-2 mb-3 sm:mb-2">
+            <i class="pi pi-times-circle text-red-600 text-base sm:text-sm"></i>
             <span class="text-sm font-semibold text-red-800">📁 Photos too large ({{ oversizedFiles.length }} skipped)</span>
           </div>
-          <div class="space-y-1">
-            <div v-for="file in oversizedFiles" :key="file.name" class="bg-white rounded p-2 border border-red-100">
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-gray-800 truncate flex-1 mr-2">{{ file.name }}</span>
+          <div class="space-y-2 sm:space-y-1">
+            <div v-for="file in oversizedFiles" :key="file.name" class="bg-white rounded p-3 sm:p-2 border border-red-100">
+              <div class="flex items-center justify-between text-sm sm:text-xs">
+                <span class="text-gray-800 truncate flex-1 mr-3 sm:mr-2">{{ file.name }}</span>
                 <span class="text-red-600 font-semibold flex-shrink-0">{{ formatFileSize(file.size) }}</span>
               </div>
             </div>
@@ -53,25 +53,25 @@
         </div>
 
         <!-- Overall Progress Bar -->
-        <div class="bg-gradient-to-r from-blue-50 to-brand-navigation rounded-lg p-3 border border-blue-200">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <i class="pi pi-cloud-upload text-blue-500 text-sm"></i>
+        <div class="bg-gradient-to-r from-blue-50 to-brand-navigation rounded-lg p-4 sm:p-3 border border-blue-200">
+          <div class="flex items-center justify-between mb-3 sm:mb-2">
+            <div class="flex items-center gap-3 sm:gap-2">
+              <i class="pi pi-cloud-upload text-blue-500 text-base sm:text-sm"></i>
               <span class="text-sm font-semibold text-gray-800">{{ currentFileIndex }}/{{ totalFilesToUpload }} photos</span>
             </div>
             <span class="text-sm font-medium text-gray-600">{{ Math.round(overallProgress) }}%</span>
           </div>
           
           <!-- Overall Progress Bar -->
-          <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+          <div class="w-full bg-gray-200 rounded-full h-3 sm:h-2 mb-3 sm:mb-2">
             <div 
-              class="bg-gradient-to-r from-blue-500 to-brand-secondary h-2 rounded-full transition-all duration-300 ease-out"
+              class="bg-gradient-to-r from-blue-500 to-brand-secondary h-3 sm:h-2 rounded-full transition-all duration-300 ease-out"
               :style="{ width: overallProgress + '%' }"
             ></div>
           </div>
           
           <!-- Progress Stats -->
-          <div class="flex justify-between text-xs text-gray-600">
+          <div class="flex justify-between text-sm sm:text-xs text-gray-600">
             <span>{{ successfulUploads }} uploaded</span>
             <span>{{ uploadingFiles.length }} uploading</span>
             <span>{{ failedUploads }} failed</span>
@@ -79,33 +79,33 @@
         </div>
 
         <!-- Individual File Progress -->
-        <div class="space-y-2">
-          <div v-for="(file, idx) in uploadingFiles" :key="file.id" class="bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center gap-2 flex-1 min-w-0">
-                <i class="pi pi-image text-blue-600 text-sm"></i>
+        <div class="space-y-3 sm:space-y-2">
+          <div v-for="(file, idx) in uploadingFiles" :key="file.id" class="bg-white rounded-lg p-4 sm:p-3 border border-gray-200 shadow-sm">
+            <div class="flex items-center justify-between mb-3 sm:mb-2">
+              <div class="flex items-center gap-3 sm:gap-2 flex-1 min-w-0">
+                <i class="pi pi-image text-blue-600 text-base sm:text-sm"></i>
                 <div class="min-w-0 flex-1">
                   <p class="text-sm font-medium text-gray-800 truncate">{{ file.name }}</p>
                   <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
                 </div>
               </div>
-              <div class="flex items-center gap-2 flex-shrink-0">
+              <div class="flex items-center gap-3 sm:gap-2 flex-shrink-0">
                 <!-- Status Icon -->
-                <div v-if="file.processing" class="w-5 h-5 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <i class="pi pi-spin pi-spinner text-yellow-600 text-xs"></i>
+                <div v-if="file.processing" class="w-6 h-6 sm:w-5 sm:h-5 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-spin pi-spinner text-yellow-600 text-sm sm:text-xs"></i>
                 </div>
-                <div v-else-if="file.uploading" class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                  <i class="pi pi-spin pi-spinner text-blue-600 text-xs"></i>
+                <div v-else-if="file.uploading" class="w-6 h-6 sm:w-5 sm:h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-spin pi-spinner text-blue-600 text-sm sm:text-xs"></i>
                 </div>
-                <div v-else-if="file.error" class="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
-                  <i class="pi pi-times text-red-600 text-xs"></i>
+                <div v-else-if="file.error" class="w-6 h-6 sm:w-5 sm:h-5 bg-red-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-times text-red-600 text-sm sm:text-xs"></i>
                 </div>
-                <div v-else class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
-                  <i class="pi pi-check text-green-600 text-xs"></i>
+                <div v-else class="w-6 h-6 sm:w-5 sm:h-5 bg-green-100 rounded-full flex items-center justify-center">
+                  <i class="pi pi-check text-green-600 text-sm sm:text-xs"></i>
                 </div>
                 
                 <!-- Status Text -->
-                <span class="text-xs font-medium">
+                <span class="text-sm sm:text-xs font-medium">
                   <span v-if="file.processing" class="text-yellow-600">Processing</span>
                   <span v-else-if="file.uploading" class="text-blue-600">Uploading</span>
                   <span v-else-if="file.error" class="text-red-600">Failed</span>
@@ -115,9 +115,9 @@
             </div>
             
             <!-- File Progress Bar -->
-            <div class="w-full bg-gray-100 rounded-full h-1.5">
+            <div class="w-full bg-gray-100 rounded-full h-2 sm:h-1.5">
               <div 
-                class="h-1.5 rounded-full transition-all duration-300 ease-out"
+                class="h-2 sm:h-1.5 rounded-full transition-all duration-300 ease-out"
                 :class="{
                   'bg-gradient-to-r from-blue-500 to-blue-600': file.uploading,
                   'bg-gradient-to-r from-yellow-500 to-orange-500': file.processing,
@@ -129,8 +129,8 @@
             </div>
             
             <!-- Error Message -->
-            <div v-if="file.error" class="mt-1 text-xs text-red-600 bg-red-50 rounded p-1">
-              <i class="pi pi-exclamation-triangle mr-1"></i>
+            <div v-if="file.error" class="mt-2 sm:mt-1 text-sm sm:text-xs text-red-600 bg-red-50 rounded p-2 sm:p-1">
+              <i class="pi pi-exclamation-triangle mr-2 sm:mr-1"></i>
               {{ file.error }}
             </div>
           </div>
@@ -152,12 +152,12 @@
                     @drop.prevent="handleFileDrop"
                     @dragover.prevent
                     @dragenter.prevent
-                    class="border-2 border-dashed border-brand-border rounded-lg p-6 text-center hover:border-brand-primary transition-colors bg-white shadow"
+                    class="border-2 border-dashed border-brand-border rounded-lg p-8 sm:p-6 text-center hover:border-brand-primary transition-colors bg-white shadow"
                     :class="{ 'border-brand-primary bg-brand-primary-50': isDragOver }"
                   >
-                    <div class="space-y-4">
+                    <div class="space-y-6 sm:space-y-4">
                       <div class="text-brand-secondary">
-                        <i class="pi pi-image text-4xl"></i>
+                        <i class="pi pi-image text-5xl sm:text-4xl"></i>
                       </div>
                       <div>
                         <label for="photo-upload" class="cursor-pointer">
@@ -173,7 +173,7 @@
                           @change="handleFileSelect"
                         />
                       </div>
-                      <p class="text-xs text-brand-secondary">PNG, JPG, GIF up to 15MB each (files over 5MB will be automatically compressed)</p>
+                      <p class="text-sm sm:text-xs text-brand-secondary">PNG, JPG, GIF up to 15MB each (files over 5MB will be automatically compressed)</p>
                     </div>
                   </div>
                 </template>
@@ -188,22 +188,22 @@
                   <h2 class="text-xl font-semibold text-brand-primary">Share Stories</h2>
                 </template>
                 <template #content>
-                  <form @submit.prevent="submitTextStory" class="space-y-4">
+                  <form @submit.prevent="submitTextStory" class="space-y-6 sm:space-y-4">
                     <div class="field">
-                      <label for="story-title" class="block text-sm font-medium text-brand-primary mb-1">
+                      <label for="story-title" class="block text-sm font-medium text-brand-primary mb-2 sm:mb-1">
                         Story Title
                       </label>
                       <InputText
                         id="story-title"
                         v-model="textStory.title"
                         placeholder="Enter a title for your story"
-                        class="w-full"
+                        class="w-full py-3 sm:py-2 text-base"
                         required
                       />
                     </div>
 
                     <div class="field">
-                      <label for="story-content" class="block text-sm font-medium text-brand-primary mb-1">
+                      <label for="story-content" class="block text-sm font-medium text-brand-primary mb-2 sm:mb-1">
                         Your Story
                       </label>
                       <Textarea
@@ -211,32 +211,34 @@
                         v-model="textStory.content"
                         rows="6"
                         placeholder="Share your family story, memory, or moment..."
-                        class="w-full"
+                        class="w-full py-3 sm:py-2 text-base"
                         required
                       />
                     </div>
 
                     <div class="field">
-                      <label for="story-caption" class="block text-sm font-medium text-brand-primary mb-1">
+                      <label for="story-caption" class="block text-sm font-medium text-brand-primary mb-2 sm:mb-1">
                         Your Caption (Optional)
                       </label>
                       <InputText
                         id="story-caption"
                         v-model="textStory.userCaption"
                         placeholder="Add your own caption or let AI generate one"
-                        class="w-full"
+                        class="w-full py-3 sm:py-2 text-base"
                       />
                     </div>
 
-                    <div class="flex items-center space-x-4">
+                    <div class="flex flex-col sm:flex-row items-center gap-3 sm:space-x-4">
                       <Button
                         type="submit"
                         icon="pi pi-send"
                         :loading="submittingStory"
                         :disabled="!textStory.title || !textStory.content"
                         v-tooltip.top="'Share Story'"
+                        class="w-full sm:w-auto min-h-[48px] sm:min-h-0"
                       >
                         <span class="hidden sm:inline ml-1">Share Story</span>
+                        <span class="sm:hidden">Share Story</span>
                       </Button>
                       <Button
                         type="button"
@@ -244,8 +246,10 @@
                         severity="secondary"
                         v-tooltip.top="'Clear Form'"
                         @click="clearTextStory"
+                        class="w-full sm:w-auto min-h-[48px] sm:min-h-0"
                       >
                         <span class="hidden sm:inline ml-1">Clear</span>
+                        <span class="sm:hidden">Clear</span>
                       </Button>
                     </div>
                   </form>
@@ -273,7 +277,7 @@
               </div>
             </div>
             <button
-              class="bg-gradient-to-r from-brand-secondary to-purple-500 hover:from-brand-secondary hover:to-purple-600 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
+              class="bg-gradient-to-r from-brand-secondary to-purple-500 hover:from-brand-secondary hover:to-purple-600 text-white font-bold rounded-full px-8 py-4 sm:py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 w-full sm:w-auto min-h-[48px] sm:min-h-0"
               @click="navigateTo('/app/review')"
             >
               <i class="pi pi-list text-lg"></i>
