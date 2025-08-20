@@ -39,6 +39,9 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Memory book not found' })
     }
 
+    // Store previously used photos before clearing them
+    const previouslyUsedPhotos = book.created_from_assets || []
+    
     // Reset fields for regeneration - clear photo selection and story to force regeneration
     const { error: updateError } = await supabase
       .from('memory_books')
@@ -48,7 +51,8 @@ export default defineEventHandler(async (event) => {
         pdf_url: null,
         created_from_assets: null,
         magic_story: null,
-        ai_photo_selection_reasoning: null
+        ai_photo_selection_reasoning: null,
+        previously_used_assets: previouslyUsedPhotos // Store previously used photos to exclude them
         // Clear photo selection and story to force AI to rerun with updated prompt
       })
       .eq('id', bookId)

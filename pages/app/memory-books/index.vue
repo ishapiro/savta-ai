@@ -1099,13 +1099,12 @@
     <!-- Regenerate Confirmation Dialog -->
     <Dialog v-model:visible="showRegenerateDialog" modal header="Recreate Memory Book" class="w-full max-w-xl">
       <div class="p-4">
-        <p class="text-brand-header text-sm sm:text-base mb-2">
-          Would you like to create a fresh version of your special memory?
+        <p class="text-brand-header text-sm sm:text-xl font-bold mb-2">
+          Create a fresh version of your memory?
         </p>
         <p class="text-brand-primary text-sm sm:text-base mb-2">
-          Savta AI will choose new photos and create a beautiful new story for you - like making a fresh batch of cookies with the same recipe! 
-          Each time you recreate it, you'll get something wonderfully different. When it's just perfect and makes your heart smile, 
-          that's when you'll know it's ready.
+          I'll pick different photos and write a new story for you. Each recreation will be unique - like making a new batch of cookies from the same recipe! 
+          Keep recreating until it's just perfect for your family.
         </p>
         <div class="flex gap-3 justify-end mt-4">
           <Button label="Cancel" class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" @click="cancelDialog" />
@@ -1130,15 +1129,18 @@
       </div>
     </Dialog>
 
-    <!-- Update Description Dialog -->
-    <Dialog v-model:visible="showUpdateDescriptionDialog" modal header="Update Memory Description" class="w-full max-w-xl">
+    <!-- Step 1 - wizard -- Update Description Dialog -->
+    <Dialog v-model:visible="showUpdateDescriptionDialog" modal header="Update Memory Prompt" class="w-full max-w-xl">
       <div class="p-4">
         <div class="mb-4">
           <p class="text-sm sm:text-base mb-3">
-            Tell me about the memory you want to recreate. This helps Savta AI choose the best photos and create a beautiful new story for you.
+            Tell me about the memory you want to recreate. 
+            This helps Savta AI choose the best photos and create a beautiful new story for you.
+            You can include specific details about the memory, such as the date, location, people, and any other details you want to include.
+            You can also just describe a theme such as "My favorite memories from my trip to Paris" or "Our family vacation memories".
           </p>
           <div class="bg-gray-50 rounded-lg p-3 mb-4">
-            <p class="text-xs text-gray-600 mb-1">Your current description:</p>
+            <p class="text-xs text-gray-600 mb-1">Your current prompt:</p>
             <p class="text-sm text-gray-800 font-medium">{{ pendingBook?.ai_supplemental_prompt || 'No description' }}</p>
           </div>
         </div>
@@ -1479,29 +1481,34 @@
       <!-- Step 1: AI Prompt Input -->
       <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
-        <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
-            <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+        <div class="text-center mb-6 sm:mb-8 max-w-md w-full mx-auto sm:max-w-full">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+            <Gift class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
-          <h3 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1">✨ Choose your memory ✨</h3>
-          <p class="text-sm sm:text-base text-gray-600">Tell me about the memory you want to share with your family. 
-            For example, you could say "Photos from our New York trip" or "Our family vacation memories". 
-            I'll use this to pick the best photos and write a heartwarming story for you.
-          </p>
+          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 leading-tight">✨ Tell us about the memory you’d like to<br /> bring to life ✨</h3>
+          <section class="memory-instructions text-left max-w-lg mx-auto" aria-labelledby="memory-title">
+            <p class="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed">I'll use your description to find the best photos and create a beautiful story.</p>
+            <ul class="text-left space-y-2 text-xs sm:text-sm text-gray-600 leading-relaxed list-disc pl-5">
+              <li>Share details like <em class="text-gray-700 font-medium">who was there, where it happened, or when it was</em></li>
+              <li>Or describe a theme like <em class="text-gray-700 font-medium">"Our family trip to Paris"</em> or <em class="text-gray-700 font-medium">"Birthday celebrations"</em></li>
+              <li>Don’t worry about being exact&mdash;just describe it in your own words.</li>
+              <li>Feel free to include a specific date or location if you’d like.</li>
+            </ul>
+          </section>
         </div>
-        <div class="field w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
-          <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Something special about this memory</label>
+        <div class="field w-full max-w-md mx-auto sm:max-w-[520px] sm:mx-auto mt-6">
+          <label class="block text-lg font-bold text-gray-900 mb-3 text-left">Describe your memory</label>
           <InputText
             v-model="magicMemoryTitle"
             :placeholder="'e.g. Special Trip with Karen and Sam, Summer 2023'"
-            class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition mt-2"
+            class="w-full text-base px-4 py-3 rounded-xl focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
             maxlength="80"
             show-clear
             aria-label="Memory Subject"
             required
             :model-value="magicMemoryTitle"
           />
-          <small class="text-gray-500 text-xs mt-1 block">This helps me pick the best photos and write a lovely story for you.</small>
+          <small class="text-gray-500 text-sm mt-2 block leading-relaxed">I'll use this to find your best photos and create a beautiful story.</small>
         </div>
       </div>
 

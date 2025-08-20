@@ -956,7 +956,7 @@ async function analyzeText(text) {
  * @param {number} targetCount - Number of photos to select
  * @returns {Promise<Object>} The photo selection results
  */
-async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCount = 3) {
+async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCount = 3, previouslyUsedAssetIds = []) {
   if (!assets || assets.length === 0) {
     throw new Error('No assets provided for selection');
   }
@@ -965,10 +965,26 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
     throw new Error('AI supplemental prompt is required for photo selection');
   }
 
-  console.log(`🎯 Selecting ${targetCount} photos from ${assets.length} assets based on prompt: "${aiSupplementalPrompt}"`);
+  // Filter out previously used photos if provided
+  let availableAssets = assets;
+  if (previouslyUsedAssetIds && previouslyUsedAssetIds.length > 0) {
+    availableAssets = assets.filter(asset => !previouslyUsedAssetIds.includes(asset.id));
+    console.log(`🎯 Excluding ${previouslyUsedAssetIds.length} previously used photos. ${availableAssets.length} photos available for selection.`);
+  }
+
+  if (availableAssets.length === 0) {
+    throw new Error('No photos available for selection after excluding previously used photos. Please add more photos to your collection.');
+  }
+
+  if (availableAssets.length < targetCount) {
+    console.warn(`⚠️ Only ${availableAssets.length} photos available, but ${targetCount} requested. Using all available photos.`);
+    targetCount = availableAssets.length;
+  }
+
+  console.log(`🎯 Selecting ${targetCount} photos from ${availableAssets.length} available assets based on prompt: "${aiSupplementalPrompt}"`);
 
   // Prepare asset data for AI analysis
-  const assetData = assets.map((asset, index) => ({
+  const assetData = availableAssets.map((asset, index) => ({
     number: index + 1,
     id: asset.id,
     title: asset.title || '',
@@ -1021,7 +1037,7 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
             type: 'input_text',
             text: `I want to create a memory book with the theme: "${aiSupplementalPrompt}"
 
-I have ${assets.length} photos to choose from. Please select exactly ${targetCount} photos that would work best together to tell a story for this memory book.
+I have ${availableAssets.length} photos to choose from. Please select exactly ${targetCount} photos that would work best together to tell a story for this memory book.
 
 For each photo, I have the following information:
 - Title
@@ -1097,7 +1113,7 @@ Return ONLY JSON with the selected photo numbers and your reasoning.`
     
     // Validate that all selected indices are valid
     const validIndices = result.selected_photo_numbers.every(num => 
-      num >= 0 && num < assets.length && !isNaN(num)
+      num >= 0 && num < availableAssets.length && !isNaN(num)
     );
     
     if (!validIndices) {

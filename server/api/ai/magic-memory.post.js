@@ -132,9 +132,14 @@ export default defineEventHandler(async (event) => {
       await updatePdfStatus(supabase, memoryBookId, userId, `📸 Using your manually selected ${selectedAssets.length} photos...`)
     } else {
       // AI selection - use attribute-based photo selection
-      await updatePdfStatus(supabase, memoryBookId, userId, `🎯 Step 1: Analyzing ${assets.length} photos to find ${photoCount} best matches for "${memoryBook.ai_supplemental_prompt}"...`)
+      const previouslyUsedCount = memoryBook.previously_used_assets?.length || 0
+      const availableCount = assets.length - previouslyUsedCount
+      await updatePdfStatus(supabase, memoryBookId, userId, `🎯 Step 1: Analyzing ${availableCount} available photos (excluding ${previouslyUsedCount} previously used) to find ${photoCount} best matches for "${memoryBook.ai_supplemental_prompt}"...`)
       
-      photoSelectionResult = await selectPhotosByAttributes(assets, memoryBook.ai_supplemental_prompt, photoCount)
+      // Get previously used photos to exclude them from selection
+      const previouslyUsedAssetIds = memoryBook.previously_used_assets || []
+      
+      photoSelectionResult = await selectPhotosByAttributes(assets, memoryBook.ai_supplemental_prompt, photoCount, previouslyUsedAssetIds)
       
       if (!photoSelectionResult || !photoSelectionResult.selected_photo_numbers) {
         console.error('❌ No photo selection result returned')
@@ -170,11 +175,17 @@ export default defineEventHandler(async (event) => {
     // Step 4: Update the memory book with selected photos
     console.log('REASONING: Photo selection reasoning:', photoSelectionResult.reasoning)
     
+    // Add note about using different photos if this is a recreation
+    let finalReasoning = photoSelectionResult.reasoning
+    if (memoryBook.previously_used_assets && memoryBook.previously_used_assets.length > 0) {
+      finalReasoning += ` (Using different photos from the previous version to give you a fresh perspective)`
+    }
+    
     const { error: updateError } = await supabase
       .from('memory_books')
       .update({
         created_from_assets: selectedAssets.map(asset => asset.id),
-        ai_photo_selection_reasoning: photoSelectionResult.reasoning,
+        ai_photo_selection_reasoning: finalReasoning,
         status: 'draft',
         updated_at: new Date().toISOString()
       })
@@ -193,7 +204,7 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       selected_photo_ids: selectedAssets.map(asset => asset.id),
-      reasoning: photoSelectionResult.reasoning
+      reasoning: finalReasoning
     }
     
   } catch (error) {

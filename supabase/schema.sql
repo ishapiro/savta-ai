@@ -689,57 +689,9 @@ BEGIN
     SELECT 1 FROM information_schema.columns 
     WHERE table_schema = 'public' 
       AND table_name = 'memory_books' 
-      AND column_name = 'include_tags'
+      AND column_name = 'previously_used_assets'
   ) THEN
-    ALTER TABLE memory_books ADD COLUMN include_tags boolean DEFAULT true;
-  END IF;
-  
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' 
-      AND table_name = 'memory_books' 
-      AND column_name = 'background_type'
-  ) THEN
-    ALTER TABLE memory_books ADD COLUMN background_type text DEFAULT 'white' CHECK (background_type in ('white', 'magical', 'solid'));
-  END IF;
-  
-  -- Update existing background_type constraint to include 'solid' if it exists
-  IF EXISTS (
-    SELECT 1 FROM information_schema.table_constraints 
-    WHERE constraint_name LIKE '%background_type%' 
-    AND table_name = 'memory_books'
-    AND constraint_type = 'CHECK'
-  ) THEN
-    ALTER TABLE memory_books DROP CONSTRAINT IF EXISTS memory_books_background_type_check;
-    ALTER TABLE memory_books ADD CONSTRAINT memory_books_background_type_check 
-      CHECK (background_type in ('white', 'magical', 'solid'));
-  END IF;
-  
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' 
-      AND table_name = 'memory_books' 
-      AND column_name = 'background_color'
-  ) THEN
-    ALTER TABLE memory_books ADD COLUMN background_color text;
-  END IF;
-  
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' 
-      AND table_name = 'memory_books' 
-      AND column_name = 'background_opacity'
-  ) THEN
-    ALTER TABLE memory_books ADD COLUMN background_opacity integer DEFAULT 30 CHECK (background_opacity >= 0 AND background_opacity <= 100);
-  END IF;
-  
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_schema = 'public' 
-      AND table_name = 'memory_books' 
-      AND column_name = 'ui'
-  ) THEN
-    ALTER TABLE memory_books ADD COLUMN ui text DEFAULT 'form' CHECK (ui IN ('wizard', 'form'));
+    ALTER TABLE memory_books ADD COLUMN previously_used_assets uuid[] DEFAULT array[]::uuid[];
   END IF;
 END $$; 
 
