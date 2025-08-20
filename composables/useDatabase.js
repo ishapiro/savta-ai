@@ -286,27 +286,8 @@ export const useDatabase = () => {
             }
           }
           
-          // Analyze image metadata and geocoding on the server
-          console.log('📸 Analyzing image metadata...')
-          try {
-            const analysisFormData = new FormData()
-            analysisFormData.append('file', fileToUpload)
-            
-            const analysisResponse = await $fetch('/api/analyze-image', {
-              method: 'POST',
-              body: analysisFormData
-            })
-            
-            if (analysisResponse.success) {
-              photoMetadata = analysisResponse.metadata
-              console.log('📸 Image analysis completed successfully:', photoMetadata)
-            } else {
-              console.warn('⚠️ Image analysis failed')
-            }
-          } catch (analysisError) {
-            console.warn('⚠️ Failed to analyze image:', analysisError.message)
-            // Continue without metadata
-          }
+          // Note: Image metadata analysis is now handled by AI processing in process-asset.post.js
+          console.log('📸 Image metadata analysis will be handled by AI processing')
           
         } catch (error) {
           console.error('❌ Failed to process image:', error)

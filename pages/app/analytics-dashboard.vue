@@ -599,7 +599,7 @@ const infoDialogContent = {
         <strong>Data collection:</strong> Geographic information is collected using:
       </p>
       <ul class="text-sm text-brand-primary/80 list-disc list-inside space-y-1 ml-2 mb-3">
-        <li>IP address geolocation (MapBox API)</li>
+                        <li>IP address geolocation (MapBox API)</li>
         <li>Privacy-protected data (IPs are hashed)</li>
         <li>Country, region, and city-level data</li>
       </ul>

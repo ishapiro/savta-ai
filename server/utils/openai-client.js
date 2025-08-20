@@ -941,83 +941,7 @@ async function analyzeText(text) {
   return parseOpenAIResponse(response);
 }
 
-/**
- * Create a location analysis request
- * @param {string} imageUrl - The URL of the image to analyze
- * @returns {Promise<Object>} The location analysis results
- */
-async function analyzeLocation(imageUrl) {
-  const payload = {
-    model: 'gpt-4o',
-    instructions: 'You are a precise location detection tool. Return ONLY JSON that matches the schema.',
-    text: {
-      format: {
-        type: 'json_schema',
-        name: 'location_analysis',
-        schema: {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            city: {
-              type: 'string',
-              description: 'City name if visible in the image'
-            },
-            state: {
-              type: 'string',
-              description: 'State or province name if visible in the image'
-            },
-            country: {
-              type: 'string',
-              description: 'Country name if visible in the image'
-            },
-            zip_code: {
-              type: 'string',
-              description: 'ZIP or postal code if visible in the image'
-            },
-            landmarks: {
-              type: 'string',
-              description: 'Landmarks or notable places visible in the image'
-            },
-            neighborhood: {
-              type: 'string',
-              description: 'Neighborhood or district name if visible in the image'
-            },
-            confidence: {
-              type: 'number',
-              minimum: 0,
-              maximum: 1,
-              description: 'Confidence level in the location detection (0-1)'
-            },
-            reasoning: {
-              type: 'string',
-              description: 'Explanation of how the location was determined'
-            }
-          },
-          required: ['confidence', 'reasoning']
-        }
-      }
-    },
-    input: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'input_text',
-            text: 'Detect location information from this image. Look for signs, landmarks, addresses, or any geographical indicators. Return ONLY JSON with the location analysis.'
-          },
-          {
-            type: 'input_image',
-            image_url: imageUrl
-          }
-        ]
-      }
-    ],
-    max_output_tokens: 10000
-  };
-
-  const response = await makeOpenAIRequest(payload);
-  return parseOpenAIResponse(response);
-}
+// Note: analyzeLocation function removed - location detection now handled in analyzeImage function
 
 /**
  * Create a photo selection request based on asset attributes and memory book prompt
@@ -1186,7 +1110,6 @@ export {
   analyzePhotoShape,
   analyzeImage,
   analyzeText,
-  analyzeLocation,
   selectPhotosByAttributes,
   makeOpenAIRequest,
   parseOpenAIResponse
