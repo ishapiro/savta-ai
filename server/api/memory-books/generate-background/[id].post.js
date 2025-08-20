@@ -256,7 +256,12 @@ export default defineEventHandler(async (event) => {
       .map(asset => asset.ai_caption || asset.user_caption)
       .filter(caption => caption && caption.trim())
     
-    // Create enhanced prompt with both tags and captions, but limit length to avoid DALL-E API limits
+    // Gather all AI descriptions from the assets
+    const allDescriptions = assets
+      .map(asset => asset.ai_description)
+      .filter(description => description && description.trim())
+    
+    // Create enhanced prompt with tags, captions, and descriptions, but limit length to avoid DALL-E API limits
     let tagsPrompt = ''
     
     // Limit tags to first 10 unique tags to keep prompt manageable
@@ -275,6 +280,16 @@ export default defineEventHandler(async (event) => {
       tagsPrompt += `, content: ${truncatedCaptions.join('; ')}`
     }
     
+    // Add AI descriptions to provide more context for background generation
+    const limitedDescriptions = allDescriptions.slice(0, 2) // Limit to 2 descriptions to keep prompt manageable
+    if (limitedDescriptions.length > 0) {
+      // Truncate each description to max 200 characters to take advantage of full DALL-E limit
+      const truncatedDescriptions = limitedDescriptions.map(description => 
+        description.length > 200 ? description.substring(0, 200) + '...' : description
+      )
+      tagsPrompt += `, context: ${truncatedDescriptions.join('; ')}`
+    }
+    
     // 2. Generate a DALL-E 3 background image
     console.log('🎨 Generating DALL-E background image...')
     const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
@@ -286,10 +301,10 @@ export default defineEventHandler(async (event) => {
         The image must be entirely free of any writing or visual text-like shapes.
         The photos include these subjects which are the main focus of the page: ${tagsPrompt}`
     
-    // Ensure prompt doesn't exceed DALL-E's 4000 character limit (using 3500 to be safe)
-    if (dallePrompt.length > 3500) { // Leave some buffer
+    // Ensure prompt doesn't exceed DALL-E's 4000 character limit (using 3750 to be safe)
+    if (dallePrompt.length > 3750) { // Leave buffer to avoid API hanging
       console.warn(`⚠️ Prompt too long (${dallePrompt.length} chars), truncating to fit DALL-E limits`)
-      dallePrompt = dallePrompt.substring(0, 3500) + '...'
+      dallePrompt = dallePrompt.substring(0, 3750) + '...'
     }
     
     console.log(`📝 DALL-E prompt length: ${dallePrompt.length} characters`)

@@ -429,6 +429,7 @@ async function generateStoryFromAttributes(selectedAssets, aiSupplementalPrompt,
 Photo ${index + 1}:
 - Title: ${asset.title || 'Untitled'}
 - AI Caption: ${asset.ai_caption || 'No AI caption'}
+- AI Description: ${asset.ai_description || 'No AI description'}
 - User Caption: ${asset.user_caption || 'No user caption'}
 - Tags: ${asset.tags || 'No tags'}
 - User Tags: ${asset.user_tags || 'No user tags'}
@@ -972,6 +973,7 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
     id: asset.id,
     title: asset.title || '',
     ai_caption: asset.ai_caption || '',
+    ai_description: asset.ai_description || '',
     user_caption: asset.user_caption || '',
     tags: Array.isArray(asset.tags) ? asset.tags.join(', ') : '',
     user_tags: Array.isArray(asset.user_tags) ? asset.user_tags.join(', ') : '',
@@ -1024,6 +1026,7 @@ I have ${assets.length} photos to choose from. Please select exactly ${targetCou
 For each photo, I have the following information:
 - Title
 - AI-generated caption
+- AI-generated description (comprehensive details about the photo)
 - User caption
 - Tags (AI and user-generated)
 - People identified
@@ -1054,6 +1057,7 @@ ${assetData.map(asset => `
 Photo ${asset.number}:
 - Title: ${asset.title}
 - AI Caption: ${asset.ai_caption}
+- AI Description: ${asset.ai_description}
 - User Caption: ${asset.user_caption}
 - Tags: ${asset.tags}
 - User Tags: ${asset.user_tags}

@@ -232,7 +232,12 @@ export default defineEventHandler(async (event) => {
           .map(asset => asset.ai_caption || asset.user_caption)
           .filter(caption => caption && caption.trim())
         
-        // Create enhanced prompt with both tags and captions, but limit length to avoid DALL-E API limits
+        // Gather all AI descriptions from the assets
+        const allDescriptions = assets
+          .map(asset => asset.ai_description)
+          .filter(description => description && description.trim())
+        
+        // Create enhanced prompt with tags, captions, and descriptions, but limit length to avoid DALL-E API limits
         let tagsPrompt = ''
         
         // Limit tags to first 10 unique tags to keep prompt manageable
@@ -251,6 +256,16 @@ export default defineEventHandler(async (event) => {
           tagsPrompt += `, content: ${truncatedCaptions.join('; ')}`
         }
         
+        // Add AI descriptions to provide more context for background generation
+        const limitedDescriptions = allDescriptions.slice(0, 2) // Limit to 2 descriptions to keep prompt manageable
+        if (limitedDescriptions.length > 0) {
+          // Truncate each description to max 200 characters to take advantage of full DALL-E limit
+          const truncatedDescriptions = limitedDescriptions.map(description => 
+            description.length > 200 ? description.substring(0, 200) + '...' : description
+          )
+          tagsPrompt += `, context: ${truncatedDescriptions.join('; ')}`
+        }
+        
         // Generate a DALL-E 3 background image
         const openaiApiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
         if (!openaiApiKey) throw new Error('Missing OpenAI API key')
@@ -260,9 +275,9 @@ export default defineEventHandler(async (event) => {
                 Background only. No characters, no faces, no silhouettes, no living creatures. 
                 No text or decorations.${tagsPrompt}`
         
-        // Ensure prompt doesn't exceed DALL-E's 4000 character limit (using 3500 to be safe)
-        if (dallePrompt.length > 3500) { // Leave some buffer
-          dallePrompt = dallePrompt.substring(0, 3500) + '...'
+        // Ensure prompt doesn't exceed DALL-E's 4000 character limit (using 3750 to be safe)
+        if (dallePrompt.length > 3750) { // Leave buffer to avoid API hanging
+          dallePrompt = dallePrompt.substring(0, 3750) + '...'
         }
         
         const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {

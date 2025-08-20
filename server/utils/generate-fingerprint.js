@@ -10,6 +10,7 @@ import crypto from 'crypto'
  * @param {number} asset.height - Image height
  * @param {string} asset.orientation - Image orientation
  * @param {string} asset.ai_caption - AI-generated caption
+ * @param {string} asset.ai_description - AI-generated description
  * @param {Array} asset.people_detected - Detected people
  * @param {Array} asset.tags - AI tags
  * @param {Array} asset.user_tags - User tags
@@ -25,6 +26,7 @@ export function generateAssetFingerprint(asset) {
     dimensions: `${asset.width}x${asset.height}`,
     orientation: asset.orientation || 'unknown',
     caption: asset.ai_caption || '',
+    description: asset.ai_description || '',
     people: Array.isArray(asset.people_detected) ? asset.people_detected.sort().join(',') : '',
     tags: Array.isArray(asset.tags) ? asset.tags.sort().join(',') : '',
     userTags: Array.isArray(asset.user_tags) ? asset.user_tags.sort().join(',') : '',
