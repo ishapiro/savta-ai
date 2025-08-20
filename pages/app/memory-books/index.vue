@@ -15,38 +15,38 @@
       <!-- Header -->
       <div class="flex flex-col items-center justify-between mb-6 sm:mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-primary">Create Memory Cards & Books</h1>
+          <h1 class="text-xl sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-primary">Create Memory Cards & Books</h1>
           <button
-            class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
+            class="w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
             @click="showInfoDialog = true"
             aria-label="Information about memory cards and booklets"
           >
-            <i class="pi pi-info text-sm sm:text-lg text-brand-highlight"></i>
+            <i class="pi pi-info text-base sm:text-lg text-brand-highlight"></i>
           </button>
           <button
-            class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-brand-accent shadow hover:bg-brand-accent/80 transition-colors focus:outline-none flex-shrink-0"
+            class="w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-brand-accent shadow hover:bg-brand-accent/80 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
             @click="navigateToTrash"
             aria-label="View trash"
             v-tooltip.top="'View Trash'"
           >
-            <i class="pi pi-trash text-sm sm:text-lg text-white"></i>
+            <i class="pi pi-trash text-base sm:text-lg text-white"></i>
           </button>
         </div>
         <div class="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
           <!-- Memory Cards Card -->
-          <div class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg border border-brand-highlight/30 p-4 sm:p-6">
+          <div class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg border border-brand-highlight/30 p-6 sm:p-6">
             <h3 class="text-lg sm:text-xl font-bold text-brand-highlight mb-4 text-center">Single Memory Cards</h3>
             <div class="flex flex-col sm:flex-row gap-4">
               <div class="flex flex-col items-center">
                 <button
-                  class="border-0 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
+                  class="border-0 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-4 sm:px-4 lg:px-6 py-3 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn min-h-[48px] sm:min-h-0"
                   @click="openMagicMemoryDialog('quick')"
                 >
                   <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
                   <span class="hidden sm:inline">Create a Memory Card</span>
                   <span class="sm:hidden">Create Card</span>
                 </button>
-                                  <p class="mt-2 text-sm text-brand-highlight text-center">Single page with beautiful themes</p>
+                                  <p class="mt-3 sm:mt-2 text-sm text-brand-highlight text-center">Single page with beautiful themes</p>
               </div>
               <!-- <div class="flex flex-col items-center">
                 <button
@@ -63,18 +63,18 @@
           </div>
           
           <!-- Memory Books Card -->
-          <div class="bg-gradient-to-br from-brand-warm/30 to-brand-warm/20 rounded-xl shadow-lg border border-brand-warm/40 p-4 sm:p-6">
+          <div class="bg-gradient-to-br from-brand-warm/30 to-brand-warm/20 rounded-xl shadow-lg border border-brand-warm/40 p-6 sm:p-6">
             <h3 class="text-lg sm:text-xl font-bold text-brand-secondary mb-4 text-center">Memory Books</h3>
             <div class="flex flex-col items-center">
               <button
-                class="border-0 bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto"
+                class="border-0 bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 sm:px-4 lg:px-6 py-3 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
                 @click="showCreateModal = true"
               >
                 <i class="pi pi-plus mr-1 sm:mr-2"></i>
                 <span class="hidden sm:inline">Create a Memory Book</span>
                 <span class="sm:hidden">Create Book</span>
               </button>
-                              <p class="mt-2 text-sm text-brand-secondary text-center">Multi-page books with themes or grid layouts</p>
+                              <p class="mt-3 sm:mt-2 text-sm text-brand-secondary text-center">Multi-page books with themes or grid layouts</p>
             </div>
           </div>
         </div>
@@ -1106,11 +1106,11 @@
           I'll pick different photos and write a new story for you. Each recreation will be unique - like making a new batch of cookies from the same recipe! 
           Keep recreating until it's just perfect for your family.
         </p>
-        <div class="flex gap-3 justify-end mt-4">
-          <Button label="Cancel" class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" @click="cancelDialog" />
+        <div class="flex flex-col sm:flex-row gap-3 justify-end mt-4">
+          <Button label="Cancel" class="bg-brand-dialog-cancel text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" @click="cancelDialog" />
           <Button 
             label="Yes, Recreate" 
-            class="bg-brand-dialog-edit text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" 
+            class="bg-brand-dialog-edit text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" 
             @click="confirmRegenerate" 
           />
         </div>
@@ -1122,9 +1122,9 @@
         <p class="text-sm sm:text-base">You need to compose the special memory before viewing. 
           Would you like to compose it now? 
           This may take a little time.</p>
-        <div class="flex justify-end gap-2 mt-4">
-          <Button label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-xs px-3 py-2" @click="cancelDialog" />
-          <Button label="Compose Now" size="small" class="bg-brand-dialog-save text-white font-bold rounded-full text-xs px-3 py-2" @click="confirmDownloadDraft" />
+        <div class="flex flex-col sm:flex-row justify-end gap-3 sm:gap-2 mt-4">
+          <Button label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-sm sm:text-xs px-4 py-3 sm:px-3 sm:py-2 min-h-[48px] sm:min-h-0" @click="cancelDialog" />
+          <Button label="Compose Now" size="small" class="bg-brand-dialog-save text-white font-bold rounded-full text-sm sm:text-xs px-4 py-3 sm:px-3 sm:py-2 min-h-[48px] sm:min-h-0" @click="confirmDownloadDraft" />
         </div>
       </div>
     </Dialog>
@@ -1158,20 +1158,20 @@
           />
         </div>
         
-        <div class="flex gap-3 justify-end mt-4">
+        <div class="flex flex-col sm:flex-row gap-3 justify-end mt-4">
           <Button 
             label="Cancel" 
-            class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" 
+            class="bg-brand-dialog-cancel text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" 
             @click="cancelDialog" 
           />
           <Button 
             label="No change -- just Recreate" 
-            class="bg-brand-dialog-save text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" 
+            class="bg-brand-dialog-save text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" 
             @click="confirmUpdateDescription" 
           />
           <Button 
             label="Update & Recreate" 
-            class="bg-brand-dialog-edit text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto" 
+            class="bg-brand-dialog-edit text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" 
             @click="confirmUpdateDescription" 
           />
         </div>
@@ -1501,14 +1501,14 @@
           <InputText
             v-model="magicMemoryTitle"
             :placeholder="'e.g. Special Trip with Karen and Sam, Summer 2023'"
-            class="w-full text-base px-4 py-3 rounded-xl focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
+            class="w-full text-base px-4 py-4 sm:py-3 rounded-xl focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
             maxlength="80"
             show-clear
             aria-label="Memory Subject"
             required
             :model-value="magicMemoryTitle"
           />
-          <small class="text-gray-500 text-sm mt-2 block leading-relaxed">I'll use this to find your best photos and create a beautiful story.</small>
+          <small class="text-gray-500 text-sm mt-3 sm:mt-2 block leading-relaxed">I'll use this to find your best photos and create a beautiful story.</small>
         </div>
       </div>
 

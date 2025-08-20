@@ -9,14 +9,14 @@
           <AlertTriangle class="w-5 h-5 text-brand-header" />
         </div>
         <div class="flex-1">
-          <h3 class="text-sm font-medium text-brand-secondary mb-1">Guest Mode</h3>
-          <p class="text-sm text-brand-primary mb-3">
+          <h3 class="text-sm font-medium text-brand-secondary mb-2 sm:mb-1">Guest Mode</h3>
+          <p class="text-sm text-brand-primary mb-4 sm:mb-3">
             We detected an issue with your login session. You're viewing the dashboard in guest mode. 
             Please <button @click="navigateToLogin" class="text-brand-secondary underline font-medium">sign in again</button> to access all features.
           </p>
           <button 
             @click="clearGuestMode"
-            class="text-xs bg-brand-highlight/30 hover:bg-brand-highlight/50 text-brand-secondary px-3 py-1 rounded border border-brand-header/30 transition-colors"
+            class="text-sm bg-brand-highlight/30 hover:bg-brand-highlight/50 text-brand-secondary px-4 py-2 rounded border border-brand-header/30 transition-colors min-h-[44px]"
           >
             Dismiss
           </button>
@@ -25,8 +25,8 @@
     </div>
 
     <div class="text-center mb-8 sm:mb-12">
-      <h2 class="text-h1 text-brand-header mb-2 sm:mb-4">Create Memory Cards</h2>
-      <p class="text-base sm:text-xl text-brand-primary max-w-4xl mx-auto">
+      <h2 class="text-2xl sm:text-h1 text-brand-header mb-3 sm:mb-4">Create Memory Cards</h2>
+      <p class="text-base sm:text-xl text-brand-primary max-w-4xl mx-auto px-4 sm:px-0">
         Turn your photos into beautiful memory cards. Perfect for mailing to family members or sharing digitally.
       </p>
     </div>
@@ -53,8 +53,8 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-brand-header to-brand-secondary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
               </div>
-              <h3 class="text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Create a Memory Card</h3>
-              <p class="text-brand-primary text-lg sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
+              <h3 class="text-xl sm:text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Create a Memory Card</h3>
+              <p class="text-brand-primary text-base sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
                 I'll pick your best photos, write heartwarming captions, and design beautiful layouts for you.
                 Just upload your pictures and I'll create a stunning memory card that's perfect for mailing or sharing digitally.
               </p>
@@ -62,7 +62,7 @@
             
             <!-- Right Column (1/3 width) -->
             <div class="lg:w-1/3 flex items-center justify-center">
-              <div class="space-y-2 w-full max-w-xs ml-12 md:ml-0 -mt-4 lg:mt-0">
+              <div class="space-y-3 sm:space-y-2 w-full max-w-xs ml-0 md:ml-0 -mt-4 lg:mt-0">
                 <div class="flex items-center gap-3 text-brand-secondary">
                   <div class="w-8 h-8 bg-brand-highlight/30 rounded-lg flex items-center justify-center">
                     <Image class="w-4 h-4 text-brand-header" />
@@ -97,24 +97,24 @@
     <!-- Secondary Actions -->
     <div class="mb-8">
       <div class="text-center mb-6">
-        <h3 class="text-h2 text-brand-secondary mb-3 tracking-tight">Manage Your Photos</h3>
-        <p class="text-base sm:text-lg text-brand-primary font-medium">Upload, review, and organize your photos</p>
+        <h3 class="text-xl sm:text-h2 text-brand-secondary mb-3 tracking-tight">Manage Your Photos</h3>
+        <p class="text-base sm:text-lg text-brand-primary font-medium px-4 sm:px-0">Upload, review, and organize your photos</p>
       </div>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- Photo Upload Card -->
         <div 
-          class="bg-gradient-to-br from-brand-accent/20 to-brand-accent/10 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-accent/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+          class="bg-gradient-to-br from-brand-accent/20 to-brand-accent/10 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-accent/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group min-h-[280px] sm:min-h-0"
           @click="handleCardClick('upload')"
         >
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-accent to-brand-header rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
             <Camera class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h3 class="text-h3 text-brand-secondary mb-4 tracking-tight">Add Photos</h3>
-          <p class="text-brand-primary text-base sm:text-lg leading-relaxed mb-6 font-medium">
+          <h3 class="text-lg sm:text-h3 text-brand-secondary mb-4 tracking-tight">Add Photos</h3>
+          <p class="text-brand-primary text-sm sm:text-lg leading-relaxed mb-6 font-medium">
             Upload photos from your phone, computer, or social media. I'll add captions and organize them for you.
           </p>
-          <div class="space-y-2">
+          <div class="space-y-3 sm:space-y-2">
             <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
               <Tag class="w-4 h-4 text-brand-header" />
               <span class="font-semibold">Smart Tagging</span>
@@ -132,17 +132,17 @@
         
         <!-- Review Memories Card -->
         <div 
-          class="bg-gradient-to-br from-brand-warm/30 to-brand-warm/20 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-warm/40 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+          class="bg-gradient-to-br from-brand-warm/30 to-brand-warm/20 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-warm/40 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group min-h-[280px] sm:min-h-0"
           @click="handleCardClick('review')"
         >
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
             <Edit class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h3 class="text-h3 text-brand-secondary mb-4 tracking-tight">Review Photos</h3>
-          <p class="text-brand-primary text-base sm:text-lg leading-relaxed mb-6 font-medium">
+          <h3 class="text-lg sm:text-h3 text-brand-secondary mb-4 tracking-tight">Review Photos</h3>
+          <p class="text-brand-primary text-sm sm:text-lg leading-relaxed mb-6 font-medium">
             Review and approve your photos. Edit captions, crop photos, and organize your collection.
           </p>
-          <div class="space-y-2">
+          <div class="space-y-3 sm:space-y-2">
             <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
               <CheckCircle class="w-4 h-4 text-brand-header" />
               <span class="font-semibold">Approve/reject photos shared via email</span>
@@ -160,17 +160,17 @@
         
         <!-- Monthly Delivery Card -->
         <div 
-          class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-highlight/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
+          class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-highlight/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group min-h-[280px] sm:min-h-0"
           @click="handleCardClick('monthly')"
         >
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-highlight to-brand-header rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
             <Send class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h3 class="text-h3 text-brand-secondary mb-4 tracking-tight">Download & Share</h3>
-          <p class="text-brand-primary text-base sm:text-lg leading-relaxed mb-6 font-medium">
+          <h3 class="text-lg sm:text-h3 text-brand-secondary mb-4 tracking-tight">Download & Share</h3>
+          <p class="text-brand-primary text-sm sm:text-lg leading-relaxed mb-6 font-medium">
             Download your memory cards as PDFs to mail or share digitally with family and friends.
           </p>
-          <div class="space-y-2">
+          <div class="space-y-3 sm:space-y-2">
             <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
               <Share2 class="w-4 h-4 text-brand-header" />
               <span class="font-semibold">Digital sharing</span>
@@ -213,7 +213,7 @@
         <div class="space-y-3">
           <button
             @click="navigateToSignup"
-            class="w-full bg-brand-header hover:bg-brand-secondary text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+            class="w-full bg-brand-header hover:bg-brand-secondary text-white font-semibold py-4 sm:py-3 px-6 rounded-lg transition-colors duration-200 min-h-[48px] sm:min-h-0"
           >
             Create Account
           </button>
