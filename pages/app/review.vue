@@ -26,6 +26,15 @@
             <span class="sm:hidden">Approve All</span>
           </button>
           <button
+            class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            @click="showRerunAIDialog = true"
+            :disabled="rerunningAI"
+          >
+            <i class="pi pi-refresh text-lg sm:text-2xl" :class="{ 'animate-spin': rerunningAI }"></i>
+            <span class="hidden sm:inline">Rerun AI</span>
+            <span class="sm:hidden">Rerun AI</span>
+          </button>
+          <button
             class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
             @click="navigateTo('/app/deleted-memories')"
           >
@@ -258,6 +267,14 @@
                 </div>
               </div>
 
+              <!-- AI Description (read-only) -->
+              <div v-if="editingAsset.ai_description">
+                <label class="block text-sm font-semibold text-brand-primary mb-2">AI Description</label>
+                <div class="text-sm text-brand-primary/80 bg-brand-navigation/20 rounded p-3 border-l-4 border-brand-primary/30">
+                  {{ editingAsset.ai_description }}
+                </div>
+              </div>
+
               <!-- AI Tags (read-only) -->
               <div v-if="editingAsset.tags && editingAsset.tags.length > 0">
                 <label class="block text-sm font-semibold text-brand-primary mb-2">AI Tags</label>
@@ -381,6 +398,12 @@
           <div v-if="detailsAsset.ai_caption">
             <label class="block text-sm font-semibold text-brand-primary mb-1">AI Caption</label>
             <div class="italic text-sm text-brand-primary/70 bg-brand-navigation/20 rounded p-2 border border-brand-primary/20">"{{ detailsAsset.ai_caption }}"</div>
+          </div>
+          <div v-if="detailsAsset.ai_description">
+            <label class="block text-sm font-semibold text-brand-primary mb-1">AI Description</label>
+            <div class="text-sm text-brand-primary/80 bg-brand-navigation/20 rounded p-2 border-l-4 border-brand-primary/30">
+              {{ detailsAsset.ai_description }}
+            </div>
           </div>
           <div v-if="(detailsAsset.tags && detailsAsset.tags.length > 0) || (detailsAsset.user_tags && detailsAsset.user_tags.length > 0)">
             <label class="block text-sm font-semibold text-brand-primary mb-1">Tags</label>
@@ -644,6 +667,122 @@
           </div>
         </div>
       </Dialog>
+
+      <!-- Rerun AI Dialog -->
+      <Dialog v-model:visible="showRerunAIDialog" modal :closable="true" :dismissableMask="true" header="Rerun AI Processing" class="w-full max-w-md mx-4">
+        <div class="p-4">
+          <div class="mb-4">
+            <i class="pi pi-exclamation-triangle text-orange-500 text-2xl mb-2"></i>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Rerun AI on All Photos</h3>
+            <p class="text-gray-600 mb-4">
+              This will reprocess all photos with the latest AI analysis, including improved location detection and caption generation.
+            </p>
+            <p class="text-sm text-gray-500 mb-4">
+              <strong>Estimated time:</strong> About 10 seconds per image. You have {{ stats.total }} photos to process.
+            </p>
+          </div>
+
+          <div class="flex justify-end gap-2">
+            <button
+              class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              @click="showRerunAIDialog = false"
+              :disabled="rerunningAI"
+            >
+              Cancel
+            </button>
+            <button
+              class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors"
+              @click="rerunAIOnAllPhotos"
+              :disabled="rerunningAI"
+            >
+              <i class="pi pi-refresh mr-2" :class="{ 'animate-spin': rerunningAI }"></i>
+              Start Processing
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+      <!-- AI Processing Progress Dialog -->
+      <Dialog 
+        v-model:visible="showProgressDialog" 
+        modal 
+        :closable="false" 
+        :dismissableMask="false" 
+        header="AI Processing Progress" 
+        class="w-full max-w-lg mx-4"
+      >
+        <div class="p-6">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="pi pi-refresh text-orange-600 text-2xl animate-spin"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Processing Photos with AI</h3>
+            <p class="text-gray-600">Please wait while we reprocess your photos with the latest AI analysis...</p>
+          </div>
+
+          <!-- Progress Information -->
+          <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-sm font-medium text-gray-700">Progress</span>
+              <span class="text-sm font-bold text-gray-800">{{ rerunProgress.current }} of {{ rerunProgress.total }}</span>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-3">
+              <div 
+                class="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full transition-all duration-500 ease-out" 
+                :style="{ width: `${(rerunProgress.current / rerunProgress.total) * 100}%` }"
+              ></div>
+            </div>
+            
+            <!-- Percentage -->
+            <div class="text-center">
+              <span class="text-lg font-bold text-orange-600">
+                {{ Math.round((rerunProgress.current / rerunProgress.total) * 100) }}%
+              </span>
+            </div>
+          </div>
+
+          <!-- Current Photo Info -->
+          <div v-if="rerunProgress.currentAsset" class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <img 
+                  v-if="rerunProgress.currentAsset.storage_url" 
+                  :src="rerunProgress.currentAsset.storage_url" 
+                  :alt="rerunProgress.currentAsset.user_caption || 'Photo'"
+                  class="w-full h-full object-cover rounded"
+                />
+                <i v-else class="pi pi-image text-gray-400"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-800 truncate">
+                  {{ rerunProgress.currentAsset.user_caption || 'Processing photo...' }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  Photo {{ rerunProgress.current }} of {{ rerunProgress.total }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estimated Time Remaining -->
+          <div class="text-center">
+            <p class="text-sm text-gray-600">
+              <i class="pi pi-clock text-gray-400 mr-1"></i>
+              Estimated time remaining: {{ estimatedTimeRemaining }}
+            </p>
+          </div>
+
+          <!-- Processing Status -->
+          <div class="mt-4 text-center">
+            <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-full text-sm">
+              <i class="pi pi-cog animate-spin"></i>
+              <span>AI Analysis in Progress...</span>
+            </div>
+          </div>
+        </div>
+      </Dialog>
     </div>
   </div>
 </template>
@@ -666,6 +805,15 @@ const stats = ref({
   readyForBook: 0
 })
 const showHelpModal = ref(false)
+const showRerunAIDialog = ref(false)
+const showProgressDialog = ref(false)
+const rerunningAI = ref(false)
+const rerunProgress = ref({
+  current: 0,
+  total: 0,
+  currentAsset: null
+})
+const startTime = ref(null)
 
 // Edit dialog data
 const showEditDialog = ref(false)
@@ -738,6 +886,28 @@ const filteredAssets = computed(() => {
   })
 
   return filtered
+})
+
+// Estimated time remaining
+const estimatedTimeRemaining = computed(() => {
+  if (!startTime.value || rerunProgress.value.current === 0) {
+    return 'Calculating...'
+  }
+  
+  const elapsed = Date.now() - startTime.value
+  const avgTimePerPhoto = elapsed / rerunProgress.value.current
+  const remainingPhotos = rerunProgress.value.total - rerunProgress.value.current
+  const estimatedRemaining = avgTimePerPhoto * remainingPhotos
+  
+  if (estimatedRemaining < 60000) { // Less than 1 minute
+    return `${Math.ceil(estimatedRemaining / 1000)} seconds`
+  } else if (estimatedRemaining < 3600000) { // Less than 1 hour
+    return `${Math.ceil(estimatedRemaining / 60000)} minutes`
+  } else {
+    const hours = Math.floor(estimatedRemaining / 3600000)
+    const minutes = Math.ceil((estimatedRemaining % 3600000) / 60000)
+    return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`
+  }
 })
 
 // Load assets and stats
@@ -1205,6 +1375,101 @@ const rerunAI = async () => {
     }
   } finally {
     aiProcessing.value = false
+  }
+}
+
+const rerunAIOnAllPhotos = async () => {
+  try {
+    rerunningAI.value = true
+    showRerunAIDialog.value = false
+    showProgressDialog.value = true
+    
+    // Initialize progress and start time
+    rerunProgress.value = {
+      current: 0,
+      total: assets.value.length,
+      currentAsset: null
+    }
+    startTime.value = Date.now()
+    
+    // Process each asset sequentially
+    for (let i = 0; i < assets.value.length; i++) {
+      const asset = assets.value[i]
+      rerunProgress.value.current = i + 1
+      rerunProgress.value.currentAsset = asset
+      
+      try {
+        console.log(`Processing asset ${i + 1}/${assets.value.length}: ${asset.id}`)
+        
+        // Call the rerun AI endpoint
+        const result = await db.assets.rerunAI(asset.id)
+        
+        // Get the updated asset from the database
+        const { data: updatedAsset, error } = await useNuxtApp().$supabase
+          .from('assets')
+          .select('*')
+          .eq('id', asset.id)
+          .single()
+        
+        if (error) {
+          console.warn(`Failed to fetch updated asset ${asset.id}:`, error)
+          continue
+        }
+        
+        if (updatedAsset) {
+          // Update local state
+          const localAsset = assets.value.find(a => a.id === asset.id)
+          if (localAsset) {
+            Object.assign(localAsset, updatedAsset)
+          }
+        }
+        
+        // Small delay to prevent overwhelming the API
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+      } catch (error) {
+        console.error(`Error processing asset ${asset.id}:`, error)
+        // Continue with next asset even if one fails
+      }
+    }
+    
+    // Recalculate stats after all processing is done
+    calculateStats()
+    
+    // Close progress dialog
+    showProgressDialog.value = false
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'success',
+        summary: 'AI Processing Complete',
+        detail: `Successfully reprocessed ${assets.value.length} photos with AI`,
+        life: 3000
+      })
+    }
+    
+  } catch (error) {
+    console.error('Error in bulk AI processing:', error)
+    
+    // Close progress dialog on error
+    showProgressDialog.value = false
+    
+    if ($toast && $toast.add) {
+      $toast.add({
+        severity: 'error',
+        summary: 'Processing Error',
+        detail: 'Some photos may not have been processed correctly',
+        life: 3000
+      })
+    }
+  } finally {
+    rerunningAI.value = false
+    rerunProgress.value = {
+      current: 0,
+      total: 0,
+      currentAsset: null
+    }
+    startTime.value = null
   }
 }
 

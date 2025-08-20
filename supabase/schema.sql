@@ -76,6 +76,7 @@ create table if not exists assets (
   storage_url text check (storage_url is null or length(storage_url) <= 1000),
   user_caption text,
   ai_caption text,
+  ai_description text,
   tags text[] default array[]::text[],
   user_tags text[] default array[]::text[],
   people_detected jsonb default '[]'::jsonb,
@@ -229,6 +230,7 @@ create index if not exists idx_assets_approved on assets(approved);
 create index if not exists idx_assets_orientation on assets(orientation);
 create index if not exists idx_assets_dimensions on assets(width, height);
 create index if not exists idx_assets_fingerprint on assets(fingerprint);
+create index if not exists idx_assets_ai_description on assets(ai_description) where ai_description is not null;
 create index if not exists idx_asset_tags_asset_id on asset_tags(asset_id);
 create index if not exists idx_asset_tags_tag_id on asset_tags(tag_id);
 create index if not exists idx_memory_books_user_id on memory_books(user_id);

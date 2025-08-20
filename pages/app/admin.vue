@@ -132,6 +132,14 @@
                 </template>
               </Column>
 
+              <Column field="ai_description" header="AI Description">
+                <template #body="{ data }">
+                  <div class="max-w-xs truncate" :title="data.ai_description">
+                    {{ data.ai_description || 'No description' }}
+                  </div>
+                </template>
+              </Column>
+
               <Column field="approved" header="Status" sortable>
                 <template #body="{ data }">
                   <Tag
@@ -2287,7 +2295,8 @@ const filteredAssets = computed(() => {
     const search = assetSearch.value.toLowerCase()
     filtered = filtered.filter(asset => 
       asset.user_caption?.toLowerCase().includes(search) ||
-      asset.ai_caption?.toLowerCase().includes(search)
+      asset.ai_caption?.toLowerCase().includes(search) ||
+      asset.ai_description?.toLowerCase().includes(search)
     )
   }
 

@@ -123,6 +123,7 @@ export default defineEventHandler(async (event) => {
     
     const updateData = {
       ai_caption: analysisResult.caption || '',
+      ai_description: analysisResult.ai_description || '',
       tags: analysisResult.tags || [],
       people_detected: analysisResult.people_detected || [],
       ai_processed: true,

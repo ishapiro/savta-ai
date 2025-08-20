@@ -795,6 +795,10 @@ async function analyzeImage(imageUrl) {
               type: 'string',
               description: 'A descriptive caption for the image'
             },
+            ai_description: {
+              type: 'string',
+              description: 'A comprehensive overall description of the image that captures all the key elements, people, objects, setting, and context'
+            },
             tags: {
               type: 'array',
               items: { type: 'string' },
@@ -830,7 +834,7 @@ async function analyzeImage(imageUrl) {
               required: ['gps_latitude', 'gps_longitude', 'date_taken', 'camera_make', 'camera_model', 'original_width', 'original_height']
             }
           },
-          required: ['caption', 'tags', 'people_detected', 'objects', 'location', 'exif_data']
+          required: ['caption', 'ai_description', 'tags', 'people_detected', 'objects', 'location', 'exif_data']
         }
       }
     },
@@ -840,7 +844,7 @@ async function analyzeImage(imageUrl) {
         content: [
           {
             type: 'input_text',
-            text: `Analyze this image and provide a caption, tags, detected people, objects, location information, and EXIF metadata.
+            text: `Analyze this image and provide a caption, comprehensive description, tags, detected people, objects, location information, and EXIF metadata.
             Return ONLY JSON with the analysis.
             
             PRE-EXTRACTED EXIF DATA (use this exact data):
@@ -851,6 +855,7 @@ async function analyzeImage(imageUrl) {
             - Has EXIF: ${exifData.has_exif}
             
             The caption should be one to two sentences that describes the image in a fun, playful way.
+            The ai_description should be a comprehensive 2-4 sentence description that captures all the key elements of the image including people, objects, setting, activities, emotions, and context. This should be detailed enough to give someone who hasn't seen the image a complete understanding of what's happening.
             The people_detected should be a list of people detected in the image.
             The objects should be a list of objects detected in the image.
             The location should be the location of the image including the city, state, country and key landmarks. 
