@@ -828,11 +828,11 @@ export default defineEventHandler(async (event) => {
         let faces = []
         let cropArea = null
         
-                console.log('👥 No faces detected, using smartcrop-gm as primary method')
+        console.log('👥 Using smartcrop-gm as primary cropping method')
         
         try {
-          // Use smartcrop-gm for intelligent cropping
-          console.log('🎯 Using smartcrop-gm as primary cropping method')
+          // Use smartcrop-gm for intelligent cropping with AWS Rekognition face detection
+          console.log('🎯 Using smartcrop-gm with AWS Rekognition face detection')
           
           // Create a temporary file for GraphicsMagick to work with
           const tempInputPath = `/tmp/smartcrop-input-${Date.now()}.jpg`
@@ -847,13 +847,80 @@ export default defineEventHandler(async (event) => {
           const processedMetadata = await sharp(processedImageBuffer || imageBuffer).metadata()
           console.log('🔍 Smartcrop-gm input:', { width: processedMetadata.width, height: processedMetadata.height, tempPath: tempInputPath })
           
-          // Use smartcrop-gm to find the best crop area
-          const result = await smartcropGm.crop(tempInputPath, { 
+          // Detect faces using AWS Rekognition if we have a storage URL
+          let faceBoosts = []
+          if (storageUrl) {
+            try {
+              console.log('🔍 AWS Rekognition: Detecting faces for smartcrop-gm boost...')
+              
+              const rekognitionResponse = await fetch(`${config.public.siteUrl}/api/ai/detect-faces-rekognition`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ imageUrl: storageUrl })
+              })
+              
+              if (rekognitionResponse.ok) {
+                const rekognitionData = await rekognitionResponse.json()
+                
+                if (rekognitionData.success && rekognitionData.faces && rekognitionData.faces.length > 0) {
+                  console.log(`✅ AWS Rekognition: Found ${rekognitionData.faces.length} faces`)
+                  
+                  // Convert Rekognition bounding boxes to smartcrop-gm boost format
+                  faceBoosts = rekognitionData.faces.map(face => {
+                    // Convert from [0,1] relative coordinates to pixel coordinates
+                    const pixelX = Math.floor(face.box.Left * processedMetadata.width)
+                    const pixelY = Math.floor(face.box.Top * processedMetadata.height)
+                    const pixelWidth = Math.floor(face.box.Width * processedMetadata.width)
+                    const pixelHeight = Math.floor(face.box.Height * processedMetadata.height)
+                    
+                    // Convert back to smartcrop-gm's expected [0,1] format
+                    const boostX = pixelX / processedMetadata.width
+                    const boostY = pixelY / processedMetadata.height
+                    const boostWidth = pixelWidth / processedMetadata.width
+                    const boostHeight = pixelHeight / processedMetadata.height
+                    
+                    return {
+                      x: boostX,
+                      y: boostY,
+                      width: boostWidth,
+                      height: boostHeight,
+                      weight: 0.95 // Very high weight for faces to prioritize them over other visual elements
+                    }
+                  })
+                  
+                  console.log('🎯 Face boosts for smartcrop-gm:', faceBoosts)
+                } else {
+                  console.log('👥 AWS Rekognition: No faces detected')
+                }
+              } else {
+                console.log('⚠️ AWS Rekognition failed, proceeding without face detection')
+              }
+                      } catch (rekognitionError) {
+            console.log('⚠️ AWS Rekognition error, proceeding without face detection:', rekognitionError.message)
+            // Continue with smartcrop-gm without face boosts
+          }
+          }
+          
+          // Use smartcrop-gm with face boosts if available
+          const smartcropOptions = { 
             width: targetWidth, 
             height: targetHeight 
-          })
+          }
+          
+          // Add face boosts if we have them
+          if (faceBoosts.length > 0) {
+            smartcropOptions.boost = faceBoosts
+            console.log('🎯 Using smartcrop-gm with face boosts')
+          } else {
+            console.log('🎯 Using smartcrop-gm without face boosts')
+          }
+          
+          const result = await smartcropGm.crop(tempInputPath, smartcropOptions)
           
           console.log('🔍 Smartcrop-gm result:', result)
+          console.log('🎯 Smartcrop-gm used face boosts:', faceBoosts.length > 0 ? 'Yes' : 'No')
           
           if (result && result.topCrop) {
             // Use smartcrop-gm's intelligent cropping result
@@ -863,14 +930,91 @@ export default defineEventHandler(async (event) => {
             
             // smartcrop-gm returns coordinates relative to the original image
             // Use them directly for intelligent cropping
-            cropArea = {
+            let smartcropArea = {
               x: Math.max(0, Math.floor(x)),
               y: Math.max(0, Math.floor(y)),
               width: Math.max(1, Math.floor(w)),
               height: Math.max(1, Math.floor(h))
             }
             
-            console.log('🎯 Smartcrop-gm intelligent crop area:', cropArea)
+            console.log('🎯 Smartcrop-gm intelligent crop area:', smartcropArea)
+            
+            // Apply face-preserving adjustments to smartcrop-gm result
+            // Enhanced face preservation when we have face detection data
+            if (faceBoosts.length > 0) {
+              console.log('🔄 Face detection available - applying enhanced face-preserving adjustments')
+              
+              // Find the highest face (lowest Y coordinate) to ensure we don't cut off any faces
+              const highestFace = faceBoosts.reduce((highest, face) => 
+                face.y < highest.y ? face : highest
+              )
+              
+              // Calculate the pixel position of the highest face
+              const highestFacePixelY = Math.floor(highestFace.y * processedMetadata.height)
+              const faceHeight = Math.floor(highestFace.height * processedMetadata.height)
+              
+              // Ensure we have enough space above the highest face
+              const requiredTopSpace = Math.max(faceHeight * 0.3, 50) // At least 30% of face height or 50px
+              const maxAllowedY = Math.max(0, highestFacePixelY - requiredTopSpace)
+              
+              console.log(`🔄 Face analysis: Highest face at Y=${highestFacePixelY}px, face height=${faceHeight}px, max allowed Y=${maxAllowedY}px`)
+              
+              if (smartcropArea.y > maxAllowedY) {
+                const originalY = smartcropArea.y
+                smartcropArea.y = Math.max(0, maxAllowedY)
+                console.log(`🔄 Face-preserving adjustment: Y position changed from ${originalY} to ${smartcropArea.y} to preserve faces`)
+              } else {
+                console.log(`🔄 Face-preserving adjustment: Y position ${smartcropArea.y} is acceptable (below max allowed ${maxAllowedY})`)
+              }
+            } else {
+              // Fallback to original logic when no face detection is available
+              console.log('🔄 No face detection - applying standard face-preserving adjustments')
+              
+              // For portrait images, ensure we don't cut off heads by adjusting the Y position
+              if (isPortrait && smartcropArea.y > processedMetadata.height * 0.3) {
+                console.log('🔄 Adjusting crop to preserve faces - moving crop area higher')
+                
+                // Calculate how much we can move the crop up while maintaining the same width
+                const maxY = Math.max(0, processedMetadata.height - smartcropArea.height)
+                const adjustedY = Math.min(smartcropArea.y, maxY)
+                
+                if (adjustedY > processedMetadata.height * 0.2) {
+                  smartcropArea.y = 0
+                  console.log('🔄 Moving crop to top of image to preserve faces')
+                } else {
+                  smartcropArea.y = adjustedY
+                  console.log(`🔄 Adjusted Y position from ${smartcropArea.y} to ${adjustedY}`)
+                }
+              }
+            }
+            
+            // For small square crops (like the problematic 227x227), be extra careful
+            if (targetWidth === targetHeight && targetWidth <= 250) {
+              console.log('🔄 Small square crop detected - applying face-preserving adjustments')
+              
+              if (faceBoosts.length > 0) {
+                // With face detection, be very conservative for small squares
+                const highestFace = faceBoosts.reduce((highest, face) => 
+                  face.y < highest.y ? face : highest
+                )
+                const highestFacePixelY = Math.floor(highestFace.y * processedMetadata.height)
+                
+                // For small squares, ensure we start well above the highest face
+                const safeTopMargin = Math.max(processedMetadata.height * 0.1, 100) // At least 10% of image height or 100px
+                const maxAllowedY = Math.max(0, highestFacePixelY - safeTopMargin)
+                
+                if (smartcropArea.y > maxAllowedY) {
+                  const originalY = smartcropArea.y
+                  smartcropArea.y = Math.max(0, maxAllowedY)
+                  console.log(`🔄 Small square face-preserving adjustment: Y position changed from ${originalY} to ${smartcropArea.y}`)
+                }
+              } else if (isPortrait && smartcropArea.y > processedMetadata.height * 0.25) {
+                smartcropArea.y = 0
+                console.log('🔄 Small square crop: Moving to top of image to preserve faces')
+              }
+            }
+            
+            cropArea = smartcropArea
             
             // Clean up temporary files
             try {
