@@ -4,8 +4,23 @@
   <ClientOnly>
     <div class="relative w-full h-full bg-brand-navigation">
       <!-- Document/Image Container -->
-      <div class="w-full h-full overflow-auto pb-20 scrollbar-hide">
-        <div class="w-full h-full flex p-4 mb-4" :class="shouldPositionAtTop ? 'items-start justify-center' : 'items-center justify-center'" @vue:mounted="logPositioningClasses">
+      <div class="w-full h-full overflow-hidden pb-20 scrollbar-hide">
+        <div 
+          ref="panContainer"
+          class="w-full h-full relative"
+          :class="[
+            shouldPositionAtTop ? 'flex items-start justify-center' : 'flex items-center justify-center',
+            isPanningAvailable ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          ]"
+          @vue:mounted="logPositioningClasses"
+          @mousedown="startPan"
+          @mousemove="pan"
+          @mouseup="stopPan"
+          @mouseleave="stopPan"
+          @touchstart="startPan"
+          @touchmove="pan"
+          @touchend="stopPan"
+        >
           
           <!-- JPG Image Display -->
           <div v-if="isJpgImage"
@@ -16,11 +31,11 @@
             <img 
               :src="props.src"
               :alt="'Memory Book Image'"
-              class="max-w-full max-h-full object-contain"
+              class="max-w-full max-h-full object-contain select-none"
               :style="{ 
-                transform: `scale(${scale})`,
+                transform: `scale(${scale}) translate(${panX}px, ${panY}px)`,
                 transformOrigin: 'center center',
-                transition: 'transform 0.2s ease-in-out'
+                transition: isPanning ? 'none' : 'transform 0.2s ease-in-out'
               }"
               @load="onImageLoaded"
               @error="onImageError"
@@ -35,13 +50,14 @@
           >
             <div 
               :style="{ 
-                transform: `scale(${scale})`,
+                transform: `scale(${scale}) translate(${panX}px, ${panY}px)`,
                 transformOrigin: 'center center',
                 width: '100%',
                 height: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                transition: isPanning ? 'none' : 'transform 0.2s ease-in-out'
               }"
             >
               <VuePdfEmbed
@@ -75,6 +91,7 @@
           <!-- Page Info -->
           <span class="text-xs sm:text-base font-medium text-brand-primary select-none">
             Page {{ currentPage }} / {{ pageCount }}
+            <span v-if="isPanningAvailable" class="ml-1 text-xs text-brand-header">(drag to pan)</span>
           </span>
 
           <!-- Next Page -->
@@ -142,6 +159,7 @@
                   <!-- Zoom Level Display -->
                   <span class="text-xs sm:text-base font-medium text-brand-primary select-none">
                     {{ Math.round(scale * 100) }}%
+                    <span v-if="isPanningAvailable" class="ml-1 text-xs text-brand-header">(drag to pan)</span>
                   </span>
 
                   <!-- Zoom In -->
@@ -158,6 +176,7 @@
                     class="w-10 h-10 sm:w-12 sm:h-12 p-0 flex items-center justify-center rounded-full hover:bg-brand-background focus:outline-none focus:ring-2 focus:ring-brand-header"
                     @click="resetZoom"
                     aria-label="Reset Zoom"
+                    title="Reset to fit view"
                   >
                     <i class="pi pi-refresh text-xl sm:text-2xl text-brand-header"></i>
                   </button>
@@ -203,6 +222,8 @@ const props = defineProps({
 
 const pdfRef = ref(null)
 const pdfContainer = ref(null)
+const imageContainer = ref(null)
+const panContainer = ref(null)
 const currentPage = ref(1)
 const pageCount = ref(1)
 const isLoaded = ref(false)
@@ -210,6 +231,19 @@ const scale = ref(0.7)
 const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
 const isSharing = ref(false) // Track if we're currently sharing
+
+// Panning state
+const isPanning = ref(false)
+const panX = ref(0)
+const panY = ref(0)
+const lastPanX = ref(0)
+const lastPanY = ref(0)
+const startX = ref(0)
+const startY = ref(0)
+
+// Image dimensions state
+const imageDimensions = ref({ width: 0, height: 0 })
+const actualImageDimensions = ref({ width: 0, height: 0 })
 
 // Analytics tracking
 const { trackEvent } = useAnalytics()
@@ -237,6 +271,37 @@ const canShare = computed(() => {
 // Check if device is mobile
 const isMobile = computed(() => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+})
+
+// Check if panning is available (content larger than container)
+const isPanningAvailable = computed(() => {
+  if (!panContainer.value) {
+    return false
+  }
+  
+  const containerRect = panContainer.value.getBoundingClientRect()
+  const containerWidth = containerRect.width
+  const containerHeight = containerRect.height
+  
+  // Calculate scaled content dimensions
+  let contentWidth, contentHeight
+  if (isJpgImage.value) {
+    const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
+    if (actualWidth > 0 && actualHeight > 0) {
+      contentWidth = actualWidth * scale.value
+      contentHeight = actualHeight * scale.value
+    } else {
+      const { width: displayWidth, height: displayHeight } = imageDimensions.value
+      contentWidth = displayWidth * scale.value
+      contentHeight = displayHeight * scale.value
+    }
+  } else {
+    const { width, height } = pdfDimensions.value
+    contentWidth = width * scale.value
+    contentHeight = height * scale.value
+  }
+  
+  return contentWidth > containerWidth || contentHeight > containerHeight
 })
 
 const pdfContainerStyle = computed(() => {
@@ -279,28 +344,20 @@ const pdfContainerStyle = computed(() => {
 })
 
 const imageContainerStyle = computed(() => {
-  // For JPG images, use the actual memory book dimensions at 300 DPI
-  // 7x5 inches at 300 DPI = 2100x1500 pixels
-  const memoryBookWidth = 2100 // 7 inches × 300 DPI
-  const memoryBookHeight = 1500 // 5 inches × 300 DPI
-  
-  // Calculate display size while maintaining aspect ratio
+  // For JPG images, use detected dimensions or fallback to defaults
+  const { width: detectedWidth, height: detectedHeight } = imageDimensions.value
   const maxDisplayWidth = 1200 // Maximum display width
   const maxDisplayHeight = 900 // Maximum display height
   
-  // Calculate scale to fit within display bounds while maintaining aspect ratio
-  const scaleX = maxDisplayWidth / memoryBookWidth
-  const scaleY = maxDisplayHeight / memoryBookHeight
-  const scale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
-  
-  const displayWidth = Math.round(memoryBookWidth * scale)
-  const displayHeight = Math.round(memoryBookHeight * scale)
+  // Use detected dimensions if available, otherwise use defaults
+  const displayWidth = detectedWidth > 0 ? detectedWidth : Math.min(1200, maxDisplayWidth)
+  const displayHeight = detectedHeight > 0 ? detectedHeight : Math.min(900, maxDisplayHeight)
   
   console.log('🔍 JPG Image Container Style:', {
-    memoryBookDimensions: `${memoryBookWidth}x${memoryBookHeight}`,
+    detectedDimensions: `${detectedWidth}x${detectedHeight}`,
     displayDimensions: `${displayWidth}x${displayHeight}`,
-    scale: scale,
-    dpi: '300'
+    maxDisplayDimensions: `${maxDisplayWidth}x${maxDisplayHeight}`,
+    hasDetectedDimensions: detectedWidth > 0 && detectedHeight > 0
   })
   
   return {
@@ -342,7 +399,36 @@ const shouldPositionAtTop = computed(() => {
 function onImageLoaded(event) {
   const img = event.target
   isLoaded.value = true
-  console.log('🔍 Image loaded successfully:', props.src)
+  
+  // Get actual image dimensions
+  const actualWidth = img.naturalWidth
+  const actualHeight = img.naturalHeight
+  actualImageDimensions.value = { width: actualWidth, height: actualHeight }
+  
+  // Calculate display dimensions while maintaining aspect ratio
+  const maxDisplayWidth = 1200
+  const maxDisplayHeight = 900
+  
+  const scaleX = maxDisplayWidth / actualWidth
+  const scaleY = maxDisplayHeight / actualHeight
+  const displayScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
+  
+  const displayWidth = Math.round(actualWidth * displayScale)
+  const displayHeight = Math.round(actualHeight * displayScale)
+  
+  imageDimensions.value = { width: displayWidth, height: displayHeight }
+  
+  console.log('🔍 Image loaded successfully:', {
+    src: props.src,
+    actualDimensions: `${actualWidth}x${actualHeight}`,
+    displayDimensions: `${displayWidth}x${displayHeight}`,
+    displayScale: displayScale
+  })
+  
+  // Update initial scale for this specific image
+  if (isJpgImage.value) {
+    scale.value = displayScale
+  }
 }
 
 function onImageError() {
@@ -385,18 +471,26 @@ function calculateInitialScale() {
   const container = pdfContainer.value
   if (!container) {
     console.log('🔍 Container not available, using default scale')
-    // For JPG images, use memory book scale, for PDFs use 0.7
+    // For JPG images, use detected dimensions or default, for PDFs use 0.7
     if (isJpgImage.value) {
-      const memoryBookWidth = 2100 // 7 inches × 300 DPI
-      const memoryBookHeight = 1500 // 5 inches × 300 DPI
-      const maxDisplayWidth = 1200
-      const maxDisplayHeight = 900
+      const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
       
-      const scaleX = maxDisplayWidth / memoryBookWidth
-      const scaleY = maxDisplayHeight / memoryBookHeight
-      const memoryBookScale = Math.min(scaleX, scaleY, 1)
-      
-      scale.value = memoryBookScale
+      if (actualWidth > 0 && actualHeight > 0) {
+        // Use actual image dimensions
+        const maxDisplayWidth = 1200
+        const maxDisplayHeight = 900
+        
+        const scaleX = maxDisplayWidth / actualWidth
+        const scaleY = maxDisplayHeight / actualHeight
+        const fitScale = Math.min(scaleX, scaleY, 1)
+        
+        scale.value = fitScale
+        console.log('🔍 JPG initial scale using actual dimensions:', fitScale)
+      } else {
+        // Fallback to default scale
+        scale.value = 0.8
+        console.log('🔍 JPG initial scale using default:', scale.value)
+      }
     } else {
       scale.value = 0.7
     }
@@ -411,39 +505,53 @@ function calculateInitialScale() {
   
   if (!pdfWidth || !pdfHeight) {
     console.log('🔍 No PDF dimensions available, using default scale')
-    // For JPG images, use memory book scale, for PDFs use 0.7
+    // For JPG images, use detected dimensions or default, for PDFs use 0.7
     if (isJpgImage.value) {
-      const memoryBookWidth = 2100 // 7 inches × 300 DPI
-      const memoryBookHeight = 1500 // 5 inches × 300 DPI
-      const maxDisplayWidth = 1200
-      const maxDisplayHeight = 900
+      const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
       
-      const scaleX = maxDisplayWidth / memoryBookWidth
-      const scaleY = maxDisplayHeight / memoryBookHeight
-      const memoryBookScale = Math.min(scaleX, scaleY, 1)
-      
-      scale.value = memoryBookScale
+      if (actualWidth > 0 && actualHeight > 0) {
+        // Use actual image dimensions
+        const maxDisplayWidth = 1200
+        const maxDisplayHeight = 900
+        
+        const scaleX = maxDisplayWidth / actualWidth
+        const scaleY = maxDisplayHeight / actualHeight
+        const fitScale = Math.min(scaleX, scaleY, 1)
+        
+        scale.value = fitScale
+        console.log('🔍 JPG initial scale using actual dimensions:', fitScale)
+      } else {
+        // Fallback to default scale
+        scale.value = 0.8
+        console.log('🔍 JPG initial scale using default:', scale.value)
+      }
     } else {
       scale.value = 0.7
     }
     return
   }
   
-  // For JPG images, start at the correct memory book scale
+  // For JPG images, use detected dimensions
   if (isJpgImage.value) {
-    console.log('🔍 JPG image detected, setting initial scale to memory book size')
-    // Calculate the scale to display at actual memory book dimensions
-    const memoryBookWidth = 2100 // 7 inches × 300 DPI
-    const memoryBookHeight = 1500 // 5 inches × 300 DPI
-    const maxDisplayWidth = 1200
-    const maxDisplayHeight = 900
+    console.log('🔍 JPG image detected, setting initial scale based on actual dimensions')
+    const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
     
-    const scaleX = maxDisplayWidth / memoryBookWidth
-    const scaleY = maxDisplayHeight / memoryBookHeight
-    const initialScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
-    
-    scale.value = initialScale
-    console.log('🔍 JPG initial scale set to:', initialScale)
+    if (actualWidth > 0 && actualHeight > 0) {
+      // Calculate the scale to display at actual image dimensions
+      const maxDisplayWidth = 1200
+      const maxDisplayHeight = 900
+      
+      const scaleX = maxDisplayWidth / actualWidth
+      const scaleY = maxDisplayHeight / actualHeight
+      const initialScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
+      
+      scale.value = initialScale
+      console.log('🔍 JPG initial scale set to:', initialScale)
+    } else {
+      // Fallback to default scale
+      scale.value = 0.8
+      console.log('🔍 JPG initial scale using default:', scale.value)
+    }
     return
   }
   
@@ -585,28 +693,177 @@ function zoomOut() {
   if (scale.value > 0.4) {
     scale.value = +(scale.value - 0.2).toFixed(1)
     console.log('🔍 New scale after zoom out:', scale.value)
-    // No need to force re-render since container size is fixed
+    
+    // Reset pan position when zooming out to fit view
+    if (scale.value <= 1.0) {
+      panX.value = 0
+      panY.value = 0
+      lastPanX.value = 0
+      lastPanY.value = 0
+    }
   }
 }
 
 function resetZoom() {
   console.log('🔍 Reset Zoom clicked, current scale:', scale.value)
   if (isJpgImage.value) {
-    // Reset to memory book scale for JPG images
-    const memoryBookWidth = 2100 // 7 inches × 300 DPI
-    const memoryBookHeight = 1500 // 5 inches × 300 DPI
-    const maxDisplayWidth = 1200
-    const maxDisplayHeight = 900
+    // Reset to fit-to-view scale for JPG images based on actual dimensions
+    const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
     
-    const scaleX = maxDisplayWidth / memoryBookWidth
-    const scaleY = maxDisplayHeight / memoryBookHeight
-    const memoryBookScale = Math.min(scaleX, scaleY, 1)
-    
-    scale.value = memoryBookScale
-    console.log('🔍 JPG scale reset to memory book size:', memoryBookScale)
+    if (actualWidth > 0 && actualHeight > 0) {
+      // Use actual image dimensions to calculate fit-to-view scale
+      const maxDisplayWidth = 1200
+      const maxDisplayHeight = 900
+      
+      const scaleX = maxDisplayWidth / actualWidth
+      const scaleY = maxDisplayHeight / actualHeight
+      const fitScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
+      
+      scale.value = fitScale
+      console.log('🔍 JPG scale reset to fit-to-view:', {
+        actualDimensions: `${actualWidth}x${actualHeight}`,
+        fitScale: fitScale
+      })
+    } else {
+      // Fallback to default scale if dimensions not available
+      scale.value = 0.8
+      console.log('🔍 JPG scale reset to default:', scale.value)
+    }
   } else {
     scale.value = 0.7
     console.log('🔍 PDF scale reset to:', scale.value)
+  }
+  
+  // Reset pan position when zoom is reset
+  panX.value = 0
+  panY.value = 0
+  lastPanX.value = 0
+  lastPanY.value = 0
+}
+
+// Panning functions
+function startPan(event) {
+  // Check if content is larger than container (allowing panning)
+  const container = panContainer.value
+  if (!container) {
+    return
+  }
+  
+  const containerRect = container.getBoundingClientRect()
+  const containerWidth = containerRect.width
+  const containerHeight = containerRect.height
+  
+  // Calculate scaled content dimensions
+  let contentWidth, contentHeight
+  if (isJpgImage.value) {
+    const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
+    if (actualWidth > 0 && actualHeight > 0) {
+      contentWidth = actualWidth * scale.value
+      contentHeight = actualHeight * scale.value
+    } else {
+      const { width: displayWidth, height: displayHeight } = imageDimensions.value
+      contentWidth = displayWidth * scale.value
+      contentHeight = displayHeight * scale.value
+    }
+  } else {
+    const { width, height } = pdfDimensions.value
+    contentWidth = width * scale.value
+    contentHeight = height * scale.value
+  }
+  
+  // Only allow panning if content is larger than container
+  if (contentWidth <= containerWidth && contentHeight <= containerHeight) {
+    return
+  }
+  
+  event.preventDefault()
+  isPanning.value = true
+  
+  const clientX = event.clientX || (event.touches && event.touches[0]?.clientX)
+  const clientY = event.clientY || (event.touches && event.touches[0]?.clientY)
+  
+  startX.value = clientX
+  startY.value = clientY
+  lastPanX.value = panX.value
+  lastPanY.value = panY.value
+  
+  console.log('🔍 Pan started:', { 
+    startX: startX.value, 
+    startY: startY.value, 
+    scale: scale.value,
+    contentWidth,
+    contentHeight,
+    containerWidth,
+    containerHeight
+  })
+}
+
+function pan(event) {
+  if (!isPanning.value) {
+    return
+  }
+  
+  event.preventDefault()
+  
+  const clientX = event.clientX || (event.touches && event.touches[0]?.clientX)
+  const clientY = event.clientY || (event.touches && event.touches[0]?.clientY)
+  
+  const deltaX = clientX - startX.value
+  const deltaY = clientY - startY.value
+  
+  // Calculate new pan position
+  const newPanX = lastPanX.value + deltaX
+  const newPanY = lastPanY.value + deltaY
+  
+  // Calculate bounds to prevent over-panning
+  const container = panContainer.value
+  if (container) {
+    const containerRect = container.getBoundingClientRect()
+    const containerWidth = containerRect.width
+    const containerHeight = containerRect.height
+    
+         // Calculate scaled content dimensions
+     let contentWidth, contentHeight
+     if (isJpgImage.value) {
+       // Use actual detected image dimensions
+       const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
+       
+       if (actualWidth > 0 && actualHeight > 0) {
+         // Use actual image dimensions
+         contentWidth = actualWidth * scale.value
+         contentHeight = actualHeight * scale.value
+       } else {
+         // Fallback to display dimensions if actual dimensions not available
+         const { width: displayWidth, height: displayHeight } = imageDimensions.value
+         contentWidth = displayWidth * scale.value
+         contentHeight = displayHeight * scale.value
+       }
+     } else {
+       const { width, height } = pdfDimensions.value
+       contentWidth = width * scale.value
+       contentHeight = height * scale.value
+     }
+    
+    // Calculate maximum pan bounds
+    const maxPanX = Math.max(0, (contentWidth - containerWidth) / 2)
+    const maxPanY = Math.max(0, (contentHeight - containerHeight) / 2)
+    
+    // Clamp pan values
+    panX.value = Math.max(-maxPanX, Math.min(maxPanX, newPanX))
+    panY.value = Math.max(-maxPanY, Math.min(maxPanY, newPanY))
+  } else {
+    // Fallback if container not available
+    panX.value = newPanX
+    panY.value = newPanY
+  }
+  
+  console.log('🔍 Panning:', { panX: panX.value, panY: panY.value, scale: scale.value })
+}
+
+function stopPan() {
+  if (isPanning.value) {
+    isPanning.value = false
+    console.log('🔍 Pan stopped:', { panX: panX.value, panY: panY.value })
   }
 }
 
@@ -865,23 +1122,29 @@ function shareImage() {
 watch(() => props.src, () => {
   currentPage.value = 1
   isLoaded.value = false
-  // Set initial scale based on file type: JPG = memory book scale, PDF = 0.8
+  
+  // Reset image dimensions when source changes
+  imageDimensions.value = { width: 0, height: 0 }
+  actualImageDimensions.value = { width: 0, height: 0 }
+  
+  // Set initial scale based on file type
   if (isJpgImage.value) {
-    const memoryBookWidth = 2100 // 7 inches × 300 DPI
-    const memoryBookHeight = 1500 // 5 inches × 300 DPI
-    const maxDisplayWidth = 1200
-    const maxDisplayHeight = 900
-    
-    const scaleX = maxDisplayWidth / memoryBookWidth
-    const scaleY = maxDisplayHeight / memoryBookHeight
-    const memoryBookScale = Math.min(scaleX, scaleY, 1)
-    
-    scale.value = memoryBookScale
+    // For JPG images, we'll set the scale when the image loads
+    // Use a default scale for now
+    scale.value = 0.8
   } else {
     scale.value = 0.7
   }
+  
   pdfDimensions.value = { width: 0, height: 0 }
   pdfEmbedKey.value++ // ensure rerender when switching files
+  
+  // Reset pan position when source changes
+  panX.value = 0
+  panY.value = 0
+  lastPanX.value = 0
+  lastPanY.value = 0
+  isPanning.value = false
 })
 
 // Watch for scale changes to debug
@@ -926,5 +1189,27 @@ watch(isJpgImage, (isJpg) => {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
+}
+
+/* Panning cursor styles */
+.cursor-grab {
+  cursor: grab;
+}
+
+.cursor-grab:active {
+  cursor: grabbing;
+}
+
+/* Prevent text selection during panning */
+.select-none {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Smooth transitions for zoom changes */
+img, div {
+  will-change: transform;
 }
 </style>
