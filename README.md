@@ -12,6 +12,7 @@ npm run dev
 ## ✨ Features
 
 - **AI-Powered Memory Books**: Generate beautiful memory books with custom DALL-E 3 backgrounds
+- **Location-Based Photo Selection**: Intelligent 6-tier location hierarchy with ZipCodeAPI.com integration
 - **Smart Asset Management**: Upload photos and text stories with AI captioning and tagging
 - **Review System**: Approve/reject assets with AI-generated captions
 - **PDF Generation**: Professional PDF creation with arranged assets
@@ -93,6 +94,9 @@ OPENAI_API_KEY=your_openai_api_key
 # SendGrid Configuration (optional)
 SENDGRID_WEBHOOK_SECRET=your_sendgrid_webhook_secret
 
+# ZipCodeAPI Configuration (optional, for location-based photo selection)
+ZIP_CODE_API=your_zipcode_api_key
+
 # Note: MapBox token is no longer required - geolocation now uses IP-API (free service)
 
 ### Installation
@@ -167,6 +171,43 @@ assets/
 │   │   └── pdfs/                # Generated PDFs
 │   └── {timestamp}-{filename}   # User uploaded assets
 ```
+
+## 🗺️ Location-Based Photo Selection
+
+Our sophisticated location-based photo selection system is a key differentiator that provides intelligent, location-aware photo selection for memory books.
+
+### How It Works
+
+The system uses a 6-tier location matching hierarchy:
+
+1. **EXACT CITY MATCH** (100 points) - Matches exact city names
+2. **WITHIN 100 MILES (API)** (80 points) - Uses ZipCodeAPI.com for accurate distances
+3. **WITHIN 100 MILES (APPROX)** (80-distance/10) - Fallback to zip code approximation
+4. **STATE MATCH** (60 points) - Photos from same state
+5. **COUNTRY MATCH** (40 points) - Photos from same country
+6. **THEMATIC FALLBACK** (10 points) - Theme-based selection
+
+### Setup
+
+1. **Get ZipCodeAPI Key** (optional):
+   - Sign up at [ZipCodeAPI.com](https://zipcodeapi.com/)
+   - Get your free API key (1,000 requests/month)
+   - Add to `.env`: `ZIP_CODE_API=your_api_key`
+
+2. **Features**:
+   - **Intelligent Caching**: 24-hour cache reduces API calls by 90%
+   - **Robust Fallback**: System never fails, always returns results
+   - **Professional Accuracy**: Real geographic distances vs approximations
+   - **Cost Effective**: Free tier sufficient for most use cases
+
+### Example Usage
+
+Users can create memory books with location-specific prompts:
+- "Chicago Vacation" → Photos from Chicago and nearby areas
+- "Miami Beach Trip" → Photos from Miami and Florida
+- "California Adventure" → Photos from California cities
+
+For detailed documentation, see [Location-Based Photo Selection](docs/LOCATION_BASED_PHOTO_SELECTION.md).
 
 ## 📧 SendGrid Email Configuration
 

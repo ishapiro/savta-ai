@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
       .from('memory_books')
       .insert({
         user_id: user.id,
-        ai_supplemental_prompt: title || 'Magic Memory',
+        ai_supplemental_prompt: title || 'Select Photos That Tell a Story',
         layout_type: layoutType,
         ui: 'wizard',
         format: 'card',
@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
         print_size: print_size,
         include_captions: true,
         include_tags: true,
-        memory_shape: 'rounded',
+        memory_shape: 'original',
         output: output,
         photo_selection_method: photo_selection_method || null
       })

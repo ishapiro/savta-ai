@@ -2,6 +2,8 @@
 
 This directory contains various test files and scripts for the Savta AI application.
 
+**Note**: All test files should be created in this directory. Test files in the root directory will be moved here to maintain proper organization.
+
 ## Test Files
 
 ### SQL Test Files
@@ -43,6 +45,28 @@ This directory contains various test files and scripts for the Savta AI applicat
 
 ### JavaScript Test Files
 
+#### Recently Moved Test Files (PDF Viewer, Story Generation, Cropping, etc.)
+- **`test_pdf_viewer_panning.js`**: Test PDF viewer panning functionality
+- **`test_dynamic_sizing.js`**: Test dynamic image sizing in PDF viewer
+- **`test_panning_fix.js`**: Test panning fix implementation
+- **`test_grid_layout_indicator.js`**: Test grid layout page indicator
+- **`test_page_calculation_fix.js`**: Test page calculation fixes
+- **`test_memory_book_pdf_only.js`**: Test memory book PDF-only output
+- **`test_story_text_rendering.js`**: Test story text rendering improvements
+- **`test_dynamic_font_sizing.js`**: Test dynamic font sizing for stories
+- **`test_height_utilization.js`**: Test full height utilization for stories
+- **`test_story_generator_requirements.js`**: Test story generator requirements
+- **`test_location_aware_story.js`**: Test location-aware story generation
+- **`test_story_generation_fix.js`**: Test story generation fixes
+- **`test_complete_cropping_integration.js`**: Test complete cropping integration
+- **`test_enhanced_face_preservation.js`**: Test enhanced face preservation
+- **`test_rekognition_integration.js`**: Test AWS Rekognition integration
+- **`test_theme_photo_count.js`**: Test theme photo count functionality
+- **`test_background_generation.js`**: Test background generation
+- **`test_ai_description.js`**: Test AI description functionality
+- **`test_delete_fix.js`**: Test delete functionality fixes
+
+#### Legacy Test Files
 #### `test_theme_integration.js`
 - **Purpose**: Test PrimeVue theme integration and Tailwind CSS compatibility
 - **Usage**: Verify theme system is working correctly
@@ -118,9 +142,31 @@ node tests/test-pdf-to-jpg.js
 - **API tests** require the development server to be running
 - **Integration tests** verify cross-component functionality
 
+## Organization Policy
+
+### Test File Location
+- **All test files must be created in the `tests/` directory**
+- **Test files in the root directory will be moved here**
+- **This ensures proper organization and prevents clutter**
+
+### Naming Convention
+- **JavaScript tests**: `test_*.js`
+- **SQL tests**: `test_*.sql`
+- **Use descriptive names that indicate the feature being tested**
+
+### Running Tests
+```bash
+# From the project root, run tests in the tests directory
+node tests/test_filename.js
+
+# For SQL tests
+cat tests/test_filename.sql | susql
+```
+
 ## Maintenance
 
 - Update test files when adding new features
 - Ensure tests reflect current database schema
 - Verify API endpoints match test expectations
 - Keep test data current with application changes
+- **Always create new tests in the tests/ directory**

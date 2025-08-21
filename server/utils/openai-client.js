@@ -1080,7 +1080,7 @@ For each photo, I have the following information:
 - Date taken
 
 CRITICAL SELECTION PRIORITY (in order of importance):
-1. **EXACT LOCATION MATCH**: If the prompt mentions a specific location (city, state, or country), you MUST prioritize photos from that exact location first. For example, if the prompt says "Chicago Vacation", look for photos from Chicago, Illinois, or the greater Chicago area first.
+1. **LOCATION MATCH**: If the prompt mentions a specific location (city, state, or country), prioritize photos from that exact location first. For example, if the prompt says "Chicago Vacation", look for photos from Chicago, Illinois, or the greater Chicago area first.
 
 2. **DATE MATCH**: If the prompt mentions a specific date or time period, prioritize photos with dates close to that time.
 
@@ -1090,12 +1090,14 @@ CRITICAL SELECTION PRIORITY (in order of importance):
 
 5. **RELEVANT TAGS/CAPTIONS**: Look for photos with meaningful captions or tags that relate to the prompt.
 
-LOCATION MATCHING RULES:
-- For city names: Match exact city name (e.g., "Chicago" matches "Chicago, Illinois")
-- For state names: Match photos from that state
-- For country names: Match photos from that country
-- For regional terms: Match photos from the general area (e.g., "Chicago area" includes nearby suburbs)
-- If no location-specific photos exist, then fall back to thematic matching
+LOCATION MATCHING HIERARCHY (in order of priority):
+1. **EXACT CITY MATCH**: Match exact city name (e.g., "Chicago" matches "Chicago, Illinois")
+2. **WITHIN 100 MILES**: Photos from zip codes within 100 miles of the target city's zip code
+3. **STATE MATCH**: Photos from the same state as the target location
+4. **COUNTRY MATCH**: Photos from the same country as the target location
+5. **THEMATIC FALLBACK**: If no location matches found, select photos based on theme relevance
+
+**IMPORTANT**: If no location-specific photos exist, you MUST still select photos from other locations to meet the required count
 
 Here are the available photos:
 
@@ -1121,9 +1123,11 @@ LOCATION PRIORITY RULES:
 - If you have enough location-specific photos to fill the quota (${targetCount} photos), use only those
 - If you don't have enough location-specific photos, fill the remaining slots with the most thematically relevant photos from other locations
 - When mixing location and thematic photos, prioritize location photos first, then fill remaining slots with thematic photos
+- **CRITICAL**: If NO location-specific photos exist, you MUST select ${targetCount} photos from other locations based on thematic relevance
 - EXAMPLE: If prompt is "Miami Vacation" and you only have 1 Miami photo but need 2 photos, select the Miami photo + 1 most relevant non-Miami photo
+- EXAMPLE: If prompt is "Chicago Vacation" but NO Chicago photos exist, select ${targetCount} most thematically relevant photos from any location
 
-FINAL REMINDER: You MUST return exactly ${targetCount} photo numbers, even if it means selecting photos from different locations or themes.
+FINAL REMINDER: You MUST return exactly ${targetCount} photo numbers, even if it means selecting photos from different locations or themes. NEVER return fewer than ${targetCount} photos.
 
 Return ONLY JSON with the selected photo numbers and your reasoning.`
           }
@@ -1155,18 +1159,80 @@ Return ONLY JSON with the selected photo numbers and your reasoning.`
   let finalSelectedIndices = result.selected_photo_numbers || [];
   
   if (finalSelectedIndices.length < targetCount) {
-    console.log(`⚠️ AI only selected ${finalSelectedIndices.length} photos, need ${targetCount}. Filling in additional photos based on dates and locations...`);
+    console.log(`⚠️ AI only selected ${finalSelectedIndices.length} photos, need ${targetCount}. Using location hierarchy to find additional photos...`);
     
-    // Get the selected photos to analyze their dates and locations
-    const selectedPhotos = finalSelectedIndices.map(index => availableAssets[index]).filter(Boolean);
+    // Extract location information from the prompt to determine target location
+    const promptLower = aiSupplementalPrompt.toLowerCase();
+    let targetLocation = { city: null, state: null, country: null };
     
-    // Find additional photos based on dates and locations of selected photos
-    const additionalPhotos = findAdditionalPhotosByDateAndLocation(availableAssets, selectedPhotos, targetCount - finalSelectedIndices.length, finalSelectedIndices);
+    // Simple location extraction from prompt (in production, use NLP)
+    const cityMatch = promptLower.match(/\b(chicago|new york|los angeles|miami|san francisco|boston|seattle|denver|austin|nashville|orlando|las vegas|phoenix|dallas|houston|atlanta|philadelphia|washington|detroit|minneapolis)\b/);
+    if (cityMatch) {
+      targetLocation.city = cityMatch[1];
+    }
     
-    finalSelectedIndices = [...finalSelectedIndices, ...additionalPhotos];
+    // Use location hierarchy to find additional photos
+    const locationResult = await findPhotosByLocationHierarchy(availableAssets, targetLocation, targetCount, finalSelectedIndices);
     
-    // Update reasoning to explain the additional selections
-    result.reasoning += ` Added ${additionalPhotos.length} additional photos based on dates and locations of selected photos to reach the required ${targetCount} photos.`;
+    // If we found photos through location hierarchy, use them
+    if (locationResult.indices.length > 0) {
+      finalSelectedIndices = [...finalSelectedIndices, ...locationResult.indices];
+      
+      // Create detailed reasoning about location matching
+      const matchTypeCounts = locationResult.matchTypes.reduce((acc, type) => {
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {});
+      
+      let locationReasoning = '';
+      if (matchTypeCounts.exact_city) {
+        locationReasoning += `${matchTypeCounts.exact_city} exact city match${matchTypeCounts.exact_city > 1 ? 'es' : ''}`;
+      }
+      if (matchTypeCounts.within_100_miles_api) {
+        if (locationReasoning) locationReasoning += ', ';
+        locationReasoning += `${matchTypeCounts.within_100_miles_api} within 100 miles (API)`;
+      }
+      if (matchTypeCounts.within_100_miles_approx) {
+        if (locationReasoning) locationReasoning += ', ';
+        locationReasoning += `${matchTypeCounts.within_100_miles_approx} within 100 miles (approx)`;
+      }
+      if (matchTypeCounts.state) {
+        if (locationReasoning) locationReasoning += ', ';
+        locationReasoning += `${matchTypeCounts.state} state match${matchTypeCounts.state > 1 ? 'es' : ''}`;
+      }
+      if (matchTypeCounts.country) {
+        if (locationReasoning) locationReasoning += ', ';
+        locationReasoning += `${matchTypeCounts.country} country match${matchTypeCounts.country > 1 ? 'es' : ''}`;
+      }
+      if (matchTypeCounts.thematic) {
+        if (locationReasoning) locationReasoning += ', ';
+        locationReasoning += `${matchTypeCounts.thematic} thematic selection${matchTypeCounts.thematic > 1 ? 's' : ''}`;
+      }
+      
+      if (finalSelectedIndices.length === 0) {
+        result.reasoning = `No photos were found matching the specific location mentioned in "${aiSupplementalPrompt}". Selected ${locationResult.indices.length} photos using location hierarchy: ${locationReasoning}.`;
+      } else {
+        result.reasoning += ` Added ${locationResult.indices.length} additional photos using location hierarchy: ${locationReasoning}.`;
+      }
+    } else {
+      // Fallback to original date/location method if location hierarchy didn't work
+      console.log(`⚠️ Location hierarchy didn't find enough photos, falling back to date/location method...`);
+      
+      // Get the selected photos to analyze their dates and locations
+      const selectedPhotos = finalSelectedIndices.map(index => availableAssets[index]).filter(Boolean);
+      
+      // Find additional photos based on dates and locations of selected photos
+      const additionalPhotos = findAdditionalPhotosByDateAndLocation(availableAssets, selectedPhotos, targetCount - finalSelectedIndices.length, finalSelectedIndices);
+      
+      finalSelectedIndices = [...finalSelectedIndices, ...additionalPhotos];
+      
+      // Update reasoning to explain the additional selections
+      if (finalSelectedIndices.length === 0) {
+        result.reasoning = `No photos were found matching the specific location mentioned in "${aiSupplementalPrompt}". Selected ${additionalPhotos.length} photos from other locations that best match the theme and will work well together to tell a story.`;
+      } else {
+        result.reasoning += ` Added ${additionalPhotos.length} additional photos based on dates and locations of selected photos to reach the required ${targetCount} photos.`;
+      }
+    }
   }
   
   console.log(`✅ Selected photos: ${finalSelectedIndices.join(', ')}`);
@@ -1181,6 +1247,115 @@ Return ONLY JSON with the selected photo numbers and your reasoning.`
     selected_photo_numbers: finalSelectedIndices,
     reasoning: result.reasoning
   };
+}
+
+// Simple in-memory cache for zip code radius results
+const zipCodeCache = new Map();
+
+// Helper function to get zip codes within a specified radius using ZipCodeAPI.com
+async function getZipCodesWithinRadius(targetZipCode, radiusMiles = 100) {
+  const API_KEY = process.env.ZIP_CODE_API;
+  
+  // Check cache first
+  const cacheKey = `zip_radius_${targetZipCode}_${radiusMiles}`;
+  if (zipCodeCache.has(cacheKey)) {
+    const cached = zipCodeCache.get(cacheKey);
+    if (Date.now() - cached.timestamp < 24 * 60 * 60 * 1000) { // 24 hours
+      console.log(`📦 Using cached zip codes for ${targetZipCode} within ${radiusMiles} miles`);
+      return cached.zipCodes;
+    } else {
+      zipCodeCache.delete(cacheKey); // Expired cache
+    }
+  }
+  
+  if (!API_KEY) {
+    console.log('⚠️ No ZIP_CODE_API key found, using approximation');
+    return null;
+  }
+  
+  try {
+    console.log(`🌐 Fetching zip codes within ${radiusMiles} miles of ${targetZipCode} from ZipCodeAPI.com`);
+    
+    const url = `https://www.zipcodeapi.com/rest/${API_KEY}/radius.json/${targetZipCode}/${radiusMiles}/miles`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log(`⚠️ ZipCodeAPI error for ${targetZipCode}: ${response.status} - ${errorText}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (data.zip_codes && Array.isArray(data.zip_codes)) {
+      const zipCodes = data.zip_codes.map(zip => zip.zip_code);
+      
+      // Cache the result for 24 hours
+      zipCodeCache.set(cacheKey, {
+        zipCodes: zipCodes,
+        timestamp: Date.now()
+      });
+      
+      console.log(`✅ Found ${zipCodes.length} zip codes within ${radiusMiles} miles of ${targetZipCode}`);
+      return zipCodes;
+    } else {
+      console.log(`⚠️ Unexpected API response format for ${targetZipCode}`);
+      return null;
+    }
+    
+  } catch (error) {
+    console.log(`⚠️ Error fetching zip codes for ${targetZipCode}: ${error.message}, falling back to approximation`);
+    return null;
+  }
+}
+
+// Helper function to calculate distance between two zip codes (fallback method)
+function calculateZipCodeDistance(zip1, zip2) {
+  // Convert zip codes to numbers for comparison
+  const zip1Num = parseInt(zip1);
+  const zip2Num = parseInt(zip2);
+  
+  if (isNaN(zip1Num) || isNaN(zip2Num)) {
+    return null; // Invalid zip codes
+  }
+  
+  // Basic distance approximation based on zip code difference
+  // This is a rough estimate - in production, use a proper zip code distance service
+  const difference = Math.abs(zip1Num - zip2Num);
+  
+  // Rough conversion: 1000 zip code difference ≈ 50 miles
+  // This varies by region, but gives us a reasonable approximation
+  return Math.round(difference / 20);
+}
+
+// Helper function to get zip code for a city (simplified lookup)
+function getCityZipCode(city, state) {
+  // This is a simplified lookup - in production, you'd use a geocoding service
+  const cityZipCodes = {
+    'Chicago': '60601',
+    'New York': '10001',
+    'Los Angeles': '90001',
+    'Miami': '33101',
+    'San Francisco': '94101',
+    'Boston': '02101',
+    'Seattle': '98101',
+    'Denver': '80201',
+    'Austin': '73301',
+    'Nashville': '37201',
+    'Orlando': '32801',
+    'Las Vegas': '89101',
+    'Phoenix': '85001',
+    'Dallas': '75201',
+    'Houston': '77001',
+    'Atlanta': '30301',
+    'Philadelphia': '19101',
+    'Washington': '20001',
+    'Detroit': '48201',
+    'Minneapolis': '55401'
+  };
+  
+  const key = city || '';
+  return cityZipCodes[key] || null;
 }
 
 // Helper function to find additional photos based on dates and locations
@@ -1254,6 +1429,84 @@ function findAdditionalPhotosByDateAndLocation(allAssets, selectedPhotos, needed
   }
   
   return additionalIndices;
+}
+
+// Helper function to find photos based on location hierarchy
+async function findPhotosByLocationHierarchy(allAssets, targetLocation, targetCount, alreadySelectedIndices = []) {
+  const targetCity = targetLocation.city;
+  const targetState = targetLocation.state;
+  const targetCountry = targetLocation.country;
+  
+  // Get target city zip code
+  const targetZipCode = getCityZipCode(targetCity, targetState);
+  
+  // Get zip codes within 100 miles using API (with fallback to approximation)
+  let nearbyZipCodes = null;
+  if (targetZipCode) {
+    nearbyZipCodes = await getZipCodesWithinRadius(targetZipCode, 100);
+  }
+  
+  // Score all available assets based on location hierarchy
+  const remainingAssets = allAssets.filter((_, index) => !alreadySelectedIndices.includes(index));
+  const scoredAssets = remainingAssets.map((asset, index) => {
+    let score = 0;
+    let matchType = 'none';
+    
+    // 1. EXACT CITY MATCH (highest priority)
+    if (targetCity && asset.city && targetCity.toLowerCase() === asset.city.toLowerCase()) {
+      score = 100;
+      matchType = 'exact_city';
+    }
+    // 2. WITHIN 100 MILES (using API or approximation)
+    else if (targetZipCode && asset.zip_code) {
+      if (nearbyZipCodes && nearbyZipCodes.includes(asset.zip_code)) {
+        // Use API result - all zip codes in the list are within 100 miles
+        score = 80; // Base score for within 100 miles
+        matchType = 'within_100_miles_api';
+      } else {
+        // Fall back to approximation
+        const distance = calculateZipCodeDistance(targetZipCode, asset.zip_code);
+        if (distance !== null && distance <= 100) {
+          score = 80 - Math.floor(distance / 10); // Higher score for closer zip codes
+          matchType = 'within_100_miles_approx';
+        }
+      }
+    }
+    // 3. STATE MATCH
+    else if (targetState && asset.state && targetState.toLowerCase() === asset.state.toLowerCase()) {
+      score = 60;
+      matchType = 'state';
+    }
+    // 4. COUNTRY MATCH
+    else if (targetCountry && asset.country && targetCountry.toLowerCase() === asset.country.toLowerCase()) {
+      score = 40;
+      matchType = 'country';
+    }
+    // 5. THEMATIC FALLBACK (no location match)
+    else {
+      score = 10; // Base score for thematic relevance
+      matchType = 'thematic';
+    }
+    
+    return {
+      originalIndex: allAssets.indexOf(asset),
+      score: score,
+      matchType: matchType
+    };
+  });
+  
+  // Sort by score (highest first) and take the needed number
+  scoredAssets.sort((a, b) => b.score - a.score);
+  
+  const selectedIndices = [];
+  for (let i = 0; i < Math.min(targetCount, scoredAssets.length); i++) {
+    selectedIndices.push(scoredAssets[i].originalIndex);
+  }
+  
+  return {
+    indices: selectedIndices,
+    matchTypes: scoredAssets.slice(0, targetCount).map(item => item.matchType)
+  };
 }
 
 export {

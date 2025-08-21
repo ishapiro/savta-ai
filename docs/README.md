@@ -35,6 +35,11 @@ This directory contains detailed documentation for various aspects of the Savta 
 - **Content**: AI-powered memory book generation, PDF creation, and user workflows
 - **Audience**: Developers and users working with memory books
 
+#### `LOCATION_BASED_PHOTO_SELECTION.md`
+- **Purpose**: Documentation of our sophisticated location-based photo selection system
+- **Content**: 6-tier location hierarchy, ZipCodeAPI.com integration, intelligent caching, and fallback strategies
+- **Audience**: Developers and stakeholders interested in our competitive advantage features
+
 #### `LOCATION_FEATURE_UPDATE.md`
 - **Purpose**: Documentation of location feature updates
 - **Content**: Photo location detection, geocoding, and location-based features
@@ -54,6 +59,7 @@ This directory contains detailed documentation for various aspects of the Savta 
 
 ### For Feature Development
 - **Memory Books**: Refer to `MEMORY_BOOK_FEATURES.md`
+- **Location-Based Photo Selection**: Check `LOCATION_BASED_PHOTO_SELECTION.md` (our secret sauce!)
 - **Location Features**: Check `LOCATION_FEATURE_UPDATE.md`
 - **Image Processing**: Review `PHOTO_ORIENTATION_UPDATE.md`
 

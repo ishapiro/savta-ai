@@ -152,18 +152,7 @@
             />
           </div>
           
-          <!-- Memory Shape -->
-          <div>
-            <label class="block text-sm font-medium text-brand-primary mb-2">Memory Shape</label>
-            <Dropdown
-              v-model="form.memoryShape"
-              :options="memoryShapeOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select shape"
-              class="w-full"
-            />
-          </div>
+
         </div>
       </div>
 
@@ -1021,9 +1010,8 @@ const form = ref({
   backgroundType: 'white',
   backgroundOpacity: 30,
   includeCaptions: true,
-  autoEnhance: false,
-  gridLayout: '2x2',
-  memoryShape: 'original'
+  autoEnhance: true,
+  gridLayout: '2x2'
 })
 
 // Asset selection state
@@ -1155,10 +1143,7 @@ const gridLayoutOptions = ref([
   { label: '16 memories per page (4x4)', value: '4x4' }
 ])
 
-const memoryShapeOptions = ref([
-  { label: 'Original (keep natural aspect ratio)', value: 'original' },
-  { label: 'Magic (AI chooses best shape)', value: 'magic' }
-])
+
 
 const memoryEventOptions = ref([
   { label: 'Vacation', value: 'vacation' },
@@ -1315,9 +1300,8 @@ watch(() => props.initialData, (val) => {
       backgroundType: 'white',
       backgroundOpacity: 30,
       includeCaptions: true,
-      autoEnhance: false,
+      autoEnhance: true,
       gridLayout: '2x2',
-      memoryShape: 'original',
       ...val, // Override with initial data
       output: 'PDF' // Force output to always be PDF for memory books
     }
@@ -1337,6 +1321,17 @@ watch(() => props.initialSelectedAssets, (val) => {
     selectedAssets.value = [...val]
   }
 }, { immediate: true })
+
+// Watch for dialog visibility to reset selected assets when opening for new book
+watch(() => props.visible, (isVisible) => {
+  if (isVisible && !props.isEditing) {
+    // Reset selected assets when opening dialog for new book (not editing)
+    selectedAssets.value = []
+    selectedMemories.value = []
+    selectedTagFilter.value = []
+    console.log('🔄 Reset selected assets for new memory book')
+  }
+})
 
 // Asset selection functions
 const openAssetSelector = async () => {

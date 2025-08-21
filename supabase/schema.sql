@@ -120,7 +120,7 @@ create table if not exists memory_books (
   format text default 'book' check (format in ('card', 'book')),
   page_count integer,
   grid_layout text default '2x2' check (grid_layout in ('1x1', '2x1', '2x2', '3x2', '3x3', '3x4', '4x4')),
-  memory_shape text default 'rounded' check (memory_shape in ('original', 'magic', 'rounded')),
+  memory_shape text default 'original' check (memory_shape in ('original', 'magic', 'rounded')),
   print_size text default '8.5x11' check (print_size in ('4x6', '6x4', '5x3', '5x7', '7x5', '8x10', '10x8', '8.5x11', '11x8.5', '11x14', '14x11', '12x12')),
   quality text,
   medium text,

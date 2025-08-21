@@ -194,7 +194,7 @@
                             <span class="text-xs font-semibold text-white text-center px-2 leading-tight">{{ 
                               book.ai_supplemental_prompt 
                                 ? (book.ai_supplemental_prompt.length > 20 ? book.ai_supplemental_prompt.slice(0, 20) + '...' : book.ai_supplemental_prompt)
-                                : (book.format === 'card' ? 'Magic Memory' : ('Memory Recipe #' + book.id.slice(-6)))
+                                : (book.format === 'card' ? 'Select Photos That Tell a Story' : ('Memory Recipe #' + book.id.slice(-6)))
                             }}</span>
           </div>
         </div>
@@ -2365,7 +2365,8 @@ const selectedAssets = ref([])
 
 // Create modal navigation functions
 const nextStep = () => {
-  if (createStep.value === 1 && newBook.value.ai_supplemental_prompt.trim()) {
+  if (createStep.value === 1) {
+    // Make ai_supplemental_prompt optional - allow empty or whitespace-only values
     createStep.value = 2
   }
 }
@@ -2808,9 +2809,10 @@ onUnmounted(() => {
 // Create memory book
 const createMemoryBook = async () => {
   console.log('🔧 [createMemoryBook] Called. newBook.value:', JSON.parse(JSON.stringify(newBook.value)))
-          if (!newBook.value.ai_supplemental_prompt) {
-          console.log('🔧 [createMemoryBook] No AI supplemental prompt provided, returning')
-    return
+  // Make ai_supplemental_prompt optional - use default if not provided
+  if (!newBook.value.ai_supplemental_prompt || newBook.value.ai_supplemental_prompt.trim() === '') {
+    newBook.value.ai_supplemental_prompt = 'Memory Book'
+    console.log('🔧 [createMemoryBook] Using default prompt for memory book')
   }
   creatingBook.value = true
   try {
@@ -2852,7 +2854,7 @@ const createMemoryBook = async () => {
       output: newBook.value.output || 'PDF', // Default to PDF
       theme_id: newBook.value.theme_id,
       grid_layout: newBook.value.gridLayout,
-      memory_shape: newBook.value.memoryShape,
+      memory_shape: 'original',
       include_captions: newBook.value.includeCaptions,
       ai_background: newBook.value.aiBackground,
       background_type: newBook.value.aiBackground ? 'magical' : 'white', // Set background_type based on ai_background
@@ -4035,7 +4037,7 @@ const saveEditBook = async () => {
       medium: editBook.value.medium,
               theme_id: editBook.value.theme_id,
       grid_layout: editBook.value.gridLayout,
-      memory_shape: editBook.value.memoryShape,
+      memory_shape: editBook.value.memoryShape || 'original',
       include_captions: editBook.value.includeCaptions,
       ai_background: editBook.value.aiBackground,
       background_opacity: editBook.value.backgroundOpacity,
@@ -4594,7 +4596,7 @@ async function onMagicMemoryContinue() {
         asset_ids: [], // Template - will be populated after AI selection
         photo_selection_pool: photoSelectionPool,
         story: '', // Template - will be populated after AI generation
-        title: magicMemoryTitle.value || 'Magic Memory',
+        title: magicMemoryTitle.value || 'Select Photos That Tell a Story',
         memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
         background_type: magicBackgroundType.value,
         background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
@@ -4744,7 +4746,7 @@ const retryMagicMemory = async () => {
         asset_ids: [], // Template - will be populated after AI selection
         photo_selection_pool: config.photoSelectionPool,
         story: '', // Template - will be populated after AI generation
-        title: config.title || 'Magic Memory',
+        title: config.title || 'Select Photos That Tell a Story',
         memory_event: config.memoryEvent,
         background_type: config.backgroundType,
         background_color: config.backgroundType === 'solid' ? config.backgroundColor : null,

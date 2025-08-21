@@ -81,13 +81,19 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    // Validate that ai_supplemental_prompt is set
-    if (!memoryBook.ai_supplemental_prompt || memoryBook.ai_supplemental_prompt.trim() === '') {
-      console.error('❌ Memory book ai_supplemental_prompt is empty')
+    // Validate that ai_supplemental_prompt is set (optional for manual photo selection)
+    if (memoryBook.photo_selection_method === 'ai' && (!memoryBook.ai_supplemental_prompt || memoryBook.ai_supplemental_prompt.trim() === '')) {
+      console.error('❌ Memory book ai_supplemental_prompt is empty for AI photo selection')
       throw createError({
         statusCode: 400,
-        statusMessage: 'Memory book prompt is required. Please set a description for your memory book before generating.'
+        statusMessage: 'Memory book prompt is required for AI photo selection. Please set a description for your memory book before generating.'
       })
+    }
+    
+    // Set a default prompt if none provided and using manual selection
+    if (!memoryBook.ai_supplemental_prompt || memoryBook.ai_supplemental_prompt.trim() === '') {
+      memoryBook.ai_supplemental_prompt = 'Memory Book'
+      console.log('📝 Using default prompt for manual photo selection')
     }
     
     // Step 2: Fetch assets from photo_selection_pool
