@@ -4549,8 +4549,40 @@ async function onMagicMemoryContinue() {
     }
     
     // Get the correct photo count - use theme photo count if theme is selected, otherwise use user selection
-    const selectedTheme = magicThemeOptions.value.find(theme => theme.value === magicSelectedTheme.value)
-    const effectivePhotoCount = selectedTheme ? selectedTheme.photoCount : magicPhotoCount.value
+    let effectivePhotoCount = magicPhotoCount.value // Default to user selection
+    
+    if (magicSelectedTheme.value) {
+      // Try to get photo count from loaded theme options first
+      const selectedTheme = magicThemeOptions.value.find(theme => theme.value === magicSelectedTheme.value)
+      if (selectedTheme && selectedTheme.photoCount > 0) {
+        effectivePhotoCount = selectedTheme.photoCount
+        console.log(`[MAGIC-MEMORY] Using photo count from loaded theme options: ${effectivePhotoCount}`)
+      } else {
+        // Fallback: fetch theme directly from database to get accurate photo count
+        try {
+          const { data: theme, error } = await supabase
+            .from('themes')
+            .select('layout_config')
+            .eq('id', magicSelectedTheme.value)
+            .single()
+          
+          if (!error && theme && theme.layout_config) {
+            const layoutConfig = typeof theme.layout_config === 'string' 
+              ? JSON.parse(theme.layout_config) 
+              : theme.layout_config
+            
+            if (layoutConfig && layoutConfig.photos && Array.isArray(layoutConfig.photos)) {
+              effectivePhotoCount = layoutConfig.photos.length
+              console.log(`[MAGIC-MEMORY] Fetched photo count from database: ${effectivePhotoCount}`)
+            }
+          }
+        } catch (error) {
+          console.error('[MAGIC-MEMORY] Error fetching theme photo count:', error)
+        }
+      }
+    }
+    
+    console.log(`[MAGIC-MEMORY] Final effective photo count: ${effectivePhotoCount}`)
     
     // First, create a template memory book in the database
     const { data: sessionData } = await supabase.auth.getSession()

@@ -133,8 +133,15 @@ export default defineEventHandler(async (event) => {
     } else {
       // AI selection - use attribute-based photo selection
       const previouslyUsedCount = memoryBook.previously_used_assets?.length || 0
-      const availableCount = assets.length - previouslyUsedCount
-      await updatePdfStatus(supabase, memoryBookId, userId, `🎯 Step 1: Analyzing ${availableCount} available photos (excluding ${previouslyUsedCount} previously used) to find ${photoCount} best matches for "${memoryBook.ai_supplemental_prompt}"...`)
+      const minimumRequiredPoolSize = photoCount * 3
+      const assetsAfterExclusion = assets.length - previouslyUsedCount
+      const willExcludePreviouslyUsed = assetsAfterExclusion >= minimumRequiredPoolSize
+      
+      const statusMessage = willExcludePreviouslyUsed 
+        ? `🎯 Analyzing ${assetsAfterExclusion} available photos (excluding ${previouslyUsedCount} previously used) to find ${photoCount} best matches for "${memoryBook.ai_supplemental_prompt}"...`
+        : `🎯 Analyzing ${assets.length} available photos to find ${photoCount} best matches for "${memoryBook.ai_supplemental_prompt}" (including previously used photos to ensure variety)...`
+      
+      await updatePdfStatus(supabase, memoryBookId, userId, statusMessage)
       
       // Get previously used photos to exclude them from selection
       const previouslyUsedAssetIds = memoryBook.previously_used_assets || []
@@ -151,14 +158,16 @@ export default defineEventHandler(async (event) => {
       
       const selectedPhotoIndices = photoSelectionResult.selected_photo_numbers
       
-      // Validate that we got the requested number of photos
-      if (selectedPhotoIndices.length !== photoCount) {
-        console.error(`❌ Photo selection returned ${selectedPhotoIndices.length} photos, expected ${photoCount}`)
+      // Validate that we got at least the requested number of photos
+      if (selectedPhotoIndices.length < photoCount) {
+        console.error(`❌ Photo selection returned ${selectedPhotoIndices.length} photos, expected at least ${photoCount}`)
         throw createError({
           statusCode: 500,
-          statusMessage: `Photo selection returned ${selectedPhotoIndices.length} photos, expected ${photoCount}`
+          statusMessage: `Photo selection returned ${selectedPhotoIndices.length} photos, expected at least ${photoCount}`
         })
       }
+      
+      console.log(`✅ Photo selection successful: ${selectedPhotoIndices.length} photos selected (requested: ${photoCount})`)
       
       // Get the selected assets
       selectedAssets = selectedPhotoIndices.map(index => assets[index]).filter(Boolean)

@@ -270,16 +270,28 @@ export default defineEventHandler(async (event) => {
       }
     }
     
-    // Check if we need to select photos (missing selected assets)
-    const needsPhotoSelection = !book.created_from_assets || book.created_from_assets.length === 0
+    // Check if we need to select photos (missing selected assets or wrong number for theme)
+    const hasSelectedAssets = book.created_from_assets && book.created_from_assets.length > 0
+    const hasCorrectPhotoCount = hasSelectedAssets && book.created_from_assets.length === photoCount
+    const needsPhotoSelection = !hasSelectedAssets || !hasCorrectPhotoCount
     
     logger.step('Photo selection check', {
       hasCreatedFromAssets: !!book.created_from_assets,
       createdFromAssetsLength: book.created_from_assets?.length || 0,
+      requiredPhotoCount: photoCount,
+      hasCorrectPhotoCount,
       needsPhotoSelection,
       bookId: book.id,
       bookStatus: book.status
     })
+    
+    if (!hasCorrectPhotoCount && hasSelectedAssets) {
+      logger.step('🎯 STEP 1: PHOTO SELECTION - Regenerating photos (wrong count)', {
+        currentCount: book.created_from_assets.length,
+        requiredCount: photoCount,
+        reason: 'Theme requires different number of photos'
+      })
+    }
     
     if (needsPhotoSelection) {
       logger.step('🎯 STEP 1: PHOTO SELECTION - Executing photo selection (needed)')

@@ -965,17 +965,31 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
     throw new Error('AI supplemental prompt is required for photo selection');
   }
 
-  // Filter out previously used photos if provided
+  // Calculate minimum required photos in pool (3x the target count for breathing room)
+  const minimumRequiredPoolSize = targetCount * 3;
+  
+  // Check if excluding previously used photos would leave insufficient photos
   let availableAssets = assets;
+  let excludedPreviouslyUsed = false;
+  
   if (previouslyUsedAssetIds && previouslyUsedAssetIds.length > 0) {
-    availableAssets = assets.filter(asset => !previouslyUsedAssetIds.includes(asset.id));
-    console.log(`🎯 Excluding ${previouslyUsedAssetIds.length} previously used photos. ${availableAssets.length} photos available for selection.`);
+    const assetsAfterExclusion = assets.filter(asset => !previouslyUsedAssetIds.includes(asset.id));
+    
+    // Only exclude previously used photos if we have enough remaining photos
+    if (assetsAfterExclusion.length >= minimumRequiredPoolSize) {
+      availableAssets = assetsAfterExclusion;
+      excludedPreviouslyUsed = true;
+      console.log(`🎯 Excluding ${previouslyUsedAssetIds.length} previously used photos. ${availableAssets.length} photos available for selection.`);
+    } else {
+      console.log(`⚠️ Not excluding previously used photos - would leave only ${assetsAfterExclusion.length} photos, need at least ${minimumRequiredPoolSize} for breathing room. Using all ${assets.length} photos.`);
+    }
   }
 
   if (availableAssets.length === 0) {
-    throw new Error('No photos available for selection after excluding previously used photos. Please add more photos to your collection.');
+    throw new Error('No photos available for selection. Please add more photos to your collection.');
   }
 
+  // If we don't have enough photos, use all available
   if (availableAssets.length < targetCount) {
     console.warn(`⚠️ Only ${availableAssets.length} photos available, but ${targetCount} requested. Using all available photos.`);
     targetCount = availableAssets.length;
@@ -1121,10 +1135,109 @@ Return ONLY JSON with the selected photo numbers and your reasoning.`
     }
   }
   
-  console.log(`✅ Selected photos: ${result.selected_photo_numbers?.join(', ')}`);
+  // Ensure we have exactly the requested number of photos
+  let finalSelectedIndices = result.selected_photo_numbers || [];
+  
+  if (finalSelectedIndices.length < targetCount) {
+    console.log(`⚠️ AI only selected ${finalSelectedIndices.length} photos, need ${targetCount}. Filling in additional photos based on dates and locations...`);
+    
+    // Get the selected photos to analyze their dates and locations
+    const selectedPhotos = finalSelectedIndices.map(index => availableAssets[index]).filter(Boolean);
+    
+    // Find additional photos based on dates and locations of selected photos
+    const additionalPhotos = findAdditionalPhotosByDateAndLocation(availableAssets, selectedPhotos, targetCount - finalSelectedIndices.length, finalSelectedIndices);
+    
+    finalSelectedIndices = [...finalSelectedIndices, ...additionalPhotos];
+    
+    // Update reasoning to explain the additional selections
+    result.reasoning += ` Added ${additionalPhotos.length} additional photos based on dates and locations of selected photos to reach the required ${targetCount} photos.`;
+  }
+  
+  console.log(`✅ Selected photos: ${finalSelectedIndices.join(', ')}`);
   console.log(`📝 Reasoning: ${result.reasoning}`);
   
-  return result;
+  // Add note about previously used photos if applicable
+  if (!excludedPreviouslyUsed && previouslyUsedAssetIds && previouslyUsedAssetIds.length > 0) {
+    result.reasoning += ` (Included previously used photos to ensure sufficient variety - had ${assets.length} total photos available)`;
+  }
+  
+  return {
+    selected_photo_numbers: finalSelectedIndices,
+    reasoning: result.reasoning
+  };
+}
+
+// Helper function to find additional photos based on dates and locations
+function findAdditionalPhotosByDateAndLocation(allAssets, selectedPhotos, neededCount, alreadySelectedIndices) {
+  const additionalIndices = [];
+  
+  if (selectedPhotos.length === 0 || neededCount <= 0) {
+    return additionalIndices;
+  }
+  
+  // Extract dates and locations from selected photos
+  const selectedDates = selectedPhotos
+    .map(photo => photo.asset_date)
+    .filter(date => date)
+    .map(date => new Date(date));
+  
+  const selectedLocations = selectedPhotos
+    .map(photo => ({
+      city: photo.city,
+      state: photo.state,
+      country: photo.country
+    }))
+    .filter(loc => loc.city || loc.state || loc.country);
+  
+  // Score remaining photos based on date and location similarity
+  const remainingAssets = allAssets.filter((_, index) => !alreadySelectedIndices.includes(index));
+  const scoredAssets = remainingAssets.map((asset, index) => {
+    let score = 0;
+    
+    // Date similarity scoring
+    if (asset.asset_date && selectedDates.length > 0) {
+      const assetDate = new Date(asset.asset_date);
+      const minDateDiff = Math.min(...selectedDates.map(date => Math.abs(assetDate - date)));
+      const daysDiff = minDateDiff / (1000 * 60 * 60 * 24);
+      
+      // Higher score for photos within 30 days, lower score for photos within 1 year
+      if (daysDiff <= 30) score += 10;
+      else if (daysDiff <= 365) score += 5;
+      else if (daysDiff <= 1095) score += 2; // Within 3 years
+    }
+    
+    // Location similarity scoring
+    if (selectedLocations.length > 0) {
+      const assetLocation = {
+        city: asset.city,
+        state: asset.state,
+        country: asset.country
+      };
+      
+      const locationMatch = selectedLocations.some(selected => {
+        if (selected.city && assetLocation.city && selected.city.toLowerCase() === assetLocation.city.toLowerCase()) return true;
+        if (selected.state && assetLocation.state && selected.state.toLowerCase() === assetLocation.state.toLowerCase()) return true;
+        if (selected.country && assetLocation.country && selected.country.toLowerCase() === assetLocation.country.toLowerCase()) return true;
+        return false;
+      });
+      
+      if (locationMatch) score += 8;
+    }
+    
+    return {
+      originalIndex: allAssets.indexOf(asset),
+      score: score
+    };
+  });
+  
+  // Sort by score (highest first) and take the needed number
+  scoredAssets.sort((a, b) => b.score - a.score);
+  
+  for (let i = 0; i < Math.min(neededCount, scoredAssets.length); i++) {
+    additionalIndices.push(scoredAssets[i].originalIndex);
+  }
+  
+  return additionalIndices;
 }
 
 export {
