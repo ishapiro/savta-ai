@@ -92,7 +92,8 @@ OPENAI_API_KEY=your_openai_api_key
 
 # SendGrid Configuration (optional)
 SENDGRID_WEBHOOK_SECRET=your_sendgrid_webhook_secret
-```
+
+# Note: MapBox token is no longer required - geolocation now uses IP-API (free service)
 
 ### Installation
 
@@ -254,6 +255,117 @@ FROM email_events
 GROUP BY event_type 
 ORDER BY count DESC;
 ```
+
+## 📊 Analytics & User Tracking
+
+### User Analytics System
+
+The application includes a comprehensive analytics system that tracks user behavior and engagement:
+
+#### **Features:**
+- **Page Views**: Track which pages users visit
+- **Session Duration**: Monitor how long users stay on the site
+- **Geographic Distribution**: See where your users are located globally
+- **Device & Browser Analytics**: Understand user technology preferences
+- **Engagement Metrics**: Scroll depth, time on page, interaction rates
+- **Marketing Attribution**: UTM parameters, referrer tracking
+
+#### **Geolocation Service**
+
+**Current Implementation:**
+- **Service**: IP-API (free service)
+- **Data Collected**: Country, region, city
+- **Privacy**: IP addresses are hashed for privacy protection
+- **No API Key Required**: Completely free service
+
+**Geographic Data Collection:**
+```javascript
+// Example of collected data
+{
+  country: "United States",
+  region: "California", 
+  city: "San Francisco"
+}
+```
+
+**Privacy Protection:**
+- IP addresses are hashed before storage
+- No raw IP addresses are stored in the database
+- Private IP ranges (localhost, internal networks) are excluded
+- Compliant with privacy regulations
+
+#### **Analytics Dashboard**
+
+Access the analytics dashboard at `/app/analytics-dashboard` (admin only):
+
+- **Overview Metrics**: Unique users, page views, session duration, engagement score
+- **Geographic Distribution**: Top countries and regions by visit count
+- **Page Performance**: Engagement scores for each page
+- **Technical Analytics**: Device types, browsers, screen resolutions
+- **Marketing Analytics**: Referrers, UTM sources, campaign tracking
+
+#### **Database Schema**
+
+```sql
+-- Activity tracking table
+CREATE TABLE activity_log (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id),
+  action text NOT NULL, -- 'page_visit', 'session_start', etc.
+  session_id text,
+  page_path text,
+  ip_hash text, -- Hashed IP address for privacy
+  country text,
+  region text,
+  city text,
+  device_type text,
+  browser text,
+  session_duration integer,
+  exit_page boolean DEFAULT false,
+  details jsonb, -- Additional tracking data
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now())
+);
+```
+
+#### **Analytics API Endpoints**
+
+- **`POST /api/analytics/track`**: Track user activity and geolocation
+- **`GET /api/admin/analytics-dashboard`**: Get analytics data (admin only)
+
+#### **Usage Examples**
+
+```javascript
+// Track page visit with geolocation
+await $fetch('/api/analytics/track', {
+  method: 'POST',
+  body: {
+    events: [{
+      action: 'page_visit',
+      page_path: '/app/dashboard',
+      timestamp: new Date().toISOString()
+    }]
+  }
+})
+
+// Get analytics data (admin only)
+const analytics = await $fetch('/api/admin/analytics-dashboard?timeRange=30d')
+```
+
+#### **Migration from MapBox**
+
+**Previous Implementation:**
+- Used MapBox geocoding API for IP geolocation
+- Required API key and had usage limits
+- Was not designed for IP geolocation
+
+**Current Implementation:**
+- ✅ Uses IP-API (free service, no API key required)
+- ✅ Specifically designed for IP geolocation
+- ✅ More accurate geographic data
+- ✅ No usage limits for reasonable traffic
+- ✅ Reduced costs (no MapBox subscription needed)
+
+**You can safely cancel your MapBox subscription!** 🎉
 
 ## 🎨 UI Framework Configuration
 

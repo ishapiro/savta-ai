@@ -38,9 +38,9 @@ export default defineEventHandler(async (event) => {
     const clientIP = getClientIP(event)
     const ipHash = hashIP(clientIP)
 
-    // Get geolocation data using MapBox API (Phase 2 enhancement)
+    // Get geolocation data using IP-API (free service)
     let geoData = { country: null, region: null, city: null }
-    if (config.mapboxToken && clientIP && clientIP !== 'unknown') {
+    if (clientIP && clientIP !== 'unknown') {
       try {
         geoData = await getGeolocation(clientIP, config.mapboxToken)
       } catch (error) {
@@ -143,7 +143,7 @@ function hashIP(ip) {
   return hash.toString(36)
 }
 
-// Phase 2: Geolocation function using MapBox API
+// Phase 2: Geolocation function using IP-API (free service)
 async function getGeolocation(ip, mapboxToken) {
   try {
     // Skip private IP ranges
@@ -151,41 +151,25 @@ async function getGeolocation(ip, mapboxToken) {
       return { country: null, region: null, city: null }
     }
 
-    const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${ip}.json?access_token=${mapboxToken}&types=country,region,place`)
+    // Use IP-API for IP geolocation (free service, no API key required)
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,country,regionName,city`)
     
     if (!response.ok) {
-      throw new Error(`MapBox API error: ${response.status}`)
+      throw new Error(`IP-API error: ${response.status}`)
     }
 
     const data = await response.json()
     
-    if (!data.features || data.features.length === 0) {
+    if (data.status !== 'success') {
+      console.warn('IP-API returned error:', data.message)
       return { country: null, region: null, city: null }
     }
 
-    let country = null
-    let region = null
-    let city = null
-
-    // Parse the geocoding response
-    for (const feature of data.features) {
-      const placeType = feature.place_type[0]
-      const placeName = feature.text
-
-      switch (placeType) {
-        case 'country':
-          country = placeName
-          break
-        case 'region':
-          region = placeName
-          break
-        case 'place':
-          city = placeName
-          break
-      }
+    return { 
+      country: data.country || null, 
+      region: data.regionName || null, 
+      city: data.city || null 
     }
-
-    return { country, region, city }
   } catch (error) {
     console.error('Geolocation error:', error)
     return { country: null, region: null, city: null }
