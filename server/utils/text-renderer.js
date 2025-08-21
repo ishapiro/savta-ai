@@ -50,6 +50,9 @@ export function wrapText(text, maxWidth, fontSize) {
   const lines = []
   let currentLine = ''
   
+  // Add safety margin to prevent text cutoff (5% of maxWidth)
+  const safeMaxWidth = maxWidth * 0.95
+  
   // Improved character width estimation for EB Garamond font
   const getCharWidth = (char) => {
     // Narrow characters
@@ -74,7 +77,7 @@ export function wrapText(text, maxWidth, fontSize) {
     const testLine = currentLine ? currentLine + ' ' + word : word
     const width = measureTextWidth(testLine)
     
-    if (width <= maxWidth) {
+    if (width <= safeMaxWidth) {
       currentLine = testLine
     } else {
       if (currentLine) {
@@ -99,24 +102,72 @@ export function wrapText(text, maxWidth, fontSize) {
  * @param {number} lineHeight - Line height multiplier (default: 1.4)
  * @returns {Object} - Object containing lines and final font size
  */
+/**
+ * Calculate optimal starting font size based on available dimensions and text length
+ * @param {string} text - Text to render
+ * @param {number} maxWidth - Maximum width in pixels
+ * @param {number} maxHeight - Maximum height in pixels
+ * @param {number} lineHeight - Line height multiplier
+ * @returns {number} - Optimal starting font size
+ */
+function calculateOptimalFontSize(text, maxWidth, maxHeight, lineHeight = 1.4) {
+  // Clean the input text
+  const cleanText = text.replace(/\n/g, ' ').replace(/\r/g, ' ').replace(/\s+/g, ' ').trim()
+  const words = cleanText.split(' ')
+  
+  // Calculate aspect ratio and area
+  const aspectRatio = maxWidth / maxHeight
+  const area = maxWidth * maxHeight
+  
+  // Estimate number of lines based on text length and aspect ratio
+  const estimatedLines = Math.ceil(words.length / Math.max(3, Math.floor(maxWidth / 100)))
+  
+  // Calculate optimal font size based on available space
+  // For tall/narrow areas, we can use larger fonts
+  // For wide/short areas, we need smaller fonts
+  let optimalFontSize = Math.min(
+    Math.sqrt(area / (estimatedLines * 50)), // Area-based calculation
+    maxHeight / (estimatedLines * lineHeight * 1.2), // Height-based calculation
+    maxWidth / (Math.max(...words.map(w => w.length)) * 0.6) // Width-based calculation
+  )
+  
+  // Clamp to reasonable bounds
+  optimalFontSize = Math.max(8, Math.min(32, optimalFontSize))
+  
+  // Adjust based on aspect ratio
+  if (aspectRatio > 2) {
+    // Wide area - reduce font size slightly
+    optimalFontSize *= 0.9
+  } else if (aspectRatio < 0.5) {
+    // Tall area - can use larger font
+    optimalFontSize *= 1.1
+  }
+  
+  return Math.round(optimalFontSize)
+}
+
 export function autoSizeText(text, maxWidth, maxHeight, startFontSize = 16, lineHeight = 1.4) {
   // Clean the input text to ensure it's a single string with no line breaks
   const cleanText = text.replace(/\n/g, ' ').replace(/\r/g, ' ').replace(/\s+/g, ' ').trim()
   
-  let bestFontSize = startFontSize
+  // Calculate optimal starting font size based on dimensions
+  const optimalFontSize = calculateOptimalFontSize(cleanText, maxWidth, maxHeight, lineHeight)
+  const dynamicStartFontSize = Math.max(startFontSize, optimalFontSize)
+  
+  let bestFontSize = dynamicStartFontSize
   let bestLines = []
   let wasTruncated = false
   
   // Try different font sizes from largest to smallest
-  for (let fontSize = startFontSize; fontSize >= 8; fontSize--) {
+  for (let fontSize = dynamicStartFontSize; fontSize >= 8; fontSize--) {
     // Use the wrapText function which properly calculates line breaks with accurate measurement
     const lines = wrapText(cleanText, maxWidth, fontSize)
     
     // Calculate total height needed
     const totalHeight = lines.length * fontSize * lineHeight
     
-    // Check if this font size fits
-    if (totalHeight <= maxHeight * 0.9) {
+    // Use full height with minimal safety margin (95% instead of 90%)
+    if (totalHeight <= maxHeight * 0.95) {
       bestFontSize = fontSize
       bestLines = lines
       break
@@ -131,8 +182,8 @@ export function autoSizeText(text, maxWidth, maxHeight, startFontSize = 16, line
     
     const lines = wrapText(cleanText, maxWidth, bestFontSize)
     
-    // Calculate how many lines we can fit
-    const maxLines = Math.floor((maxHeight * 0.9) / (bestFontSize * lineHeight))
+    // Calculate how many lines we can fit using full height
+    const maxLines = Math.floor((maxHeight * 0.95) / (bestFontSize * lineHeight))
     
     if (lines.length > maxLines) {
       bestLines = lines.slice(0, maxLines)
@@ -160,7 +211,7 @@ export function autoSizeText(text, maxWidth, maxHeight, startFontSize = 16, line
  */
 export async function renderTextToImage(text, width, height, options = {}) {
   const {
-    startFontSize = 16,
+    startFontSize = 16, // Default font size (will be dynamically calculated for optimal fit)
     lineHeight = 1.4,
     padding = 4, // Increased from 2 to 4 for better story text spacing
     color = '#2D1810',
@@ -185,6 +236,19 @@ export async function renderTextToImage(text, width, height, options = {}) {
     
     // Auto-adjust font size to fit
     const { lines, fontSize, wasTruncated } = autoSizeText(text, maxWidth, maxHeight, startFontSize, lineHeight)
+    
+    // Log dynamic font size calculations
+    console.log('📝 Dynamic font size calculation:', {
+      textLength: text.length,
+      maxWidth,
+      maxHeight,
+      aspectRatio: (maxWidth / maxHeight).toFixed(2),
+      area: maxWidth * maxHeight,
+      startFontSize,
+      finalFontSize: fontSize,
+      linesCount: lines.length,
+      wasTruncated
+    })
     
     // Create ultra high-resolution image for 600 DPI
     const scaledWidth = intWidth * scale
@@ -227,8 +291,24 @@ export async function renderTextToImage(text, width, height, options = {}) {
       ${(() => {
         // Calculate total text height
         const totalTextHeight = lines.length * scaledFontSize * lineHeight
-        // Calculate starting Y position to center the text block
-        const startY = scaledPadding + (scaledHeight - (scaledPadding * 2) - totalTextHeight) / 2 + scaledFontSize
+        const availableHeight = scaledHeight - (scaledPadding * 2)
+        const availableWidth = scaledWidth - (scaledPadding * 2)
+        
+        // Calculate aspect ratio for adaptive positioning
+        const aspectRatio = availableWidth / availableHeight
+        
+        // Adaptive text positioning based on aspect ratio
+        let startY
+        if (aspectRatio > 2) {
+          // Wide area - center vertically for better balance
+          startY = scaledPadding + (availableHeight - totalTextHeight) / 2 + scaledFontSize
+        } else if (aspectRatio < 0.5) {
+          // Tall area - start higher to maximize font size
+          startY = scaledPadding + (availableHeight * 0.05) + scaledFontSize
+        } else {
+          // Balanced area - start at 10% from top
+          startY = scaledPadding + (availableHeight * 0.1) + scaledFontSize
+        }
         
         return lines.map((line, i) => {
           const y = startY + (i * scaledFontSize * lineHeight)

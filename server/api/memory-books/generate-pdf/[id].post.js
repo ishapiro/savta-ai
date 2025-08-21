@@ -2264,7 +2264,7 @@ export default defineEventHandler(async (event) => {
         let story = aiStory || 'A special family story.'
         
         // Add padding around story text to prevent cutoff
-        const storyPaddingMm = 4 // 4mm padding on all sides (increased from 2mm)
+        const storyPaddingMm = 8 // 8mm padding on all sides (increased from 4mm to prevent text cutoff)
         const storyPaddingPoints = storyPaddingMm * mmToPoints
         
         const storyX = cardX + (layoutConfig.story.position.x * mmToPoints) + storyPaddingPoints
@@ -2286,10 +2286,24 @@ export default defineEventHandler(async (event) => {
           // Use theme's body font if available
           const fontFamily = theme.body_font || 'EB Garamond'
           
+          console.log('📝 Story text rendering details:', {
+            storyLength: story.length,
+            storyWidthPixels,
+            storyHeightPixels,
+            storyPaddingMm,
+            fontFamily,
+            fontColor,
+            effectiveWidth: storyWidthPixels - 40, // Account for text renderer padding
+            effectiveHeight: storyHeightPixels - 40, // Account for text renderer padding
+            aspectRatio: ((storyWidthPixels - 40) / (storyHeightPixels - 40)).toFixed(2),
+            area: (storyWidthPixels - 40) * (storyHeightPixels - 40)
+          })
+          
           const storyTextBuffer = await renderTextToImage(story, storyWidthPixels, storyHeightPixels, { 
             color: fontColor,
             fontFamily: fontFamily,
-            padding: 8 // Additional internal padding within the text renderer (increased from 4)
+            padding: 20 // Increased internal padding to prevent text cutoff (increased from 8)
+            // Font size will be calculated dynamically based on available space
           })
           const storyTextImage = await pdfDoc.embedPng(storyTextBuffer)
           page.drawImage(storyTextImage, { x: storyX, y: storyY, width: storyWidth, height: storyHeight })
