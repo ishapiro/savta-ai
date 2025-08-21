@@ -50,20 +50,22 @@ export default defineEventHandler(async (event) => {
   const from = (page - 1) * rows
   const to = from + rows - 1
 
-  // Fetch total count
+  // Fetch total count (only active users)
   const { count: totalCount, error: countError } = await supabase
     .from('profiles')
     .select('*', { count: 'exact', head: true })
+    .eq('deleted', false)
 
   if (countError) {
     console.error('[all.get.js] Count error:', countError)
     return { error: countError.message, details: countError }
   }
 
-  // Fetch paged users with DB-level sorting
+  // Fetch paged users with DB-level sorting (only active users)
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
+    .eq('deleted', false)
     .order(sortField, { ascending: sortOrder })
     .range(from, to)
 

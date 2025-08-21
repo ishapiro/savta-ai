@@ -232,6 +232,10 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSupabaseUser } from '~/composables/useSupabase'
+
+// Initialize analytics system
+const { trackPageVisit, trackEvent, flushEvents } = useAnalytics()
+
 const supabase = useNuxtApp().$supabase
 const user = useSupabaseUser()
 

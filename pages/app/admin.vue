@@ -82,8 +82,23 @@
                 :itemTemplate="user => `${user.email?.split('@')[0] || ''} (${user.first_name || ''} ${user.last_name || ''})`"
               />
               <div class="flex items-center gap-2">
-                <input type="checkbox" v-model="showOnlyUnapprovedUsers" id="showOnlyUnapprovedUsers" />
-                <label for="showOnlyUnapprovedUsers" class="text-sm text-brand-primary/70">Show only users with unapproved assets</label>
+                <div class="relative">
+                  <input 
+                    type="checkbox" 
+                    v-model="showOnlyUnapprovedUsers" 
+                    id="showOnlyUnapprovedUsers"
+                    class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
+                  />
+                  <div 
+                    v-if="showOnlyUnapprovedUsers"
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+                <label for="showOnlyUnapprovedUsers" class="text-sm text-brand-primary/70 cursor-pointer select-none">Show only users with unapproved assets</label>
               </div>
             </div>
           </div>
@@ -285,11 +300,18 @@
                       id="showDeletedThemes" 
                       v-model="showDeletedThemes"
                       @change="loadDeletedThemes"
-                      class="w-4 h-4 text-red-500 bg-white rounded ring-2 ring-brand-primary focus:ring-brand-success focus:ring-2 checked:bg-red-500 checked:border-red-500"
+                      class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
                     />
-                    <label for="showDeletedThemes" class="text-sm text-brand-primary/70 cursor-pointer pl-2">Display Trash</label>
+                    <div 
+                      v-if="showDeletedThemes"
+                      class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    >
+                      <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
                   </div>
-                  
+                  <label for="showDeletedThemes" class="text-sm text-brand-primary/70 cursor-pointer select-none">Display Trash</label>
                 </div>
 
                 <Button
@@ -428,16 +450,26 @@
                   placeholder="All Roles"
                   class="w-32"
                 />
-                <!-- Show Deleted Users Toggle -->
+                <!-- Show Disabled Users Toggle -->
                 <div class="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    id="showDeletedUsers" 
-                    v-model="showDeletedUsers"
-                    @change="loadDeletedUsers"
-                    class="w-4 h-4 text-brand-success bg-white border-2 border-brand-primary rounded ring-2 ring-brand-primary focus:ring-brand-success focus:ring-2 checked:bg-brand-success checked:border-brand-success"
-                  />
-                  <label for="showDeletedUsers" class="text-sm text-brand-primary/70 cursor-pointer">Show deleted users</label>
+                  <div class="relative">
+                    <input 
+                      type="checkbox" 
+                      id="showDeletedUsers" 
+                      v-model="showDeletedUsers"
+                      @change="loadDeletedUsers"
+                      class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
+                    />
+                    <div 
+                      v-if="showDeletedUsers"
+                      class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    >
+                      <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                  <label for="showDeletedUsers" class="text-sm text-brand-primary/70 cursor-pointer select-none">Show disabled users</label>
                 </div>
               </div>
             </div>
@@ -555,16 +587,16 @@
               </Column>
             </DataTable>
 
-            <!-- Deleted Users Section -->
+            <!-- Disabled Users Section -->
             <div v-if="showDeletedUsers && deletedUsers.length > 0" class="mt-8 space-y-4">
-              <h3 class="text-lg font-semibold text-brand-primary/70 border-b border-brand-primary/20 pb-2">Deleted Users</h3>
+              <h3 class="text-lg font-semibold text-brand-primary/70 border-b border-brand-primary/20 pb-2">Disabled Users</h3>
               <DataTable
                 :value="deletedUsers"
                 :paginator="true"
                 :rows="10"
                 :rowsPerPageOptions="[5, 10, 20, 50]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} deleted users"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} disabled users"
                 responsiveLayout="scroll"
                 class="p-datatable-sm"
               >
@@ -1047,14 +1079,22 @@
             <div class="field">
               <label class="block text-xs font-medium text-brand-primary mb-1">Rounded Corners</label>
               <div class="flex items-center gap-2">
-                <div 
-                  @click="newTheme.rounded = !newTheme.rounded"
-                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
-                  :class="newTheme.rounded ? 'bg-brand-success border-brand-success' : 'bg-white'"
-                >
-                  <span v-if="newTheme.rounded" class="text-blue-600 text-xs font-bold">×</span>
+                <div class="relative">
+                  <input 
+                    type="checkbox" 
+                    v-model="newTheme.rounded"
+                    class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
+                  />
+                  <div 
+                    v-if="newTheme.rounded"
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
                 </div>
-                <label @click="newTheme.rounded = !newTheme.rounded" class="text-xs text-brand-primary/70 cursor-pointer">
+                <label class="text-xs text-brand-primary/70 cursor-pointer select-none">
                   Use rounded corners for memory shapes
                 </label>
               </div>
@@ -1109,14 +1149,23 @@
             <div class="field">
               <label class="block text-xs font-medium text-brand-primary mb-1">Default for Card Wizard</label>
               <div class="flex items-center gap-2">
-                <div 
-                  @click="handleCardDefaultChange(true)"
-                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
-                  :class="newTheme.card_default ? 'bg-brand-success border-brand-success' : 'bg-white'"
-                >
-                  <span v-if="newTheme.card_default" class="text-blue-600 text-xs font-bold">×</span>
+                <div class="relative">
+                  <input 
+                    type="checkbox" 
+                    v-model="newTheme.card_default"
+                    @change="handleCardDefaultChange(true)"
+                    class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
+                  />
+                  <div 
+                    v-if="newTheme.card_default"
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
                 </div>
-                <label @click="handleCardDefaultChange(true)" class="text-xs text-brand-primary/70 cursor-pointer">
+                <label class="text-xs text-brand-primary/70 cursor-pointer select-none">
                   Set as default layout for magic card wizard
                 </label>
               </div>
@@ -1124,14 +1173,22 @@
             <div class="field">
               <label class="block text-xs font-medium text-brand-primary mb-1">Show in Card Wizard</label>
               <div class="flex items-center gap-2">
-                <div 
-                  @click="newTheme.card_wizard = !newTheme.card_wizard"
-                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
-                  :class="newTheme.card_wizard ? 'bg-brand-success border-brand-success' : 'bg-white'"
-                >
-                  <span v-if="newTheme.card_wizard" class="text-blue-600 text-xs font-bold">×</span>
+                <div class="relative">
+                  <input 
+                    type="checkbox" 
+                    v-model="newTheme.card_wizard"
+                    class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
+                  />
+                  <div 
+                    v-if="newTheme.card_wizard"
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
                 </div>
-                <label @click="newTheme.card_wizard = !newTheme.card_wizard" class="text-xs text-brand-primary/70 cursor-pointer">
+                <label class="text-xs text-brand-primary/70 cursor-pointer select-none">
                   Display this layout in the card wizard
                 </label>
               </div>
@@ -1357,14 +1414,22 @@
             <div class="field">
               <label class="block text-xs font-medium text-brand-primary mb-1">Rounded Corners</label>
               <div class="flex items-center gap-2">
-                <div 
-                  @click="editingTheme.rounded = !editingTheme.rounded"
-                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
-                  :class="editingTheme.rounded ? 'bg-brand-success border-brand-success' : 'bg-white'"
-                >
-                  <span v-if="editingTheme.rounded" class="text-blue-600 text-xs font-bold">×</span>
+                <div class="relative">
+                  <input 
+                    type="checkbox" 
+                    v-model="editingTheme.rounded"
+                    class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
+                  />
+                  <div 
+                    v-if="editingTheme.rounded"
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
                 </div>
-                <label @click="editingTheme.rounded = !editingTheme.rounded" class="text-xs text-brand-primary/70 cursor-pointer">
+                <label class="text-xs text-brand-primary/70 cursor-pointer select-none">
                   Use rounded corners for memory shapes
                 </label>
               </div>
@@ -1419,14 +1484,23 @@
             <div class="field">
               <label class="block text-xs font-medium text-brand-primary mb-1">Default for Card Wizard</label>
               <div class="flex items-center gap-2">
-                <div 
-                  @click="handleCardDefaultChange(false)"
-                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
-                  :class="editingTheme.card_default ? 'bg-brand-success border-brand-success' : 'bg-white'"
-                >
-                  <span v-if="editingTheme.card_default" class="text-blue-600 text-xs font-bold">×</span>
+                <div class="relative">
+                  <input 
+                    type="checkbox" 
+                    v-model="editingTheme.card_default"
+                    @change="handleCardDefaultChange(false)"
+                    class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
+                  />
+                  <div 
+                    v-if="editingTheme.card_default"
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
                 </div>
-                <label @click="handleCardDefaultChange(false)" class="text-xs text-brand-primary/70 cursor-pointer">
+                <label class="text-xs text-brand-primary/70 cursor-pointer select-none">
                   Set as default layout for magic card wizard
                 </label>
               </div>
@@ -1434,14 +1508,22 @@
             <div class="field">
               <label class="block text-xs font-medium text-brand-primary mb-1">Show in Card Wizard</label>
               <div class="flex items-center gap-2">
-                <div 
-                  @click="editingTheme.card_wizard = !editingTheme.card_wizard"
-                  class="w-4 h-4 border-2 border-brand-primary rounded flex items-center justify-center cursor-pointer transition-colors"
-                  :class="editingTheme.card_wizard ? 'bg-brand-success border-brand-success' : 'bg-white'"
-                >
-                  <span v-if="editingTheme.card_wizard" class="text-blue-600 text-xs font-bold">×</span>
+                <div class="relative">
+                  <input 
+                    type="checkbox" 
+                    v-model="editingTheme.card_wizard"
+                    class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
+                  />
+                  <div 
+                    v-if="editingTheme.card_wizard"
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
                 </div>
-                <label @click="editingTheme.card_wizard = !editingTheme.card_wizard" class="text-xs text-brand-primary/70 cursor-pointer">
+                <label class="text-xs text-brand-primary/70 cursor-pointer select-none">
                   Display this layout in the card wizard
                 </label>
               </div>
@@ -2573,7 +2655,7 @@ const loadUsers = async () => {
   }
 }
 
-// Load deleted users
+// Load disabled users
 const loadDeletedUsers = async () => {
   if (!showDeletedUsers.value) {
     deletedUsers.value = []
@@ -2584,11 +2666,11 @@ const loadDeletedUsers = async () => {
     const deletedUsersData = await db.admin.getDeletedUsers()
     deletedUsers.value = deletedUsersData
   } catch (error) {
-    console.error('Error loading deleted users:', error)
+    console.error('Error loading disabled users:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'Failed to load deleted users',
+      detail: 'Failed to load disabled users',
       life: 3000
     })
   }
