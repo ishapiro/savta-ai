@@ -17,20 +17,19 @@
           <!-- AI Supplemental Prompt -->
           <div>
             <label for="ai_supplemental_prompt" class="block text-sm font-medium text-brand-primary mb-2">
-              AI Supplemental Prompt
+              Optional AI Supplemental Prompt -- Helps Craft a Story
             </label>
-            <InputText
-              id="ai_supplemental_prompt"
-              v-model="form.ai_supplemental_prompt"
-              class="w-full"
-              placeholder="Enter AI supplemental prompt for photo selection and story creation"
-              required
-            />
+                          <InputText
+                id="ai_supplemental_prompt"
+                v-model="form.ai_supplemental_prompt"
+                class="w-full"
+                placeholder="Enter AI supplemental prompt for story creation. Used with Theme based books."
+              />
           </div>
           
           <!-- Memory Event -->
           <div>
-            <label class="block text-sm font-medium text-brand-primary mb-2">Memory Event</label>
+            <label class="block text-sm font-medium text-brand-primary mb-2">Optional Memory Event</label>
             <Dropdown
               v-model="form.memoryEvent"
               :options="memoryEventOptions"
@@ -129,18 +128,7 @@
             />
           </div>
           
-          <!-- Output Format -->
-          <div>
-            <label class="block text-sm font-medium text-brand-primary mb-2">Output Format</label>
-            <Dropdown
-              v-model="form.output"
-              :options="outputOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Select output format"
-              class="w-full"
-            />
-          </div>
+
         </div>
       </div>
 
@@ -1104,10 +1092,7 @@ const mediumOptions = ref([
   { label: 'Web View', value: 'web' }
 ])
 
-const outputOptions = ref([
-  { label: 'PDF Document', value: 'PDF' },
-  { label: 'JPG Image', value: 'JPG' }
-])
+
 
 const themeOptions = ref([])
 const loadingThemes = ref(false)
@@ -1333,7 +1318,8 @@ watch(() => props.initialData, (val) => {
       autoEnhance: false,
       gridLayout: '2x2',
       memoryShape: 'original',
-      ...val // Override with initial data
+      ...val, // Override with initial data
+      output: 'PDF' // Force output to always be PDF for memory books
     }
   }
 }, { immediate: true })
