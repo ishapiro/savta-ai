@@ -2031,19 +2031,22 @@ export default defineEventHandler(async (event) => {
                         fill="none" stroke="${borderColor}" stroke-width="${borderWidth}"/>
                 </svg>`
                 
-                // 1) Round the corners with a mask (transparent outside the rounded rect)
-                const withAlpha = await sharp(finalImageBuffer)
-                  .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }]) // keep rounded area
+                // Create background canvas with theme color
+                const background = sharp({
+                  create: { width: targetWidth, height: targetHeight, channels: 3, background: themeBackgroundColor }
+                })
+                
+                // Round the photo corners
+                const photoRounded = await sharp(finalImageBuffer)
+                  .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
                   .toBuffer()
                 
-                // 2) FLATTEN onto your background color (kills transparency so JPG is safe)
-                const flattened = await sharp(withAlpha)
-                  .flatten({ background: themeBackgroundColor }) // <= critical for JPG
-                  .toBuffer()
-                
-                // 3) Draw the rounded border on top
-                finalImageBuffer = await sharp(flattened)
-                  .composite([{ input: Buffer.from(borderSvg), blend: 'over' }])
+                // Composite everything onto the background
+                finalImageBuffer = await background
+                  .composite([
+                    { input: photoRounded, left: 0, top: 0 },
+                    { input: Buffer.from(borderSvg), blend: 'over' }
+                  ])
                   .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 console.log(`🎨 Theme photo processing - Final image with rounded border created successfully`)
