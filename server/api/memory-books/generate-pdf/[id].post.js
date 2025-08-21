@@ -2018,35 +2018,35 @@ export default defineEventHandler(async (event) => {
                 const borderedWidth = targetWidth + (borderWidth * 2)
                 const borderedHeight = targetHeight + (borderWidth * 2)
                 
-                // Create rounded corner mask for the image
-                const roundedSvg = `<svg width="${targetWidth}" height="${targetHeight}">
-                  <rect x="0" y="0" width="${targetWidth}" height="${targetHeight}" rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" />
+                // Create mask SVG with white fill
+                const maskSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${targetWidth}" height="${targetHeight}">
+                  <rect x="0" y="0" width="${targetWidth}" height="${targetHeight}"
+                        rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" fill="#ffffff"/>
                 </svg>`
                 
                 // Create border SVG with proper positioning
-                const borderSvg = `<svg width="${targetWidth}" height="${targetHeight}">
+                const borderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${targetWidth}" height="${targetHeight}">
                   <rect x="${borderWidth/2}" y="${borderWidth/2}"
                         width="${targetWidth - borderWidth}" height="${targetHeight - borderWidth}"
                         rx="${borderRadiusPixels}" ry="${borderRadiusPixels}"
                         fill="none" stroke="${borderColor}" stroke-width="${borderWidth}"/>
                 </svg>`
                 
-                // Create background canvas with theme color
-                const background = sharp({
-                  create: { width: targetWidth, height: targetHeight, channels: 3, background: themeBackgroundColor }
-                })
-                
-                // Round the photo corners
-                const photoRounded = await sharp(finalImageBuffer)
-                  .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
+                // 1) Ensure the image has an alpha channel (critical!)
+                const withAlpha = await sharp(finalImageBuffer)
+                  .ensureAlpha() // <= guarantees RGBA so the mask can cut corners
+                  .composite([{ input: Buffer.from(maskSvg), blend: 'dest-in' }]) // transparent corners now
+                  .png() // keep alpha while we work
                   .toBuffer()
                 
-                // Composite everything onto the background
-                finalImageBuffer = await background
-                  .composite([
-                    { input: photoRounded, left: 0, top: 0 },
-                    { input: Buffer.from(borderSvg), blend: 'over' }
-                  ])
+                // 2) Bake the background color so later JPG/PDF won't default to black
+                const flattened = await sharp(withAlpha)
+                  .flatten({ background: themeBackgroundColor }) // replaces transparency with your theme color
+                  .toBuffer()
+                
+                // 3) Draw the rounded border on top and export (JPG-safe)
+                finalImageBuffer = await sharp(flattened)
+                  .composite([{ input: Buffer.from(borderSvg), blend: 'over' }])
                   .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 console.log(`🎨 Theme photo processing - Final image with rounded border created successfully`)
