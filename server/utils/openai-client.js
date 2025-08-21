@@ -474,6 +474,7 @@ CRITICAL REQUIREMENTS:
 - Keep it SHORT: 2-3 sentences maximum
 - Make it personal and touching, like something a grandmother would write
 - The caption can be funny but not sarcastic
+- Make it meaningful and create a beautiful narrative
 - Use an 8th grade reading level
 - Use modern language
 - Use simple grammar
@@ -485,6 +486,13 @@ CRITICAL REQUIREMENTS:
 - Base the story on the memory book theme: "${aiSupplementalPrompt}"
 ${photoSelectionReasoning ? '- Consider the photo selection reasoning when crafting your story' : ''}
 
+LOCATION RULES:
+- ONLY mention specific cities, states, or countries that are actually shown in the photo locations
+- If photos show "Unknown location" or no specific location, do NOT invent or assume locations
+- If the user prompt mentions a city but the photos don't show that city, do NOT include that city name in the story
+- Use generic terms like "our special day" or "this beautiful moment" instead of specific locations when photos don't show them
+- The story should be based on what the photos actually show, not what the user prompt suggests
+
 Here are the selected photos:
 
 ${assetData}
@@ -494,7 +502,7 @@ Return ONLY JSON with the story.`
         ]
       }
     ],
-    max_output_tokens: 1000
+    max_output_tokens: 2500
   };
 
   console.log('📝 STEP 2: STORY GENERATION - Making OpenAI request')
@@ -572,6 +580,14 @@ async function generateStory(selectedPhotoUrls) {
             The prose can be sentimental or nostalgic but not sappy.
             The prose can be happy but not cheesy. 
             Shorter is better than longer.
+            
+            LOCATION RULES:
+            - ONLY mention specific cities, states, or countries that are actually visible in the photos
+            - If you cannot see specific locations in the photos, do NOT invent or assume locations
+            - If the user prompt mentions a city but the photos don't show that city, do NOT include that city name in the story
+            - Use generic terms like "our special day" or "this beautiful moment" instead of specific locations
+            - The story should be based on what the photos actually show, not assumptions
+            
             Return ONLY JSON with the story.`
           },
           ...validPhotoInputs
