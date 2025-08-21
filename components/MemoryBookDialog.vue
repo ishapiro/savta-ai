@@ -503,6 +503,31 @@
             <span v-if="selectedDateFilter" class="block sm:inline"> • Date: {{ formatDateRange(selectedDateFilter) }}</span>
           </div>
         </div>
+        <!-- Grid Layout Progress Indicator (only for grid layouts) -->
+        <div v-if="form.layoutType === 'grid' && gridLayoutInfo && selectedMemories.length > 0" class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-3 border border-brand-secondary/30 mb-3">
+          <div class="flex items-center justify-between text-sm text-brand-primary mb-2">
+            <span class="font-medium">Page {{ gridLayoutInfo.currentPage }} Progress</span>
+            <span class="text-brand-secondary font-medium">{{ gridLayoutInfo.photosOnCurrentPage }}/{{ gridLayoutInfo.memoriesPerPage }}</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+            <div 
+              class="bg-gradient-to-r from-brand-secondary to-brand-highlight h-2 rounded-full transition-all duration-300"
+              :class="{ 'animate-pulse': gridLayoutInfo.isPageFull }"
+              :style="{ width: `${(gridLayoutInfo.photosOnCurrentPage / gridLayoutInfo.memoriesPerPage) * 100}%` }"
+            ></div>
+          </div>
+          <div class="flex items-center justify-between text-xs text-brand-primary/70">
+            <span v-if="gridLayoutInfo.isPageFull" class="text-green-600 font-medium">
+              <i class="pi pi-check-circle mr-1"></i>
+              Page {{ gridLayoutInfo.currentPage }} is complete!
+            </span>
+            <span v-else>
+              {{ gridLayoutInfo.memoriesPerPage - gridLayoutInfo.photosOnCurrentPage }} more photo{{ gridLayoutInfo.memoriesPerPage - gridLayoutInfo.photosOnCurrentPage !== 1 ? 's' : '' }} needed for this page
+            </span>
+            <span>{{ gridLayoutInfo.totalPages }} page{{ gridLayoutInfo.totalPages !== 1 ? 's' : '' }} total ({{ gridLayoutInfo.gridLayout }} layout)</span>
+          </div>
+        </div>
+
         <!-- Memories Grid -->
         <div class="bg-white rounded-lg border border-brand-primary/20 sm:p-4">
           <div v-if="filteredAssets.length === 0" class="text-center py-8">
@@ -510,7 +535,7 @@
             <p class="text-base sm:text-lg font-medium text-brand-primary">No memories found</p>
             <p class="text-xs sm:text-sm text-brand-primary/70">Try changing your filter or add some memories first</p>
           </div>
-          <div v-else class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 md:gap-4 max-h-48 sm:max-h-64 md:max-h-96 overflow-y-auto">
+          <div v-else class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 md:gap-4 max-h-40 sm:max-h-56 md:max-h-80 overflow-y-auto">
             <div
               v-for="asset in filteredAssets"
               :key="asset.id"
@@ -576,6 +601,14 @@
                   <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount">
                     Theme limit: {{ selectedThemePhotoCount }} photos
                   </span>
+                  <span v-else-if="form.layoutType === 'grid' && gridLayoutInfo">
+                    <span v-if="gridLayoutInfo.isPageFull" class="text-green-600 font-medium">
+                      ✓ Page {{ gridLayoutInfo.currentPage }} complete! 
+                    </span>
+                    <span v-else>
+                      {{ gridLayoutInfo.photosOnCurrentPage }}/{{ gridLayoutInfo.memoriesPerPage }} photos on current page
+                    </span>
+                  </span>
                   <span v-else>
                     Ready to create your cards or booklets
                   </span>
@@ -584,10 +617,17 @@
             </div>
             <div class="text-center sm:text-right">
               <p class="text-xs text-brand-primary/70">
-                Estimated pages: {{ Math.ceil(selectedMemories.length / 4) }}
+                <span v-if="form.layoutType === 'grid' && gridLayoutInfo">
+                  {{ gridLayoutInfo.totalPages }} page{{ gridLayoutInfo.totalPages !== 1 ? 's' : '' }} ({{ gridLayoutInfo.gridLayout }} layout)
+                </span>
+                <span v-else>
+                  Estimated pages: {{ Math.ceil(selectedMemories.length / 4) }}
+                </span>
               </p>
             </div>
           </div>
+          
+
         </div>
       </div>
       <!-- Loading State -->
@@ -1216,6 +1256,51 @@ const calculatedPageCount = computed(() => {
   const totalPages = Math.ceil(selectedAssets.value.length / memoriesPerPage)
   
   return totalPages
+})
+
+// Calculate grid layout information for display
+const gridLayoutInfo = computed(() => {
+  if (form.value.layoutType !== 'grid') return null
+  
+  const gridLayout = form.value.gridLayout || '2x2'
+  const [rows, cols] = gridLayout.split('x').map(Number)
+  const memoriesPerPage = rows * cols
+  const selectedCount = selectedMemories.value.length
+  
+  // Fix page calculation logic
+  if (selectedCount === 0) {
+    return {
+      memoriesPerPage,
+      selectedCount,
+      currentPage: 1,
+      photosOnCurrentPage: 0,
+      isPageFull: false,
+      totalPages: 0,
+      gridLayout: `${rows}x${cols}`
+    }
+  }
+  
+  // Calculate current page (1-based)
+  const currentPage = Math.ceil(selectedCount / memoriesPerPage)
+  
+  // Calculate photos on current page
+  const photosOnCurrentPage = selectedCount % memoriesPerPage || memoriesPerPage
+  
+  // Check if current page is full
+  const isPageFull = photosOnCurrentPage === memoriesPerPage
+  
+  // Calculate total pages
+  const totalPages = Math.ceil(selectedCount / memoriesPerPage)
+  
+  return {
+    memoriesPerPage,
+    selectedCount,
+    currentPage,
+    photosOnCurrentPage,
+    isPageFull,
+    totalPages,
+    gridLayout: `${rows}x${cols}`
+  }
 })
 
 // Get selected theme's photo count
