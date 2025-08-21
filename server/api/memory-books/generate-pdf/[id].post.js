@@ -464,7 +464,7 @@ export default defineEventHandler(async (event) => {
         hasPhotoSelectionReasoning: !!book.ai_photo_selection_reasoning
       })
       
-      await updatePdfStatus(supabase, book.id, user.id, `📝 Step 2: Generating story from ${selectedAssets.length} selected photos...`)
+      await updatePdfStatus(supabase, book.id, user.id, `📝 Generating story from ${selectedAssets.length} selected photos...`)
       
       const storyRequestBody = {
         selectedAssets: selectedAssets,
@@ -580,7 +580,7 @@ export default defineEventHandler(async (event) => {
     // ========================================
     // STEP 4: FETCH ASSETS FOR PROCESSING
     // ========================================
-    logger.step('📸 STEP 4: ASSET FETCHING - Fetching approved assets for processing')
+    logger.step('📸 ASSET FETCHING - Fetching approved assets for processing')
     logger.step('📊 Asset fetching details', {
       createdFromAssets: book.created_from_assets,
       createdFromAssetsLength: book.created_from_assets?.length || 0
@@ -611,28 +611,28 @@ export default defineEventHandler(async (event) => {
     // ========================================
     // STEP 5: BACKGROUND IMAGE PROCESSING
     // ========================================
-    logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Loading background image')
+    logger.step('🎨 BACKGROUND PROCESSING - Loading background image')
 
     let backgroundBuffer
     
-    logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Background type details', {
+    logger.step('🎨 BACKGROUND PROCESSING - Background type details', {
       backgroundType: book.background_type,
       hasBackgroundUrl: !!book.background_url
     })
     
     if (book.background_type === 'solid') {
       // Handle solid color background
-      logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Using solid color background')
+      logger.step('🎨 BACKGROUND PROCESSING - Using solid color background')
       await updatePdfStatus(supabase, book.id, user.id, 'Applying solid color background...')
       backgroundBuffer = null
     } else if (book.background_type === 'magical') {
       // Generate background for magical background type
-      logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Generating magical background')
+      logger.step('🎨 BACKGROUND PROCESSING - Generating magical background')
       await updatePdfStatus(supabase, book.id, user.id, 'Retrieving background image...')
       await updatePdfStatus(supabase, book.id, user.id, 'Creating magical background...')
       
       try {
-        logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Calling background generation API')
+        logger.step('🎨 BACKGROUND PROCESSING - Calling background generation API')
         logger.step('📡 Background API call details', {
           endpoint: `/api/memory-books/generate-background/${book.id}`,
           method: 'POST'
@@ -647,35 +647,35 @@ export default defineEventHandler(async (event) => {
         })
         
         if (!bgGenRes.ok) {
-          logger.error('❌ STEP 5: BACKGROUND PROCESSING - Background generation failed', `Status: ${bgGenRes.status}`)
+          logger.error('❌ BACKGROUND PROCESSING - Background generation failed', `Status: ${bgGenRes.status}`)
           throw new Error(`Background generation failed: ${bgGenRes.status}`)
         }
         
         const bgGenData = await bgGenRes.json()
-        logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Background generation API response received')
+        logger.step('🎨 BACKGROUND PROCESSING - Background generation API response received')
         logger.step('📡 Background API response details', {
           status: bgGenRes.status,
           hasBackgroundUrl: !!bgGenData.backgroundUrl,
           backgroundUrl: bgGenData.backgroundUrl || null
         })
-        logger.success('🎨 STEP 5: BACKGROUND PROCESSING - Background generated successfully')
+        logger.success('🎨 BACKGROUND PROCESSING - Background generated successfully')
         
         // Download the newly generated background
-        logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Downloading generated background')
+        logger.step('🎨 BACKGROUND PROCESSING - Downloading generated background')
         logger.step('📡 Background download details', {
           backgroundUrl: bgGenData.backgroundUrl
         })
         
         const bgRes = await fetch(bgGenData.backgroundUrl)
         if (!bgRes.ok) {
-          logger.error('❌ STEP 5: BACKGROUND PROCESSING - Failed to fetch generated background', `Status: ${bgRes.status}`)
+          logger.error('❌ BACKGROUND PROCESSING - Failed to fetch generated background', `Status: ${bgRes.status}`)
           throw new Error(`Failed to fetch generated background: ${bgRes.status}`)
         }
         backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
-        logger.success(`🎨 STEP 5: BACKGROUND PROCESSING - Generated background downloaded (${backgroundBuffer.length} bytes)`)
+        logger.success(`🎨 BACKGROUND PROCESSING - Generated background downloaded (${backgroundBuffer.length} bytes)`)
         
         // Update the book with the new background URL
-        logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Updating book with new background URL')
+        logger.step('🎨 BACKGROUND PROCESSING - Updating book with new background URL')
         
         const { error: updateError } = await supabase
           .from('memory_books')
@@ -685,7 +685,7 @@ export default defineEventHandler(async (event) => {
         if (updateError) {
           logger.warning('⚠️ STEP 5: BACKGROUND PROCESSING - Failed to update book with background URL', updateError.message)
         } else {
-          logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Book updated with new background URL')
+          logger.step('🎨 BACKGROUND PROCESSING - Book updated with new background URL')
         }
       } catch (bgError) {
         logger.error('❌ STEP 5: BACKGROUND PROCESSING - Background generation error', bgError.message)
@@ -694,7 +694,7 @@ export default defineEventHandler(async (event) => {
       }
     } else if (book.background_url && book.background_type !== 'solid') {
       // Download existing background from storage
-      logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Downloading existing background')
+      logger.step('🎨 BACKGROUND PROCESSING - Downloading existing background')
       logger.step('📡 Existing background details', {
         backgroundUrl: book.background_url,
         backgroundType: book.background_type
@@ -709,7 +709,7 @@ export default defineEventHandler(async (event) => {
       backgroundBuffer = Buffer.from(await bgRes.arrayBuffer())
       logger.success(`🎨 STEP 5: BACKGROUND PROCESSING - Background downloaded (${backgroundBuffer.length} bytes)`)
     } else {
-      logger.step('🎨 STEP 5: BACKGROUND PROCESSING - Using white background (no background image)')
+      logger.step('🎨 BACKGROUND PROCESSING - Using white background (no background image)')
       backgroundBuffer = null
     }
     
@@ -718,13 +718,13 @@ export default defineEventHandler(async (event) => {
     // ========================================
     // STEP 6: PDF CREATION AND LAYOUT
     // ========================================
-    logger.step('📄 STEP 6: PDF CREATION - Creating PDF document')
+    logger.step('📄 PDF CREATION - Creating PDF document')
     await updatePdfStatus(supabase, book.id, user.id, '📄 Creating PDF...')
     
     const pdfDoc = await PDFDocument.create()
     let pdfBgImage = null
     if (backgroundBuffer) {
-      logger.step('📄 STEP 6: PDF CREATION - Embedding background image')
+      logger.step('📄 PDF CREATION - Embedding background image')
       pdfBgImage = await pdfDoc.embedPng(backgroundBuffer)
       logger.success('📄 STEP 6: PDF CREATION - PDF document created with background image')
     } else {

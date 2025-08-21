@@ -3062,28 +3062,28 @@ const pollPdfStatus = async () => {
                     } else if (status.pdf_status === '🤔 Processing with AI...') {
         currentProgress.value = 8
         currentProgressMessage.value = '🤔 Processing with AI...'
-      } else if (status.pdf_status && status.pdf_status.startsWith('🎯 STEP 1: PHOTO SELECTION')) {
+      } else if (status.pdf_status && status.pdf_status.startsWith('🎯 PHOTO SELECTION')) {
         currentProgress.value = 15
         currentProgressMessage.value = status.pdf_status
-      } else if (status.pdf_status && status.pdf_status.startsWith('📝 STEP 2: STORY GENERATION')) {
+      } else if (status.pdf_status && status.pdf_status.startsWith('📝 STORY GENERATION')) {
         currentProgress.value = 25
         currentProgressMessage.value = status.pdf_status
-      } else if (status.pdf_status && status.pdf_status.startsWith('🎨 STEP 3: BACKGROUND GENERATION')) {
+      } else if (status.pdf_status && status.pdf_status.startsWith('🎨 BACKGROUND GENERATION')) {
         currentProgress.value = 35
         currentProgressMessage.value = status.pdf_status
-      } else if (status.pdf_status && status.pdf_status.startsWith('📸 STEP 4: ASSET FETCHING')) {
+      } else if (status.pdf_status && status.pdf_status.startsWith('📸 ASSET FETCHING')) {
         currentProgress.value = 45
         currentProgressMessage.value = status.pdf_status
-      } else if (status.pdf_status && status.pdf_status.startsWith('🎨 STEP 5: BACKGROUND PROCESSING')) {
+      } else if (status.pdf_status && status.pdf_status.startsWith('🎨 BACKGROUND PROCESSING')) {
         currentProgress.value = 55
         currentProgressMessage.value = status.pdf_status
-      } else if (status.pdf_status && status.pdf_status.startsWith('📄 STEP 6: PDF CREATION')) {
+      } else if (status.pdf_status && status.pdf_status.startsWith('📄 PDF CREATION')) {
         currentProgress.value = 65
         currentProgressMessage.value = status.pdf_status
-      } else if (status.pdf_status && status.pdf_status.startsWith('🎯 Step 1: Selecting best photos')) {
+      } else if (status.pdf_status && status.pdf_status.startsWith('🎯 Selecting best photos')) {
         currentProgress.value = 15
         currentProgressMessage.value = status.pdf_status
-      } else if (status.pdf_status && status.pdf_status.startsWith('📖 Step 2: Generating story')) {
+      } else if (status.pdf_status && status.pdf_status.startsWith('📖 Generating story')) {
         currentProgress.value = 25
         currentProgressMessage.value = status.pdf_status
       } else if (status.pdf_status && status.pdf_status.startsWith('🎯 Processing photos for layout')) {
@@ -3375,7 +3375,7 @@ const composeNewlyCreatedMemory = async () => {
     
     // Step 2: PDF Generation (includes story generation)
     console.log('🔧 [composeNewlyCreatedMemory] Starting PDF generation...')
-    currentProgressMessage.value = '📝 Step 2: Generating story and creating your memory...'
+    currentProgressMessage.value = '📝 Generating story and creating your memory...'
     
     // Fetch the latest book data to ensure we have the updated created_from_assets
     const supabase = useNuxtApp().$supabase
@@ -4636,7 +4636,7 @@ async function onMagicMemoryContinue() {
     console.log('✅ Photo selection completed, proceeding to PDF generation')
     
     // Update status for PDF generation step (which will handle story generation internally)
-    currentProgressMessage.value = '🎨 Step 2: Creating your memory...'
+    currentProgressMessage.value = '🎨 Creating your memory...'
     setTimeout(pollPdfStatus, 100)
     
     // Create a book object for the progress dialog with proper asset references
@@ -4786,7 +4786,7 @@ const retryMagicMemory = async () => {
     console.log('✅ Photo selection completed, proceeding to PDF generation')
     
     // Update status for PDF generation step (which will handle story generation internally)
-    currentProgressMessage.value = '🎨 Step 2: Creating your memory...'
+    currentProgressMessage.value = '🎨 Creating your memory...'
     setTimeout(pollPdfStatus, 100)
     
     // Create a book object for the progress dialog with proper asset references
