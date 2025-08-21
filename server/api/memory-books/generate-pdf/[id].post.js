@@ -1518,17 +1518,72 @@ export default defineEventHandler(async (event) => {
               .jpeg({ quality: 100, progressive: true, mozjpeg: true })
               .toBuffer()
             
-            // Add border to rectangular images
-            processedImage = await sharp(processedImage)
-              .extend({
-                top: borderWidth,
-                bottom: borderWidth,
-                left: borderWidth,
-                right: borderWidth,
-                background: borderColor
-              })
-              .jpeg({ quality: 100, progressive: true, mozjpeg: true })
-              .toBuffer()
+            // Calculate border radius (same as rounded case)
+            const originalRadius = Math.min(targetWidth, targetHeight) * 0.15 // 15% of smaller dimension for radius
+            console.log(`📐 Original case - Calculated radius: ${originalRadius}px (${Math.round(originalRadius)}px rounded)`)
+            
+            if (borderWidth > 0) {
+              // Get the actual dimensions of the resized image
+              const resizedMetadata = await sharp(processedImage).metadata()
+              const actualWidth = resizedMetadata.width
+              const actualHeight = resizedMetadata.height
+              
+              console.log(`📏 Original case - Resized image dimensions: ${actualWidth}x${actualHeight}`)
+              
+              // Apply rounded corners to the image first
+              const roundedMaskSvg = `<svg width="${actualWidth}" height="${actualHeight}" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${originalRadius}" ry="${originalRadius}" fill="white"/>
+              </svg>`
+              
+              const roundedImage = await sharp(processedImage)
+                .composite([{
+                  input: Buffer.from(roundedMaskSvg),
+                  blend: 'dest-in'
+                }])
+                .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                .toBuffer()
+              
+              // Create a larger canvas with rounded border
+              const borderedWidth = actualWidth + (borderWidth * 2)
+              const borderedHeight = actualHeight + (borderWidth * 2)
+              
+              // Create background with rounded corners for the border
+              const borderSvg = `<svg width="${borderedWidth}" height="${borderedHeight}" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="${borderedWidth}" height="${borderedHeight}" rx="${originalRadius + borderWidth}" ry="${originalRadius + borderWidth}" fill="${borderColor}"/>
+              </svg>`
+              
+              // Composite the rounded image onto the bordered background
+              processedImage = await sharp(Buffer.from(borderSvg))
+                .composite([{ 
+                  input: roundedImage, 
+                  blend: 'over',
+                  top: borderWidth,
+                  left: borderWidth
+                }])
+                .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                .toBuffer()
+              
+              console.log(`✅ Original case - Rounded corners with border applied, radius: ${Math.round(originalRadius)}px`)
+            } else {
+              // No border, just apply rounded corners to the image
+              const resizedMetadata = await sharp(processedImage).metadata()
+              const actualWidth = resizedMetadata.width
+              const actualHeight = resizedMetadata.height
+              
+              const roundedMaskSvg = `<svg width="${actualWidth}" height="${actualHeight}" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${originalRadius}" ry="${originalRadius}" fill="white"/>
+              </svg>`
+              
+              processedImage = await sharp(processedImage)
+                .composite([{
+                  input: Buffer.from(roundedMaskSvg),
+                  blend: 'dest-in'
+                }])
+                .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                .toBuffer()
+              
+              console.log(`✅ Original case - Rounded corners applied (no border), radius: ${Math.round(originalRadius)}px`)
+            }
             break
         }
         
@@ -1920,29 +1975,93 @@ export default defineEventHandler(async (event) => {
               .jpeg({ quality: 100, progressive: true, mozjpeg: true })
               .toBuffer()
           }
-          // Apply photo border if specified in theme
+          // Apply photo border and/or rounded corners if specified in theme
           const photoBorder = theme.photo_border || 0
-          if (photoBorder > 0) {
-            // Ensure border color has # prefix for Sharp
-            let borderColor = theme.body_font_color || '#333333'
-            if (borderColor && !borderColor.startsWith('#')) {
-              borderColor = '#' + borderColor
-            }
-            // photoBorder is already in pixels, no conversion needed
-            const borderWidth = photoBorder
-            try {
-              // Create border by extending the image with border color
-              const borderedImage = await sharp(finalImageBuffer)
-                .extend({
-                  top: borderWidth,
-                  bottom: borderWidth,
-                  left: borderWidth,
-                  right: borderWidth,
-                  background: borderColor
-                })
-                .jpeg({ quality: 100, progressive: true, mozjpeg: true })
-                .toBuffer()
-              finalImageBuffer = borderedImage
+          // Use photoConfig.borderRadius as percentage when available, otherwise use 15% when theme.rounded is true
+          const borderRadius = photoConfig.borderRadius ? 
+            (Math.min(targetWidth, targetHeight) * (photoConfig.borderRadius / 100)) : 
+            (theme.rounded ? Math.min(targetWidth, targetHeight) * 0.15 : 0)
+          
+          console.log(`🎨 Theme photo processing - Asset ${i + 1}: photoBorder=${photoBorder}, borderRadius=${borderRadius}, theme.rounded=${theme.rounded}, photoConfig.borderRadius=${photoConfig.borderRadius}`)
+          console.log(`🎨 Theme photo processing - Target dimensions: ${targetWidth}x${targetHeight}, calculated radius: ${Math.min(targetWidth, targetHeight) * 0.15}`)
+          
+                      if (photoBorder > 0) {
+              console.log(`🎨 Theme photo processing - Applying border with width: ${photoBorder}`)
+              // Ensure border color has # prefix for Sharp
+              let borderColor = theme.body_font_color || '#333333'
+              if (borderColor && !borderColor.startsWith('#')) {
+                borderColor = '#' + borderColor
+              }
+              console.log(`🎨 Theme photo processing - Border color: ${borderColor}`)
+              // Increase border width for better visibility of rounded corners
+              const borderWidth = Math.max(photoBorder, 3) // Minimum 3 pixels for visibility
+              console.log(`🎨 Theme photo processing - Using border width: ${borderWidth} (original: ${photoBorder})`)
+                          try {
+                if (borderRadius > 0) {
+                  console.log(`🎨 Theme photo processing - Applying border radius: ${borderRadius}px`)
+                  // Apply border radius to both image and border
+                  const borderRadiusPixels = Math.round(borderRadius)
+                  // The border background should have radius = image radius + border width
+                  const borderRadiusWithBorder = borderRadiusPixels + borderWidth
+                  console.log(`🎨 Theme photo processing - Border radius pixels: ${borderRadiusPixels}, border background radius: ${borderRadiusWithBorder}`)
+                
+                // Create background layer with theme color
+                let themeBackgroundColor = '#FFFFFF' // Default to white
+                if (theme.background_color) {
+                  // Ensure the color has # prefix for Sharp compatibility
+                  themeBackgroundColor = theme.background_color.startsWith('#') ? theme.background_color : `#${theme.background_color}`
+                }
+                const themeBackgroundOpacity = theme.background_opacity || 100
+                console.log(`🎨 Theme photo processing - Using theme background: ${themeBackgroundColor} with opacity ${themeBackgroundOpacity}%`)
+                
+                // Create a larger canvas with theme background color and border
+                const borderedWidth = targetWidth + (borderWidth * 2)
+                const borderedHeight = targetHeight + (borderWidth * 2)
+                
+                // Create rounded corner mask for the image
+                const roundedSvg = `<svg width="${targetWidth}" height="${targetHeight}">
+                  <rect x="0" y="0" width="${targetWidth}" height="${targetHeight}" rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" />
+                </svg>`
+                
+                // Create border SVG with proper positioning
+                const borderSvg = `<svg width="${targetWidth}" height="${targetHeight}">
+                  <rect x="${borderWidth/2}" y="${borderWidth/2}"
+                        width="${targetWidth - borderWidth}" height="${targetHeight - borderWidth}"
+                        rx="${borderRadiusPixels}" ry="${borderRadiusPixels}"
+                        fill="none" stroke="${borderColor}" stroke-width="${borderWidth}"/>
+                </svg>`
+                
+                // 1) Round the corners with a mask (transparent outside the rounded rect)
+                const withAlpha = await sharp(finalImageBuffer)
+                  .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }]) // keep rounded area
+                  .toBuffer()
+                
+                // 2) FLATTEN onto your background color (kills transparency so JPG is safe)
+                const flattened = await sharp(withAlpha)
+                  .flatten({ background: themeBackgroundColor }) // <= critical for JPG
+                  .toBuffer()
+                
+                // 3) Draw the rounded border on top
+                finalImageBuffer = await sharp(flattened)
+                  .composite([{ input: Buffer.from(borderSvg), blend: 'over' }])
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                  .toBuffer()
+                console.log(`🎨 Theme photo processing - Final image with rounded border created successfully`)
+                              } else {
+                  console.log(`🎨 Theme photo processing - No border radius, using rectangular border`)
+                  // Create border by extending the image with border color (no radius)
+                  const borderedImage = await sharp(finalImageBuffer)
+                    .extend({
+                      top: borderWidth,
+                      bottom: borderWidth,
+                      left: borderWidth,
+                      right: borderWidth,
+                      background: borderColor
+                    })
+                    .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                    .toBuffer()
+                  finalImageBuffer = borderedImage
+                }
               
               // Adjust drawing dimensions to account for border
               // Convert pixels to points for PDF drawing (1 point = 1/72 inch, 1 pixel = 1/96 inch)
@@ -1959,19 +2078,22 @@ export default defineEventHandler(async (event) => {
               const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
               page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
             }
+          } else if (borderRadius > 0) {
+            console.log(`🎨 Theme photo processing - Applying rounded corners only (no border): ${borderRadius}px`)
+            // Apply rounded corners only (no border)
+            const borderRadiusPixels = Math.round(borderRadius)
+            try {
+              const roundedSvg = `<svg width="${targetWidth}" height="${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" fill="white"/></svg>`
+              finalImageBuffer = await sharp(finalImageBuffer)
+                .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
+                .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                .toBuffer()
+            } catch (roundError) {}
+            const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
+            page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
           } else {
-            // Apply rounded corners if specified
-            const borderRadius = photoConfig.borderRadius || (theme.rounded ? 5 : 0)
-            if (borderRadius > 0) {
-              const borderRadiusPixels = Math.round(borderRadius * 3.779527559)
-              try {
-                const roundedSvg = `<svg width="${targetWidth}" height="${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" fill="white"/></svg>`
-                finalImageBuffer = await sharp(finalImageBuffer)
-                  .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
-                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
-                  .toBuffer()
-              } catch (roundError) {}
-            }
+            console.log(`🎨 Theme photo processing - No border or radius applied`)
+            // No border or radius
             const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
             page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
           }
