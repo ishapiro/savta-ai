@@ -180,7 +180,7 @@ export const usePhotoSelection = () => {
         return photoSelection_selectedMemories.value
       
       case 'geo_code':
-        return photoSelection_availableAssets.value
+        const geoFilteredAssets = photoSelection_availableAssets.value
           .filter(asset => {
             if (!photoSelection_selectedLocation.value) return false
             
@@ -209,6 +209,13 @@ export const usePhotoSelection = () => {
             }
           })
           .map(asset => asset.id)
+        
+        // Limit to 100 most recent photos based on upload date (created_at)
+        if (geoFilteredAssets.length > PHOTO_POOL_SIZE) {
+          console.log(`🔍 [photoSelection_populatePhotoSelectionPool] Location selection returned ${geoFilteredAssets.length} photos, limiting to ${PHOTO_POOL_SIZE} most recent`)
+          return geoFilteredAssets.slice(0, PHOTO_POOL_SIZE)
+        }
+        return geoFilteredAssets
       
       case 'date_range':
         console.log('🔍 [photoSelection_populatePhotoSelectionPool] Date range case - dateRange:', photoSelection_dateRange.value)
@@ -221,7 +228,7 @@ export const usePhotoSelection = () => {
           photo_date: a.photo_date,
           date_taken: a.date_taken
         })))
-        const filteredAssets = photoSelection_availableAssets.value
+        const dateFilteredAssets = photoSelection_availableAssets.value
           .filter(asset => {
             // If no date range is selected, return all assets
             if (!photoSelection_dateRange.value.start && !photoSelection_dateRange.value.end) return true
@@ -275,11 +282,17 @@ export const usePhotoSelection = () => {
           })
           .map(asset => asset.id)
         
-        console.log('🔍 [photoSelection_populatePhotoSelectionPool] Date range filtered count:', filteredAssets.length)
-        return filteredAssets
+        console.log('🔍 [photoSelection_populatePhotoSelectionPool] Date range filtered count:', dateFilteredAssets.length)
+        
+        // Limit to 100 most recent photos based on upload date (created_at)
+        if (dateFilteredAssets.length > PHOTO_POOL_SIZE) {
+          console.log(`🔍 [photoSelection_populatePhotoSelectionPool] Date range selection returned ${dateFilteredAssets.length} photos, limiting to ${PHOTO_POOL_SIZE} most recent`)
+          return dateFilteredAssets.slice(0, PHOTO_POOL_SIZE)
+        }
+        return dateFilteredAssets
       
       case 'tags':
-        return photoSelection_availableAssets.value
+        const tagFilteredAssets = photoSelection_availableAssets.value
           .filter(asset => {
             if (!photoSelection_selectedTags.value.length) return false
             if (!asset.tags) return false
@@ -287,6 +300,13 @@ export const usePhotoSelection = () => {
             return photoSelection_selectedTags.value.some(tag => asset.tags.includes(tag))
           })
           .map(asset => asset.id)
+        
+        // Limit to 100 most recent photos based on upload date (created_at)
+        if (tagFilteredAssets.length > PHOTO_POOL_SIZE) {
+          console.log(`🔍 [photoSelection_populatePhotoSelectionPool] Tag selection returned ${tagFilteredAssets.length} photos, limiting to ${PHOTO_POOL_SIZE} most recent`)
+          return tagFilteredAssets.slice(0, PHOTO_POOL_SIZE)
+        }
+        return tagFilteredAssets
       
       default:
         console.log('🔍 [photoSelection_populatePhotoSelectionPool] Default case - returning empty array')

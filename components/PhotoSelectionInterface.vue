@@ -54,7 +54,7 @@
             </div>
             <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By location</div>
             <div class="text-xs text-gray-600 leading-tight">Choose a country, city, or state. 
-              I'll pick the best photos from this location.</div>
+              I'll pick the best photos from this location (up to 100 most recent).</div>
                             <div v-if="methodValue === 'geo_code'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
               <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-check text-white text-xs"></i>
@@ -74,7 +74,7 @@
             </div>
             <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By date</div>
             <div class="text-xs text-gray-600 leading-tight">Choose a specific time period. 
-              I'll pick the best photos from this date range.</div>
+              I'll pick the best photos from this date range (up to 100 most recent).</div>
                             <div v-if="methodValue === 'date_range'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
               <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-check text-white text-xs"></i>
@@ -94,7 +94,7 @@
             </div>
             <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By tags</div>
             <div class="text-xs text-gray-600 leading-tight">Choose a tag or person. 
-              I'll pick the best photos with these tags.</div>
+              I'll pick the best photos with these tags (up to 100 most recent).</div>
                             <div v-if="methodValue === 'tags'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
               <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-check text-white text-xs"></i>
