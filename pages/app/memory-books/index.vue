@@ -35,7 +35,7 @@
         <div class="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
           <!-- Memory Cards Card -->
           <div class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg border border-brand-highlight/30 p-6 sm:p-6">
-            <h3 class="text-lg sm:text-xl font-bold text-brand-highlight mb-4 text-center">Single Memory Cards</h3>
+            <h3 class="text-lg sm:text-xl font-bold text-brand-highlight mb-4 text-center">Memory Cards</h3>
             <div class="flex flex-col sm:flex-row gap-4">
               <div class="flex flex-col items-center">
                 <button
@@ -46,19 +46,9 @@
                   <span class="hidden sm:inline">Create a Memory Card</span>
                   <span class="sm:hidden">Create Card</span>
                 </button>
-                                  <p class="mt-3 sm:mt-2 text-sm text-brand-highlight text-center">Single page with beautiful themes</p>
+                  <p class="mt-3 sm:mt-2 text-sm text-brand-highlight text-center">Simple step-by-step wizard</p>
+                  <p class="mt-3 sm:mt-2 text-sm text-brand-highlight text-center">Perfect for beginners</p>
               </div>
-              <!-- <div class="flex flex-col items-center">
-                <button
-                  class="border-0 bg-brand-highlight hover:bg-brand-header text-white font-bold rounded-full px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn"
-                  @click="openMagicMemoryDialog('full')"
-                >
-                  <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
-                  <span class="hidden sm:inline">Savta Help me with a Card</span>
-                  <span class="sm:hidden">Help Me</span>
-                </button>
-                <p class="text-sm text-brand-primary/70 mt-1 text-center">More Control</p>
-              </div> -->
             </div>
           </div>
           
@@ -74,7 +64,8 @@
                 <span class="hidden sm:inline">Create a Memory Book</span>
                 <span class="sm:hidden">Create Book</span>
               </button>
-                              <p class="mt-3 sm:mt-2 text-sm text-brand-secondary text-center">Multi-page books with themes or grid layouts</p>
+              <p class="mt-3 sm:mt-2 text-sm text-brand-secondary text-center">Advanced form with many options</p>
+              <p class="mt-3 sm:mt-2 text-sm text-brand-secondary text-center">For experienced users</p>
             </div>
           </div>
         </div>
