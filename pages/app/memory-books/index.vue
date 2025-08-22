@@ -1511,194 +1511,7 @@
         </div>
       </div>
 
-      <!-- Step 2: Event Selection -->
-      <div v-if="magicMemoryStep === MAGIC_STEPS.EVENT && currentButtonConfig?.steps.includes(MAGIC_STEPS.EVENT)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
-        <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-brand-secondary rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
-            <i class="pi pi-calendar text-lg sm:text-2xl text-white"></i>
-          </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Tell me what kind of event this was</h3>
-          <p class="text-sm sm:text-base text-gray-600">You can leave this blank if you prefer, or select Other to tell me about a special event.</p>
-        </div>
-        <div class="field w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
-          <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Event Type</label>
-          <Dropdown
-            v-model="magicMemoryEvent"
-            :options="[
-              { label: 'Vacation', value: 'vacation' },
-              { label: 'Birthday', value: 'birthday' },
-              { label: 'Anniversary', value: 'anniversary' },
-              { label: 'Graduation', value: 'graduation' },
-              { label: 'Family Trip', value: 'family_trip' },
-              { label: 'Other (custom)', value: 'custom' }
-            ]"
-            option-label="label"
-            option-value="value"
-            placeholder="Select an event type..."
-            class="w-full text-base p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 mt-2"
-          />
-        </div>
-        <div v-if="magicMemoryEvent === 'custom'" class="field mt-2 w-full max-w-xs mx-auto sm:max-w-[520px] sm:mx-auto">
-          <label class="block text-sm font-medium text-gray-900 mb-2 text-left">Custom Event</label>
-          <input
-            v-model="magicCustomMemoryEvent"
-            placeholder="Type your event (e.g., 'Bar Mitzvah', 'Retirement', 'First Day of School')"
-            class="w-full text-base p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 mt-2"
-          />
-        </div>
-      </div>
-
-      <!-- Step 3: Photo Count Selection -->
-      <div v-if="magicMemoryStep === MAGIC_STEPS.COUNT && currentButtonConfig?.steps.includes(MAGIC_STEPS.COUNT)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
-        <div class="text-center mb-2 sm:mb-6 mt-2 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
-            <i class="pi pi-images text-lg sm:text-2xl text-white"></i>
-          </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How many photos would you like me to choose?</h3>
-          <p class="text-sm sm:text-base text-gray-600">I'll pick the best photos from your collection to create a beautiful story - I promise it will be lovely!</p>
-        </div>
-        <div class="grid grid-cols-3 gap-3 mt-2 w-full max-w-xs mx-auto sm:gap-4 sm:max-w-[520px] sm:mx-auto">
-          <div
-            v-for="count in [1, 4, 6]"
-            :key="count"
-            class="relative cursor-pointer"
-            @click="magicPhotoCount = count"
-          >
-            <div
-              class="border-2 rounded-lg p-3 sm:p-4 text-center transition-all duration-200"
-              :class="magicPhotoCount === count 
-                ? 'border-brand-highlight bg-brand-navigation shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-brand-highlight hover:bg-brand-navigation/25'"
-            >
-              <div class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{{ count }}</div>
-              <div class="text-xs sm:text-sm text-gray-600">
-                {{ count === 1 ? 'Photo' : 'Photos' }}
-              </div>
-              <div v-if="magicPhotoCount === count" class="absolute top-1 right-1 sm:top-2 sm:right-2">
-                <i class="pi pi-check text-brand-header text-sm sm:text-lg"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200 w-full max-w-xs mx-auto mt-2 sm:max-w-[520px] sm:mx-auto">
-          <div class="flex items-start gap-2 sm:gap-3">
-            <i class="pi pi-info-circle text-blue-500 mt-1"></i>
-            <div>
-              <h4 class="font-semibold text-blue-900 mb-1">Add your photos</h4>
-              <p class="text-xs sm:text-sm text-blue-800">
-                You'll select up to 12 photos in the next step, then I'll choose the best {{ magicPhotoCount }} photo{{ magicPhotoCount > 1 ? 's' : '' }} from your selection. 
-                Your memory card will be split 50% for photos and 50% for text.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 4: Background Selection -->
-      <div v-if="magicMemoryStep === MAGIC_STEPS.BACKGROUND && currentButtonConfig?.steps.includes(MAGIC_STEPS.BACKGROUND)"
-        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
-        <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
-            <i class="pi pi-palette text-xl sm:text-2xl text-white"></i>
-          </div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Pick your style</h3>
-          <p class="text-sm sm:text-base text-gray-600 mb-2">Choose a clean white background or let me create something special that matches your story perfectly!</p>
-        </div>
-        
-        <!-- Background Selection Tiles -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-2 lg:gap-3 w-full max-w-md mx-auto sm:max-w-2xl">
-          <!-- Clean & Simple Tile -->
-          <div class="relative cursor-pointer group" @click="magicBackgroundType = 'white'">
-            <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 lg:p-4 text-center transition-all duration-300 h-full min-h-[50px] sm:min-h-[80px] lg:min-h-[128px] flex flex-col items-center justify-center"
-              :class="magicBackgroundType === 'white' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-5 h-5 sm:w-8 sm:h-8 lg:w-12 lg:h-12 bg-white border-2 border-gray-300 rounded-full mx-auto mb-0.5 sm:mb-1 lg:mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-file text-gray-600 text-xs sm:text-sm lg:text-xl"></i>
-              </div>
-              <div class="text-xs sm:text-sm lg:text-base font-bold text-gray-900 mb-0.5 sm:mb-1">Clean & Simple</div>
-              <div class="text-xs text-gray-600 leading-tight">Pure white background for a classic, elegant look</div>
-              <div v-if="magicBackgroundType === 'white'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 lg:top-2 lg:right-2">
-                <div class="w-2.5 h-2.5 sm:w-4 sm:h-4 lg:w-6 lg:h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-xs"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Special Design Tile -->
-          <div class="relative cursor-pointer group" @click="magicBackgroundType = 'magical'">
-            <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 lg:p-4 text-center transition-all duration-300 h-full min-h-[50px] sm:min-h-[80px] lg:min-h-[128px] flex flex-col items-center justify-center"
-              :class="magicBackgroundType === 'magical' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-5 h-5 sm:w-8 sm:h-8 lg:w-12 lg:h-12 bg-gradient-to-br from-yellow-200 via-brand-highlight to-blue-200 rounded-full mx-auto mb-0.5 sm:mb-1 lg:mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-sparkles text-brand-header text-xs sm:text-sm lg:text-xl"></i>
-              </div>
-              <div class="text-xs sm:text-sm lg:text-base font-bold text-gray-900 mb-0.5 sm:mb-1">Special Design</div>
-              <div class="text-xs text-gray-600 leading-tight">AI-generated background that matches your story's theme</div>
-              <div v-if="magicBackgroundType === 'magical'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 lg:top-2 lg:right-2">
-                <div class="w-2.5 h-2.5 sm:w-4 sm:h-4 lg:w-6 lg:h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-xs"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Solid Color Tile -->
-          <div class="relative cursor-pointer group" @click="magicBackgroundType = 'solid'">
-            <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 lg:p-4 text-center transition-all duration-300 h-full min-h-[50px] sm:min-h-[80px] lg:min-h-[128px] flex flex-col items-center justify-center"
-              :class="magicBackgroundType === 'solid' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-5 h-5 sm:w-8 sm:h-8 lg:w-12 lg:h-12 rounded-full mx-auto mb-0.5 sm:mb-1 lg:mb-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300"
-                   :style="{ backgroundColor: magicSolidBackgroundColor || '#F4E4D6' }">
-                <i class="pi pi-palette text-white text-xs sm:text-sm lg:text-xl"></i>
-              </div>
-              <div class="text-xs sm:text-sm lg:text-base font-bold text-gray-900 mb-0.5 sm:mb-1">Solid Color</div>
-              <div class="text-xs text-gray-600 leading-tight">Choose your own beautiful background color</div>
-              <div v-if="magicBackgroundType === 'solid'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 lg:top-2 lg:right-2">
-                <div class="w-2.5 h-2.5 sm:w-4 sm:h-4 lg:w-6 lg:h-6 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-xs"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Color Picker (shown when solid is selected) -->
-        <div v-if="magicBackgroundType === 'solid'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-4 w-full max-w-md mx-auto">
-          <h4 class="font-semibold text-brand-flash mb-3 text-center">Choose Your Color</h4>
-          <div class="flex flex-col sm:flex-row items-center gap-4">
-            <div class="flex-1">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
-              <input 
-                type="color" 
-                v-model="magicSolidBackgroundColor"
-                class="w-full h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
-                :style="{ backgroundColor: magicSolidBackgroundColor || '#F4E4D6' }"
-              />
-            </div>
-            <div class="flex-1">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
-              <div class="w-full h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center"
-                   :style="{ backgroundColor: magicSolidBackgroundColor || '#F4E4D6' }">
-                <span class="text-sm font-medium" :class="getContrastTextClass(magicSolidBackgroundColor)">
-                  Card or Booklet
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="mt-3 text-xs text-gray-600 text-center">
-            <p>This color will be the background for your entire memory card</p>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Step 5: Theme Selection -->
+      <!-- Step 2: Theme Selection -->
       <div v-if="magicMemoryStep === MAGIC_STEPS.THEME && currentButtonConfig?.steps.includes(MAGIC_STEPS.THEME)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
@@ -1717,7 +1530,12 @@
             option-label="label"
             option-value="value"
             placeholder="Select a theme (or skip for default)"
-            class="w-full p-1.5 sm:p-2 lg:p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 [&_.p-dropdown-label]:text-xs [&_.p-dropdown-label]:sm:text-sm [&_.p-dropdown-label]:lg:text-base [&_.p-dropdown-trigger]:pr-2 [&_.p-dropdown-item-label]:text-xs [&_.p-dropdown-item-label]:sm:text-sm [&_.p-dropdown-item-label]:lg:text-base"
+            class="w-full p-1.5 sm:p-2 lg:p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+            :pt="{
+              root: { class: 'w-full' },
+              input: { class: 'text-xs sm:text-sm lg:text-base' },
+              item: { class: 'text-xs sm:text-sm lg:text-base' }
+            }"
             :loading="loadingMagicThemes"
             :disabled="loadingMagicThemes"
           />
@@ -1728,7 +1546,49 @@
         
       </div>
 
-      <!-- Step 6: Photo Selection Method -->
+      <!-- Step 3: Background Selection -->
+      <div v-if="magicMemoryStep === MAGIC_STEPS.BACKGROUND && currentButtonConfig?.steps.includes(MAGIC_STEPS.BACKGROUND)"
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+        <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+            <i class="pi pi-palette text-xl sm:text-2xl text-white"></i>
+          </div>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Customize the Background</h3>
+          <p class="text-sm sm:text-base text-gray-600 mb-2">
+            The theme you selected has a designer selected color but you can override it here if you prefer.</p>
+        </div>
+        
+        <!-- Color Picker -->
+        <div class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 w-full max-w-md mx-auto">
+          <h4 class="font-semibold text-brand-flash mb-3 text-center">Choose Your Color</h4>
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
+              <input 
+                type="color" 
+                v-model="magicSolidBackgroundColor"
+                class="w-full h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                :style="{ backgroundColor: magicSolidBackgroundColor || selectedThemeBackgroundColor }"
+              />
+            </div>
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+              <div class="w-full h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center"
+                   :style="{ backgroundColor: magicSolidBackgroundColor || selectedThemeBackgroundColor }">
+                <span class="text-sm font-medium" :class="getContrastTextClass(magicSolidBackgroundColor || selectedThemeBackgroundColor)">
+                  Card or Booklet
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-gray-600 text-center">
+            <p>This color will be the background for your entire memory card</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Step 4: Photo Selection Method -->
       <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTOS && currentButtonConfig?.steps.includes(MAGIC_STEPS.PHOTOS)"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
@@ -4320,18 +4180,16 @@ const PHOTO_POOL_SIZE = 25
 // Step definitions with required/optional flags
 const stepDefinitions = {
   [MAGIC_STEPS.TITLE]: { name: "Title Input", required: true },
-  [MAGIC_STEPS.EVENT]: { name: "Event Selection", required: false },
-  [MAGIC_STEPS.COUNT]: { name: "Photo Count Selection", required: true },
-  [MAGIC_STEPS.BACKGROUND]: { name: "Background Selection", required: true },
   [MAGIC_STEPS.THEME]: { name: "Theme Selection", required: false },
+  [MAGIC_STEPS.BACKGROUND]: { name: "Background Selection", required: true },
   [MAGIC_STEPS.PHOTOS]: { name: "Photo Selection Method", required: true }
 }
 
 // Button configurations defining which steps to include
 const buttonConfigs = {
-  full: { steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.EVENT, MAGIC_STEPS.COUNT, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.THEME, MAGIC_STEPS.PHOTOS], name: "Full Magic Memory" },
-  basic: { steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.COUNT, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.THEME, MAGIC_STEPS.PHOTOS], name: "Basic Magic Memory" },
-  quick: { steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.THEME, MAGIC_STEPS.PHOTOS], name: "Quick Magic Memory" }
+  full: { steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.THEME, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.PHOTOS], name: "Full Magic Memory" },
+  basic: { steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.THEME, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.PHOTOS], name: "Basic Magic Memory" },
+  quick: { steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.THEME, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.PHOTOS], name: "Quick Magic Memory" }
 }
 
 // Current magic memory dialog state
@@ -4466,12 +4324,49 @@ const defaultThemeName = computed(() => {
   return defaultTheme ? defaultTheme.label.split(' (')[0] : null // Extract just the name without photo count
 })
 
+// Computed property to get the selected theme's background color
+const selectedThemeBackgroundColor = computed(() => {
+  if (!magicSelectedTheme.value) return '#F9F6F2' // Default fallback color
+  
+  const selectedTheme = magicThemeOptions.value.find(theme => theme.value === magicSelectedTheme.value)
+  if (!selectedTheme) return '#F9F6F2'
+  
+  // Try to get background color from the theme data
+  try {
+    const themeData = typeof selectedTheme.layoutConfig === 'string' 
+      ? JSON.parse(selectedTheme.layoutConfig) 
+      : selectedTheme.layoutConfig
+    
+    return themeData?.background_color || '#F9F6F2'
+  } catch (error) {
+    console.error('Error parsing theme background color:', error)
+    return '#F9F6F2'
+  }
+})
+
 // Watch for magic memory step changes to handle Step 5 redirect
 watch(magicMemoryStep, (newStep) => {
   if (newStep === MAGIC_STEPS.PHOTOS && availableAssets.value.length === 0) {
     // User has no photos, redirect to upload dialog
     showMagicMemoryDialog.value = false
     showUploadDialog.value = true
+  }
+  
+  // Set background type to solid and initialize color when entering background step
+  if (newStep === MAGIC_STEPS.BACKGROUND) {
+    magicBackgroundType.value = 'solid'
+    // Set the color picker to the theme's background color if no color is set yet
+    if (!magicSolidBackgroundColor.value || magicSolidBackgroundColor.value === '#F9F6F2') {
+      magicSolidBackgroundColor.value = selectedThemeBackgroundColor.value
+    }
+  }
+})
+
+// Watch for theme changes to update the background color
+watch(magicSelectedTheme, (newThemeId) => {
+  if (magicMemoryStep.value === MAGIC_STEPS.BACKGROUND) {
+    // Update the color picker to the new theme's background color
+    magicSolidBackgroundColor.value = selectedThemeBackgroundColor.value
   }
 })
 
@@ -4979,10 +4874,7 @@ const previousMagicMemoryStep = () => {
     currentStepIndex.value = prevIndex
     magicMemoryStep.value = currentButtonConfig.value.steps[prevIndex]
     
-    // Clear custom event if going back to step 2
-    if (magicMemoryStep.value === MAGIC_STEPS.EVENT) {
-      magicCustomMemoryEvent.value = ''
-    }
+
   }
 }
 
