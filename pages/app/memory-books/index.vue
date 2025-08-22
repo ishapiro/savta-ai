@@ -1597,15 +1597,15 @@
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
           <p class="text-xs sm:text-base text-gray-600 mb-2">When you upload photos, they go into your library. Then I'll choose the best ones and write lovely captions for your card or booklet. Choose how you'd like me to pick photos from your library.</p>
-          <p class="text-xs text-brand-flash font-medium">📸 You have {{ availableAssets.length }} photo{{ availableAssets.length !== 1 ? 's' : '' }} in your library</p>
+          <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your library</p>
         </div>
         
         <!-- Photo Selection Tiles -->
         <div class="space-y-3 w-full max-w-md mx-auto sm:max-w-2xl">
           <!-- Savta Selects Tile (Wide Button) -->
-          <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'last_100'">
+          <div class="relative cursor-pointer group" @click="photoSelection_method = 'last_100'">
             <div class="mx-4 border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
-              :class="magicPhotoSelectionMethod === 'last_100' 
+              :class="photoSelection_method === 'last_100' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
               <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
@@ -1614,7 +1614,7 @@
               <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">I'll choose for you</div>
               <div class="text-xs text-gray-600">I'll search your photos for matches to "{{ magicMemoryTitle || 'your memory' }}" 
                 and pick the best photos from your recent uploads.</div>
-              <div v-if="magicPhotoSelectionMethod === 'last_100'" class="absolute top-1 right-1">
+              <div v-if="photoSelection_method === 'last_100'" class="absolute top-1 right-1">
                 <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                   <i class="pi pi-check text-white text-xs"></i>
                 </div>
@@ -1626,13 +1626,13 @@
           <div class="grid grid-cols-2 gap-1 sm:gap-2">
             <!-- Photo Library Selection Tile -->
             <div class="relative cursor-pointer group" @click="() => { 
-              magicPhotoSelectionMethod = 'photo_library'; 
-              console.log('🔍 [Photo Library Clicked] magicPhotoSelectionMethod set to:', magicPhotoSelectionMethod);
+              photoSelection_method = 'photo_library'; 
+              console.log('🔍 [Photo Library Clicked] photoSelection_method set to:', photoSelection_method);
               // Automatically advance to manual step when photo library is selected
               nextMagicMemoryStep();
             }">
               <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
-                :class="magicPhotoSelectionMethod === 'photo_library' 
+                :class="photoSelection_method === 'photo_library' 
                   ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                   : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
                 <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
@@ -1640,7 +1640,7 @@
                 </div>
                 <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">Photo library</div>
                 <div class="text-xs text-gray-600 leading-tight">Choose exactly which photos you want from your library.</div>
-                <div v-if="magicPhotoSelectionMethod === 'photo_library'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
+                <div v-if="photoSelection_method === 'photo_library'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
                   <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                     <i class="pi pi-check text-white text-xs"></i>
                   </div>
@@ -1649,9 +1649,9 @@
             </div>
 
             <!-- By Location Tile -->
-            <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'geo_code'">
+            <div class="relative cursor-pointer group" @click="photoSelection_method = 'geo_code'">
               <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
-                :class="magicPhotoSelectionMethod === 'geo_code' 
+                :class="photoSelection_method === 'geo_code' 
                   ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                   : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
                 <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
@@ -1660,7 +1660,7 @@
                 <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By location</div>
                 <div class="text-xs text-gray-600 leading-tight">Choose a country, city, or state. 
                   I'll pick the best photos from this location.</div>
-                <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
+                <div v-if="photoSelection_method === 'geo_code'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
                   <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                     <i class="pi pi-check text-white text-xs"></i>
                   </div>
@@ -1669,9 +1669,9 @@
             </div>
 
             <!-- By Date Tile -->
-            <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'date_range'">
+            <div class="relative cursor-pointer group" @click="photoSelection_method = 'date_range'">
               <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
-                :class="magicPhotoSelectionMethod === 'date_range' 
+                :class="photoSelection_method === 'date_range' 
                   ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                   : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
                 <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
@@ -1680,7 +1680,7 @@
                 <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By date</div>
                 <div class="text-xs text-gray-600 leading-tight">Choose a specific time period. 
                   I'll pick the best photos from this date range.</div>
-                <div v-if="magicPhotoSelectionMethod === 'date_range'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
+                <div v-if="photoSelection_method === 'date_range'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
                   <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                     <i class="pi pi-check text-white text-xs"></i>
                   </div>
@@ -1689,9 +1689,9 @@
             </div>
 
             <!-- By Tags Tile -->
-            <div class="relative cursor-pointer group" @click="magicPhotoSelectionMethod = 'tags'">
+            <div class="relative cursor-pointer group" @click="photoSelection_method = 'tags'">
               <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
-                :class="magicPhotoSelectionMethod === 'tags' 
+                :class="photoSelection_method === 'tags' 
                   ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                   : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
                 <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
@@ -1700,7 +1700,7 @@
                 <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By tags</div>
                 <div class="text-xs text-gray-600 leading-tight">Choose a tag or person. 
                   I'll pick the best photos with these tags.</div>
-                <div v-if="magicPhotoSelectionMethod === 'tags'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
+                <div v-if="photoSelection_method === 'tags'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
                   <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                     <i class="pi pi-check text-white text-xs"></i>
                   </div>
@@ -1711,26 +1711,26 @@
         </div>
 
         <!-- Date Range Selection (shown when date_range is selected) -->
-        <div v-if="magicPhotoSelectionMethod === 'date_range'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
+        <div v-if="photoSelection_method === 'date_range'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
           <h4 class="font-semibold text-brand-flash mb-4 text-center">Select Date Range</h4>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-900 mb-2">Start Date</label>
-              <Calendar v-model="magicDateRange.start" dateFormat="mm/dd/yy" placeholder="Select start date" class="w-full" />
+              <Calendar v-model="photoSelection_dateRange.start" dateFormat="mm/dd/yy" placeholder="Select start date" class="w-full" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-900 mb-2">End Date</label>
-              <Calendar v-model="magicDateRange.end" dateFormat="mm/dd/yy" placeholder="Select end date" class="w-full" />
+              <Calendar v-model="photoSelection_dateRange.end" dateFormat="mm/dd/yy" placeholder="Select end date" class="w-full" />
             </div>
           </div>
         </div>
 
         <!-- Tag Selection (shown when tags is selected) -->
-        <div v-if="magicPhotoSelectionMethod === 'tags'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
+        <div v-if="photoSelection_method === 'tags'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
           <h4 class="font-semibold text-brand-flash mb-4 text-center">Select Tags</h4>
           <MultiSelect
-            v-model="magicSelectedTags"
-            :options="computedAvailableTags"
+            v-model="photoSelection_selectedTags"
+            :options="photoSelection_computedAvailableTags"
             option-label="label"
             option-value="value"
             placeholder="Choose tags..."
@@ -1741,14 +1741,14 @@
         </div>
 
         <!-- Location Selection (shown when geo_code is selected) -->
-        <div v-if="magicPhotoSelectionMethod === 'geo_code'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
+        <div v-if="photoSelection_method === 'geo_code'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
           <h4 class="font-semibold text-brand-flash mb-4 text-center">Select Location</h4>
           <div class="space-y-4">
             <!-- Location Type Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-900 mb-2">Location Type</label>
               <Dropdown
-                v-model="magicLocationType"
+                v-model="photoSelection_locationType"
                 :options="[
                   { label: 'Country', value: 'country' },
                   { label: 'State/Province', value: 'state' },
@@ -1762,11 +1762,11 @@
             </div>
 
             <!-- Country Selection -->
-            <div v-if="magicLocationType === 'country'">
+            <div v-if="photoSelection_locationType === 'country'">
               <label class="block text-sm font-medium text-gray-900 mb-2">Select Country</label>
               <Dropdown
-                v-model="magicSelectedLocation"
-                :options="availableCountries"
+                v-model="photoSelection_selectedLocation"
+                :options="photoSelection_availableCountries"
                 option-label="label"
                 option-value="value"
                 placeholder="Choose a country..."
@@ -1777,11 +1777,11 @@
             </div>
 
             <!-- State Selection -->
-            <div v-if="magicLocationType === 'state'">
+            <div v-if="photoSelection_locationType === 'state'">
               <label class="block text-sm font-medium text-gray-900 mb-2">Select State/Province</label>
               <Dropdown
-                v-model="magicSelectedLocation"
-                :options="availableStates"
+                v-model="photoSelection_selectedLocation"
+                :options="photoSelection_availableStates"
                 option-label="label"
                 option-value="value"
                 placeholder="Choose a state..."
@@ -1792,11 +1792,11 @@
             </div>
 
             <!-- City Selection -->
-            <div v-if="magicLocationType === 'city'">
+            <div v-if="photoSelection_locationType === 'city'">
               <label class="block text-sm font-medium text-gray-900 mb-2">Select City</label>
               <Dropdown
-                v-model="magicSelectedLocation"
-                :options="availableCities"
+                v-model="photoSelection_selectedLocation"
+                :options="photoSelection_availableCities"
                 option-label="label"
                 option-value="value"
                 placeholder="Choose a city..."
@@ -1807,26 +1807,26 @@
             </div>
 
             <!-- Selected Location Display -->
-            <div v-if="magicSelectedLocation" class="bg-brand-flash/20 rounded-lg p-3 border border-brand-flash/30">
+            <div v-if="photoSelection_selectedLocation" class="bg-brand-flash/20 rounded-lg p-3 border border-brand-flash/30">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
                   <i class="pi pi-map-marker text-brand-flash"></i>
                   <span class="text-sm font-medium text-gray-900">
-                    {{ magicLocationType === 'country' ? 'Country' : magicLocationType === 'state' ? 'State' : 'City' }}: {{ magicSelectedLocation }}
+                    {{ photoSelection_locationType === 'country' ? 'Country' : photoSelection_locationType === 'state' ? 'State' : 'City' }}: {{ photoSelection_selectedLocation }}
                   </span>
                 </div>
                 <Button
                   label="Change"
                   icon="pi pi-edit"
                   size="small"
-                  @click="magicSelectedLocation = null"
+                  @click="photoSelection_selectedLocation = null"
                   class="bg-brand-flash border-0 text-xs px-2 py-1"
                 />
               </div>
             </div>
 
             <p class="text-sm text-brand-flash mt-3 text-center">
-              I'll find photos from {{ magicLocationType === 'country' ? 'this country' : magicLocationType === 'state' ? 'this state/province' : 'this city' }}
+              I'll find photos from {{ photoSelection_locationType === 'country' ? 'this country' : photoSelection_locationType === 'state' ? 'this state/province' : 'this city' }}
             </p>
           </div>
         </div>
@@ -1852,13 +1852,13 @@
 
 
       <!-- Step 6: Photo Library Selection (only for photo_library selection) -->
-      <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod === 'photo_library' && !loadingAssets" class="space-y-3 sm:space-y-4 px-4 overflow-x-hidden">
+      <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library' && !photoSelection_loadingAssets" class="space-y-3 sm:space-y-4 px-4 overflow-x-hidden">
         <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 w-full mx-auto">
           <label class="block text-sm font-medium text-gray-900 mb-2">Filter by Tags</label>
           <div class="flex gap-2 mb-3">
             <MultiSelect
-              v-model="magicSelectedTagFilter"
-              :options="computedAvailableTags"
+              v-model="photoSelection_selectedTagFilter"
+              :options="photoSelection_computedAvailableTags"
               option-label="label"
               option-value="value"
               placeholder="All photos"
@@ -1866,26 +1866,26 @@
               :show-toggle-all="false"
             />
             <Button
-              v-if="magicSelectedTagFilter && magicSelectedTagFilter.length > 0"
+              v-if="photoSelection_selectedTagFilter && photoSelection_selectedTagFilter.length > 0"
               icon="pi pi-times"
               size="small"
-              @click="magicSelectedTagFilter = []"
+              @click="photoSelection_selectedTagFilter = []"
               class="px-2"
               v-tooltip.top="'Clear filter'"
             />
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 max-h-64 sm:max-h-80 overflow-y-auto">
             <div
-              v-for="asset in magicFilteredAssets"
+              v-for="asset in photoSelection_filteredAssets"
               :key="asset.id"
               class="relative group cursor-pointer touch-manipulation magic-photo-card"
               :class="{
-                'opacity-60 pointer-events-none': magicSelectedMemories.length >= 12 && !magicSelectedMemories.includes(asset.id),
-                'ring-4 ring-purple-400 ring-offset-2 scale-105 z-10 bg-purple-100 shadow-xl': magicSelectedMemories.includes(asset.id)
+                'opacity-60 pointer-events-none': photoSelection_selectedMemories.length >= 12 && !photoSelection_selectedMemories.includes(asset.id),
+                'ring-4 ring-purple-400 ring-offset-2 scale-105 z-10 bg-purple-100 shadow-xl': photoSelection_selectedMemories.includes(asset.id)
               }"
-              @click="toggleMagicMemorySelection(asset.id)"
+              @click="photoSelection_toggleMemorySelection(asset.id)"
             >
-              <div v-if="magicSelectedMemories.includes(asset.id)" class="absolute inset-0 bg-purple-200/40 rounded-lg z-20 flex items-center justify-center pointer-events-none transition-all duration-200">
+              <div v-if="photoSelection_selectedMemories.includes(asset.id)" class="absolute inset-0 bg-purple-200/40 rounded-lg z-20 flex items-center justify-center pointer-events-none transition-all duration-200">
                 <i class="pi pi-check text-4xl text-purple-500 animate-bounce"></i>
               </div>
               <div class="aspect-square bg-gradient-to-br from-brand-navigation via-purple-50 to-blue-100 rounded-lg overflow-hidden border-2 border-brand-highlight hover:border-purple-400 transition-colors">
@@ -1910,8 +1910,8 @@
             </div>
           </div>
           <div class="mt-2 text-xs text-gray-600 text-center">
-            <span>{{ magicSelectedMemories.length }} selected (up to 12 photos)</span>
-            <span v-if="magicSelectedTagFilter && magicSelectedTagFilter.length > 0"> • Filtered by: {{ magicSelectedTagFilter.join(', ') }}</span>
+            <span>{{ photoSelection_selectedMemories.length }} selected (up to 12 photos)</span>
+            <span v-if="photoSelection_selectedTagFilter && photoSelection_selectedTagFilter.length > 0"> • Filtered by: {{ photoSelection_selectedTagFilter.join(', ') }}</span>
           </div>
           
           <!-- Upload New Photos Section -->
@@ -1932,7 +1932,7 @@
           </div>
         </div>
       </div>
-      <div v-else-if="loadingAssets && magicPhotoSelectionMethod === 'photo_library'" class="flex items-center justify-center py-8">
+      <div v-else-if="photoSelection_loadingAssets && photoSelection_method === 'photo_library'" class="flex items-center justify-center py-8">
         <div class="text-center">
           <i class="pi pi-spin pi-spinner text-3xl text-brand-header mb-3"></i>
           <p class="text-sm text-gray-600">Loading your photo library...</p>
@@ -1962,7 +1962,7 @@
             v-if="!isLastStep()"
             :label="`Next: ${getNextStepName()}`"
             icon="pi pi-arrow-right"
-            :disabled="(magicMemoryStep === MAGIC_STEPS.TITLE && !magicMemoryTitle.trim()) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && !magicPhotoSelectionMethod.value) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod === 'geo_code' && !magicSelectedLocation.value)"
+            :disabled="(magicMemoryStep === MAGIC_STEPS.TITLE && !magicMemoryTitle.trim()) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && !photoSelection_method.value) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'geo_code' && !photoSelection_selectedLocation.value)"
             @click="nextMagicMemoryStep"
             class="bg-brand-secondary hover:to-blue-700 text-white font-bold rounded-full px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
@@ -1972,7 +1972,7 @@
             v-if="isLastStep()"
             label="Let's create something beautiful together"
             icon="pi pi-bolt"
-            :disabled="(magicMemoryStep === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod === 'photo_library' && magicSelectedMemories.length < 1) || magicLoading"
+            :disabled="(magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method.value === 'photo_library' && photoSelection_selectedMemories.value.length < 1) || magicLoading"
             :loading="magicLoading"
             @click="onMagicMemoryContinue"
             class="bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto animate-pulse"
@@ -2115,6 +2115,7 @@ import { Sparkles, Sparkle, Wand2, Gift } from 'lucide-vue-next'
 import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
 import CaptionRenderer from '~/components/CaptionRenderer.vue'
 import { useAnalytics } from '~/composables/useAnalytics'
+import { usePhotoSelection } from '~/composables/usePhotoSelection'
 const toast = useToast()
 
 const showPdfModal = ref(false)
@@ -4239,6 +4240,33 @@ function toggleMagicMemorySelection(id) {
 
 const magicLoading = ref(false)
 
+// Use the photo selection composable directly
+const {
+  photoSelection_method,
+  photoSelection_dateRange,
+  photoSelection_selectedTags,
+  photoSelection_selectedTagFilter,
+  photoSelection_locationType,
+  photoSelection_selectedLocation,
+  photoSelection_availableCountries,
+  photoSelection_availableStates,
+  photoSelection_availableCities,
+  photoSelection_selectedMemories,
+  photoSelection_availableAssets,
+  photoSelection_loadingAssets,
+  photoSelection_isUploading,
+  photoSelection_showUploadDialog,
+  photoSelection_options,
+  photoSelection_computedAvailableTags,
+  photoSelection_filteredAssets,
+  photoSelection_loadAvailableAssets,
+  photoSelection_loadLocationData,
+  photoSelection_toggleMemorySelection,
+  photoSelection_populatePhotoSelectionPool,
+  photoSelection_resetSelection,
+  photoSelection_getSelectedAssets
+} = usePhotoSelection()
+
 // Function to fetch themes for wizard dialog
 const fetchMagicThemes = async () => {
   try {
@@ -4373,7 +4401,7 @@ const selectedThemeBackgroundColor = computed(() => {
 
 // Watch for magic memory step changes to handle Step 5 redirect
 watch(magicMemoryStep, (newStep) => {
-  if (newStep === MAGIC_STEPS.PHOTOS && availableAssets.value.length === 0) {
+  if (newStep === MAGIC_STEPS.PHOTOS && photoSelection_availableAssets.value.length === 0) {
     // User has no photos, redirect to upload dialog
     showMagicMemoryDialog.value = false
     showUploadDialog.value = true
@@ -4415,7 +4443,7 @@ watch(magicSelectedTheme, (newThemeId) => {
 
 async function onMagicMemoryContinue() {
   // If we're on the manual step and no photos are selected, don't proceed
-  if (magicMemoryStep.value === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod.value === 'photo_library' && magicSelectedMemories.value.length < 1) {
+  if (magicMemoryStep.value === MAGIC_STEPS.MANUAL && photoSelection_method.value === 'photo_library' && photoSelection_selectedMemories.value.length < 1) {
     return
   }
   
@@ -4430,27 +4458,29 @@ async function onMagicMemoryContinue() {
   
   try {
     // Get photo selection pool based on user's choice
-    const photoSelectionPool = populatePhotoSelectionPool()
+    console.log('🔍 [onMagicMemoryContinue] About to call photoSelection_populatePhotoSelectionPool')
+    console.log('🔍 [onMagicMemoryContinue] photoSelection_availableAssets count:', photoSelection_availableAssets.value?.length || 0)
+    const photoSelectionPool = photoSelection_populatePhotoSelectionPool()
     console.log('🔍 [onMagicMemoryContinue] Photo selection pool count:', photoSelectionPool.length)
     console.log('🔍 [onMagicMemoryContinue] Photo selection pool IDs:', photoSelectionPool)
     
     let selectedAssets
     
-    if (magicMemoryStep.value === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod.value === 'photo_library') {
+    if (magicMemoryStep.value === MAGIC_STEPS.MANUAL && photoSelection_method.value === 'photo_library') {
       // For photo library selection, use the selected memories
-      selectedAssets = availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
+      selectedAssets = photoSelection_availableAssets.value.filter(a => photoSelection_selectedMemories.value.includes(a.id))
       console.log('🔍 [onMagicMemoryContinue] Photo library selection - selected assets count:', selectedAssets.length)
     } else {
       // For automatic selection, ensure we have all the assets from the photo selection pool
       // If availableAssets doesn't contain all the assets we need, reload them
-      const missingAssetIds = photoSelectionPool.filter(id => !availableAssets.value.some(a => a.id === id))
+      const missingAssetIds = photoSelectionPool.filter(id => !photoSelection_availableAssets.value.some(a => a.id === id))
       if (missingAssetIds.length > 0) {
-        console.log('🔍 [onMagicMemoryContinue] Missing assets in availableAssets, reloading...')
+        console.log('🔍 [onMagicMemoryContinue] Missing assets in photoSelection_availableAssets, reloading...')
         const allApprovedAssets = await db.assets.getAssets({ approved: true })
-        availableAssets.value = allApprovedAssets || []
+        photoSelection_availableAssets.value = allApprovedAssets || []
       }
       
-      selectedAssets = availableAssets.value.filter(a => photoSelectionPool.includes(a.id))
+      selectedAssets = photoSelection_availableAssets.value.filter(a => photoSelectionPool.includes(a.id))
       console.log('🔍 [onMagicMemoryContinue] Automatic selection - selected assets count:', selectedAssets.length)
       console.log('🔍 [onMagicMemoryContinue] Automatic selection - selected asset IDs:', selectedAssets.map(a => a.id))
     }
@@ -4608,12 +4638,12 @@ async function onMagicMemoryContinue() {
     stopProgressPolling()
     
     // Store the configuration for retry
-    const photoSelectionPool = populatePhotoSelectionPool()
+    const photoSelectionPool = photoSelection_populatePhotoSelectionPool()
     lastMagicMemoryConfig.value = {
       photoSelectionPool: photoSelectionPool,
-                    selectedAssets: magicMemoryStep.value === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod.value === 'photo_library' 
-          ? availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
-          : availableAssets.value.filter(a => photoSelectionPool.includes(a.id)),
+                    selectedAssets: magicMemoryStep.value === MAGIC_STEPS.MANUAL && photoSelection_method.value === 'photo_library' 
+          ? photoSelection_availableAssets.value.filter(a => photoSelection_selectedMemories.value.includes(a.id))
+          : photoSelection_availableAssets.value.filter(a => photoSelectionPool.includes(a.id)),
       title: magicMemoryTitle.value,
       memoryEvent: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
       photoCount: magicPhotoCount.value,
@@ -4810,31 +4840,31 @@ const openMagicMemoryDialog = async (buttonType = 'full') => {
   magicPhotoCount.value = 4
   magicBackgroundType.value = 'white'
   // Set default photo selection method based on button configuration
-  magicPhotoSelectionMethod.value = currentButtonConfig.value.steps.includes(5) ? '' : 'last_100'
-  magicDateRange.value = { start: null, end: null }
-  magicSelectedTags.value = []
-  magicSelectedMemories.value = []
-  magicSelectedTagFilter.value = []
+  photoSelection_method.value = currentButtonConfig.value.steps.includes(5) ? '' : 'last_100'
+  photoSelection_dateRange.value = { start: null, end: null }
+  photoSelection_selectedTags.value = []
+  photoSelection_selectedMemories.value = []
+  photoSelection_selectedTagFilter.value = []
   
   // Reset location selection variables
-  magicLocationType.value = 'country'
-  magicSelectedLocation.value = ''
+  photoSelection_locationType.value = 'country'
+  photoSelection_selectedLocation.value = ''
   
   // Reset theme selection
   magicSelectedTheme.value = null
   
-  loadingAssets.value = true
+  photoSelection_loadingAssets.value = true
   try {
     const allApprovedAssets = await db.assets.getAssets({ approved: true })
-    availableAssets.value = allApprovedAssets || []
+    photoSelection_availableAssets.value = allApprovedAssets || []
     // Populate available locations for location-based filtering
     populateAvailableLocations()
     // Fetch themes for wizard
     await fetchMagicThemes()
   } catch (error) {
-    availableAssets.value = []
+    photoSelection_availableAssets.value = []
   } finally {
-    loadingAssets.value = false
+    photoSelection_loadingAssets.value = false
     showMagicMemoryDialog.value = true
   }
 }
@@ -4870,17 +4900,17 @@ const nextMagicMemoryStep = () => {
     return // Don't proceed if title is empty
   }
   
-  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && !magicPhotoSelectionMethod.value) {
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && !photoSelection_method.value) {
     return // Don't proceed if photo selection method is not chosen
   }
   
   // Validate location selection if geo_code is selected
-  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod.value === 'geo_code' && !magicSelectedLocation.value) {
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'geo_code' && !photoSelection_selectedLocation.value) {
     return // Don't proceed if location is not selected
   }
   
   // Special handling for photo_library selection - add MANUAL step programmatically
-  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod.value === 'photo_library') {
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'photo_library') {
     console.log('🔍 [nextMagicMemoryStep] Photo library selected, adding MANUAL step')
     // Add MANUAL step to the current button configuration
     currentButtonConfig.value.steps.push(MAGIC_STEPS.MANUAL)
@@ -4897,7 +4927,7 @@ const nextMagicMemoryStep = () => {
     const nextStepNumber = currentButtonConfig.value.steps[nextIndex]
     
     // Check if we're going to Step 5 and user has no photos
-    if (nextStepNumber === MAGIC_STEPS.PHOTOS && availableAssets.value.length === 0) {
+    if (nextStepNumber === MAGIC_STEPS.PHOTOS && photoSelection_availableAssets.value.length === 0) {
       // Redirect to upload dialog instead
       showMagicMemoryDialog.value = false
       showUploadDialog.value = true
@@ -4923,7 +4953,7 @@ const previousMagicMemoryStep = () => {
 // Helper functions for navigation
 const getNextStepName = () => {
   // Special case: if we're on PHOTOS step and photo_library is selected, the next step is MANUAL
-  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod.value === 'photo_library') {
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'photo_library') {
     return "Photo Selection"
   }
   
@@ -4937,7 +4967,7 @@ const getNextStepName = () => {
 
 const isLastStep = () => {
   // Special case: if we're on PHOTOS step and photo_library is selected, we're not on the last step
-  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod.value === 'photo_library') {
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'photo_library') {
     return false
   }
   return currentStepIndex.value === currentButtonConfig.value.steps.length - 1
@@ -4949,231 +4979,34 @@ const isFirstStep = () => {
 
 // Function to populate available locations from user's assets
 const populateAvailableLocations = () => {
-  if (!availableAssets.value || availableAssets.value.length === 0) {
-    availableCountries.value = []
-    availableStates.value = []
-    availableCities.value = []
+  if (!photoSelection_availableAssets.value || photoSelection_availableAssets.value.length === 0) {
+    photoSelection_availableCountries.value = []
+    photoSelection_availableStates.value = []
+    photoSelection_availableCities.value = []
     return
   }
   
   // Extract unique locations from assets
-  const countries = [...new Set(availableAssets.value
+  const countries = [...new Set(photoSelection_availableAssets.value
     .map(asset => asset.country)
     .filter(country => country && country.trim() !== ''))]
   
-  const states = [...new Set(availableAssets.value
+  const states = [...new Set(photoSelection_availableAssets.value
     .map(asset => asset.state)
     .filter(state => state && state.trim() !== ''))]
   
-  const cities = [...new Set(availableAssets.value
+  const cities = [...new Set(photoSelection_availableAssets.value
     .map(asset => asset.city)
     .filter(city => city && city.trim() !== ''))]
   
   // Convert to dropdown options format
-  availableCountries.value = countries.map(country => ({ label: country, value: country }))
-  availableStates.value = states.map(state => ({ label: state, value: state }))
-  availableCities.value = cities.map(city => ({ label: city, value: city }))
+  photoSelection_availableCountries.value = countries.map(country => ({ label: country, value: country }))
+  photoSelection_availableStates.value = states.map(state => ({ label: state, value: state }))
+  photoSelection_availableCities.value = cities.map(city => ({ label: city, value: city }))
   
-  console.log('🔍 [populateAvailableLocations] Available countries:', availableCountries.value.length)
-  console.log('🔍 [populateAvailableLocations] Available states:', availableStates.value.length)
-  console.log('🔍 [populateAvailableLocations] Available cities:', availableCities.value.length)
-}
-
-// Function to populate photo selection pool based on user's choice
-const populatePhotoSelectionPool = () => {
-  if (!availableAssets.value || availableAssets.value.length === 0) {
-    return []
-  }
-  
-  let filteredAssets = [...availableAssets.value]
-  
-  switch (magicPhotoSelectionMethod.value) {
-    case 'last_100':
-      // Savta picks: Search for photos where words in user input match tags, locations, and people
-      
-      // Get user input words (title and event)
-      const userInput = `${magicMemoryTitle.value || ''} ${magicMemoryEvent.value || ''}`.toLowerCase().trim()
-      
-      if (userInput) {
-        // Split user input into words, filtering out common words
-        const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'mine', 'yours', 'ours', 'theirs']
-        const searchWords = userInput.split(/\s+/).filter(word => 
-          word.length > 2 && !commonWords.includes(word)
-        )
-        
-        if (searchWords.length > 0) {
-          // Find assets that match any of the search words
-          const matchingAssets = filteredAssets.filter(asset => {
-            // Check tags
-            const tagMatch = asset.tags && asset.tags.some(tag => 
-              searchWords.some(word => tag.toLowerCase().includes(word) || word.includes(tag.toLowerCase()))
-            )
-            
-            // Check locations (country, state, city)
-            const locationMatch = searchWords.some(word => {
-              const countryMatch = asset.country && asset.country.toLowerCase().includes(word)
-              const stateMatch = asset.state && asset.state.toLowerCase().includes(word)
-              const cityMatch = asset.city && asset.city.toLowerCase().includes(word)
-              return countryMatch || stateMatch || cityMatch
-            })
-            
-            // Check people detected
-            const peopleMatch = asset.people_detected && asset.people_detected.some(person => 
-              searchWords.some(word => person.toLowerCase().includes(word) || word.includes(person.toLowerCase()))
-            )
-            
-            // Check captions for additional context
-            const captionMatch = (asset.ai_caption || asset.user_caption) && 
-              searchWords.some(word => (asset.ai_caption || '').toLowerCase().includes(word) || 
-                                      (asset.user_caption || '').toLowerCase().includes(word))
-            
-            return tagMatch || locationMatch || peopleMatch || captionMatch
-          })
-          
-          if (matchingAssets.length > 0) {
-            // Sort matching assets by most recent
-            const sortedMatchingAssets = matchingAssets
-              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            
-            // If we have PHOTO_POOL_SIZE or more matching photos, take top PHOTO_POOL_SIZE
-            if (sortedMatchingAssets.length >= PHOTO_POOL_SIZE) {
-              filteredAssets = sortedMatchingAssets.slice(0, PHOTO_POOL_SIZE)
-            } else {
-              // Supplement with recent non-matching assets to reach PHOTO_POOL_SIZE
-              
-              // Get all assets sorted by most recent
-              const allAssetsSorted = filteredAssets
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-              
-              // Find assets that are not already in matching assets
-              const nonMatchingAssets = allAssetsSorted.filter(asset => 
-                !sortedMatchingAssets.some(matchingAsset => matchingAsset.id === asset.id)
-              )
-              
-              // Take enough recent non-matching assets to reach exactly PHOTO_POOL_SIZE
-              const additionalNeeded = PHOTO_POOL_SIZE - sortedMatchingAssets.length
-              const additionalAssets = nonMatchingAssets.slice(0, additionalNeeded)
-              
-              // Combine matching assets with additional recent assets
-              filteredAssets = [...sortedMatchingAssets, ...additionalAssets]
-            }
-          } else {
-            // No matches found, use most recent PHOTO_POOL_SIZE photos
-            filteredAssets = filteredAssets
-              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-              .slice(0, PHOTO_POOL_SIZE)
-          }
-        } else {
-          // No meaningful search words, use most recent PHOTO_POOL_SIZE photos
-          filteredAssets = filteredAssets
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            .slice(0, PHOTO_POOL_SIZE)
-        }
-      } else {
-        // No user input, use most recent PHOTO_POOL_SIZE photos
-        filteredAssets = filteredAssets
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, PHOTO_POOL_SIZE)
-      }
-      break
-      
-    case 'geo_code':
-      // Filter by selected location
-      if (magicSelectedLocation.value) {
-        filteredAssets = filteredAssets.filter(asset => {
-          let hasMatch = false
-          
-          switch (magicLocationType.value) {
-            case 'country':
-              hasMatch = asset.country && asset.country === magicSelectedLocation.value
-              break
-            case 'state':
-              hasMatch = asset.state && asset.state === magicSelectedLocation.value
-              break
-            case 'city':
-              hasMatch = asset.city && asset.city === magicSelectedLocation.value
-              break
-          }
-          
-          return hasMatch
-        })
-      } else {
-        filteredAssets = filteredAssets
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, PHOTO_POOL_SIZE)
-      }
-      break
-      
-    case 'date_range':
-      // Filter by date range
-      if (magicDateRange.value.start && magicDateRange.value.end) {
-        filteredAssets = filteredAssets.filter(asset => {
-          const assetDate = new Date(asset.created_at)
-          const startDate = new Date(magicDateRange.value.start)
-          const endDate = new Date(magicDateRange.value.end)
-          return assetDate >= startDate && assetDate <= endDate
-        })
-      } else {
-        filteredAssets = filteredAssets
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, PHOTO_POOL_SIZE)
-      }
-      break
-      
-    case 'tags':
-      // Filter by selected tags
-      if (magicSelectedTags.value && magicSelectedTags.value.length > 0) {
-        filteredAssets = filteredAssets.filter(asset => {
-          const hasMatchingTag = asset.tags && asset.tags.some(tag => magicSelectedTags.value.includes(tag))
-          return hasMatchingTag
-        })
-      } else {
-        filteredAssets = filteredAssets
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, PHOTO_POOL_SIZE)
-      }
-      break
-      
-    case 'photo_library':
-      // For photo library selection, we'll use the existing magicSelectedMemories
-      // This will be handled in the photo selection step
-      return magicSelectedMemories.value
-      
-    default:
-      // Default to last PHOTO_POOL_SIZE photos if no method is selected
-      filteredAssets = filteredAssets
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, PHOTO_POOL_SIZE)
-      break
-  }
-  
-  // Final supplementation: ensure we always return exactly PHOTO_POOL_SIZE assets (or all available if less than PHOTO_POOL_SIZE)
-  if (filteredAssets.length < PHOTO_POOL_SIZE) {
-    // Get all assets sorted by most recent
-    const allAssetsSorted = availableAssets.value
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    
-    // Find assets that are not already in filtered assets
-    const additionalAssets = allAssetsSorted.filter(asset => 
-      !filteredAssets.some(filteredAsset => filteredAsset.id === asset.id)
-    )
-    
-    // Take enough recent additional assets to reach exactly PHOTO_POOL_SIZE
-    const additionalNeeded = PHOTO_POOL_SIZE - filteredAssets.length
-    const assetsToAdd = additionalAssets.slice(0, additionalNeeded)
-    
-    // Combine filtered assets with additional recent assets
-    filteredAssets = [...filteredAssets, ...assetsToAdd]
-  } else if (filteredAssets.length > PHOTO_POOL_SIZE) {
-    // If we have more than PHOTO_POOL_SIZE, take the most recent PHOTO_POOL_SIZE
-    filteredAssets = filteredAssets
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(0, PHOTO_POOL_SIZE)
-  }
-  
-  const result = filteredAssets.map(asset => asset.id)
-  
-  return result
+  console.log('🔍 [populateAvailableLocations] Available countries:', photoSelection_availableCountries.value.length)
+  console.log('🔍 [populateAvailableLocations] Available states:', photoSelection_availableStates.value.length)
+  console.log('🔍 [populateAvailableLocations] Available cities:', photoSelection_availableCities.value.length)
 }
 
 const showDeleteDialog = ref(false)
