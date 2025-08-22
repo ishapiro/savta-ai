@@ -17,6 +17,7 @@
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
           <h1 class="text-xl sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-primary">Create Memory Cards & Books</h1>
           <button
+            data-testid="info-button"
             class="w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
             @click="showInfoDialog = true"
             aria-label="Information about memory cards and booklets"
@@ -24,6 +25,7 @@
             <i class="pi pi-info text-base sm:text-lg text-brand-highlight"></i>
           </button>
           <button
+            data-testid="trash-button"
             class="w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-brand-accent shadow hover:bg-brand-accent/80 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
             @click="navigateToTrash"
             aria-label="View trash"
@@ -39,6 +41,7 @@
             <div class="flex flex-col sm:flex-row gap-4">
               <div class="flex flex-col items-center">
                 <button
+                  data-testid="create-memory-card-button"
                   class="border-0 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-4 sm:px-4 lg:px-6 py-3 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn min-h-[48px] sm:min-h-0"
                   @click="openMagicMemoryDialog('quick')"
                 >
@@ -57,6 +60,7 @@
             <h3 class="text-lg sm:text-xl font-bold text-brand-secondary mb-4 text-center">Memory Books</h3>
             <div class="flex flex-col items-center">
               <button
+                data-testid="create-memory-book-button"
                 class="border-0 bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 sm:px-4 lg:px-6 py-3 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
                 @click="showCreateModal = true"
               >
@@ -138,7 +142,7 @@
       </div>
       <template #footer>
         <div class="flex justify-end">
-          <button class="bg-brand-dialog-cancel text-white font-bold rounded-full px-6 py-2 text-base shadow border-0" @click="showInfoDialog = false">
+          <button data-testid="info-dialog-close-button" class="bg-brand-dialog-cancel text-white font-bold rounded-full px-6 py-2 text-base shadow border-0" @click="showInfoDialog = false">
             Close
           </button>
         </div>
@@ -218,6 +222,7 @@
       <template #footer>
         <div class="flex justify-center">
           <button 
+            data-testid="approve-memory-card-button"
             class="bg-brand-flash text-white font-bold rounded-full px-8 py-3 text-base shadow-lg hover:bg-brand-highlight transition-all duration-200" 
             @click="confirmApproval"
           >
@@ -335,52 +340,52 @@
         >
           <div class="flex flex-row flex-1 justify-between items-center gap-2">
             <!-- View Button -->
-            <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onDownloadClick(book)">
+            <div data-testid="view-button" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onDownloadClick(book)">
               <i class="pi pi-external-link text-lg sm:text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-green-700 mt-1 font-medium">View</span>
             </div>
             <!-- Generate Button (for draft books without story) -->
-            <div v-if="book.status === 'draft' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
+            <div data-testid="compose-button" v-if="book.status === 'draft' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
               <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-brand-header group-hover:scale-125 transition-transform" />
               <span class="border-0 text-[10px] sm:text-[11px] text-brand-header mt-1 font-medium">Compose</span>
             </div>
             <!-- Generate Button (for draft books with story) -->
-            <div v-if="book.status === 'draft' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
+            <div data-testid="create-story-button" v-if="book.status === 'draft' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
               <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 group-hover:scale-125 transition-transform" />
               <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Create Story</span>
             </div>
             <!-- Regenerate Button (for ready or background_ready books without story) -->
-            <div v-if="(book.status === 'ready' || book.status === 'background_ready') && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
+            <div data-testid="recreate-button" v-if="(book.status === 'ready' || book.status === 'background_ready') && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
               <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
             </div>
             <!-- Regenerate Button (for ready or background_ready books with story) -->
-            <div v-if="(book.status === 'ready' || book.status === 'background_ready') && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
+            <div data-testid="recreate-story-button" v-if="(book.status === 'ready' || book.status === 'background_ready') && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
               <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
             </div>
             <!-- Approve Button (books without story) -->
-            <div v-if="book.status === 'ready' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)" v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'">
+            <div data-testid="approve-button" v-if="book.status === 'ready' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)" v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'">
               <i class="pi pi-check text-lg sm:text-xl text-brand-header group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-brand-header mt-1 font-medium">Approve</span>
             </div>
             <!-- Approve Button (books with story) -->
-            <div v-if="book.status === 'ready' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)" v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'">
+            <div data-testid="approve-story-button" v-if="book.status === 'ready' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)" v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'">
               <i class="pi pi-check text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Approve</span>
             </div>
             <!-- Unapprove Button (books without story) -->
-            <div v-if="book.status === 'approved' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
+            <div data-testid="unapprove-button" v-if="book.status === 'approved' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
               <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
             </div>
             <!-- Unapprove Button (books with story) -->
-            <div v-if="book.status === 'approved' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
+            <div data-testid="unapprove-story-button" v-if="book.status === 'approved' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
               <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
             </div>
             <!-- View Details Button -->
-            <div class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="viewBookDetails(book)">
+            <div data-testid="details-button" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="viewBookDetails(book)">
               <i class="pi pi-list text-lg sm:text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
               <span class="border-0 text-[10px] sm:text-[11px] text-gray-700 mt-1 font-medium">Details</span>
             </div>
@@ -400,12 +405,14 @@
         <p class="text-sm sm:text-base text-gray-500 mb-6 text-center max-w-md">You need some photos to create your first special memory. Would you like to upload some now?</p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
           <button
+            data-testid="upload-photos-button"
             class="border-0 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
             @click="showUploadDialog = true"
           >
             <i class="pi pi-upload mr-1 sm:mr-2"></i> Upload Photos
           </button>
           <button
+            data-testid="skip-upload-button"
             class="border-0 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
             @click="skipUpload"
           >
@@ -429,6 +436,7 @@
           Are you ready to create your first memory card?
         </p>
                   <button
+            data-testid="create-first-memory-card-button"
             class="border-0 bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
             @click="openMagicMemoryDialog('quick')"
           >
@@ -523,6 +531,7 @@
         <!-- Enhanced action buttons -->
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
           <button
+            data-testid="compose-memory-now-button"
             class="flex-1 bg-gradient-to-r from-purple-500 via-brand-secondary to-blue-500 hover:from-purple-600 hover:via-brand-secondary hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
             @click="composeNewlyCreatedMemory"
           >
@@ -534,6 +543,7 @@
             Compose the Memory Now
           </button>
           <button
+            data-testid="compose-later-button"
             class="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-bold rounded-full px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
             @click="showSuccessDialog = false"
           >
@@ -735,6 +745,7 @@
           </div>
           <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button
+              data-testid="upload-dialog-close-button"
               v-if="!isUploading"
               class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto"
               @click="showUploadDialog = false"
@@ -742,6 +753,7 @@
               Close
             </button>
             <button
+              data-testid="start-upload-button"
               v-if="!isUploading && uploadedFiles.length === 0"
               class="bg-brand-dialog-edit text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="selectFiles"
@@ -750,6 +762,7 @@
               ✨ Start Uploading Photos ✨
             </button>
             <button
+              data-testid="finish-upload-button"
               v-if="!isUploading && (uploadedFiles.length > 0 || failedFiles.length > 0)"
               class="bg-brand-dialog-save text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="finishUpload"
@@ -791,6 +804,7 @@
             </div>
             <div class="flex items-center gap-2 flex-wrap">
               <button
+                data-testid="details-unapprove-button"
                 v-if="selectedBook.status === 'approved'"
                 class="flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
                 @click="unapproveBook(selectedBook.id)"
@@ -800,6 +814,7 @@
                 <span class="sm:hidden">Unapprove</span>
               </button>
               <button
+                data-testid="details-close-button"
                 class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-cancel text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
                 @click="showDetailsModal = false"
               >
@@ -996,6 +1011,7 @@
                 </div>
               </div>
               <button
+                data-testid="download-memory-button"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
                 @click="forceDownloadPDF(selectedBook)"
               >
@@ -1017,6 +1033,7 @@
             <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
             <div class="flex flex-wrap justify-center gap-3">
               <button
+                data-testid="details-create-memory-button"
                 v-if="selectedBook.status === 'draft'"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="onGenerateClick(selectedBook)"
@@ -1026,6 +1043,7 @@
                 <span class="sm:hidden">Create</span>
               </button>
               <button
+                data-testid="details-recreate-button"
                 v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="onRegenerateClick(selectedBook)"
@@ -1036,6 +1054,7 @@
                 <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
               </button>
               <button
+                data-testid="details-approve-button"
                 v-if="selectedBook.status === 'ready'"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="approveBook(selectedBook.id)"
@@ -1046,6 +1065,7 @@
                 <span class="sm:hidden">Approve</span>
               </button>
               <button
+                data-testid="details-select-assets-button"
                 v-if="selectedBook"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="openSelectMemoriesDialog"
@@ -1055,6 +1075,7 @@
                 <span class="sm:hidden">Assets</span>
               </button>
               <button
+                data-testid="details-edit-settings-button"
                 v-if="selectedBook"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="openEditSettings(selectedBook)"
@@ -1064,6 +1085,7 @@
                 <span class="sm:hidden">Edit</span>
               </button>
               <button
+                data-testid="details-trash-button"
                 v-if="selectedBook"
                 class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-delete text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                 @click="confirmDeleteBook(selectedBook)"
@@ -1165,8 +1187,8 @@
       <div class="py-4 pt-3">
         <p class="text-sm sm:text-base">Compose this special memory? This may take a little time.</p>
         <div class="flex justify-end gap-2 mt-4">
-          <Button label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-xs px-3 py-2" @click="cancelDialog" />
-          <Button label="Compose" size="small" class="bg-brand-dialog-save text-white font-bold rounded-full text-xs px-3 py-2" @click="confirmGenerate" />
+          <Button data-testid="generate-cancel-button" label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-xs px-3 py-2" @click="cancelDialog" />
+          <Button data-testid="generate-confirm-button" label="Compose" size="small" class="bg-brand-dialog-save text-white font-bold rounded-full text-xs px-3 py-2" @click="confirmGenerate" />
         </div>
       </div>
     </Dialog>
@@ -1181,8 +1203,9 @@
           Keep recreating until it's just perfect for your family.
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-end mt-4">
-          <Button label="Cancel" class="bg-brand-dialog-cancel text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" @click="cancelDialog" />
+          <Button data-testid="regenerate-cancel-button" label="Cancel" class="bg-brand-dialog-cancel text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" @click="cancelDialog" />
           <Button 
+            data-testid="regenerate-confirm-button"
             label="Yes, Recreate" 
             class="bg-brand-dialog-edit text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" 
             @click="confirmRegenerate" 
@@ -1197,8 +1220,8 @@
           Would you like to compose it now? 
           This may take a little time.</p>
         <div class="flex flex-col sm:flex-row justify-end gap-3 sm:gap-2 mt-4">
-          <Button label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-sm sm:text-xs px-4 py-3 sm:px-3 sm:py-2 min-h-[48px] sm:min-h-0" @click="cancelDialog" />
-          <Button label="Compose Now" size="small" class="bg-brand-dialog-save text-white font-bold rounded-full text-sm sm:text-xs px-4 py-3 sm:px-3 sm:py-2 min-h-[48px] sm:min-h-0" @click="confirmDownloadDraft" />
+          <Button data-testid="download-draft-cancel-button" label="Cancel" size="small" class="bg-brand-dialog-cancel text-white font-bold rounded-full text-sm sm:text-xs px-4 py-3 sm:px-3 sm:py-2 min-h-[48px] sm:min-h-0" @click="cancelDialog" />
+          <Button data-testid="download-draft-compose-button" label="Compose Now" size="small" class="bg-brand-dialog-save text-white font-bold rounded-full text-sm sm:text-xs px-4 py-3 sm:px-3 sm:py-2 min-h-[48px] sm:min-h-0" @click="confirmDownloadDraft" />
         </div>
       </div>
     </Dialog>
@@ -1224,6 +1247,7 @@
             New Description
           </label>
           <Textarea
+            data-testid="new-description-textarea"
             id="newDescription"
             v-model="newDescription"
             rows="3"
@@ -1234,16 +1258,19 @@
         
         <div class="flex flex-col sm:flex-row gap-3 justify-end mt-4">
           <Button 
+            data-testid="update-description-cancel-button"
             label="Cancel" 
             class="bg-brand-dialog-cancel text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" 
             @click="cancelDialog" 
           />
           <Button 
+            data-testid="update-description-no-change-button"
             label="No change -- just Recreate" 
             class="bg-brand-dialog-save text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" 
             @click="confirmUpdateDescription" 
           />
           <Button 
+            data-testid="update-description-update-button"
             label="Update & Recreate" 
             class="bg-brand-dialog-edit text-white font-bold rounded-full px-4 py-3 sm:px-3 sm:py-2 text-sm sm:text-xs shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0" 
             @click="confirmUpdateDescription" 
@@ -1287,12 +1314,13 @@
         </div>
         <!-- Action Buttons -->
         <div class="z-50 flex justify-center items-center gap-3 sm:gap-4 py-4 sm:py-6 px-4 bg-gray-50 border-t border-gray-200 min-h-[60px] sm:min-h-[80px]">
-          <Button
-            label="Close"
-            size="small"
-            class="bg-brand-dialog-cancel text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3"
-            @click="showPdfModal = false"
-          />
+                  <Button
+          data-testid="pdf-modal-close-button"
+          label="Close"
+          size="small"
+          class="bg-brand-dialog-cancel text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3"
+          @click="showPdfModal = false"
+        />
         </div>
       </div>
     </Dialog>
@@ -1341,12 +1369,14 @@
       <template #footer>
         <div class="flex flex-col sm:flex-row justify-end items-center gap-3">
           <Button
+            data-testid="cleanup-cancel-button"
             label="Cancel"
             icon="pi pi-times"
             @click="showCleanupConfirmationModal = false"
             class="bg-brand-dialog-cancel text-white font-bold rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
           />
           <Button
+            data-testid="cleanup-confirm-button"
             label="Yes, Clean Up"
             icon="pi pi-broom"
             @click="confirmCleanup"
@@ -1385,6 +1415,7 @@
               <label class="block text-sm font-medium text-gray-900 mb-2">Filter by Tags</label>
               <div class="flex gap-2">
                 <MultiSelect
+                  data-testid="tag-filter-multiselect"
                   v-model="selectedTagFilter"
                   :options="computedAvailableTags"
                   option-label="label"
@@ -1394,18 +1425,20 @@
                   @change="filterMemories"
                   :show-toggle-all="false"
                 />
-                <Button
-                  v-if="selectedTagFilter && selectedTagFilter.length > 0"
-                  icon="pi pi-times"
-                  size="small"
-                  @click="clearTagFilter"
-                  class="px-2 sm:px-3"
-                  v-tooltip.top="'Clear filter'"
-                />
+                              <Button
+                data-testid="clear-tag-filter-button"
+                v-if="selectedTagFilter && selectedTagFilter.length > 0"
+                icon="pi pi-times"
+                size="small"
+                @click="clearTagFilter"
+                class="px-2 sm:px-3"
+                v-tooltip.top="'Clear filter'"
+              />
               </div>
             </div>
             <div class="flex items-center justify-center sm:justify-end gap-2">
               <Button
+                data-testid="select-all-memories-button"
                 label="Select All"
                 icon="pi pi-check-square"
                 size="small"
@@ -1413,6 +1446,7 @@
                 class="bg-green-500 border-0 text-xs px-2 sm:px-3 py-2"
               />
               <Button
+                data-testid="clear-all-memories-button"
                 label="Clear All"
                 icon="pi pi-times"
                 size="small"
@@ -1439,6 +1473,7 @@
             <div
               v-for="asset in filteredAssets"
               :key="asset.id"
+              :data-testid="`memory-item-${asset.id}`"
               class="relative group cursor-pointer touch-manipulation"
               @click="toggleMemorySelection(asset.id)"
             >
@@ -1521,6 +1556,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
           <div class="flex gap-2 w-full sm:w-auto">
             <Button
+              data-testid="select-memories-cancel-button"
               label="Cancel"
               icon="pi pi-times"
               @click="closeSelectMemoriesDialog"
@@ -1532,6 +1568,7 @@
               {{ selectedMemories.length }} selected
             </span>
             <Button
+              data-testid="save-memories-selection-button"
               label="Save Selection"
               icon="pi pi-check"
               :disabled="selectedMemories.length === 0"
@@ -1572,6 +1609,7 @@
         <div class="field w-full max-w-md mx-auto sm:max-w-[520px] sm:mx-auto mt-1">
           <label class="block text-lg font-bold text-gray-900 mb-2 text-left">Describe your memory</label>
           <InputText
+            data-testid="memory-title-input"
             v-model="magicMemoryTitle"
             :placeholder="'e.g. Special Trip with Karen and Sam, Summer 2023'"
             class="w-full text-base px-4 py-4 sm:py-3 rounded-xl focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
@@ -1599,6 +1637,7 @@
         <div class="field w-full max-w-sm mx-auto sm:max-w-[520px] sm:mx-auto">
           <label class="block text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2 text-left">Theme (Optional)</label>
           <Dropdown
+            data-testid="theme-dropdown"
             v-model="magicSelectedTheme"
             :options="magicThemeOptions"
             option-label="label"
@@ -1639,6 +1678,7 @@
             <div class="flex-1">
               <label class="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
               <input 
+                data-testid="background-color-picker"
                 type="color" 
                 v-model="magicSolidBackgroundColor"
                 class="w-full h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
