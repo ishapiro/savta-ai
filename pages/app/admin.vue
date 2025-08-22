@@ -3559,7 +3559,7 @@ const deleteTheme = async (themeId) => {
   }
   try {
     await db.editor.deleteTheme(themeId)
-    if (toast && toast.add) {
+    if (toast) {
       toast.add({
         severity: 'success',
         summary: 'Deleted',
@@ -3573,7 +3573,7 @@ const deleteTheme = async (themeId) => {
     }
   } catch (error) {
     console.error('Error deleting theme:', error)
-    if (toast && toast.add) {
+    if (toast) {
       toast.add({
         severity: 'error',
         summary: 'Error',

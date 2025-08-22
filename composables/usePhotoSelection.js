@@ -123,10 +123,16 @@ export const usePhotoSelection = () => {
     const cities = new Set()
     
     photoSelection_availableAssets.value.forEach(asset => {
+      // Check both location_data structure and direct fields
       if (asset.location_data) {
         if (asset.location_data.country) countries.add(asset.location_data.country)
         if (asset.location_data.state) states.add(asset.location_data.state)
         if (asset.location_data.city) cities.add(asset.location_data.city)
+      } else {
+        // Fallback to direct fields
+        if (asset.country) countries.add(asset.country)
+        if (asset.state) states.add(asset.state)
+        if (asset.city) cities.add(asset.city)
       }
     })
     
@@ -160,6 +166,9 @@ export const usePhotoSelection = () => {
   
   // Populate photo selection pool
   const photoSelection_populatePhotoSelectionPool = () => {
+    console.log('🔍 [photoSelection_populatePhotoSelectionPool] Method:', photoSelection_method.value)
+    console.log('🔍 [photoSelection_populatePhotoSelectionPool] Available assets count:', photoSelection_availableAssets.value.length)
+    
     switch (photoSelection_method.value) {
       case 'last_100':
         return photoSelection_availableAssets.value.slice(0, 100).map(asset => asset.id)
@@ -171,15 +180,27 @@ export const usePhotoSelection = () => {
         return photoSelection_availableAssets.value
           .filter(asset => {
             if (!photoSelection_selectedLocation.value) return false
-            if (!asset.location_data) return false
+            
+            // Check both location_data structure and direct fields
+            let assetCountry, assetState, assetCity
+            
+            if (asset.location_data) {
+              assetCountry = asset.location_data.country
+              assetState = asset.location_data.state
+              assetCity = asset.location_data.city
+            } else {
+              assetCountry = asset.country
+              assetState = asset.state
+              assetCity = asset.city
+            }
             
             switch (photoSelection_locationType.value) {
               case 'country':
-                return asset.location_data.country === photoSelection_selectedLocation.value
+                return assetCountry === photoSelection_selectedLocation.value
               case 'state':
-                return asset.location_data.state === photoSelection_selectedLocation.value
+                return assetState === photoSelection_selectedLocation.value
               case 'city':
-                return asset.location_data.city === photoSelection_selectedLocation.value
+                return assetCity === photoSelection_selectedLocation.value
               default:
                 return false
             }
@@ -187,20 +208,72 @@ export const usePhotoSelection = () => {
           .map(asset => asset.id)
       
       case 'date_range':
-        return photoSelection_availableAssets.value
+        console.log('🔍 [photoSelection_populatePhotoSelectionPool] Date range case - dateRange:', photoSelection_dateRange.value)
+        console.log('🔍 [photoSelection_populatePhotoSelectionPool] Sample asset dates:', photoSelection_availableAssets.value.slice(0, 3).map(a => ({ 
+          id: a.id, 
+          asset_date: a.asset_date,
+          created_at: a.created_at,
+          updated_at: a.updated_at,
+          upload_date: a.upload_date,
+          photo_date: a.photo_date,
+          date_taken: a.date_taken
+        })))
+        const filteredAssets = photoSelection_availableAssets.value
           .filter(asset => {
+            // If no date range is selected, return all assets
             if (!photoSelection_dateRange.value.start && !photoSelection_dateRange.value.end) return true
-            if (!asset.asset_date) return false
             
-            const assetDate = new Date(asset.asset_date)
+            // If asset has no asset_date, use created_at as fallback
+            let assetDate
+            if (asset.asset_date) {
+              assetDate = new Date(asset.asset_date)
+            } else if (asset.created_at) {
+              assetDate = new Date(asset.created_at)
+              console.log('🔍 [photoSelection_populatePhotoSelectionPool] Using created_at as fallback for asset:', asset.id)
+            } else {
+              console.log('🔍 [photoSelection_populatePhotoSelectionPool] Asset has no date fields:', asset.id)
+              return false
+            }
             const start = photoSelection_dateRange.value.start ? new Date(photoSelection_dateRange.value.start) : null
             const end = photoSelection_dateRange.value.end ? new Date(photoSelection_dateRange.value.end) : null
             
-            if (start && assetDate < start) return false
-            if (end && assetDate > end) return false
+            console.log('🔍 [photoSelection_populatePhotoSelectionPool] Comparing dates for asset:', asset.id, {
+              assetDate: assetDate,
+              start: start,
+              end: end,
+              asset_date: asset.asset_date,
+              created_at: asset.created_at,
+              usingFallback: !asset.asset_date && asset.created_at
+            })
+            
+            // If only start date is selected
+            if (start && !end) {
+              const result = assetDate >= start
+              console.log('🔍 [photoSelection_populatePhotoSelectionPool] Start only comparison:', asset.id, 'assetDate >= start:', result)
+              return result
+            }
+            
+            // If only end date is selected
+            if (!start && end) {
+              const result = assetDate <= end
+              console.log('🔍 [photoSelection_populatePhotoSelectionPool] End only comparison:', asset.id, 'assetDate <= end:', result)
+              return result
+            }
+            
+            // If both dates are selected
+            if (start && end) {
+              const result = assetDate >= start && assetDate <= end
+              console.log('🔍 [photoSelection_populatePhotoSelectionPool] Both dates comparison:', asset.id, 'assetDate >= start && assetDate <= end:', result)
+              return result
+            }
+            
+            console.log('🔍 [photoSelection_populatePhotoSelectionPool] No date range selected, including asset:', asset.id)
             return true
           })
           .map(asset => asset.id)
+        
+        console.log('🔍 [photoSelection_populatePhotoSelectionPool] Date range filtered count:', filteredAssets.length)
+        return filteredAssets
       
       case 'tags':
         return photoSelection_availableAssets.value
@@ -213,6 +286,7 @@ export const usePhotoSelection = () => {
           .map(asset => asset.id)
       
       default:
+        console.log('🔍 [photoSelection_populatePhotoSelectionPool] Default case - returning empty array')
         return []
     }
   }

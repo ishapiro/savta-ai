@@ -407,7 +407,9 @@ definePageMeta({
   layout: 'default'
 })
 
-const { $toast } = useNuxtApp()
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
 const db = useDatabase()
 
 // Reactive data
@@ -487,14 +489,12 @@ const loadDeletedAssets = async () => {
     calculateStats()
   } catch (error) {
     console.error('Error loading deleted assets:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to load deleted assets',
-        life: 3000
-      })
-    }
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load deleted assets',
+      life: 3000
+    })
   }
 }
 
@@ -507,24 +507,20 @@ const restoreAsset = async (assetId) => {
     deletedAssets.value = deletedAssets.value.filter(a => a.id !== assetId)
     calculateStats()
     
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'success',
-        summary: 'Restored',
-        detail: 'Memory restored successfully',
-        life: 2000
-      })
-    }
+    toast.add({
+      severity: 'success',
+      summary: 'Restored',
+      detail: 'Memory restored successfully',
+      life: 2000
+    })
   } catch (error) {
     console.error('Error restoring asset:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to restore memory',
-        life: 3000
-      })
-    }
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to restore memory',
+      life: 3000
+    })
   }
 }
 
@@ -563,24 +559,20 @@ const permanentlyDeleteAsset = async (assetId) => {
     deletedAssets.value = deletedAssets.value.filter(a => a.id !== assetId)
     calculateStats()
     
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'success',
-        summary: 'Deleted',
-        detail: 'Memory permanently deleted',
-        life: 2000
-      })
-    }
+    toast.add({
+      severity: 'success',
+      summary: 'Deleted',
+      detail: 'Memory permanently deleted',
+      life: 2000
+    })
   } catch (error) {
     console.error('Error permanently deleting asset:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to permanently delete memory',
-        life: 3000
-      })
-    }
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to permanently delete memory',
+      life: 3000
+    })
   }
 }
 
@@ -630,24 +622,20 @@ const emptyTrash = async () => {
     
     showEmptyTrashDialog.value = false
     
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'success',
-        summary: 'Trash Emptied',
-        detail: `Permanently deleted ${deletedAssets.value.length} memories`,
-        life: 3000
-      })
-    }
+    toast.add({
+      severity: 'success',
+      summary: 'Trash Emptied',
+      detail: `Permanently deleted ${deletedAssets.value.length} memories`,
+      life: 3000
+    })
   } catch (error) {
     console.error('Error emptying trash:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to empty trash',
-        life: 3000
-      })
-    }
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to empty trash',
+      life: 3000
+    })
   } finally {
     emptyingTrash.value = false
   }

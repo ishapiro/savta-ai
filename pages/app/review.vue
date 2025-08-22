@@ -793,7 +793,9 @@ definePageMeta({
   layout: 'default'
 })
 
-const { $toast } = useNuxtApp()
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
 const db = useDatabase()
 
 // Reactive data
@@ -923,8 +925,8 @@ const loadAssets = async () => {
     assets.value = userAssets
   } catch (error) {
     console.error('Error loading assets:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to load assets',
@@ -948,8 +950,8 @@ const calculateStats = () => {
 const updateAssetCaption = async (assetId, caption) => {
   try {
     await db.assets.updateAsset(assetId, { user_caption: caption })
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Updated',
         detail: 'Caption updated successfully',
@@ -958,8 +960,8 @@ const updateAssetCaption = async (assetId, caption) => {
     }
   } catch (error) {
     console.error('Error updating caption:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to update caption',
@@ -980,8 +982,8 @@ const approveAsset = async (assetId) => {
       asset.rejected = false
     }
     calculateStats()
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Approved',
         detail: 'Asset approved successfully',
@@ -990,8 +992,8 @@ const approveAsset = async (assetId) => {
     }
   } catch (error) {
     console.error('Error approving asset:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to approve asset',
@@ -1010,8 +1012,8 @@ const approveAllPending = async () => {
     const pendingAssets = assets.value.filter(a => !a.approved && !a.rejected)
     
     if (pendingAssets.length === 0) {
-      if ($toast && $toast.add) {
-        $toast.add({
+      if (toast) {
+        toast.add({
           severity: 'warn',
           summary: 'No Pending Assets',
           detail: 'No assets are pending approval',
@@ -1042,8 +1044,8 @@ const approveAllPending = async () => {
     
     calculateStats()
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'All Approved',
         detail: `Successfully approved ${pendingAssets.length} assets`,
@@ -1052,8 +1054,8 @@ const approveAllPending = async () => {
     }
   } catch (error) {
     console.error('Error approving all assets:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to approve all assets',
@@ -1079,8 +1081,8 @@ const rejectAsset = async (assetId) => {
     
     calculateStats()
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Rejected',
         detail: 'Asset rejected',
@@ -1089,8 +1091,8 @@ const rejectAsset = async (assetId) => {
     }
   } catch (error) {
     console.error('Error rejecting asset:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to reject asset',
@@ -1110,8 +1112,8 @@ const deleteAsset = async (assetId) => {
     
     calculateStats()
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Deleted',
         detail: 'Asset deleted successfully',
@@ -1120,8 +1122,8 @@ const deleteAsset = async (assetId) => {
     }
   } catch (error) {
     console.error('Error deleting asset:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to delete asset',
@@ -1137,8 +1139,8 @@ const generateMemoryBook = async () => {
     const approvedAssets = assets.value.filter(a => a.approved)
     
     if (approvedAssets.length === 0) {
-      if ($toast && $toast.add) {
-        $toast.add({
+      if (toast) {
+        toast.add({
           severity: 'warn',
           summary: 'No Assets',
           detail: 'No approved assets to include in memory book',
@@ -1157,8 +1159,8 @@ const generateMemoryBook = async () => {
     
   } catch (error) {
     console.error('Error generating memory book:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to generate memory book',
@@ -1270,8 +1272,8 @@ const saveAssetChanges = async () => {
     showEditDialog.value = false
     editingAsset.value = null
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Saved',
         detail: 'Asset updated successfully',
@@ -1280,8 +1282,8 @@ const saveAssetChanges = async () => {
     }
   } catch (error) {
     console.error('Error saving asset changes:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to save changes',
@@ -1304,8 +1306,8 @@ const unapproveAsset = async () => {
     
     calculateStats()
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Unapproved',
         detail: 'Asset unapproved',
@@ -1314,8 +1316,8 @@ const unapproveAsset = async () => {
     }
   } catch (error) {
     console.error('Error unapproving asset:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to unapprove asset',
@@ -1355,8 +1357,8 @@ const rerunAI = async () => {
     
     calculateStats()
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'AI Updated',
         detail: 'AI analysis completed successfully',
@@ -1365,8 +1367,8 @@ const rerunAI = async () => {
     }
   } catch (error) {
     console.error('Error rerunning AI:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to rerun AI analysis',
@@ -1439,8 +1441,8 @@ const rerunAIOnAllPhotos = async () => {
     // Close progress dialog
     showProgressDialog.value = false
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'AI Processing Complete',
         detail: `Successfully reprocessed ${assets.value.length} photos with AI`,
@@ -1454,8 +1456,8 @@ const rerunAIOnAllPhotos = async () => {
     // Close progress dialog on error
     showProgressDialog.value = false
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Processing Error',
         detail: 'Some photos may not have been processed correctly',

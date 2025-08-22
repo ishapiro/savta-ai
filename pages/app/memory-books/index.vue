@@ -1600,344 +1600,71 @@
           <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your library</p>
         </div>
         
-        <!-- Photo Selection Tiles -->
-        <div class="space-y-3 w-full max-w-md mx-auto sm:max-w-2xl">
-          <!-- Savta Selects Tile (Wide Button) -->
-          <div class="relative cursor-pointer group" @click="photoSelection_method = 'last_100'">
-            <div class="mx-4 border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
-              :class="photoSelection_method === 'last_100' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-              <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                <i class="pi pi-images text-sm sm:text-lg text-white"></i>
-              </div>
-              <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">I'll choose for you</div>
-              <div class="text-xs text-gray-600">I'll search your photos for matches to "{{ magicMemoryTitle || 'your memory' }}" 
-                and pick the best photos from your recent uploads.</div>
-              <div v-if="photoSelection_method === 'last_100'" class="absolute top-1 right-1">
-                <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-xs"></i>
-                </div>
-              </div>
-            </div>
+                            <!-- Photo Selection Interface Component -->
+                    <PhotoSelectionInterface
+                      ref="photoSelectionInterfaceRef"
+                      v-model:method="photoSelection_method"
+                      v-model:dateRange="photoSelection_dateRange"
+                      v-model:selectedTags="photoSelection_selectedTags"
+                      v-model:locationType="photoSelection_locationType"
+                      v-model:selectedLocation="photoSelection_selectedLocation"
+                      v-model:selectedMemories="photoSelection_selectedMemories"
+                      v-model:selectedTagFilter="photoSelection_selectedTagFilter"
+                      :title="magicMemoryTitle"
+                      :computedAvailableTags="photoSelection_computedAvailableTags"
+                      :availableCountries="photoSelection_availableCountries"
+                      :availableStates="photoSelection_availableStates"
+                      :availableCities="photoSelection_availableCities"
+                      :filteredAssets="photoSelection_filteredAssets"
+                      :loadingAssets="photoSelection_loadingAssets"
+                      :isUploading="isUploading"
+                      @upload-photos="selectFilesForMagicMemory"
+                      @photo-library-selected="nextMagicMemoryStep"
+                      @no-photos-found="handleNoPhotosFound"
+                      @close-photo-library="handleClosePhotoLibrary"
+                    />
+      </div>
+
+      <!-- Step 5: Photo Library Selection (MANUAL step for photo_library method) -->
+      <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library'"
+        class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+        <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
+          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+            <i class="pi pi-folder-open text-xl sm:text-2xl text-white"></i>
           </div>
-
-          <!-- Other Options Grid (2x2) -->
-          <div class="grid grid-cols-2 gap-1 sm:gap-2">
-            <!-- Photo Library Selection Tile -->
-            <div class="relative cursor-pointer group" @click="() => { 
-              photoSelection_method = 'photo_library'; 
-              console.log('🔍 [Photo Library Clicked] photoSelection_method set to:', photoSelection_method);
-              // Automatically advance to manual step when photo library is selected
-              nextMagicMemoryStep();
-            }">
-              <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
-                :class="photoSelection_method === 'photo_library' 
-                  ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                  : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-                <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                  <i class="pi pi-folder-open text-xs text-white"></i>
-                </div>
-                <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">Photo library</div>
-                <div class="text-xs text-gray-600 leading-tight">Choose exactly which photos you want from your library.</div>
-                <div v-if="photoSelection_method === 'photo_library'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
-                  <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                    <i class="pi pi-check text-white text-xs"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- By Location Tile -->
-            <div class="relative cursor-pointer group" @click="photoSelection_method = 'geo_code'">
-              <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
-                :class="photoSelection_method === 'geo_code' 
-                  ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                  : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-                <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                  <i class="pi pi-map-marker text-xs text-white"></i>
-                </div>
-                <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By location</div>
-                <div class="text-xs text-gray-600 leading-tight">Choose a country, city, or state. 
-                  I'll pick the best photos from this location.</div>
-                <div v-if="photoSelection_method === 'geo_code'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
-                  <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                    <i class="pi pi-check text-white text-xs"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- By Date Tile -->
-            <div class="relative cursor-pointer group" @click="photoSelection_method = 'date_range'">
-              <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
-                :class="photoSelection_method === 'date_range' 
-                  ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                  : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-                <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                  <i class="pi pi-calendar-plus text-xs text-white"></i>
-                </div>
-                <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By date</div>
-                <div class="text-xs text-gray-600 leading-tight">Choose a specific time period. 
-                  I'll pick the best photos from this date range.</div>
-                <div v-if="photoSelection_method === 'date_range'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
-                  <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                    <i class="pi pi-check text-white text-xs"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- By Tags Tile -->
-            <div class="relative cursor-pointer group" @click="photoSelection_method = 'tags'">
-              <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
-                :class="photoSelection_method === 'tags' 
-                  ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
-                  : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-                <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-                  <i class="pi pi-tags text-xs text-white"></i>
-                </div>
-                <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By tags</div>
-                <div class="text-xs text-gray-600 leading-tight">Choose a tag or person. 
-                  I'll pick the best photos with these tags.</div>
-                <div v-if="photoSelection_method === 'tags'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
-                  <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                    <i class="pi pi-check text-white text-xs"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Choose your photos</h3>
+          <p class="text-xs sm:text-base text-gray-600 mb-2">Think of this as creating a "photo collection" for your memory card. Pick all the photos that remind you of this special moment - you can choose as many as you'd like! I'll then look through your collection and pick the perfect number of photos that work best with your chosen theme. It's like having me help you arrange the best photos for your memory card.</p>
+          <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your library</p>
         </div>
-
-        <!-- Date Range Selection (shown when date_range is selected) -->
-        <div v-if="photoSelection_method === 'date_range'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
-          <h4 class="font-semibold text-brand-flash mb-4 text-center">Select Date Range</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">Start Date</label>
-              <Calendar v-model="photoSelection_dateRange.start" dateFormat="mm/dd/yy" placeholder="Select start date" class="w-full" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">End Date</label>
-              <Calendar v-model="photoSelection_dateRange.end" dateFormat="mm/dd/yy" placeholder="Select end date" class="w-full" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Tag Selection (shown when tags is selected) -->
-        <div v-if="photoSelection_method === 'tags'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
-          <h4 class="font-semibold text-brand-flash mb-4 text-center">Select Tags</h4>
-          <MultiSelect
-            v-model="photoSelection_selectedTags"
-            :options="photoSelection_computedAvailableTags"
-            option-label="label"
-            option-value="value"
-            placeholder="Choose tags..."
-            class="w-full"
-            :show-toggle-all="false"
-          />
-          <p class="text-sm text-brand-flash mt-3 text-center">I'll find photos that have any of these tags</p>
-        </div>
-
-        <!-- Location Selection (shown when geo_code is selected) -->
-        <div v-if="photoSelection_method === 'geo_code'" class="bg-gradient-to-r from-brand-flash/10 to-brand-highlight/10 rounded-xl p-4 sm:p-6 border border-brand-flash/20 mt-6 w-full max-w-md mx-auto">
-          <h4 class="font-semibold text-brand-flash mb-4 text-center">Select Location</h4>
-          <div class="space-y-4">
-            <!-- Location Type Selection -->
-            <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">Location Type</label>
-              <Dropdown
-                v-model="photoSelection_locationType"
-                :options="[
-                  { label: 'Country', value: 'country' },
-                  { label: 'State/Province', value: 'state' },
-                  { label: 'City', value: 'city' }
-                ]"
-                option-label="label"
-                option-value="value"
-                placeholder="Select location type..."
-                class="w-full"
-              />
-            </div>
-
-            <!-- Country Selection -->
-            <div v-if="photoSelection_locationType === 'country'">
-              <label class="block text-sm font-medium text-gray-900 mb-2">Select Country</label>
-              <Dropdown
-                v-model="photoSelection_selectedLocation"
-                :options="photoSelection_availableCountries"
-                option-label="label"
-                option-value="value"
-                placeholder="Choose a country..."
-                class="w-full"
-                :filter="true"
-                filter-placeholder="Search countries..."
-              />
-            </div>
-
-            <!-- State Selection -->
-            <div v-if="photoSelection_locationType === 'state'">
-              <label class="block text-sm font-medium text-gray-900 mb-2">Select State/Province</label>
-              <Dropdown
-                v-model="photoSelection_selectedLocation"
-                :options="photoSelection_availableStates"
-                option-label="label"
-                option-value="value"
-                placeholder="Choose a state..."
-                class="w-full"
-                :filter="true"
-                filter-placeholder="Search states..."
-              />
-            </div>
-
-            <!-- City Selection -->
-            <div v-if="photoSelection_locationType === 'city'">
-              <label class="block text-sm font-medium text-gray-900 mb-2">Select City</label>
-              <Dropdown
-                v-model="photoSelection_selectedLocation"
-                :options="photoSelection_availableCities"
-                option-label="label"
-                option-value="value"
-                placeholder="Choose a city..."
-                class="w-full"
-                :filter="true"
-                filter-placeholder="Search cities..."
-              />
-            </div>
-
-            <!-- Selected Location Display -->
-            <div v-if="photoSelection_selectedLocation" class="bg-brand-flash/20 rounded-lg p-3 border border-brand-flash/30">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                  <i class="pi pi-map-marker text-brand-flash"></i>
-                  <span class="text-sm font-medium text-gray-900">
-                    {{ photoSelection_locationType === 'country' ? 'Country' : photoSelection_locationType === 'state' ? 'State' : 'City' }}: {{ photoSelection_selectedLocation }}
-                  </span>
-                </div>
-                <Button
-                  label="Change"
-                  icon="pi pi-edit"
-                  size="small"
-                  @click="photoSelection_selectedLocation = null"
-                  class="bg-brand-flash border-0 text-xs px-2 py-1"
-                />
-              </div>
-            </div>
-
-            <p class="text-sm text-brand-flash mt-3 text-center">
-              I'll find photos from {{ photoSelection_locationType === 'country' ? 'this country' : photoSelection_locationType === 'state' ? 'this state/province' : 'this city' }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Upload New Photos Section -->
-        <div class="mt-3 pt-2 border-t border-gray-200 w-full max-w-md mx-auto">
-          <div class="text-center">
-            <p class="text-sm text-gray-600 mb-2">Need more photos?</p>
-            <button
-              @click="selectFilesForMagicMemory"
-              class="bg-brand-dialog-edit text-white font-semibold rounded-full px-4 py-2 text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
-              :disabled="isUploading"
-            >
-              <i class="pi pi-upload"></i>
-              <span v-if="!isUploading">🌸 Upload New Photos 🌸</span>
-              <span v-else>🌸 Uploading and working our magic... 🌸</span>
-            </button>
-            <p class="text-xs text-gray-500 mt-2">New photos will be automatically approved and available for selection</p>
-          </div>
-        </div>
+        
+                            <!-- Photo Selection Interface Component (Photo Library Mode) -->
+                    <PhotoSelectionInterface
+                      ref="photoSelectionInterfaceRef"
+                      v-model:method="photoSelection_method"
+                      v-model:dateRange="photoSelection_dateRange"
+                      v-model:selectedTags="photoSelection_selectedTags"
+                      v-model:locationType="photoSelection_locationType"
+                      v-model:selectedLocation="photoSelection_selectedLocation"
+                      v-model:selectedMemories="photoSelection_selectedMemories"
+                      v-model:selectedTagFilter="photoSelection_selectedTagFilter"
+                      :title="magicMemoryTitle"
+                      :computedAvailableTags="photoSelection_computedAvailableTags"
+                      :availableCountries="photoSelection_availableCountries"
+                      :availableStates="photoSelection_availableStates"
+                      :availableCities="photoSelection_availableCities"
+                      :filteredAssets="photoSelection_filteredAssets"
+                      :loadingAssets="photoSelection_loadingAssets"
+                      :isUploading="isUploading"
+                      @upload-photos="selectFilesForMagicMemory"
+                      @photo-library-selected="nextMagicMemoryStep"
+                      @no-photos-found="handleNoPhotosFound"
+                      @close-photo-library="handleClosePhotoLibrary"
+                    />
       </div>
 
 
 
-      <!-- Step 6: Photo Library Selection (only for photo_library selection) -->
-      <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library' && !photoSelection_loadingAssets" class="space-y-3 sm:space-y-4 px-4 overflow-x-hidden">
-        <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 w-full mx-auto">
-          <label class="block text-sm font-medium text-gray-900 mb-2">Filter by Tags</label>
-          <div class="flex gap-2 mb-3">
-            <MultiSelect
-              v-model="photoSelection_selectedTagFilter"
-              :options="photoSelection_computedAvailableTags"
-              option-label="label"
-              option-value="value"
-              placeholder="All photos"
-              class="flex-1"
-              :show-toggle-all="false"
-            />
-            <Button
-              v-if="photoSelection_selectedTagFilter && photoSelection_selectedTagFilter.length > 0"
-              icon="pi pi-times"
-              size="small"
-              @click="photoSelection_selectedTagFilter = []"
-              class="px-2"
-              v-tooltip.top="'Clear filter'"
-            />
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 max-h-64 sm:max-h-80 overflow-y-auto">
-            <div
-              v-for="asset in photoSelection_filteredAssets"
-              :key="asset.id"
-              class="relative group cursor-pointer touch-manipulation magic-photo-card"
-              :class="{
-                'opacity-60 pointer-events-none': photoSelection_selectedMemories.length >= 12 && !photoSelection_selectedMemories.includes(asset.id),
-                'ring-4 ring-purple-400 ring-offset-2 scale-105 z-10 bg-purple-100 shadow-xl': photoSelection_selectedMemories.includes(asset.id)
-              }"
-              @click="photoSelection_toggleMemorySelection(asset.id)"
-            >
-              <div v-if="photoSelection_selectedMemories.includes(asset.id)" class="absolute inset-0 bg-purple-200/40 rounded-lg z-20 flex items-center justify-center pointer-events-none transition-all duration-200">
-                <i class="pi pi-check text-4xl text-purple-500 animate-bounce"></i>
-              </div>
-              <div class="aspect-square bg-gradient-to-br from-brand-navigation via-purple-50 to-blue-100 rounded-lg overflow-hidden border-2 border-brand-highlight hover:border-purple-400 transition-colors">
-                <img
-                  v-if="asset.storage_url"
-                  :src="asset.storage_url"
-                  :alt="asset.user_caption || asset.ai_caption || 'Memory'"
-                  class="w-full h-full object-contain bg-white"
-                />
-                <div v-else class="w-full h-full flex items-center justify-center">
-                  <i class="pi pi-image text-gray-400 text-lg"></i>
-                </div>
-              </div>
-              <div class="mt-1 text-center">
-                <CaptionRenderer 
-                  :caption="asset.user_caption || asset.ai_caption || `Photo ${asset.id.slice(-4)}`"
-                  :max-width="140"
-                  :max-height="50"
-                  :font-size="11"
-                />
-              </div>
-            </div>
-          </div>
-          <div class="mt-2 text-xs text-gray-600 text-center">
-            <span>{{ photoSelection_selectedMemories.length }} selected (up to 12 photos)</span>
-            <span v-if="photoSelection_selectedTagFilter && photoSelection_selectedTagFilter.length > 0"> • Filtered by: {{ photoSelection_selectedTagFilter.join(', ') }}</span>
-          </div>
-          
-          <!-- Upload New Photos Section -->
-          <div class="mt-4 pt-4 border-t border-gray-200">
-            <div class="text-center">
-              <p class="text-sm text-gray-600 mb-3">Don't see the photos you want?</p>
-              <button
-                @click="selectFilesForMagicMemory"
-                class="bg-gradient-to-r from-purple-500 to-brand-secondary hover:from-purple-600 hover:to-brand-secondary text-white font-semibold rounded-lg px-4 py-2 text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
-                :disabled="isUploading"
-              >
-                <i class="pi pi-upload"></i>
-                <span v-if="!isUploading">✨ Upload New Photos ✨</span>
-                <span v-else>✨ Uploading and working our magic... ✨</span>
-              </button>
-              <p class="text-xs text-gray-500 mt-2">New photos will be automatically approved and available for selection</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div v-else-if="photoSelection_loadingAssets && photoSelection_method === 'photo_library'" class="flex items-center justify-center py-8">
-        <div class="text-center">
-          <i class="pi pi-spin pi-spinner text-3xl text-brand-header mb-3"></i>
-          <p class="text-sm text-gray-600">Loading your photo library...</p>
-        </div>
-      </div>
+
       <template #footer>
         <div class="flex flex-col sm:flex-row justify-between items-center gap-2 mt-1">
           <!-- Cancel Button (always visible) -->
@@ -2114,6 +1841,7 @@ import { useToast } from 'primevue/usetoast'
 import { Sparkles, Sparkle, Wand2, Gift } from 'lucide-vue-next'
 import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
 import CaptionRenderer from '~/components/CaptionRenderer.vue'
+import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { usePhotoSelection } from '~/composables/usePhotoSelection'
 const toast = useToast()
@@ -2132,7 +1860,7 @@ definePageMeta({
   layout: 'default'
 })
 
-const { $toast } = useNuxtApp()
+
 const db = useDatabase()
 const route = useRoute()
 // const supabase = useSupabaseClient()
@@ -2346,8 +2074,8 @@ const onGenerateClick = (book) => {
 const onRegenerateClick = (book) => {
   if (book.status === 'background_ready') {
     console.log('⚠️ Cannot regenerate book that is still being processed')
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'warn',
         summary: 'Book Still Processing',
         detail: 'Please wait for the current generation to complete before recreating',
@@ -2409,8 +2137,8 @@ const cancelDialog = () => {
 
 const confirmUpdateDescription = async () => {
   if (!newDescription.value.trim()) {
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'warn',
         summary: 'Description Required',
         detail: 'Please provide a description for your memory.',
@@ -2430,8 +2158,8 @@ const confirmUpdateDescription = async () => {
     
     if (updateError) {
       console.error('❌ Error updating book title:', updateError)
-      if ($toast && $toast.add) {
-        $toast.add({
+      if (toast) {
+        toast.add({
           severity: 'error',
           summary: 'Error',
           detail: 'Failed to update memory description',
@@ -2444,8 +2172,8 @@ const confirmUpdateDescription = async () => {
     // Update the pending book with the new title
             pendingBook.value.ai_supplemental_prompt = newDescription.value.trim()
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Updated',
         detail: 'Memory description updated successfully',
@@ -2460,8 +2188,8 @@ const confirmUpdateDescription = async () => {
     await continueRegeneration()
   } catch (error) {
     console.error('❌ Error updating book title:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to update memory description',
@@ -2486,8 +2214,8 @@ const continueRegeneration = async () => {
         }
       })
       // Show toast notification for regeneration
-      if ($toast && $toast.add) {
-        $toast.add({
+      if (toast) {
+        toast.add({
           severity: 'info',
           summary: 'Regenerating Memory Book',
           detail: 'Your memory book is being regenerated with fresh settings.',
@@ -2498,8 +2226,8 @@ const continueRegeneration = async () => {
       await generatePDF(pendingBook.value)
     } catch (error) {
       console.error('❌ Error resetting magic book for regeneration:', error)
-      if ($toast && $toast.add) {
-        $toast.add({
+      if (toast) {
+        toast.add({
           severity: 'error',
           summary: 'Error',
           detail: 'Failed to reset magic book for regeneration',
@@ -2548,8 +2276,8 @@ const loadMemoryBooks = async () => {
   } catch (error) {
     console.error('❌ Error loading memory books:', error)
     console.error('❌ Error stack:', error.stack)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to load memory books',
@@ -2692,8 +2420,8 @@ const createMemoryBook = async () => {
     }
     if (assetsToUse.length === 0) {
       console.log('🔧 [createMemoryBook] No assets available')
-      if ($toast && $toast.add) {
-        $toast.add({
+      if (toast) {
+        toast.add({
           severity: 'warn',
           summary: 'No Assets',
           detail: 'No approved photos available for this memory card',
@@ -2729,8 +2457,8 @@ const createMemoryBook = async () => {
     console.log('🔧 [createMemoryBook] Calling db.memoryBooks.createMemoryBook with:', JSON.parse(JSON.stringify(bookData)))
     const memoryBook = await db.memoryBooks.createMemoryBook(bookData)
     console.log('🔧 [createMemoryBook] API call successful, response:', memoryBook)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Created',
         detail: 'Memory book created successfully',
@@ -2743,8 +2471,8 @@ const createMemoryBook = async () => {
     await loadMemoryBooks()
   } catch (error) {
     console.error('❌ [createMemoryBook] Error creating memory book:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to create memory book',
@@ -3070,8 +2798,8 @@ const generatePDF = async (book) => {
     console.log('Book layout type:', book.layout_type)
     console.log('Photo selection pool:', book.photo_selection_pool)
     console.log('Created from assets:', book.created_from_assets)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'No Assets Found',
         detail: 'This memory book has no assets to generate a PDF from. Please add some memories first.',
@@ -3158,8 +2886,8 @@ const generatePDF = async (book) => {
     stopProgressPolling()
     showProgressDialog.value = false
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to generate PDF',
@@ -3258,8 +2986,8 @@ const composeNewlyCreatedMemory = async () => {
     stopProgressPolling()
     showProgressDialog.value = false
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to create memory book',
@@ -3324,8 +3052,8 @@ const downloadPDF = async (book) => {
       component: 'MemoryBooksIndex',
       error: error.message
     })
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to open PDF',
@@ -3387,8 +3115,8 @@ const forceDownloadPDF = async (book) => {
       download_url: response.downloadUrl
     })
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Download Started',
         detail: 'Your memory card PDF is being downloaded',
@@ -3404,8 +3132,8 @@ const forceDownloadPDF = async (book) => {
       component: 'MemoryBooksIndex',
       error: error.message
     })
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to download PDF',
@@ -3423,8 +3151,8 @@ const approveBook = async (bookId) => {
       approved_at: new Date().toISOString()
     })
 
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Approved',
         detail: 'Memory card approved',
@@ -3437,8 +3165,8 @@ const approveBook = async (bookId) => {
 
   } catch (error) {
     console.error('Error approving book:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to approve memory book',
@@ -3456,8 +3184,8 @@ const unapproveBook = async (bookId) => {
       approved_at: null
     })
 
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Unapproved',
         detail: 'Special memory unapproved',
@@ -3471,8 +3199,8 @@ const unapproveBook = async (bookId) => {
 
   } catch (error) {
     console.error('Error unapproving book:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to unapprove memory book',
@@ -3864,8 +3592,8 @@ const openEditSettings = async (book) => {
     showEditSettingsModal.value = true
   } catch (error) {
     console.error('Error loading assets for edit:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to load assets for editing',
@@ -3907,8 +3635,8 @@ const saveEditBook = async () => {
     })
     
     showEditSettingsModal.value = false
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Updated',
         detail: 'Memory book settings and assets updated',
@@ -3918,8 +3646,8 @@ const saveEditBook = async () => {
     await loadMemoryBooks()
   } catch (error) {
     console.error('Error updating memory book:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to update memory book',
@@ -4030,8 +3758,8 @@ const openSelectMemoriesDialog = async () => {
     showSelectMemoriesModal.value = true
   } catch (error) {
     console.error('Error loading assets for memory selection:', error)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to load assets for memory selection',
@@ -4072,8 +3800,8 @@ const saveSelectedMemories = () => {
   }
   
   showSelectMemoriesModal.value = false
-  if ($toast && $toast.add) {
-    $toast.add({
+  if (toast) {
+    toast.add({
       severity: 'success',
       summary: 'Selected',
       detail: `${selectedMemories.value.length} memories selected`,
@@ -4106,8 +3834,8 @@ const confirmCleanup = async () => {
     showCleanupConfirmationModal.value = false
     cleanupBookId.value = null
     
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'success',
         summary: 'Cleaned Up!',
         detail: 'We have cleaned up your memory card so you can create a new one!',
@@ -4119,8 +3847,8 @@ const confirmCleanup = async () => {
     await loadMemoryBooks()
   } catch (err) {
     console.error('Error cleaning up book:', err)
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to clean up book.',
@@ -4138,7 +3866,7 @@ const cleanupBook = async (bookId) => {
       background_url: null,
       pdf_url: null
     })
-    $toast.add({
+    toast.add({
       severity: 'success',
       summary: 'Book Reset',
       detail: 'Book status reset to draft and cleared background/PDF.',
@@ -4147,7 +3875,7 @@ const cleanupBook = async (bookId) => {
     showEditSettingsModal.value = false
     await loadMemoryBooks()
   } catch (err) {
-    $toast.add({
+    toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to reset book.',
@@ -4183,7 +3911,8 @@ const stepDefinitions = {
   [MAGIC_STEPS.TITLE]: { name: "Title Input", required: true },
   [MAGIC_STEPS.THEME]: { name: "Theme Selection", required: false },
   [MAGIC_STEPS.BACKGROUND]: { name: "Background Selection", required: true },
-  [MAGIC_STEPS.PHOTOS]: { name: "Photo Selection Method", required: true }
+  [MAGIC_STEPS.PHOTOS]: { name: "Photo Selection Method", required: true },
+  [MAGIC_STEPS.MANUAL]: { name: "Photo Selection", required: true }
 }
 
 // Button configurations defining which steps to include
@@ -4239,6 +3968,9 @@ function toggleMagicMemorySelection(id) {
 }
 
 const magicLoading = ref(false)
+
+// Refs for components
+const photoSelectionInterfaceRef = ref(null)
 
 // Use the photo selection composable directly
 const {
@@ -4445,6 +4177,20 @@ async function onMagicMemoryContinue() {
   // If we're on the manual step and no photos are selected, don't proceed
   if (magicMemoryStep.value === MAGIC_STEPS.MANUAL && photoSelection_method.value === 'photo_library' && photoSelection_selectedMemories.value.length < 1) {
     return
+  }
+  
+  // Validate photo availability for the selected method before proceeding
+  console.log('🔍 [onMagicMemoryContinue] Validating photo selection...')
+  if (photoSelectionInterfaceRef.value && typeof photoSelectionInterfaceRef.value.validatePhotoSelection === 'function') {
+    console.log('🔍 [onMagicMemoryContinue] Calling validatePhotoSelection...')
+    const isValid = photoSelectionInterfaceRef.value.validatePhotoSelection()
+    console.log('🔍 [onMagicMemoryContinue] Validation result:', isValid)
+    if (!isValid) {
+      console.log('🔍 [onMagicMemoryContinue] Validation failed, stopping...')
+      return // Don't proceed if validation fails (error message already shown)
+    }
+  } else {
+    console.log('🔍 [onMagicMemoryContinue] No validation function available')
   }
   
   // Close the magic wizard dialog immediately
@@ -4822,16 +4568,90 @@ const retryMagicMemory = async () => {
   }
 }
 
+// Handle when no photos are found for a selection method
+const handleNoPhotosFound = (data) => {
+  console.log('🔍 [handleNoPhotosFound] No photos found for method:', data.method)
+  
+  let message = data.message
+  let title = 'No Photos Found'
+  
+  // Customize message based on method
+  switch (data.method) {
+    case 'date_range':
+      title = 'No Photos in Date Range'
+      message = `No photos found for the selected date range (${formatDateRange(data.dateRange)}). Please try a different date range or choose another selection method.`
+      break
+    case 'geo_code':
+      title = 'No Photos at Location'
+      message = `No photos found for the selected location. Please try a different location or choose another selection method.`
+      break
+    case 'tags':
+      title = 'No Photos with Tags'
+      message = `No photos found with the selected tags. Please try different tags or choose another selection method.`
+      break
+    default:
+      title = 'No Photos Found'
+      message = data.message
+  }
+  
+  console.log('🔍 [handleNoPhotosFound] Showing toast with:', { title, message })
+  
+  // Show toast notification using the correct toast instance
+  toast.add({
+    severity: 'info',
+    summary: title,
+    detail: message,
+    life: 5000
+  })
+}
+
+// Handle when photo library is closed (return to photo selection step)
+const handleClosePhotoLibrary = () => {
+  console.log('🔍 [handleClosePhotoLibrary] Photo library closed, returning to PHOTOS step')
+  
+  // Reset the step back to PHOTOS
+  magicMemoryStep.value = MAGIC_STEPS.PHOTOS
+  
+  // Clear any selected memories
+  photoSelection_selectedMemories.value = []
+  
+  console.log('🔍 [handleClosePhotoLibrary] Step reset to:', magicMemoryStep.value)
+}
+
+// Helper function to format date range for display
+const formatDateRange = (dateRange) => {
+  if (!dateRange.start && !dateRange.end) return 'any date'
+  if (dateRange.start && dateRange.end) {
+    return `${new Date(dateRange.start).toLocaleDateString()} to ${new Date(dateRange.end).toLocaleDateString()}`
+  }
+  if (dateRange.start) {
+    return `from ${new Date(dateRange.start).toLocaleDateString()}`
+  }
+  if (dateRange.end) {
+    return `until ${new Date(dateRange.end).toLocaleDateString()}`
+  }
+  return 'any date'
+}
+
 // Navigate to trash page
 const navigateToTrash = () => {
   navigateTo('/app/memory-books/trash')
 }
 
 const openMagicMemoryDialog = async (buttonType = 'full') => {
-  // Set up the button configuration
-  currentButtonConfig.value = buttonConfigs[buttonType] || buttonConfigs.full
+  console.log('🔍 [openMagicMemoryDialog] Opening dialog with buttonType:', buttonType)
+  
+  // Set up the button configuration - create a fresh copy to avoid mutations
+  const originalConfig = buttonConfigs[buttonType] || buttonConfigs.full
+  currentButtonConfig.value = {
+    ...originalConfig,
+    steps: [...originalConfig.steps] // Create a fresh copy of the steps array
+  }
   currentStepIndex.value = 0
   magicMemoryStep.value = currentButtonConfig.value.steps[0]
+  
+  console.log('🔍 [openMagicMemoryDialog] Initial config:', currentButtonConfig.value)
+  console.log('🔍 [openMagicMemoryDialog] Initial step:', magicMemoryStep.value)
   
   // Reset form values
   magicMemoryTitle.value = ''
@@ -4839,29 +4659,25 @@ const openMagicMemoryDialog = async (buttonType = 'full') => {
   magicCustomMemoryEvent.value = ''
   magicPhotoCount.value = 4
   magicBackgroundType.value = 'white'
+  
+  // Reset photo selection state using composable's reset function
+  photoSelection_resetSelection()
+  
   // Set default photo selection method based on button configuration
   photoSelection_method.value = currentButtonConfig.value.steps.includes(5) ? '' : 'last_100'
-  photoSelection_dateRange.value = { start: null, end: null }
-  photoSelection_selectedTags.value = []
-  photoSelection_selectedMemories.value = []
-  photoSelection_selectedTagFilter.value = []
-  
-  // Reset location selection variables
-  photoSelection_locationType.value = 'country'
-  photoSelection_selectedLocation.value = ''
   
   // Reset theme selection
   magicSelectedTheme.value = null
   
   photoSelection_loadingAssets.value = true
   try {
-    const allApprovedAssets = await db.assets.getAssets({ approved: true })
-    photoSelection_availableAssets.value = allApprovedAssets || []
-    // Populate available locations for location-based filtering
-    populateAvailableLocations()
+    // Use composable functions to load assets and location data
+    await photoSelection_loadAvailableAssets()
+    await photoSelection_loadLocationData()
     // Fetch themes for wizard
     await fetchMagicThemes()
   } catch (error) {
+    console.error('Error loading assets:', error)
     photoSelection_availableAssets.value = []
   } finally {
     photoSelection_loadingAssets.value = false
@@ -4889,8 +4705,8 @@ const nextMagicMemoryStep = () => {
   // Validate current step before proceeding
   if (magicMemoryStep.value === MAGIC_STEPS.TITLE && !magicMemoryTitle.value.trim()) {
     // Show error message to user
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'error',
         summary: 'Title Required',
         detail: 'Please enter a description for your memory to help me select the best photos.',
@@ -4909,11 +4725,39 @@ const nextMagicMemoryStep = () => {
     return // Don't proceed if location is not selected
   }
   
+  // Validate photo availability for the selected method
+  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS) {
+    console.log('🔍 [nextMagicMemoryStep] Validating photo selection...')
+    console.log('🔍 [nextMagicMemoryStep] photoSelectionInterfaceRef.value:', photoSelectionInterfaceRef.value)
+    
+    // Validate using the PhotoSelectionInterface component
+    if (photoSelectionInterfaceRef.value && typeof photoSelectionInterfaceRef.value.validatePhotoSelection === 'function') {
+      console.log('🔍 [nextMagicMemoryStep] Calling validatePhotoSelection...')
+      const isValid = photoSelectionInterfaceRef.value.validatePhotoSelection()
+      console.log('🔍 [nextMagicMemoryStep] Validation result:', isValid)
+      if (!isValid) {
+        console.log('🔍 [nextMagicMemoryStep] Validation failed, stopping...')
+        return // Don't proceed if validation fails (error message already shown)
+      }
+    } else {
+      console.log('🔍 [nextMagicMemoryStep] No validation function available')
+    }
+  }
+  
   // Special handling for photo_library selection - add MANUAL step programmatically
   if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'photo_library') {
-    console.log('🔍 [nextMagicMemoryStep] Photo library selected, adding MANUAL step')
-    // Add MANUAL step to the current button configuration
-    currentButtonConfig.value.steps.push(MAGIC_STEPS.MANUAL)
+    console.log('🔍 [nextMagicMemoryStep] Photo library selected, checking MANUAL step')
+    console.log('🔍 [nextMagicMemoryStep] Current steps before:', currentButtonConfig.value.steps)
+    
+    // Only add MANUAL step if it doesn't already exist
+    if (!currentButtonConfig.value.steps.includes(MAGIC_STEPS.MANUAL)) {
+      console.log('🔍 [nextMagicMemoryStep] Adding MANUAL step')
+      currentButtonConfig.value.steps.push(MAGIC_STEPS.MANUAL)
+    } else {
+      console.log('🔍 [nextMagicMemoryStep] MANUAL step already exists')
+    }
+    
+    console.log('🔍 [nextMagicMemoryStep] Current steps after:', currentButtonConfig.value.steps)
     // Move to the MANUAL step
     currentStepIndex.value = currentButtonConfig.value.steps.indexOf(MAGIC_STEPS.MANUAL)
     magicMemoryStep.value = MAGIC_STEPS.MANUAL
@@ -4960,7 +4804,13 @@ const getNextStepName = () => {
   const nextIndex = currentStepIndex.value + 1
   if (nextIndex < currentButtonConfig.value.steps.length) {
     const nextStepNumber = currentButtonConfig.value.steps[nextIndex]
-    return stepDefinitions[nextStepNumber].name
+    const stepDef = stepDefinitions[nextStepNumber]
+    if (stepDef) {
+      return stepDef.name
+    } else {
+      console.warn('🔍 [getNextStepName] No step definition found for:', nextStepNumber)
+      return "Next Step"
+    }
   }
   return null
 }
@@ -4977,37 +4827,7 @@ const isFirstStep = () => {
   return currentStepIndex.value === 0
 }
 
-// Function to populate available locations from user's assets
-const populateAvailableLocations = () => {
-  if (!photoSelection_availableAssets.value || photoSelection_availableAssets.value.length === 0) {
-    photoSelection_availableCountries.value = []
-    photoSelection_availableStates.value = []
-    photoSelection_availableCities.value = []
-    return
-  }
-  
-  // Extract unique locations from assets
-  const countries = [...new Set(photoSelection_availableAssets.value
-    .map(asset => asset.country)
-    .filter(country => country && country.trim() !== ''))]
-  
-  const states = [...new Set(photoSelection_availableAssets.value
-    .map(asset => asset.state)
-    .filter(state => state && state.trim() !== ''))]
-  
-  const cities = [...new Set(photoSelection_availableAssets.value
-    .map(asset => asset.city)
-    .filter(city => city && city.trim() !== ''))]
-  
-  // Convert to dropdown options format
-  photoSelection_availableCountries.value = countries.map(country => ({ label: country, value: country }))
-  photoSelection_availableStates.value = states.map(state => ({ label: state, value: state }))
-  photoSelection_availableCities.value = cities.map(city => ({ label: city, value: city }))
-  
-  console.log('🔍 [populateAvailableLocations] Available countries:', photoSelection_availableCountries.value.length)
-  console.log('🔍 [populateAvailableLocations] Available states:', photoSelection_availableStates.value.length)
-  console.log('🔍 [populateAvailableLocations] Available cities:', photoSelection_availableCities.value.length)
-}
+
 
 const showDeleteDialog = ref(false)
 const bookToDelete = ref(null)
@@ -5048,8 +4868,8 @@ async function createMemoryBookFromDialog(data) {
   // Check if assets are selected
   if (!data.selectedAssets || data.selectedAssets.length === 0) {
     // Show dialog explaining the requirement
-    if ($toast && $toast.add) {
-      $toast.add({
+    if (toast) {
+      toast.add({
         severity: 'warn',
         summary: 'Assets Required',
         detail: 'Please select at least one photo to include in your memory book.',
@@ -5437,8 +5257,8 @@ const finishUpload = async () => {
       } else {
         console.log('[MEMORY-BOOKS] User has', photoCount, 'photos, showing recommendation to add more')
         // Show toast encouraging more photos
-        if ($toast && $toast.add) {
-          $toast.add({
+        if (toast) {
+          toast.add({
             severity: 'info',
             summary: 'Great Start!',
             detail: `You have ${photoCount} photos. For best results, consider adding more photos before creating your memory card.`,
@@ -5519,8 +5339,8 @@ const skipUpload = () => {
       } else {
         console.log('[MEMORY-BOOKS] User has no photos, showing recommendation')
         // Show toast encouraging photos
-        if ($toast && $toast.add) {
-          $toast.add({
+        if (toast) {
+          toast.add({
             severity: 'info',
             summary: 'No Photos Yet',
             detail: 'You can upload photos anytime from the Upload page. For best results, try to add at least 6 photos.',
