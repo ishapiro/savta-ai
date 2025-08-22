@@ -2,15 +2,16 @@
 <!-- PDF/Image Viewer for Savta.AI -->
 <template>
   <ClientOnly>
-    <div class="relative w-full h-full bg-brand-navigation">
+    <div class="relative w-full h-full bg-brand-navigation" :class="{ 'mobile-fullscreen': isMobile }">
       <!-- Document/Image Container -->
-      <div class="w-full h-full overflow-hidden pb-20 scrollbar-hide">
+      <div class="w-full h-full overflow-hidden scrollbar-hide" :class="{ 'pb-20': !isMobile }">
         <div 
           ref="panContainer"
           class="w-full h-full relative"
           :class="[
             shouldPositionAtTop ? 'flex items-start justify-center' : 'flex items-center justify-center',
-            isPanningAvailable ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+            isPanningAvailable ? 'cursor-grab active:cursor-grabbing' : 'cursor-default',
+            { 'mobile-pan-container': isMobile }
           ]"
           @vue:mounted="logPositioningClasses"
           @mousedown="startPan"
@@ -20,12 +21,14 @@
           @touchstart="startPan"
           @touchmove="pan"
           @touchend="stopPan"
+          @touchcancel="stopPan"
         >
           
           <!-- JPG Image Display -->
           <div v-if="isJpgImage"
                ref="imageContainer"
-               class="mb-4 flex"
+               class="flex"
+               :class="{ 'mb-4': !isMobile }"
                :style="imageContainerStyle"
           >
             <img 
@@ -45,7 +48,8 @@
           <!-- PDF Document Display -->
           <div v-else
                ref="pdfContainer"
-               class="mb-4 flex"
+               class="flex"
+               :class="{ 'mb-4': !isMobile }"
                :style="pdfContainerStyle"
           >
             <div 
@@ -776,7 +780,10 @@ function startPan(event) {
     return
   }
   
+  // Prevent default behavior to avoid unwanted scrolling/movement
   event.preventDefault()
+  event.stopPropagation()
+  
   isPanning.value = true
   
   const clientX = event.clientX || (event.touches && event.touches[0]?.clientX)
@@ -794,7 +801,8 @@ function startPan(event) {
     contentWidth,
     contentHeight,
     containerWidth,
-    containerHeight
+    containerHeight,
+    isMobile: isMobile.value
   })
 }
 
@@ -803,7 +811,9 @@ function pan(event) {
     return
   }
   
+  // Prevent default behavior to avoid unwanted scrolling/movement
   event.preventDefault()
+  event.stopPropagation()
   
   const clientX = event.clientX || (event.touches && event.touches[0]?.clientX)
   const clientY = event.clientY || (event.touches && event.touches[0]?.clientY)
@@ -863,7 +873,7 @@ function pan(event) {
 function stopPan() {
   if (isPanning.value) {
     isPanning.value = false
-    console.log('🔍 Pan stopped:', { panX: panX.value, panY: panY.value })
+    console.log('🔍 Pan stopped:', { panX: panX.value, panY: panY.value, isMobile: isMobile.value })
   }
 }
 
@@ -1211,5 +1221,49 @@ watch(isJpgImage, (isJpg) => {
 /* Smooth transitions for zoom changes */
 img, div {
   will-change: transform;
+}
+
+/* Mobile fullscreen styles */
+.mobile-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+
+.mobile-fullscreen .scrollbar-hide {
+  padding-bottom: 0 !important;
+}
+
+/* Ensure pan container fills entire screen on mobile */
+.mobile-fullscreen .w-full.h-full {
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Mobile pan container styles */
+.mobile-pan-container {
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 </style>
