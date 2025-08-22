@@ -1133,7 +1133,7 @@
     <Dialog v-model:visible="showUpdateDescriptionDialog" modal header="Update Memory Prompt" class="w-full max-w-xl">
       <div class="p-4">
         <div class="mb-4">
-          <p class="text-sm sm:text-base mb-3">
+          <p class="text-sm mb-3">
             Tell me about the memory you want to recreate. 
             This helps Savta AI choose the best photos and create a beautiful new story for you.
             You can include specific details about the memory, such as the date, location, people, and any other details you want to include.
@@ -1485,19 +1485,18 @@
           <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
             <Gift class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
-          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 leading-tight">✨ Tell us about the memory you’d like to<br /> bring to life ✨</h3>
+          <h3 class="text-xl font-bold text-gray-900 mb-3 leading-tight">✨ Tell us about the memory you’d like to create ✨</h3>
           <section class="memory-instructions text-left max-w-lg mx-auto" aria-labelledby="memory-title">
-            <p class="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed">I'll use your description to find the best photos and create a beautiful story.</p>
+            <p class="text-sm text-gray-600 mb-3 leading-relaxed">I'll use your description to find the best photos and create a beautiful story.</p>
             <ul class="text-left space-y-2 text-xs sm:text-sm text-gray-600 leading-relaxed list-disc pl-5">
               <li>Share details like <em class="text-gray-700 font-medium">who was there, where it happened, or when it was</em></li>
               <li>Or describe a theme like <em class="text-gray-700 font-medium">"Our family trip to Paris"</em> or <em class="text-gray-700 font-medium">"Birthday celebrations"</em></li>
-              <li>Don’t worry about being exact&mdash;just describe it in your own words.</li>
               <li>Feel free to include a specific date or location if you’d like.</li>
             </ul>
           </section>
         </div>
-        <div class="field w-full max-w-md mx-auto sm:max-w-[520px] sm:mx-auto mt-6">
-          <label class="block text-lg font-bold text-gray-900 mb-3 text-left">Describe your memory</label>
+        <div class="field w-full max-w-md mx-auto sm:max-w-[520px] sm:mx-auto mt-1">
+          <label class="block text-lg font-bold text-gray-900 mb-2 text-left">Describe your memory</label>
           <InputText
             v-model="magicMemoryTitle"
             :placeholder="'e.g. Special Trip with Karen and Sam, Summer 2023'"
@@ -1508,7 +1507,7 @@
             required
             :model-value="magicMemoryTitle"
           />
-          <small class="text-gray-500 text-sm mt-3 sm:mt-2 block leading-relaxed">I'll use this to find your best photos and create a beautiful story.</small>
+          <small class="text-gray-500 text-sm mt-1 block leading-relaxed">I'll use this to find your best photos and create a beautiful story.</small>
         </div>
       </div>
 
@@ -2080,7 +2079,7 @@
         </div>
       </div>
       <template #footer>
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-3 mt-3 sm:mt-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-2 mt-1">
           <!-- Cancel Button (always visible) -->
           <Button
             label="Cancel"
