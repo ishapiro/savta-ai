@@ -154,6 +154,89 @@
       </template>
     </Dialog>
 
+    <!-- Approval Dialog -->
+    <Dialog 
+      v-model:visible="showApprovalDialog" 
+      modal 
+      :closable="false"
+      class="w-full max-w-md sm:max-w-lg mx-auto"
+      :style="{ width: '90vw' }"
+    >
+      <div class="text-center p-6">
+        <div class="w-16 h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <i class="pi pi-heart text-2xl text-white"></i>
+        </div>
+        
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Your Memory Card is Ready!</h3>
+        
+        <div class="space-y-4 text-left">
+          <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="pi pi-info-circle text-blue-400 text-lg"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                  <strong>Testing Phase:</strong> During this initial testing period, physical cards will not be mailed.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="pi pi-check-circle text-green-400 text-lg"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-green-700">
+                  <strong>Coming Soon:</strong> Once we go live, you'll be able to select recipients and your memory cards will be beautifully printed and mailed to them.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-purple-50 border-l-4 border-purple-400 p-4 rounded-r-lg">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="pi pi-star text-purple-400 text-lg"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-purple-700">
+                  <strong>Timeless Keepsakes:</strong> Unlike photos that get lost in your phone, these memory cards will become cherished family heirlooms that can be held, shared, and treasured for generations to come.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="pi pi-gift text-orange-400 text-lg"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-orange-700">
+                  <strong>Social Media Meets Sentimental Gifts:</strong> Think of it as your favorite social sharing app meets traditional greeting cards — but instead of scrolling past memories, they arrive in the mail as tangible treasures.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="flex justify-center">
+          <button 
+            class="bg-brand-flash text-white font-bold rounded-full px-8 py-3 text-base shadow-lg hover:bg-brand-highlight transition-all duration-200" 
+            @click="confirmApproval"
+          >
+            <i class="pi pi-check mr-2"></i>
+            Approve My Memory Card
+          </button>
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Memory Books Grid -->
     <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-12 sm:py-16">
       <div class="text-center">
@@ -3145,6 +3228,17 @@ const forceDownloadPDF = async (book) => {
 
 // Approve book
 const approveBook = async (bookId) => {
+  // Show approval dialog first
+  pendingApprovalBookId.value = bookId
+  showApprovalDialog.value = true
+}
+
+// Confirm approval after dialog
+const confirmApproval = async () => {
+  const bookId = pendingApprovalBookId.value
+  showApprovalDialog.value = false
+  pendingApprovalBookId.value = null
+  
   try {
     await db.memoryBooks.updateMemoryBook(bookId, {
       status: 'approved',
@@ -3885,6 +3979,8 @@ const cleanupBook = async (bookId) => {
 }
 
 const showInfoDialog = ref(false)
+const showApprovalDialog = ref(false)
+const pendingApprovalBookId = ref(null)
 
 // import PdfViewer from '~/components/PdfViewer.vue'
 import { defineAsyncComponent } from 'vue'
