@@ -1,5 +1,8 @@
 import { ref, computed } from 'vue'
 
+// Photo pool size constant for easy configuration
+const PHOTO_POOL_SIZE = 100
+
 export const usePhotoSelection = () => {
   // Photo selection method
   const photoSelection_method = ref('last_100')
@@ -34,7 +37,7 @@ export const usePhotoSelection = () => {
     {
       id: 'last_100',
       title: "I'll choose for you",
-      description: "I'll search your photos for matches and pick the best photos from your recent uploads.",
+      description: "I'll search your photos for matches and pick the best photos from your recent uploads (up to 100 photos).",
       icon: 'pi pi-images',
       color: 'from-brand-flash to-brand-highlight'
     },
@@ -171,7 +174,7 @@ export const usePhotoSelection = () => {
     
     switch (photoSelection_method.value) {
       case 'last_100':
-        return photoSelection_availableAssets.value.slice(0, 100).map(asset => asset.id)
+        return photoSelection_availableAssets.value.slice(0, PHOTO_POOL_SIZE).map(asset => asset.id)
       
       case 'photo_library':
         return photoSelection_selectedMemories.value

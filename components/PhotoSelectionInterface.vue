@@ -13,7 +13,7 @@
           </div>
           <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">I'll choose for you</div>
           <div class="text-xs text-gray-600">I'll search your photos for matches to "{{ title || 'your memory' }}" 
-            and pick the best photos from your recent uploads.</div>
+            and pick the best photos from your recent uploads (up to 100 photos).</div>
           <div v-if="methodValue === 'last_100'" class="absolute top-1 right-1">
             <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
               <i class="pi pi-check text-white text-xs"></i>

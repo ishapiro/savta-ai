@@ -21,9 +21,9 @@ async function makeOpenAIRequest(payload) {
     throw new Error('OpenAI API key not configured');
   }
 
-  // Add timeout configuration
+  // Add timeout configuration - increased for larger photo selection requests
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+  const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout for large requests
 
   try {
     const response = await fetch(`${OPENAI_BASE_URL}/responses`, {
@@ -50,7 +50,7 @@ async function makeOpenAIRequest(payload) {
     clearTimeout(timeoutId);
     
     if (error.name === 'AbortError') {
-      throw new Error('OpenAI API request timed out after 2 minutes');
+      throw new Error('OpenAI API request timed out after 5 minutes');
     }
     
     // Check if it's a timeout error from OpenAI
@@ -981,6 +981,20 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
     throw new Error('AI supplemental prompt is required for photo selection');
   }
 
+  // Validate input size - Response API max_output_tokens covers both input and output combined
+  const MAX_COMBINED_TOKENS = 30000; // Set to match max_output_tokens
+  const ESTIMATED_TOKENS_PER_PHOTO = 250; // Conservative estimate
+  const ESTIMATED_OUTPUT_TOKENS = 500; // Estimated tokens for JSON response
+  const PROMPT_OVERHEAD_TOKENS = 1000; // Base prompt instructions
+  const estimatedInputTokens = assets.length * ESTIMATED_TOKENS_PER_PHOTO + PROMPT_OVERHEAD_TOKENS;
+  const estimatedTotalTokens = estimatedInputTokens + ESTIMATED_OUTPUT_TOKENS;
+  
+  if (estimatedTotalTokens > MAX_COMBINED_TOKENS) {
+    const maxPhotos = Math.floor((MAX_COMBINED_TOKENS - PROMPT_OVERHEAD_TOKENS - ESTIMATED_OUTPUT_TOKENS) / ESTIMATED_TOKENS_PER_PHOTO);
+    console.warn(`⚠️ Estimated total token count (${estimatedTotalTokens}) exceeds API limit (${MAX_COMBINED_TOKENS}). Limiting to ${maxPhotos} photos.`);
+    assets = assets.slice(0, maxPhotos);
+  }
+
   // Calculate minimum required photos in pool (3x the target count for breathing room)
   const minimumRequiredPoolSize = targetCount * 3;
   
@@ -1134,7 +1148,7 @@ Return ONLY JSON with the selected photo numbers and your reasoning.`
         ]
       }
     ],
-    max_output_tokens: 2000
+    max_output_tokens: 30000
   };
 
   const response = await makeOpenAIRequest(payload);

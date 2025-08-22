@@ -1928,11 +1928,11 @@ export default defineEventHandler(async (event) => {
         assetIds = book.created_from_assets
         console.log(`📸 Theme PDF - Using already selected assets: ${assetIds.length} assets`)
       } else {
-        // Use the full photo selection pool for regenerations, but limit to 25 max
+        // Use the full photo selection pool for regenerations, but limit to 100 max
         assetIds = book.photo_selection_pool || []
-        if (assetIds.length > 25) {
-          assetIds = assetIds.slice(0, 25)
-          console.log(`📸 Theme PDF - Limited photo selection pool to first 25 photos (from ${book.photo_selection_pool?.length || 0} total)`)
+        if (assetIds.length > 100) {
+          assetIds = assetIds.slice(0, 100)
+          console.log(`📸 Theme PDF - Limited photo selection pool to first 100 photos (from ${book.photo_selection_pool?.length || 0} total)`)
         }
         console.log(`📸 Theme PDF - Using photo selection pool: ${assetIds.length} assets for AI selection`)
       }

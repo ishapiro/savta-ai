@@ -2942,7 +2942,7 @@ const composeNewlyCreatedMemory = async () => {
     // Step 1: Photo Selection (if needed)
     if (!book.created_from_assets || book.created_from_assets.length === 0) {
       console.log('🔧 [composeNewlyCreatedMemory] Setting up photo selection...')
-      currentProgressMessage.value = '🎯 Step 1: Setting up your selected photos...'
+      currentProgressMessage.value = '🎯 Setting up your selected photos...'
       
       // For memory books, we use manual photo selection (photo_library)
       // The photos are already in photo_selection_pool, we just need to populate created_from_assets
@@ -3904,7 +3904,7 @@ const MAGIC_STEPS = {
 }
 
 // Photo pool size constant for easy configuration
-const PHOTO_POOL_SIZE = 25
+const PHOTO_POOL_SIZE = 100
 
 // Step definitions with required/optional flags
 const stepDefinitions = {
@@ -4328,7 +4328,7 @@ async function onMagicMemoryContinue() {
     startProgressPolling()
     
     // Update status and trigger poll for photo selection step
-    currentProgressMessage.value = '🎯 Step 1: Selecting best photos...'
+    currentProgressMessage.value = '🎯 Selecting best photos...'
     setTimeout(pollPdfStatus, 100)
     
     // Now call the magic memory endpoint with the book ID
@@ -4479,7 +4479,7 @@ const retryMagicMemory = async () => {
     startProgressPolling()
     
     // Update status and trigger poll for photo selection step
-    currentProgressMessage.value = '🎯 Step 1: Selecting best photos...'
+    currentProgressMessage.value = '🎯 Selecting best photos...'
     setTimeout(pollPdfStatus, 100)
     
     // Now call the magic memory endpoint with the book ID
