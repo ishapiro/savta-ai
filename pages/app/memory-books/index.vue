@@ -2026,7 +2026,7 @@
       </p>
       
       <!-- Debug information (only show in development) -->
-      <div v-if="process.dev && errorDialogMessage" class="mt-4 p-3 bg-gray-100 rounded-lg text-left">
+              <div v-if="$nuxt.dev && errorDialogMessage" class="mt-4 p-3 bg-gray-100 rounded-lg text-left">
         <p class="text-xs text-gray-600 mb-2"><strong>Debug Info:</strong></p>
         <p class="text-xs text-gray-600 font-mono break-all">{{ errorDialogMessage }}</p>
       </div>
@@ -4245,7 +4245,7 @@ const fetchMagicThemes = async () => {
     loadingMagicThemes.value = true
     const { data, error } = await supabase
       .from('themes')
-      .select('id, name, description, is_active, layout_config, card_wizard, card_default')
+      .select('id, name, description, preview_image_url, is_active, background_color, background_opacity, header_font, body_font, signature_font, header_font_color, body_font_color, signature_font_color, layout_config, rounded, size, card_default, card_wizard, created_at, updated_at')
       .eq('is_active', true)
       .eq('deleted', false)
       .eq('card_wizard', true) // Only show themes that are enabled for wizard
@@ -4281,9 +4281,24 @@ const fetchMagicThemes = async () => {
         label: photoCount > 0 ? `${theme.name} (${photoCount} photos)` : theme.name,
         value: theme.id,
         description: theme.description,
+        preview_image_url: theme.preview_image_url,
+        is_active: theme.is_active,
+        background_color: theme.background_color,
+        background_opacity: theme.background_opacity,
+        header_font: theme.header_font,
+        body_font: theme.body_font,
+        signature_font: theme.signature_font,
+        header_font_color: theme.header_font_color,
+        body_font_color: theme.body_font_color,
+        signature_font_color: theme.signature_font_color,
         layoutConfig: theme.layout_config,
+        rounded: theme.rounded,
+        size: theme.size,
         photoCount: photoCount,
-        card_default: theme.card_default
+        card_default: theme.card_default,
+        card_wizard: theme.card_wizard,
+        created_at: theme.created_at,
+        updated_at: theme.updated_at
       }
     })
     
@@ -4326,22 +4341,34 @@ const defaultThemeName = computed(() => {
 
 // Computed property to get the selected theme's background color
 const selectedThemeBackgroundColor = computed(() => {
-  if (!magicSelectedTheme.value) return '#F9F6F2' // Default fallback color
+  if (!magicSelectedTheme.value) {
+    console.log('🔍 [selectedThemeBackgroundColor] No theme selected, using default:', '#F9F6F2')
+    return '#F9F6F2' // Default fallback color
+  }
   
   const selectedTheme = magicThemeOptions.value.find(theme => theme.value === magicSelectedTheme.value)
-  if (!selectedTheme) return '#F9F6F2'
-  
-  // Try to get background color from the theme data
-  try {
-    const themeData = typeof selectedTheme.layoutConfig === 'string' 
-      ? JSON.parse(selectedTheme.layoutConfig) 
-      : selectedTheme.layoutConfig
-    
-    return themeData?.background_color || '#F9F6F2'
-  } catch (error) {
-    console.error('Error parsing theme background color:', error)
+  if (!selectedTheme) {
+    console.log('🔍 [selectedThemeBackgroundColor] Theme not found, using default:', '#F9F6F2')
     return '#F9F6F2'
   }
+  
+      console.log('🔍 [selectedThemeBackgroundColor] Selected theme:', selectedTheme.label)
+    console.log('🔍 [selectedThemeBackgroundColor] Theme layoutConfig:', selectedTheme.layoutConfig)
+    console.log('🔍 [selectedThemeBackgroundColor] Full theme object:', selectedTheme)
+  
+  // Get background color directly from the theme
+  console.log('🔍 [selectedThemeBackgroundColor] Theme background_color field:', selectedTheme.background_color)
+  
+  let backgroundColor = selectedTheme.background_color || '#F9F6F2'
+  
+  // Ensure the color has a # prefix
+  if (backgroundColor && !backgroundColor.startsWith('#')) {
+    backgroundColor = '#' + backgroundColor
+    console.log('🔍 [selectedThemeBackgroundColor] Added # prefix:', backgroundColor)
+  }
+  
+  console.log('🔍 [selectedThemeBackgroundColor] Final background color:', backgroundColor)
+  return backgroundColor
 })
 
 // Watch for magic memory step changes to handle Step 5 redirect
@@ -4354,19 +4381,33 @@ watch(magicMemoryStep, (newStep) => {
   
   // Set background type to solid and initialize color when entering background step
   if (newStep === MAGIC_STEPS.BACKGROUND) {
+    console.log('🔍 [magicMemoryStep watcher] Entering BACKGROUND step')
+    console.log('🔍 [magicMemoryStep watcher] Current magicSolidBackgroundColor:', magicSolidBackgroundColor.value)
+    console.log('🔍 [magicMemoryStep watcher] selectedThemeBackgroundColor.value:', selectedThemeBackgroundColor.value)
+    
     magicBackgroundType.value = 'solid'
     // Set the color picker to the theme's background color if no color is set yet
     if (!magicSolidBackgroundColor.value || magicSolidBackgroundColor.value === '#F9F6F2') {
+      console.log('🔍 [magicMemoryStep watcher] Setting color picker to theme color:', selectedThemeBackgroundColor.value)
       magicSolidBackgroundColor.value = selectedThemeBackgroundColor.value
+    } else {
+      console.log('🔍 [magicMemoryStep watcher] Keeping existing color picker value:', magicSolidBackgroundColor.value)
     }
   }
 })
 
 // Watch for theme changes to update the background color
 watch(magicSelectedTheme, (newThemeId) => {
+  console.log('🔍 [magicSelectedTheme watcher] Theme changed to:', newThemeId)
+  console.log('🔍 [magicSelectedTheme watcher] Current step:', magicMemoryStep.value)
+  console.log('🔍 [magicSelectedTheme watcher] selectedThemeBackgroundColor.value:', selectedThemeBackgroundColor.value)
+  
   if (magicMemoryStep.value === MAGIC_STEPS.BACKGROUND) {
+    console.log('🔍 [magicSelectedTheme watcher] On BACKGROUND step, updating color picker to:', selectedThemeBackgroundColor.value)
     // Update the color picker to the new theme's background color
     magicSolidBackgroundColor.value = selectedThemeBackgroundColor.value
+  } else {
+    console.log('🔍 [magicSelectedTheme watcher] Not on BACKGROUND step, skipping color update')
   }
 })
 
@@ -4567,11 +4608,12 @@ async function onMagicMemoryContinue() {
     stopProgressPolling()
     
     // Store the configuration for retry
+    const photoSelectionPool = populatePhotoSelectionPool()
     lastMagicMemoryConfig.value = {
-      photoSelectionPool: populatePhotoSelectionPool(),
+      photoSelectionPool: photoSelectionPool,
                     selectedAssets: magicMemoryStep.value === MAGIC_STEPS.MANUAL && magicPhotoSelectionMethod.value === 'photo_library' 
           ? availableAssets.value.filter(a => magicSelectedMemories.value.includes(a.id))
-          : availableAssets.value.filter(a => populatePhotoSelectionPool().includes(a.id)),
+          : availableAssets.value.filter(a => photoSelectionPool.includes(a.id)),
       title: magicMemoryTitle.value,
       memoryEvent: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
       photoCount: magicPhotoCount.value,
@@ -4736,7 +4778,7 @@ const retryMagicMemory = async () => {
     }
     
     // Include additional debug information in development
-    if (process.dev) {
+    if ($nuxt.dev) {
       errorMessage += `\n\nDebug: ${err.message}\nStatus: ${err.status || 'N/A'}\nResponse: ${JSON.stringify(err.response || {}, null, 2)}`
     }
     
@@ -4896,12 +4938,9 @@ const getNextStepName = () => {
 const isLastStep = () => {
   // Special case: if we're on PHOTOS step and photo_library is selected, we're not on the last step
   if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && magicPhotoSelectionMethod.value === 'photo_library') {
-    console.log('🔍 [isLastStep] Photo library selected, not last step')
     return false
   }
-  const isLast = currentStepIndex.value === currentButtonConfig.value.steps.length - 1
-  console.log('🔍 [isLastStep] Current step index:', currentStepIndex.value, 'Total steps:', currentButtonConfig.value.steps.length, 'Is last:', isLast)
-  return isLast
+  return currentStepIndex.value === currentButtonConfig.value.steps.length - 1
 }
 
 const isFirstStep = () => {
@@ -4942,25 +4981,18 @@ const populateAvailableLocations = () => {
 
 // Function to populate photo selection pool based on user's choice
 const populatePhotoSelectionPool = () => {
-  console.log('🔍 [populatePhotoSelectionPool] Starting with method:', magicPhotoSelectionMethod.value)
-  console.log('🔍 [populatePhotoSelectionPool] Available assets count:', availableAssets.value?.length || 0)
-  
   if (!availableAssets.value || availableAssets.value.length === 0) {
-    console.log('🔍 [populatePhotoSelectionPool] No available assets, returning empty array')
     return []
   }
   
   let filteredAssets = [...availableAssets.value]
-  console.log('🔍 [populatePhotoSelectionPool] Initial filtered assets count:', filteredAssets.length)
   
   switch (magicPhotoSelectionMethod.value) {
     case 'last_100':
       // Savta picks: Search for photos where words in user input match tags, locations, and people
-      console.log('🔍 [populatePhotoSelectionPool] Savta picks method - searching for matches')
       
       // Get user input words (title and event)
       const userInput = `${magicMemoryTitle.value || ''} ${magicMemoryEvent.value || ''}`.toLowerCase().trim()
-      console.log('🔍 [populatePhotoSelectionPool] User input:', userInput)
       
       if (userInput) {
         // Split user input into words, filtering out common words
@@ -4968,7 +5000,6 @@ const populatePhotoSelectionPool = () => {
         const searchWords = userInput.split(/\s+/).filter(word => 
           word.length > 2 && !commonWords.includes(word)
         )
-        console.log('🔍 [populatePhotoSelectionPool] Search words:', searchWords)
         
         if (searchWords.length > 0) {
           // Find assets that match any of the search words
@@ -4999,8 +5030,6 @@ const populatePhotoSelectionPool = () => {
             return tagMatch || locationMatch || peopleMatch || captionMatch
           })
           
-          console.log('🔍 [populatePhotoSelectionPool] Matching assets found:', matchingAssets.length)
-          
           if (matchingAssets.length > 0) {
             // Sort matching assets by most recent
             const sortedMatchingAssets = matchingAssets
@@ -5009,10 +5038,8 @@ const populatePhotoSelectionPool = () => {
             // If we have PHOTO_POOL_SIZE or more matching photos, take top PHOTO_POOL_SIZE
             if (sortedMatchingAssets.length >= PHOTO_POOL_SIZE) {
               filteredAssets = sortedMatchingAssets.slice(0, PHOTO_POOL_SIZE)
-              console.log(`🔍 [populatePhotoSelectionPool] Savta picks - selected ${PHOTO_POOL_SIZE} most recent matching photos`)
             } else {
               // Supplement with recent non-matching assets to reach PHOTO_POOL_SIZE
-              console.log(`🔍 [populatePhotoSelectionPool] Only ${sortedMatchingAssets.length} matching photos found, supplementing with recent photos to reach ${PHOTO_POOL_SIZE}`)
               
               // Get all assets sorted by most recent
               const allAssetsSorted = filteredAssets
@@ -5029,42 +5056,30 @@ const populatePhotoSelectionPool = () => {
               
               // Combine matching assets with additional recent assets
               filteredAssets = [...sortedMatchingAssets, ...additionalAssets]
-              
-              console.log(`🔍 [populatePhotoSelectionPool] Savta picks - selected ${sortedMatchingAssets.length} matching photos + ${additionalAssets.length} recent photos = ${filteredAssets.length} total`)
             }
           } else {
             // No matches found, use most recent PHOTO_POOL_SIZE photos
-            console.log(`🔍 [populatePhotoSelectionPool] No matches found, using most recent ${PHOTO_POOL_SIZE} photos`)
             filteredAssets = filteredAssets
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
               .slice(0, PHOTO_POOL_SIZE)
           }
         } else {
           // No meaningful search words, use most recent PHOTO_POOL_SIZE photos
-          console.log(`🔍 [populatePhotoSelectionPool] No meaningful search words, using most recent ${PHOTO_POOL_SIZE} photos`)
           filteredAssets = filteredAssets
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
             .slice(0, PHOTO_POOL_SIZE)
         }
       } else {
         // No user input, use most recent PHOTO_POOL_SIZE photos
-        console.log(`🔍 [populatePhotoSelectionPool] No user input, using most recent ${PHOTO_POOL_SIZE} photos`)
         filteredAssets = filteredAssets
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, PHOTO_POOL_SIZE)
       }
-      
-      console.log('🔍 [populatePhotoSelectionPool] Savta picks method - final filtered assets count:', filteredAssets.length)
-      console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
       break
       
     case 'geo_code':
       // Filter by selected location
-      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected location type:', magicLocationType.value)
-      console.log('🔍 [populatePhotoSelectionPool] Geo code method - selected location:', magicSelectedLocation.value)
-      
       if (magicSelectedLocation.value) {
-        const beforeFilter = filteredAssets.length
         filteredAssets = filteredAssets.filter(asset => {
           let hasMatch = false
           
@@ -5080,15 +5095,9 @@ const populatePhotoSelectionPool = () => {
               break
           }
           
-          if (hasMatch) {
-            console.log('🔍 [populatePhotoSelectionPool] Asset matches location:', asset.id, 'country:', asset.country, 'state:', asset.state, 'city:', asset.city)
-          }
           return hasMatch
         })
-        console.log('🔍 [populatePhotoSelectionPool] Geo code method - before filter:', beforeFilter, 'after filter:', filteredAssets.length)
-        console.log('🔍 [populatePhotoSelectionPool] Geo code method - matching assets:', filteredAssets.map(a => ({ id: a.id, country: a.country, state: a.state, city: a.city })))
       } else {
-        console.log(`🔍 [populatePhotoSelectionPool] Geo code method - no location selected, using most recent ${PHOTO_POOL_SIZE} photos`)
         filteredAssets = filteredAssets
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, PHOTO_POOL_SIZE)
@@ -5104,10 +5113,7 @@ const populatePhotoSelectionPool = () => {
           const endDate = new Date(magicDateRange.value.end)
           return assetDate >= startDate && assetDate <= endDate
         })
-        console.log('🔍 [populatePhotoSelectionPool] Date range method - filtered assets count:', filteredAssets.length)
-        console.log('🔍 [populatePhotoSelectionPool] First 5 asset IDs:', filteredAssets.slice(0, 5).map(a => a.id))
       } else {
-        console.log(`🔍 [populatePhotoSelectionPool] Date range method - no date range selected, using most recent ${PHOTO_POOL_SIZE} photos`)
         filteredAssets = filteredAssets
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, PHOTO_POOL_SIZE)
@@ -5116,20 +5122,12 @@ const populatePhotoSelectionPool = () => {
       
     case 'tags':
       // Filter by selected tags
-      console.log('🔍 [populatePhotoSelectionPool] Tags method - selected tags:', magicSelectedTags.value)
       if (magicSelectedTags.value && magicSelectedTags.value.length > 0) {
-        const beforeFilter = filteredAssets.length
         filteredAssets = filteredAssets.filter(asset => {
           const hasMatchingTag = asset.tags && asset.tags.some(tag => magicSelectedTags.value.includes(tag))
-          if (hasMatchingTag) {
-            console.log('🔍 [populatePhotoSelectionPool] Asset matches tags:', asset.id, 'tags:', asset.tags)
-          }
           return hasMatchingTag
         })
-        console.log('🔍 [populatePhotoSelectionPool] Tags method - before filter:', beforeFilter, 'after filter:', filteredAssets.length)
-        console.log('🔍 [populatePhotoSelectionPool] Tags method - matching assets:', filteredAssets.map(a => ({ id: a.id, tags: a.tags })))
       } else {
-        console.log(`🔍 [populatePhotoSelectionPool] Tags method - no tags selected, using most recent ${PHOTO_POOL_SIZE} photos`)
         filteredAssets = filteredAssets
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, PHOTO_POOL_SIZE)
@@ -5139,7 +5137,6 @@ const populatePhotoSelectionPool = () => {
     case 'photo_library':
       // For photo library selection, we'll use the existing magicSelectedMemories
       // This will be handled in the photo selection step
-      console.log('🔍 [populatePhotoSelectionPool] Photo library method - selected memories count:', magicSelectedMemories.value.length)
       return magicSelectedMemories.value
       
     default:
@@ -5147,14 +5144,11 @@ const populatePhotoSelectionPool = () => {
       filteredAssets = filteredAssets
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .slice(0, PHOTO_POOL_SIZE)
-      console.log('🔍 [populatePhotoSelectionPool] Default method - filtered assets count:', filteredAssets.length)
       break
   }
   
   // Final supplementation: ensure we always return exactly PHOTO_POOL_SIZE assets (or all available if less than PHOTO_POOL_SIZE)
   if (filteredAssets.length < PHOTO_POOL_SIZE) {
-    console.log(`🔍 [populatePhotoSelectionPool] Final supplementation: Only ${filteredAssets.length} filtered assets, supplementing with recent assets to reach ${PHOTO_POOL_SIZE}`)
-    
     // Get all assets sorted by most recent
     const allAssetsSorted = availableAssets.value
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -5170,19 +5164,14 @@ const populatePhotoSelectionPool = () => {
     
     // Combine filtered assets with additional recent assets
     filteredAssets = [...filteredAssets, ...assetsToAdd]
-    
-    console.log(`🔍 [populatePhotoSelectionPool] Final supplementation - added ${assetsToAdd.length} recent assets = ${filteredAssets.length} total`)
   } else if (filteredAssets.length > PHOTO_POOL_SIZE) {
     // If we have more than PHOTO_POOL_SIZE, take the most recent PHOTO_POOL_SIZE
-    console.log(`🔍 [populatePhotoSelectionPool] Final trimming: ${filteredAssets.length} assets found, taking most recent ${PHOTO_POOL_SIZE}`)
     filteredAssets = filteredAssets
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .slice(0, PHOTO_POOL_SIZE)
   }
   
   const result = filteredAssets.map(asset => asset.id)
-  console.log('🔍 [populatePhotoSelectionPool] Final result - asset IDs count:', result.length)
-  console.log('🔍 [populatePhotoSelectionPool] Final result - asset IDs:', result)
   
   return result
 }
