@@ -168,13 +168,16 @@ export const usePhotoSelection = () => {
   }
   
   // Populate photo selection pool
-  const photoSelection_populatePhotoSelectionPool = () => {
+  const photoSelection_populatePhotoSelectionPool = (targetCount = null) => {
     console.log('🔍 [photoSelection_populatePhotoSelectionPool] Method:', photoSelection_method.value)
     console.log('🔍 [photoSelection_populatePhotoSelectionPool] Available assets count:', photoSelection_availableAssets.value.length)
     
     switch (photoSelection_method.value) {
       case 'last_100':
-        return photoSelection_availableAssets.value.slice(0, PHOTO_POOL_SIZE).map(asset => asset.id)
+        // Use target count if provided, otherwise use PHOTO_POOL_SIZE
+        const limit = targetCount ? Math.min(targetCount, PHOTO_POOL_SIZE) : PHOTO_POOL_SIZE
+        console.log(`🔍 [photoSelection_populatePhotoSelectionPool] Using limit: ${limit} (target: ${targetCount}, max: ${PHOTO_POOL_SIZE})`)
+        return photoSelection_availableAssets.value.slice(0, limit).map(asset => asset.id)
       
       case 'photo_library':
         return photoSelection_selectedMemories.value

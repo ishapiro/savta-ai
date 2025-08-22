@@ -17,14 +17,14 @@
           <!-- AI Supplemental Prompt -->
           <div>
             <label for="ai_supplemental_prompt" class="block text-sm font-medium text-brand-primary mb-2">
-              Optional AI Supplemental Prompt -- Helps Craft a Story
+              Tell me about your memory (dates, locations, events, people)
             </label>
-                          <InputText
-                id="ai_supplemental_prompt"
-                v-model="form.ai_supplemental_prompt"
-                class="w-full"
-                placeholder="Enter AI supplemental prompt for story creation. Used with Theme based books."
-              />
+            <InputText
+              id="ai_supplemental_prompt"
+              v-model="form.ai_supplemental_prompt"
+              class="w-full"
+              placeholder="Enter AI prompt for story creation."
+            />
           </div>
           
           <!-- Memory Event -->
@@ -127,8 +127,6 @@
               class="w-full"
             />
           </div>
-          
-
         </div>
       </div>
 
@@ -152,7 +150,33 @@
             />
           </div>
           
-
+          <!-- Number of Pages Input -->
+          <div>
+            <label class="block text-sm font-medium text-brand-primary mb-2">Number of Pages</label>
+            <div class="flex items-center gap-3">
+              <InputNumber
+                v-model="form.page_count"
+                :min="1"
+                :max="maxPagesAllowed"
+                :step="1"
+                placeholder="Enter number of pages"
+                class="flex-1"
+                show-buttons
+                button-layout="horizontal"
+                spinner-mode="horizontal"
+                :pt="{
+                  input: 'text-center',
+                  button: 'bg-brand-flash border-brand-flash text-white hover:bg-brand-highlight'
+                }"
+              />
+              <span class="text-sm text-brand-primary/70 whitespace-nowrap">
+                (max {{ maxPagesAllowed }} pages)
+              </span>
+            </div>
+            <p class="text-xs text-brand-primary/60 mt-1">
+              Total photos needed: {{ totalPhotosNeeded }} photos
+            </p>
+          </div>
         </div>
       </div>
 
@@ -288,11 +312,11 @@
         </div>
       </div>
 
-      <!-- Asset Selection Section -->
+      <!-- Photo Selection Section -->
       <div class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-4 border border-brand-secondary/30">
         <h3 class="text-lg font-semibold text-brand-primary mb-4 flex items-center gap-2">
           <i class="pi pi-images text-brand-secondary"></i>
-          Memory Selection
+          Photo Selection
         </h3>
         <div class="space-y-4">
           <!-- Selected Assets Summary -->
@@ -304,17 +328,23 @@
                 </div>
                 <div>
                   <p class="text-sm font-medium text-brand-primary">
-                    {{ selectedAssets.length }} memories selected
+                    {{ selectedAssets.length }} photos selected
                   </p>
                   <p class="text-xs text-brand-primary/70">
                     <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount">
-                      Savta will select {{ selectedThemePhotoCount }} photos from this theme.
+                      Theme will select {{ selectedThemePhotoCount }} photos from your selection.
                     </span>
                     <span v-else-if="form.layoutType === 'theme' && !selectedThemePhotoCount">
                       Please select a theme to see photo count.
                     </span>
+                    <span v-else-if="form.layoutType === 'grid' && selectedAssets.length === 0">
+                      Need {{ totalPhotosNeeded }} photos for {{ form.page_count }} page{{ form.page_count > 1 ? 's' : '' }}
+                    </span>
+                    <span v-else-if="form.layoutType === 'grid' && selectedAssets.length > 0">
+                      {{ selectedAssets.length }} photos selected for {{ form.page_count }} page{{ form.page_count > 1 ? 's' : '' }}
+                    </span>
                     <span v-else-if="selectedAssets.length === 0">
-                      No memories selected
+                      No photos selected
                     </span>
                     <span v-else>
                       Will create approximately {{ calculatedPageCount }} pages
@@ -323,10 +353,10 @@
                 </div>
               </div>
               <Button
-                label="Select Assets"
+                label="Select Photos"
                 icon="pi pi-images"
                 size="small"
-                @click="openAssetSelector"
+                @click="openPhotoSelector"
                 class="bg-brand-dialog-save border-0 text-white font-semibold rounded-full px-4 py-2 shadow-lg transition-all duration-200 hover:scale-105"
               />
             </div>
@@ -385,604 +415,81 @@
       </div>
     </form>
 
-    <!-- Asset Selection Modal -->
+    <!-- Photo Selection Modal -->
     <Dialog
-      v-model:visible="showAssetSelector"
+      v-model:visible="showPhotoSelector"
       modal
-      header="Select Your Memories"
-      class="w-[95vw] max-w-6xl h-[90vh] select-memories-dialog"
-      :closable="false">
-      <div v-if="!loadingAssets" class="space-y-4">
-        <!-- Instructions -->
-        <div class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-3 sm:p-4 border border-brand-secondary/30">
-          <div class="flex items-center space-x-3 mb-2">
-            <div class="w-6 h-6 sm:h-8 bg-gradient-to-br from-brand-secondary/20 to-brand-highlight/20 rounded-full flex items-center justify-center">
-              <i class="pi pi-heart text-brand-secondary text-xs sm:text-sm"></i>
-            </div>
-            <h3 class="text-base sm:text-lg font-semibold text-brand-primary">Choose Your Memories</h3>
-          </div>
-          <p class="text-xs sm:text-sm text-brand-primary/70">Select the memories you'd like to include in your magic memory. You can filter by tags and select multiple memories at once.</p>
-        </div>
-        <!-- Filter Section -->
-        <div class="bg-white rounded-lg border border-brand-primary/20 sm:p-4">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm font-medium text-brand-primary">Filter by Tags</label>
-              <div class="flex gap-2">
-                <MultiSelect
-                  v-model="selectedTagFilter"
-                  :options="computedAvailableTags"
-                  option-label="label"
-                  option-value="value"
-                  placeholder="All memories"
-                  class="flex-1"
-                  @change="filterMemories"
-                  :show-toggle-all="false"
-                />
-                <Button
-                  v-if="selectedTagFilter && selectedTagFilter.length > 0"
-                  icon="pi pi-times"
-                  size="small"
-                  @click="clearTagFilter"
-                  class="text-xs px-2 sm:px-3 py-2"
-                  v-tooltip.top="'Clear filter'"
-                />
-              </div>
-            </div>
-            <div class="flex items-center justify-center sm:justify-end gap-2">
-              <!-- Location Filter Button -->
-              <Button
-                label="Location"
-                icon="pi pi-map-marker"
-                size="small"
-                @click="openLocationDialog"
-                class="bg-brand-secondary hover:bg-brand-header border-0 text-xs px-2 sm:px-3 py-2"
-                :class="{ 'bg-brand-header text-white': selectedLocationFilter }"
-              />
-              <!-- Tag Filter Button -->
-              <Button
-                label="Tags"
-                icon="pi pi-tags"
-                size="small"
-                @click="openTagDialog"
-                class="bg-brand-secondary hover:bg-brand-header border-0 text-xs px-2 sm:px-3 py-2"
-                :class="{ 'bg-brand-header text-white': selectedTagFilter && selectedTagFilter.length > 0 }"
-              />
-              <!-- Date Filter Button -->
-              <Button
-                label="Date"
-                icon="pi pi-calendar"
-                size="small"
-                @click="openDateDialog"
-                class="bg-brand-secondary hover:bg-brand-header border-0 text-xs px-2 sm:px-3 py-2"
-                :class="{ 'bg-brand-header text-white': selectedDateFilter }"
-              />
-              <Button
-                label="Select All"
-                icon="pi pi-check-square"
-                size="small"
-                @click="selectAllMemories"
-                class="bg-brand-secondary hover:bg-brand-header border-0 text-xs px-2 sm:px-3 py-2"
-              />
-              <Button
-                label="Clear All"
-                icon="pi pi-times"
-                size="small"
-                @click="selectedMemories = []"
-                class="bg-brand-cancel text-xs px-2 sm:px-3 py-2"
-              />
-            </div>
-          </div>
-          <div class="mt-2 text-xs sm:text-sm text-brand-primary/70 text-center sm:text-left">
-            Showing {{ filteredAssets.length }} of {{ availableAssets.length }} memories
-            <span v-if="selectedTagFilter && selectedTagFilter.length > 0" class="block sm:inline"> • Filtered by: {{ selectedTagFilter.join(', ') }}</span>
-            <span v-if="selectedLocationFilter" class="block sm:inline"> • Location: {{ selectedLocationFilter }}</span>
-            <span v-if="selectedDateFilter" class="block sm:inline"> • Date: {{ formatDateRange(selectedDateFilter) }}</span>
-          </div>
-        </div>
-        <!-- Grid Layout Progress Indicator (only for grid layouts) -->
-        <div v-if="form.layoutType === 'grid' && gridLayoutInfo && selectedMemories.length > 0" class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-3 border border-brand-secondary/30 mb-3">
-          <div class="flex items-center justify-between text-sm text-brand-primary mb-2">
-            <span class="font-medium">Page {{ gridLayoutInfo.currentPage }} Progress</span>
-            <span class="text-brand-secondary font-medium">{{ gridLayoutInfo.photosOnCurrentPage }}/{{ gridLayoutInfo.memoriesPerPage }}</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
-            <div 
-              class="bg-gradient-to-r from-brand-secondary to-brand-highlight h-2 rounded-full transition-all duration-300"
-              :class="{ 'animate-pulse': gridLayoutInfo.isPageFull }"
-              :style="{ width: `${(gridLayoutInfo.photosOnCurrentPage / gridLayoutInfo.memoriesPerPage) * 100}%` }"
-            ></div>
-          </div>
-          <div class="flex items-center justify-between text-xs text-brand-primary/70">
-            <span v-if="gridLayoutInfo.isPageFull" class="text-green-600 font-medium">
-              <i class="pi pi-check-circle mr-1"></i>
-              Page {{ gridLayoutInfo.currentPage }} is complete!
-            </span>
-            <span v-else>
-              {{ gridLayoutInfo.memoriesPerPage - gridLayoutInfo.photosOnCurrentPage }} more photo{{ gridLayoutInfo.memoriesPerPage - gridLayoutInfo.photosOnCurrentPage !== 1 ? 's' : '' }} needed for this page
-            </span>
-            <span>{{ gridLayoutInfo.totalPages }} page{{ gridLayoutInfo.totalPages !== 1 ? 's' : '' }} total ({{ gridLayoutInfo.gridLayout }} layout)</span>
-          </div>
-        </div>
-
-        <!-- Memories Grid -->
-        <div class="bg-white rounded-lg border border-brand-primary/20 sm:p-4">
-          <div v-if="filteredAssets.length === 0" class="text-center py-8">
-            <i class="pi pi-images text-3xl sm:text-4xl mb-2 block"></i>
-            <p class="text-base sm:text-lg font-medium text-brand-primary">No memories found</p>
-            <p class="text-xs sm:text-sm text-brand-primary/70">Try changing your filter or add some memories first</p>
-          </div>
-          <div v-else class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 md:gap-4 max-h-40 sm:max-h-56 md:max-h-80 overflow-y-auto">
-            <div
-              v-for="asset in filteredAssets"
-              :key="asset.id"
-              class="relative group cursor-pointer touch-manipulation"
-              @click="toggleMemorySelection(asset.id)">
-              <!-- Selection Overlay -->
-              <div 
-                class="absolute inset-0 rounded-lg border-2 transition-all duration-200 z-10"
-                :class="selectedMemories.includes(asset.id) ? 'border-brand-secondary bg-brand-secondary/10' : 'border-transparent'"
-              >
-                <div 
-                  class="absolute top-1 right-1 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center shadow-sm"
-                  :class="selectedMemories.includes(asset.id) ? 'bg-brand-secondary text-white' : 'bg-white text-brand-primary/40'"
-                >
-                  <i 
-                    class="text-xs"
-                    :class="selectedMemories.includes(asset.id) ? 'pi pi-check' : 'pi pi-plus'"
-                  ></i>
-                </div>
-              </div>
-              <!-- Memory Card -->
-              <div class="aspect-square bg-brand-background rounded-lg overflow-hidden border-2 border-brand-primary/20 hover:border-brand-header transition-colors">
-                <img 
-                  v-if="asset.storage_url"
-                  :src="asset.storage_url"
-                  :alt="asset.user_caption || asset.ai_caption || 'Memory'"
-                  class="w-full h-full object-contain bg-white"
-                />
-                <div v-else class="w-full h-full flex items-center justify-center">
-                  <i class="pi pi-image text-brand-primary/60 text-base sm:text-lg md:text-2xl"></i>
-                </div>
-              </div>
-              <!-- Memory Info -->
-              <div class="mt-1 sm:mt-2 text-center">
-                <CaptionRenderer 
-                  :caption="asset.user_caption || asset.ai_caption || `Memory ${asset.id.slice(-4)}`"
-                  :max-width="150"
-                  :max-height="50"
-                  :font-size="12"
-                />
-                <p class="text-xs text-brand-primary/70">
-                  {{ formatDate(asset.created_at) }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Selection Summary -->
-        <div class="bg-gradient-to-r from-brand-header/10 to-brand-highlight/10 rounded-lg p-3 sm:p-4 border border-brand-header/30">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center space-x-3">
-              <div class="w-6 h-6 sm:h-8 bg-gradient-to-br from-brand-secondary/20 to-brand-highlight/20 rounded-full flex items-center justify-center">
-                <i class="pi pi-check text-brand-secondary text-xs sm:text-sm"></i>
-              </div>
-              <div>
-                <p class="text-xs sm:text-sm font-medium text-brand-primary">
-                  {{ selectedMemories.length }} photos selected
-                  <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount" class="text-orange-600">
-                    / {{ selectedThemePhotoCount }}
-                  </span>
-                </p>
-                <p class="text-xs text-brand-primary/70">
-                  <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount">
-                    Theme limit: {{ selectedThemePhotoCount }} photos
-                  </span>
-                  <span v-else-if="form.layoutType === 'grid' && gridLayoutInfo">
-                    <span v-if="gridLayoutInfo.isPageFull" class="text-green-600 font-medium">
-                      ✓ Page {{ gridLayoutInfo.currentPage }} complete! 
-                    </span>
-                    <span v-else>
-                      {{ gridLayoutInfo.photosOnCurrentPage }}/{{ gridLayoutInfo.memoriesPerPage }} photos on current page
-                    </span>
-                  </span>
-                  <span v-else>
-                    Ready to create your cards or booklets
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div class="text-center sm:text-right">
-              <p class="text-xs text-brand-primary/70">
-                <span v-if="form.layoutType === 'grid' && gridLayoutInfo">
-                  {{ gridLayoutInfo.totalPages }} page{{ gridLayoutInfo.totalPages !== 1 ? 's' : '' }} ({{ gridLayoutInfo.gridLayout }} layout)
-                </span>
-                <span v-else>
-                  Estimated pages: {{ Math.ceil(selectedMemories.length / 4) }}
-                </span>
-              </p>
-            </div>
-          </div>
-          
-
-        </div>
-      </div>
-      <!-- Loading State -->
-      <div v-else class="flex items-center justify-center py-8 sm:py-12">
-        <div class="text-center">
-          <i class="pi pi-spin pi-spinner text-3xl sm:text-4xl mb-3 sm:mb-4 text-brand-secondary"></i>
-          <p class="text-sm sm:text-base text-brand-primary/70">Loading your memories...</p>
-        </div>
-      </div>
-      <template #footer>
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
-          <div class="flex gap-2 w-full sm:w-auto">
-            <Button
-              label="Cancel"
-              icon="pi pi-times"
-              @click="closeAssetSelector"
-              class="bg-brand-dialog-cancel border-0 rounded-full px-4 sm:px-5 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
-            />
-          </div>
-          <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-            <span class="text-xs sm:text-sm text-brand-primary/70 text-center sm:text-left">
-              {{ selectedMemories.length }} selected
-              <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount" class="text-orange-600">
-                / {{ selectedThemePhotoCount }}
-              </span>
-            </span>
-            <Button
-              label="Save Selection"
-              icon="pi pi-check"
-              :disabled="selectedMemories.length === 0"
-              @click="saveSelectedMemories"
-              class="bg-brand-dialog-save rounded-full border-0 w-full sm:w-auto text-xs sm:text-sm px-4 sm:px-5 py-2"
-            />
-          </div>
-        </div>
-      </template>
-    </Dialog>
-
-    <!-- Location Selection Dialog -->
-    <Dialog
-      v-model:visible="showLocationDialog"
-      modal
-      header="Filter by Location"
-      class="w-[95vw] max-w-2xl location-dialog"
+      header="Select Your Photos"
+      class="w-full max-w-sm sm:max-w-lg md:max-w-3xl lg:max-w-5xl h-[75vh] max-h-[75vh] flex flex-col mt-4 sm:mt-8"
       :closable="false"
     >
-      <div class="space-y-4">
-        <div class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-4 border border-brand-secondary/30">
-          <div class="flex items-center space-x-3 mb-3">
-            <div class="w-8 h-8 bg-gradient-to-br from-brand-secondary/20 to-brand-highlight/20 rounded-full flex items-center justify-center">
-              <i class="pi pi-map-marker text-brand-secondary text-sm"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-brand-primary">Choose Location</h3>
-          </div>
-          <p class="text-sm text-brand-primary/70">Select a location to filter your memories. Only memories from this location will be shown.</p>
-        </div>
-
-        <div class="bg-white rounded-lg border border-brand-primary/20 p-4">
-          <div class="space-y-4">
-            <!-- Location Search -->
-            <div>
-              <label class="block text-sm font-medium text-brand-primary mb-2">Search Locations</label>
-              <InputText
-                v-model="locationSearch"
-                placeholder="Type to search locations..."
-                class="w-full"
-                @input="filterLocations"
-              />
-            </div>
-
-            <!-- Available Locations -->
-            <div>
-              <label class="block text-sm font-medium text-brand-primary mb-2">Available Locations</label>
-              <div class="max-h-48 overflow-y-auto border border-brand-primary/20 rounded-lg">
-                <div
-                  v-for="location in filteredLocations"
-                  :key="location"
-                  class="flex items-center justify-between p-3 hover:bg-brand-highlight/10 cursor-pointer border-b border-brand-primary/10 last:border-b-0"
-                  @click="selectLocation(location)"
-                >
-                  <div class="flex items-center space-x-3">
-                    <i class="pi pi-map-marker text-brand-secondary"></i>
-                    <span class="text-sm text-brand-primary">{{ location }}</span>
-                  </div>
-                  <div v-if="selectedLocationFilter === location" class="w-5 h-5 bg-brand-secondary rounded-full flex items-center justify-center">
-                    <i class="pi pi-check text-white text-xs"></i>
-                  </div>
-                </div>
-                <div v-if="filteredLocations.length === 0" class="p-4 text-center text-sm text-brand-primary/70">
-                  No locations found
-                </div>
-              </div>
-            </div>
-
-            <!-- Clear Location Filter -->
-            <div v-if="selectedLocationFilter" class="bg-brand-highlight/10 rounded-lg p-3 border border-brand-highlight/30">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <i class="pi pi-map-marker text-brand-secondary"></i>
-                  <span class="text-sm font-medium text-brand-primary">Selected: {{ selectedLocationFilter }}</span>
-                </div>
-                <Button
-                  label="Clear"
-                  icon="pi pi-times"
-                  size="small"
-                  @click="clearLocationFilter"
-                  class="bg-brand-dialog-delete border-0 text-xs px-3 py-1"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <Button
-            label="Cancel"
-            icon="pi pi-times"
-            @click="closeLocationDialog"
-            class="bg-brand-dialog-cancel border-0 rounded-full px-4 py-2"
-          />
-          <Button
-            label="Apply Filter"
-            icon="pi pi-check"
-            @click="applyLocationFilter"
-            class="bg-brand-dialog-save border-0 rounded-full px-4 py-2"
-          />
-        </div>
-      </template>
-    </Dialog>
-
-    <!-- Tag Selection Dialog -->
-    <Dialog
-      v-model:visible="showTagDialog"
-      modal
-      header="Filter by Tags"
-      class="w-[95vw] max-w-2xl tag-dialog"
-      :closable="false"
-    >
-      <div class="space-y-4">
-        <div class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-4 border border-brand-secondary/30">
-          <div class="flex items-center space-x-3 mb-3">
-            <div class="w-8 h-8 bg-gradient-to-br from-brand-secondary/20 to-brand-highlight/20 rounded-full flex items-center justify-center">
-              <i class="pi pi-tags text-brand-secondary text-sm"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-brand-primary">Choose Tags</h3>
-          </div>
-          <p class="text-sm text-brand-primary/70">Select one or more tags to filter your memories. Only memories with these tags will be shown.</p>
-        </div>
-
-        <div class="bg-white rounded-lg border border-brand-primary/20 p-4">
-          <div class="space-y-4">
-            <!-- Tag Search -->
-            <div>
-              <label class="block text-sm font-medium text-brand-primary mb-2">Search Tags</label>
-              <InputText
-                v-model="tagSearch"
-                placeholder="Type to search tags..."
-                class="w-full"
-                @input="filterTags"
-              />
-            </div>
-
-            <!-- Available Tags -->
-            <div>
-              <label class="block text-sm font-medium text-brand-primary mb-2">Available Tags</label>
-              <div class="max-h-48 overflow-y-auto border border-brand-primary/20 rounded-lg">
-                <div
-                  v-for="tag in filteredTags"
-                  :key="tag"
-                  class="flex items-center justify-between p-3 hover:bg-brand-highlight/10 cursor-pointer border-b border-brand-primary/10 last:border-b-0"
-                  @click="toggleTagSelection(tag)"
-                >
-                  <div class="flex items-center space-x-3">
-                    <i class="pi pi-tag text-brand-secondary"></i>
-                    <span class="text-sm text-brand-primary">{{ tag }}</span>
-                  </div>
-                  <div v-if="selectedTagFilter.includes(tag)" class="w-5 h-5 bg-brand-secondary rounded-full flex items-center justify-center">
-                    <i class="pi pi-check text-white text-xs"></i>
-                  </div>
-                </div>
-                <div v-if="filteredTags.length === 0" class="p-4 text-center text-sm text-brand-primary/70">
-                  No tags found
-                </div>
-              </div>
-            </div>
-
-            <!-- Selected Tags -->
-            <div v-if="selectedTagFilter.length > 0" class="bg-brand-highlight/10 rounded-lg p-3 border border-brand-highlight/30">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-brand-primary">Selected Tags:</span>
-                <Button
-                  label="Clear All"
-                  icon="pi pi-times"
-                  size="small"
-                  @click="clearTagFilter"
-                  class="bg-brand-dialog-delete border-0 text-xs px-3 py-1"
-                />
-              </div>
-              <div class="flex flex-wrap gap-2">
-                <div
-                  v-for="tag in selectedTagFilter"
-                  :key="tag"
-                  class="flex items-center space-x-2 bg-brand-secondary text-white rounded-full px-3 py-1 text-xs"
-                >
-                  <span>{{ tag }}</span>
-                  <button @click="removeTag(tag)" class="hover:bg-white/20 rounded-full w-4 h-4 flex items-center justify-center">
-                    <i class="pi pi-times text-xs"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <Button
-            label="Cancel"
-            icon="pi pi-times"
-            @click="closeTagDialog"
-            class="bg-brand-dialog-cancel border-0 rounded-full px-4 py-2"
-          />
-          <Button
-            label="Apply Filter"
-            icon="pi pi-check"
-            @click="applyTagFilter"
-            class="bg-brand-dialog-save border-0 rounded-full px-4 py-2"
-          />
-        </div>
-      </template>
-    </Dialog>
-
-    <!-- Date Selection Dialog -->
-    <Dialog
-      v-model:visible="showDateDialog"
-      modal
-      header="Filter by Date"
-      class="w-[95vw] max-w-2xl date-dialog"
-      :closable="false"
-    >
-      <div class="space-y-4">
-        <div class="bg-gradient-to-r from-brand-secondary/10 to-brand-highlight/10 rounded-lg p-4 border border-brand-secondary/30">
-          <div class="flex items-center space-x-3 mb-3">
-            <div class="w-8 h-8 bg-gradient-to-br from-brand-secondary/20 to-brand-highlight/20 rounded-full flex items-center justify-center">
-              <i class="pi pi-calendar text-brand-secondary text-sm"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-brand-primary">Choose Date Range</h3>
-          </div>
-          <p class="text-sm text-brand-primary/70">Select a date range to filter your memories. Only memories within this range will be shown.</p>
-        </div>
-
-        <div class="bg-white rounded-lg border border-brand-primary/20 p-4">
-          <div class="space-y-4">
-            <!-- Date Range Selection -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-brand-primary mb-2">From Date</label>
-                <Calendar
-                  v-model="dateRange.from"
-                  :show-icon="true"
-                  date-format="mm/dd/yy"
-                  placeholder="Select start date"
-                  class="w-full"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-brand-primary mb-2">To Date</label>
-                <Calendar
-                  v-model="dateRange.to"
-                  :show-icon="true"
-                  date-format="mm/dd/yy"
-                  placeholder="Select end date"
-                  class="w-full"
-                />
-              </div>
-            </div>
-
-            <!-- Quick Date Presets -->
-            <div>
-              <label class="block text-sm font-medium text-brand-primary mb-2">Quick Presets</label>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <Button
-                  label="Last Week"
-                  size="small"
-                  @click="setDatePreset('lastWeek')"
-                  class="bg-brand-secondary hover:bg-brand-header border-0 text-xs"
-                />
-                <Button
-                  label="Last Month"
-                  size="small"
-                  @click="setDatePreset('lastMonth')"
-                  class="bg-brand-secondary hover:bg-brand-header border-0 text-xs"
-                />
-                <Button
-                  label="Last 3 Months"
-                  size="small"
-                  @click="setDatePreset('last3Months')"
-                  class="bg-brand-secondary hover:bg-brand-header border-0 text-xs"
-                />
-                <Button
-                  label="Last Year"
-                  size="small"
-                  @click="setDatePreset('lastYear')"
-                  class="bg-brand-secondary hover:bg-brand-header border-0 text-xs"
-                />
-              </div>
-            </div>
-
-            <!-- Selected Date Range -->
-            <div v-if="dateRange.from || dateRange.to" class="bg-brand-highlight/10 rounded-lg p-3 border border-brand-highlight/30">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <i class="pi pi-calendar text-brand-secondary"></i>
-                  <span class="text-sm font-medium text-brand-primary">
-                    {{ formatDateRange({ from: dateRange.from, to: dateRange.to }) }}
-                  </span>
-                </div>
-                <Button
-                  label="Clear"
-                  icon="pi pi-times"
-                  size="small"
-                  @click="clearDateFilter"
-                  class="bg-brand-dialog-delete border-0 text-xs px-3 py-1"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <Button
-            label="Cancel"
-            icon="pi pi-times"
-            @click="closeDateDialog"
-            class="bg-brand-dialog-cancel border-0 rounded-full px-4 py-2"
-          />
-          <Button
-            label="Apply Filter"
-            icon="pi pi-check"
-            @click="applyDateFilter"
-            class="bg-brand-dialog-save border-0 rounded-full px-4 py-2"
-          />
-        </div>
-      </template>
-    </Dialog>
-    
-    <!-- Theme Limit Alert Dialog -->
-    <Dialog
-      v-model:visible="showThemeLimitAlert"
-      modal
-      :closable="true"
-      class="theme-limit-alert"
-      style="max-width: 95vw; width: 500px;"
-    >
-      <div class="flex flex-col items-center justify-center py-6 px-4 text-center">
-        <div class="w-16 h-16 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mb-4">
-          <i class="pi pi-exclamation-triangle text-2xl text-orange-500"></i>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Theme Photo Limit</h3>
-        <p class="text-sm text-gray-600 mb-4">{{ themeLimitMessage }}</p>
-        <Button
-          label="OK"
-          @click="showThemeLimitAlert = false"
-          class="bg-brand-dialog-save border-0 rounded-full px-6 py-2"
+      <div v-if="!photoSelection_loadingAssets" class="flex-1 space-y-2 sm:space-y-4 overflow-y-auto px-1 sm:px-0 py-2 sm:py-4">
+        <!-- Photo Selection Interface Component -->
+        <PhotoSelectionInterface
+          ref="photoSelectionInterfaceRef"
+          v-model:method="photoSelection_method"
+          v-model:dateRange="photoSelection_dateRange"
+          v-model:selectedTags="photoSelection_selectedTags"
+          v-model:locationType="photoSelection_locationType"
+          v-model:selectedLocation="photoSelection_selectedLocation"
+          v-model:selectedMemories="photoSelection_selectedMemories"
+          v-model:selectedTagFilter="photoSelection_selectedTagFilter"
+          :title="form.ai_supplemental_prompt || 'your memory book'"
+          :computedAvailableTags="photoSelection_computedAvailableTags"
+          :availableCountries="photoSelection_availableCountries"
+          :availableStates="photoSelection_availableStates"
+          :availableCities="photoSelection_availableCities"
+          :filteredAssets="photoSelection_filteredAssets"
+          :loadingAssets="photoSelection_loadingAssets"
+          :isUploading="photoSelection_isUploading"
+          @upload-photos="handleUploadPhotos"
+          @no-photos-found="handleNoPhotosFound"
+          @close-photo-library="handleClosePhotoLibrary"
         />
       </div>
+      
+      <!-- Loading State -->
+      <div v-else class="flex-1 flex items-center justify-center py-4 sm:py-8">
+        <div class="text-center">
+          <i class="pi pi-spin pi-spinner text-2xl sm:text-3xl mb-2 sm:mb-3 text-brand-secondary"></i>
+          <p class="text-xs sm:text-sm text-brand-primary/70">Loading your photos...</p>
+        </div>
+      </div>
+      
+      <template #footer>
+        <div class="flex-shrink-0 border-t border-gray-200 pt-3 sm:pt-4">
+          <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-3">
+            <div class="flex gap-2 w-full sm:w-auto">
+              <Button
+                label="Cancel"
+                icon="pi pi-times"
+                @click="closePhotoSelector"
+                class="bg-brand-dialog-cancel border-0 rounded-full px-3 sm:px-4 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
+              />
+            </div>
+            <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 w-full sm:w-auto">
+              <span class="text-xs sm:text-sm text-brand-primary/70 text-center sm:text-left">
+                <span v-if="photoSelection_method === 'last_100'">AI will select photos</span>
+                <span v-else>{{ photoSelection_selectedMemories.length }} selected</span>
+              </span>
+              <Button
+                label="Save Selection"
+                icon="pi pi-check"
+                :disabled="photoSelection_method !== 'last_100' && photoSelection_selectedMemories.length === 0"
+                @click="savePhotoSelection"
+                class="bg-brand-dialog-save rounded-full border-0 w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-4 py-2"
+              />
+            </div>
+          </div>
+        </div>
+      </template>
     </Dialog>
   </Dialog>
 </template>
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
-import CaptionRenderer from '~/components/CaptionRenderer.vue'
+import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
 
 // Import database composable
 const db = useDatabase()
@@ -997,55 +504,59 @@ const props = defineProps({
 
 const emit = defineEmits(['submit', 'close', 'cleanup'])
 
+// Form state
 const form = ref({
   ai_supplemental_prompt: '',
-  layoutType: 'grid', // Default to grid for traditional memory books
+  layoutType: 'grid',
   printSize: '8.5x11',
   quality: 'standard',
   medium: 'digital',
-  output: 'PDF', // Default to PDF
-  theme: '', // Will be set when themes are loaded
+  output: 'PDF',
+  theme_id: null,
   memoryEvent: '',
   customMemoryEvent: '',
   backgroundType: 'white',
   backgroundOpacity: 30,
   includeCaptions: true,
   autoEnhance: true,
-  gridLayout: '2x2'
+  gridLayout: '2x2',
+  page_count: 1
 })
 
-// Asset selection state
-const showAssetSelector = ref(false)
-const loadingAssets = ref(false)
-const availableAssets = ref([])
+// Photo selection state
+const showPhotoSelector = ref(false)
 const selectedAssets = ref([])
-const selectedMemories = ref([])
-const selectedTagFilter = ref([])
 
-// Secondary dialog states
-const showLocationDialog = ref(false)
-const showTagDialog = ref(false)
-const showDateDialog = ref(false)
-const showThemeLimitAlert = ref(false)
-const themeLimitMessage = ref('')
+// Use the photo selection composable
+const {
+  photoSelection_method,
+  photoSelection_dateRange,
+  photoSelection_selectedTags,
+  photoSelection_selectedTagFilter,
+  photoSelection_locationType,
+  photoSelection_selectedLocation,
+  photoSelection_selectedMemories,
+  photoSelection_availableCountries,
+  photoSelection_availableStates,
+  photoSelection_availableCities,
+  photoSelection_availableAssets,
+  photoSelection_loadingAssets,
+  photoSelection_isUploading,
+  photoSelection_showUploadDialog,
+  photoSelection_options,
+  photoSelection_computedAvailableTags,
+  photoSelection_filteredAssets,
+  photoSelection_loadAvailableAssets,
+  photoSelection_loadLocationData,
+  photoSelection_toggleMemorySelection,
+  photoSelection_populatePhotoSelectionPool,
+  photoSelection_resetSelection,
+  photoSelection_getSelectedAssets
+} = usePhotoSelection()
 
-// Location filter state
-const locationSearch = ref('')
-const selectedLocationFilter = ref('')
-const availableLocations = ref([])
-const filteredLocations = ref([])
-
-// Tag filter state (separate from existing selectedTagFilter)
-const tagSearch = ref('')
-const availableTags = ref([])
-const filteredTags = ref([])
-
-// Date filter state
-const selectedDateFilter = ref(null)
-const dateRange = ref({
-  from: null,
-  to: null
-})
+// Theme state
+const themeOptions = ref([])
+const loadingThemes = ref(false)
 
 // Options for dropdowns
 const layoutOptions = ref([
@@ -1080,10 +591,95 @@ const mediumOptions = ref([
   { label: 'Web View', value: 'web' }
 ])
 
+const gridLayoutOptions = ref([
+  { label: '1 memory per page (1x1)', value: '1x1' },
+  { label: '2 memories per page (2x1)', value: '2x1' },
+  { label: '4 memories per page (2x2)', value: '2x2' },
+  { label: '6 memories per page (3x2)', value: '3x2' },
+  { label: '9 memories per page (3x3)', value: '3x3' },
+  { label: '12 memories per page (3x4)', value: '3x4' },
+  { label: '16 memories per page (4x4)', value: '4x4' }
+])
 
+const memoryEventOptions = ref([
+  { label: 'Vacation', value: 'vacation' },
+  { label: 'Birthday', value: 'birthday' },
+  { label: 'Anniversary', value: 'anniversary' },
+  { label: 'Graduation', value: 'graduation' },
+  { label: 'Family Trip', value: 'family_trip' },
+  { label: 'Other (custom)', value: 'custom' }
+])
 
-const themeOptions = ref([])
-const loadingThemes = ref(false)
+// Computed properties
+const showDialog = computed({
+  get: () => props.visible,
+  set: (value) => {
+    if (!value) {
+      // Clean up state when dialog is closed
+      console.log('🔄 Dialog closing - cleaning up state')
+      showPhotoSelector.value = false
+      photoSelection_resetSelection()
+      emit('close')
+    }
+  }
+})
+
+// Calculate maximum pages allowed based on grid layout and 100 photo limit
+const maxPagesAllowed = computed(() => {
+  if (form.value.layoutType !== 'grid') return 10
+  
+  // Parse grid layout to get memories per page
+  const gridLayout = form.value.gridLayout || '2x2'
+  const [rows, cols] = gridLayout.split('x').map(Number)
+  const memoriesPerPage = rows * cols
+  
+  // Calculate maximum pages without exceeding 100 photo limit
+  const maxPages = Math.floor(100 / memoriesPerPage)
+  
+  // Ensure at least 1 page is allowed
+  return Math.max(1, maxPages)
+})
+
+// Calculate total photos needed based on grid layout and number of pages
+const totalPhotosNeeded = computed(() => {
+  if (form.value.layoutType !== 'grid') return 0
+  
+  // Parse grid layout to get memories per page
+  const gridLayout = form.value.gridLayout || '2x2'
+  const [rows, cols] = gridLayout.split('x').map(Number)
+  const memoriesPerPage = rows * cols
+  
+  // Calculate total photos needed
+  const pageCount = form.value.page_count || 1
+  const totalPhotos = memoriesPerPage * pageCount
+  
+  return totalPhotos
+})
+
+// Calculate page count based on grid layout and number of selected assets (for display purposes)
+const calculatedPageCount = computed(() => {
+  if (selectedAssets.value.length === 0) return 0
+  
+  // Parse grid layout to get memories per page
+  const gridLayout = form.value.gridLayout || '2x2'
+  const [rows, cols] = gridLayout.split('x').map(Number)
+  const memoriesPerPage = rows * cols
+  
+  // Calculate total pages needed
+  const totalPages = Math.ceil(selectedAssets.value.length / memoriesPerPage)
+  
+  return totalPages
+})
+
+// Get selected theme's photo count
+const selectedThemePhotoCount = computed(() => {
+  if (form.value.layoutType !== 'theme' || !form.value.theme_id) return null
+  
+  const selectedTheme = themeOptions.value.find(theme => theme.value === form.value.theme_id)
+  if (!selectedTheme) return null
+  
+  return selectedTheme.photoCount || null
+})
 
 // Function to fetch themes from database
 const fetchThemes = async () => {
@@ -1133,168 +729,20 @@ const fetchThemes = async () => {
   }
 }
 
-const gridLayoutOptions = ref([
-  { label: '1 memory per page (1x1)', value: '1x1' },
-  { label: '2 memories per page (2x1)', value: '2x1' },
-  { label: '4 memories per page (2x2)', value: '2x2' },
-  { label: '6 memories per page (3x2)', value: '3x2' },
-  { label: '9 memories per page (3x3)', value: '3x3' },
-  { label: '12 memories per page (3x4)', value: '3x4' },
-  { label: '16 memories per page (4x4)', value: '4x4' }
-])
-
-
-
-const memoryEventOptions = ref([
-  { label: 'Vacation', value: 'vacation' },
-  { label: 'Birthday', value: 'birthday' },
-  { label: 'Anniversary', value: 'anniversary' },
-  { label: 'Graduation', value: 'graduation' },
-  { label: 'Family Trip', value: 'family_trip' },
-  { label: 'Other (custom)', value: 'custom' }
-])
-
 // Database composable
 const { $supabase: supabase } = useNuxtApp()
 
-// Computed properties
-const showDialog = computed({
-  get: () => props.visible,
-  set: (value) => {
-    if (!value) {
-      emit('close')
-    }
-  }
-})
-
-const filteredAssets = computed(() => {
-  let filtered = availableAssets.value
-
-  // Apply location filter
-  if (selectedLocationFilter.value) {
-    filtered = filtered.filter(asset => 
-      asset.location && asset.location === selectedLocationFilter.value
-    )
-  }
-
-  // Apply tag filter
-  if (selectedTagFilter.value && selectedTagFilter.value.length > 0) {
-    filtered = filtered.filter(asset => {
-      const assetTags = [...(asset.tags || []), ...(asset.user_tags || [])]
-      return selectedTagFilter.value.some(tag => assetTags.includes(tag))
-    })
-  }
-
-  // Apply date filter
-  if (selectedDateFilter.value) {
-    filtered = filtered.filter(asset => {
-      if (!asset.asset_date) return false
-      const assetDate = new Date(asset.asset_date)
-      const from = selectedDateFilter.value.from ? new Date(selectedDateFilter.value.from) : null
-      const to = selectedDateFilter.value.to ? new Date(selectedDateFilter.value.to) : null
-      
-      if (from && assetDate < from) return false
-      if (to && assetDate > to) return false
-      return true
-    })
-  }
-
-  return filtered
-})
-
-const computedAvailableTags = computed(() => {
-  if (!Array.isArray(availableAssets.value)) return 
-  const allTags = new Set()
-  availableAssets.value.forEach(asset => {
-    if (asset.tags && Array.isArray(asset.tags)) {
-      asset.tags.forEach(tag => allTags.add(tag))
-    }
-  })
-  return Array.from(allTags).map(tag => ({ label: tag, value: tag }))
-})
-
-// Calculate page count based on grid layout and number of selected assets
-const calculatedPageCount = computed(() => {
-  if (selectedAssets.value.length === 0) return 0
-  
-  // Parse grid layout to get memories per page
-  const gridLayout = form.value.gridLayout || '2x2'
-  const [rows, cols] = gridLayout.split('x').map(Number)
-  const memoriesPerPage = rows * cols
-  
-  // Calculate total pages needed
-  const totalPages = Math.ceil(selectedAssets.value.length / memoriesPerPage)
-  
-  return totalPages
-})
-
-// Calculate grid layout information for display
-const gridLayoutInfo = computed(() => {
-  if (form.value.layoutType !== 'grid') return null
-  
-  const gridLayout = form.value.gridLayout || '2x2'
-  const [rows, cols] = gridLayout.split('x').map(Number)
-  const memoriesPerPage = rows * cols
-  const selectedCount = selectedMemories.value.length
-  
-  // Fix page calculation logic
-  if (selectedCount === 0) {
-    return {
-      memoriesPerPage,
-      selectedCount,
-      currentPage: 1,
-      photosOnCurrentPage: 0,
-      isPageFull: false,
-      totalPages: 0,
-      gridLayout: `${rows}x${cols}`
-    }
-  }
-  
-  // Calculate current page (1-based)
-  const currentPage = Math.ceil(selectedCount / memoriesPerPage)
-  
-  // Calculate photos on current page
-  const photosOnCurrentPage = selectedCount % memoriesPerPage || memoriesPerPage
-  
-  // Check if current page is full
-  const isPageFull = photosOnCurrentPage === memoriesPerPage
-  
-  // Calculate total pages
-  const totalPages = Math.ceil(selectedCount / memoriesPerPage)
-  
-  return {
-    memoriesPerPage,
-    selectedCount,
-    currentPage,
-    photosOnCurrentPage,
-    isPageFull,
-    totalPages,
-    gridLayout: `${rows}x${cols}`
-  }
-})
-
-// Get selected theme's photo count
-const selectedThemePhotoCount = computed(() => {
-  if (form.value.layoutType !== 'theme' || !form.value.theme_id) return null
-  
-  const selectedTheme = themeOptions.value.find(theme => theme.value === form.value.theme_id)
-  if (!selectedTheme) return null
-  
-  return selectedTheme.photoCount || null
-})
-
-// Watch for initial data changes
+// Watchers
 watch(() => props.initialData, (val) => {
   if (val && Object.keys(val).length > 0) {
-    // Reset form to defaults first, then apply initial data
     form.value = {
       ai_supplemental_prompt: '',
-      layoutType: 'grid', // Default to grid for traditional memory books
+      layoutType: 'grid',
       printSize: '8.5x11',
       quality: 'standard',
       medium: 'digital',
-      output: 'PDF', // Default to PDF
-      theme_id: null, // Will be set when themes are loaded
+      output: 'PDF',
+      theme_id: null,
       memoryEvent: '',
       customMemoryEvent: '',
       backgroundType: 'white',
@@ -1302,258 +750,152 @@ watch(() => props.initialData, (val) => {
       includeCaptions: true,
       autoEnhance: true,
       gridLayout: '2x2',
-      ...val, // Override with initial data
-      output: 'PDF' // Force output to always be PDF for memory books
+      page_count: 1,
+      ...val,
+      output: 'PDF'
     }
   }
 }, { immediate: true })
 
-// Watch for layout type changes to reset theme when not using theme layout
 watch(() => form.value.layoutType, (newLayoutType) => {
   if (newLayoutType !== 'theme') {
     form.value.theme_id = null
   }
 })
 
-// Watch for initial selected assets
+// Watch for grid layout changes and adjust page count if it exceeds the new maximum
+watch(() => form.value.gridLayout, (newGridLayout) => {
+  if (form.value.layoutType === 'grid') {
+    // Calculate new maximum pages for the new grid layout
+    const [rows, cols] = (newGridLayout || '2x2').split('x').map(Number)
+    const memoriesPerPage = rows * cols
+    const newMaxPages = Math.max(1, Math.floor(100 / memoriesPerPage))
+    
+    // If current page count exceeds new maximum, adjust it
+    if (form.value.page_count > newMaxPages) {
+      form.value.page_count = newMaxPages
+      console.log(`📐 Grid layout changed to ${newGridLayout}, adjusted page count to ${newMaxPages} (max photos: ${newMaxPages * memoriesPerPage})`)
+    }
+  }
+})
+
 watch(() => props.initialSelectedAssets, (val) => {
   if (val && Array.isArray(val)) {
     selectedAssets.value = [...val]
   }
 }, { immediate: true })
 
-// Watch for dialog visibility to reset selected assets when opening for new book
 watch(() => props.visible, (isVisible) => {
-  if (isVisible && !props.isEditing) {
-    // Reset selected assets when opening dialog for new book (not editing)
-    selectedAssets.value = []
-    selectedMemories.value = []
-    selectedTagFilter.value = []
-    console.log('🔄 Reset selected assets for new memory book')
+  if (isVisible) {
+    if (!props.isEditing) {
+      // Reset all state for new memory book creation
+      console.log('🔄 Resetting all state for new memory book')
+      
+      // Reset form to defaults
+      form.value = {
+        ai_supplemental_prompt: '',
+        layoutType: 'grid',
+        printSize: '8.5x11',
+        quality: 'standard',
+        medium: 'digital',
+        output: 'PDF',
+        theme_id: null,
+        memoryEvent: '',
+        customMemoryEvent: '',
+        backgroundType: 'white',
+        backgroundOpacity: 30,
+        includeCaptions: true,
+        autoEnhance: true,
+        gridLayout: '2x2',
+        page_count: 1
+      }
+      
+      // Reset selected assets
+      selectedAssets.value = []
+      
+      // Reset photo selection state
+      photoSelection_resetSelection()
+      
+      // Close any open modals
+      showPhotoSelector.value = false
+      
+      console.log('✅ All state reset for new memory book')
+    } else {
+      // For editing, just ensure photo selector is closed
+      showPhotoSelector.value = false
+      console.log('🔄 Editing mode - closed photo selector')
+    }
   }
 })
 
-// Asset selection functions
-const openAssetSelector = async () => {
-  loadingAssets.value = true
-  try {
-    const allApprovedAssets = await db.assets.getAssets({ approved: true })
-    availableAssets.value = allApprovedAssets || []     // Set current selection
-    selectedMemories.value = selectedAssets.value.map(asset => asset.id)
-    selectedTagFilter.value = []
-    showAssetSelector.value = true
-  } catch (error) {
-    console.error('Error loading assets for memory selection:', error)
-  } finally {
-    loadingAssets.value = false
-  }
-}
-
-const closeAssetSelector = () => {
-  showAssetSelector.value = false
-  selectedMemories.value = []
-  selectedTagFilter.value = []
-}
-
-const toggleMemorySelection = (assetId) => {
-  const index = selectedMemories.value.indexOf(assetId)
-  if (index > -1) {
-    // Remove photo - always allowed
-    selectedMemories.value.splice(index, 1)
-  } else {
-    // Add photo - check theme limits
-    if (form.value.layoutType === 'theme' && selectedThemePhotoCount.value) {
-      if (selectedMemories.value.length >= selectedThemePhotoCount.value) {
-        // Get theme name for error message
-        const selectedTheme = themeOptions.value.find(theme => theme.value === form.value.theme_id)
-        const themeName = selectedTheme ? selectedTheme.label.split(' (')[0] : 'this theme'
-        
-        themeLimitMessage.value = `The "${themeName}" theme only uses ${selectedThemePhotoCount.value} photos. Please deselect some photos first.`
-        showThemeLimitAlert.value = true
-        return
-      }
-    }
-    selectedMemories.value.push(assetId)
-  }
-}
-
-const selectAllMemories = () => {
-  selectedMemories.value = filteredAssets.value.map(asset => asset.id)
-}
-
-const saveSelectedMemories = () => {
-  selectedAssets.value = availableAssets.value.filter(asset => selectedMemories.value.includes(asset.id))
-  showAssetSelector.value = false
-}
-
-const removeAsset = (assetId) => {
-  selectedAssets.value = selectedAssets.value.filter(asset => asset.id !== assetId)
-}
-
-const clearTagFilter = () => {
-  selectedTagFilter.value = []
-}
-
-const filterMemories = () => {
-  // This is handled by the computed property
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString()
-}
-
-// Location dialog methods
-const openLocationDialog = () => {
-  showLocationDialog.value = true
-  // Extract unique locations from available assets
-  const locations = [...new Set(availableAssets.value
-    .map(asset => asset.location)
-    .filter(location => location && location.trim() !== ''))]
-  availableLocations.value = locations
-  filteredLocations.value = locations
-}
-
-const closeLocationDialog = () => {
-  showLocationDialog.value = false
-  locationSearch.value = ''
-}
-
-const filterLocations = () => {
-  if (!locationSearch.value) {
-    filteredLocations.value = availableLocations.value
-  } else {
-    filteredLocations.value = availableLocations.value.filter(location =>
-      location.toLowerCase().includes(locationSearch.value.toLowerCase())
-    )
-  }
-}
-
-const selectLocation = (location) => {
-  selectedLocationFilter.value = location
-}
-
-const clearLocationFilter = () => {
-  selectedLocationFilter.value = ''
-}
-
-const applyLocationFilter = () => {
-  showLocationDialog.value = false
-  // The filtering will be handled by the computed property
-}
-
-// Tag dialog methods
-const openTagDialog = () => {
-  showTagDialog.value = true
-  // Extract unique tags from available assets
-  const tags = [...new Set(availableAssets.value
-    .flatMap(asset => [...(asset.tags || []), ...(asset.user_tags || [])])
-    .filter(tag => tag && tag.trim() !== ''))]
-  availableTags.value = tags
-  filteredTags.value = tags
-}
-
-const closeTagDialog = () => {
-  showTagDialog.value = false
-  tagSearch.value = ''
-}
-
-const filterTags = () => {
-  if (!tagSearch.value) {
-    filteredTags.value = availableTags.value
-  } else {
-    filteredTags.value = availableTags.value.filter(tag =>
-      tag.toLowerCase().includes(tagSearch.value.toLowerCase())
-    )
-  }
-}
-
-const toggleTagSelection = (tag) => {
-  const index = selectedTagFilter.value.indexOf(tag)
-  if (index > -1) {
-    selectedTagFilter.value.splice(index, 1)
-  } else {
-    selectedTagFilter.value.push(tag)
-  }
-}
-
-const removeTag = (tag) => {
-  const index = selectedTagFilter.value.indexOf(tag)
-  if (index > -1) {
-    selectedTagFilter.value.splice(index, 1)
-  }
-}
-
-const applyTagFilter = () => {
-  showTagDialog.value = false
-  // The filtering will be handled by the computed property
-}
-
-// Date dialog methods
-const openDateDialog = () => {
-  showDateDialog.value = true
-  // Reset date range
-  dateRange.value = { from: null, to: null }
-}
-
-const closeDateDialog = () => {
-  showDateDialog.value = false
-  dateRange.value = { from: null, to: null }
-}
-
-const setDatePreset = (preset) => {
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+// Photo selection methods
+const openPhotoSelector = async () => {
+  console.log('🔍 Opening photo selector')
   
-  switch (preset) {
-    case 'lastWeek':
-      dateRange.value = {
-        from: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000),
-        to: today
-      }
-      break
-    case 'lastMonth':
-      dateRange.value = {
-        from: new Date(today.getFullYear(), today.getMonth() - 1, today.getDate()),
-        to: today
-      }
-      break
-    case 'last3Months':
-      dateRange.value = {
-        from: new Date(today.getFullYear(), today.getMonth() - 3, today.getDate()),
-        to: today
-      }
-      break
-    case 'lastYear':
-      dateRange.value = {
-        from: new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()),
-        to: today
-      }
-      break
+  // Reset photo selection state first
+  photoSelection_resetSelection()
+  
+  showPhotoSelector.value = true
+  await photoSelection_loadAvailableAssets()
+  await photoSelection_loadLocationData()
+  
+  // Set current selection after loading assets
+  if (selectedAssets.value.length > 0) {
+    photoSelection_selectedMemories.value = selectedAssets.value.map(asset => asset.id)
+    console.log('🔍 Restored current selection:', photoSelection_selectedMemories.value.length, 'photos')
   }
 }
 
-const clearDateFilter = () => {
-  selectedDateFilter.value = null
-  dateRange.value = { from: null, to: null }
+const closePhotoSelector = () => {
+  console.log('🔍 Closing photo selector')
+  showPhotoSelector.value = false
+  
+  // Reset photo selection state completely
+  photoSelection_resetSelection()
 }
 
-const applyDateFilter = () => {
-  if (dateRange.value.from || dateRange.value.to) {
-    selectedDateFilter.value = {
-      from: dateRange.value.from,
-      to: dateRange.value.to
-    }
+const savePhotoSelection = () => {
+  console.log('💾 Saving photo selection')
+  
+  // Determine target photo count based on layout type
+  let targetCount = null
+  if (form.value.layoutType === 'grid') {
+    targetCount = totalPhotosNeeded.value
+    console.log('💾 Grid layout: targeting', targetCount, 'photos for', form.value.page_count, 'pages')
+  } else if (form.value.layoutType === 'theme') {
+    targetCount = selectedThemePhotoCount.value || 3 // Default to 3 for themes
+    console.log('💾 Theme layout: targeting', targetCount, 'photos')
   }
-  showDateDialog.value = false
+  
+  // Get selected assets from the photo selection pool
+  const selectedAssetIds = photoSelection_populatePhotoSelectionPool(targetCount)
+  selectedAssets.value = photoSelection_availableAssets.value.filter(asset => selectedAssetIds.includes(asset.id))
+  
+  console.log('💾 Saved', selectedAssets.value.length, 'selected assets')
+  
+  // For grid layouts, ensure we have enough photos for the specified number of pages
+  if (form.value.layoutType === 'grid' && selectedAssets.value.length < totalPhotosNeeded.value) {
+    console.log('⚠️ Warning: Selected', selectedAssets.value.length, 'photos but need', totalPhotosNeeded.value, 'for', form.value.page_count, 'pages')
+  }
+  
+  // Close photo selector and reset its state
+  showPhotoSelector.value = false
+  photoSelection_resetSelection()
 }
 
-const formatDateRange = (range) => {
-  if (!range) return ''
-  const from = range.from ? new Date(range.from).toLocaleDateString() : 'Any'
-  const to = range.to ? new Date(range.to).toLocaleDateString() : 'Any'
-  return `${from} to ${to}`
+const handleUploadPhotos = () => {
+  // Handle photo upload - this would integrate with your upload system
+  console.log('Upload photos requested')
+}
+
+const handleNoPhotosFound = () => {
+  // Handle no photos found scenario
+  console.log('No photos found for selected criteria')
+}
+
+const handleClosePhotoLibrary = () => {
+  // Handle closing photo library
+  console.log('Photo library closed')
 }
 
 // Fetch themes when component mounts
@@ -1562,12 +904,16 @@ onMounted(() => {
 })
 
 function handleSubmit() {
+  // Generate photo selection pool from selected assets
+  const photoSelectionPool = selectedAssets.value.map(asset => asset.id)
+  
   emit('submit', {
     ...form.value,
     memoryEvent: form.value.memoryEvent === 'custom' ? form.value.customMemoryEvent : form.value.memoryEvent,
     backgroundType: form.value.backgroundType,
     backgroundOpacity: form.value.backgroundOpacity,
-    selectedAssets: selectedAssets.value
+    selectedAssets: selectedAssets.value,
+    photo_selection_pool: photoSelectionPool
   })
 }
 </script> 

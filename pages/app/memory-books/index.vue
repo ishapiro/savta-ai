@@ -1706,7 +1706,7 @@
                       @no-photos-found="handleNoPhotosFound"
                       @close-photo-library="handleClosePhotoLibrary"
                     />
-      </div>
+        </div>
 
       <!-- Step 5: Photo Library Selection (MANUAL step for photo_library method) -->
       <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library'"
@@ -1714,12 +1714,12 @@
         <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
             <i class="pi pi-folder-open text-xl sm:text-2xl text-white"></i>
-          </div>
+            </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Choose your photos</h3>
           <p class="text-xs sm:text-base text-gray-600 mb-2">Think of this as creating a "photo collection" for your memory card. Pick all the photos that remind you of this special moment - you can choose as many as you'd like! I'll then look through your collection and pick the perfect number of photos that work best with your chosen theme. It's like having me help you arrange the best photos for your memory card.</p>
           <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your library</p>
-        </div>
-        
+            </div>
+
                             <!-- Photo Selection Interface Component (Photo Library Mode) -->
                     <PhotoSelectionInterface
                       ref="photoSelectionInterfaceRef"
@@ -1742,8 +1742,8 @@
                       @photo-library-selected="nextMagicMemoryStep"
                       @no-photos-found="handleNoPhotosFound"
                       @close-photo-library="handleClosePhotoLibrary"
-                    />
-      </div>
+              />
+            </div>
 
 
 
@@ -4848,7 +4848,7 @@ const nextMagicMemoryStep = () => {
     // Only add MANUAL step if it doesn't already exist
     if (!currentButtonConfig.value.steps.includes(MAGIC_STEPS.MANUAL)) {
       console.log('🔍 [nextMagicMemoryStep] Adding MANUAL step')
-      currentButtonConfig.value.steps.push(MAGIC_STEPS.MANUAL)
+    currentButtonConfig.value.steps.push(MAGIC_STEPS.MANUAL)
     } else {
       console.log('🔍 [nextMagicMemoryStep] MANUAL step already exists')
     }

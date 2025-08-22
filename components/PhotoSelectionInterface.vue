@@ -1,10 +1,10 @@
 <template>
   <div class="photo-selection-interface">
     <!-- Photo Selection Method UI -->
-    <div v-if="!showPhotoLibrary" class="space-y-3 w-full max-w-md mx-auto sm:max-w-2xl">
+    <div v-if="!showPhotoLibrary" class="space-y-3 w-full max-w-xs mx-auto sm:max-w-md md:max-w-lg lg:max-w-2xl">
       <!-- Savta Selects Tile (Wide Button) -->
       <div class="relative cursor-pointer group" @click="selectMethod('last_100')">
-        <div class="mx-4 border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
+        <div class="mx-1 sm:mx-2 border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
           :class="methodValue === 'last_100' 
             ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
             : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
