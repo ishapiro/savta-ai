@@ -18,7 +18,9 @@
           </div>
           <div class="flex flex-col items-center gap-2 sm:gap-1">
             <h1 class="text-xl sm:text-4xl font-extrabold text-brand-secondary font-sans tracking-tight">Savta</h1>
-            <span class="inline-block bg-brand-background/80 text-brand-secondary text-sm sm:text-xs font-semibold px-3 sm:px-2 py-1 sm:py-0.5 rounded-full border border-brand-navigation/30 align-middle shadow-sm">pre-beta: no warranty, no support</span>
+            <span class="inline-block bg-brand-background/80 text-red-600 text-sm sm:text-xs font-semibold px-3 sm:px-2 py-1 sm:py-0.5 rounded-full border border-brand-navigation/30 align-middle shadow-sm">
+              Pre-beta: no warranty, no support. Data may be deleted at any time.
+            </span>
           </div>
           <div class="max-w-xl mx-auto mt-3 sm:mt-1 px-4 sm:px-3 py-2 sm:py-1 text-center">
             <h2 class="text-base sm:text-base font-semibold mb-2 sm:mb-1 text-brand-secondary drop-shadow-lg">

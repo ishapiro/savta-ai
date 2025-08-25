@@ -110,18 +110,19 @@
             <div class="text-sm text-brand-primary/70">Approved Assets: <span class="font-bold">{{ userAssetStats.approved }}</span></div>
           </div>
 
-          <!-- Assets Data Table (only if user selected) -->
-          <div v-if="selectedUser && selectedUser.user_id">
-            <DataTable
-              :value="filteredAssets"
-              :paginator="true"
-              :rows="10"
-              :rowsPerPageOptions="[5, 10, 20, 50]"
-              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} assets"
-              responsiveLayout="scroll"
-              class="p-datatable-sm"
-            >
+                      <!-- Assets Data Table (only if user selected) -->
+            <div v-if="selectedUser && selectedUser.user_id" class="max-w-7xl mx-auto">
+              <DataTable
+                :value="filteredAssets"
+                :paginator="true"
+                :rows="10"
+                :rowsPerPageOptions="[5, 10, 20, 50]"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} assets"
+                responsiveLayout="scroll"
+                class="p-datatable-sm text-sm"
+                style="font-size: 0.875rem;"
+              >
               <Column field="type" header="Type" sortable>
                 <template #body="{ data }">
                   <Tag
@@ -131,25 +132,25 @@
                 </template>
               </Column>
 
-              <Column field="title" header="Title" sortable>
+              <Column field="title" header="Title" sortable style="min-width: 150px; max-width: 200px;">
                 <template #body="{ data }">
-                  <div class="max-w-xs truncate" :title="data.title">
+                  <div class="truncate" :title="data.title">
                     {{ data.title || 'Untitled' }}
                   </div>
                 </template>
               </Column>
 
-              <Column field="ai_caption" header="AI Caption">
+              <Column field="ai_caption" header="AI Caption" style="min-width: 200px; max-width: 300px;">
                 <template #body="{ data }">
-                  <div class="max-w-xs truncate" :title="data.ai_caption">
+                  <div class="truncate" :title="data.ai_caption">
                     {{ data.ai_caption || 'No caption' }}
                   </div>
                 </template>
               </Column>
 
-              <Column field="ai_description" header="AI Description">
+              <Column field="ai_description" header="AI Description" style="min-width: 200px; max-width: 300px;">
                 <template #body="{ data }">
-                  <div class="max-w-xs truncate" :title="data.ai_description">
+                  <div class="truncate" :title="data.ai_description">
                     {{ data.ai_description || 'No description' }}
                   </div>
                 </template>
@@ -206,83 +207,126 @@
         <!-- Memory Books Tab -->
         <TabPanel header="Memory Books">
           <div class="space-y-4">
-            <div class="flex justify-between items-center">
-              <h3 class="text-lg font-semibold text-brand-primary">Memory Books</h3>
-              <div class="flex items-center space-x-4">
-                <InputText
-                  v-model="bookSearch"
-                  placeholder="Search books..."
-                  class="w-64"
-                />
-                <Dropdown
-                  v-model="bookStatusFilter"
-                  :options="bookStatusOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="All Status"
-                  class="w-32"
+            <!-- Memory Books Instructions and Filter -->
+            <div class="mb-4">
+              <div class="mb-2 text-sm text-brand-primary/70 font-medium">
+                To view memory books, you must select a user by their email address below.
+              </div>
+              <div class="flex items-center gap-4">
+                <AutoComplete
+                  id="memory-books-user-search"
+                  v-model="selectedUser"
+                  :suggestions="userSuggestions"
+                  @complete="searchUsers"
+                  optionLabel="email"
+                  :optionDisabled="option => !option.user_id"
+                  placeholder="Type to search users..."
+                  class="w-80"
+                  inputClass="w-full h-11 px-4 py-2 text-base rounded-lg border border-brand-primary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
+                  :dropdown="true"
+                  :forceSelection="true"
+                  field="email"
+                  :itemTemplate="user => `${user.email?.split('@')[0] || ''} (${user.first_name || ''} ${user.last_name || ''})`"
                 />
               </div>
             </div>
 
-            <!-- Memory Books Data Table -->
-            <DataTable
-              :value="filteredBooks"
-              :paginator="true"
-              :rows="10"
-              :rowsPerPageOptions="[5, 10, 20, 50]"
-              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} books"
-              responsiveLayout="scroll"
-              class="p-datatable-sm"
-            >
-              <Column field="title" header="Title" sortable>
-                <template #body="{ data }">
-                  <div class="max-w-xs truncate" :title="data.title">
-                    {{ data.title || 'Untitled' }}
-                  </div>
-                </template>
-              </Column>
+            <!-- User Summary Header -->
+            <div v-if="selectedUser && selectedUser.user_id" class="mb-4 p-4 bg-brand-surface-100 rounded-lg flex flex-col sm:flex-row sm:items-center gap-2">
+              <div class="font-semibold text-brand-primary">User: <span class="text-brand-primary">{{ selectedUser.email }}</span></div>
+              <div class="text-sm text-brand-primary/70">Total Memory Books: <span class="font-bold">{{ userBookStats.total }}</span></div>
+            </div>
 
-              <Column field="status" header="Status" sortable>
-                <template #body="{ data }">
-                  <Tag
-                    :value="getBookStatusText(data.status)"
-                    :severity="getBookStatusSeverity(data.status)"
+
+
+            <!-- Memory Books Content -->
+            <div v-if="selectedUser && selectedUser.user_id">
+              <!-- Memory Books Controls -->
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-brand-primary">Memory Books</h3>
+                <div class="flex items-center space-x-4">
+                  <InputText
+                    v-model="bookSearch"
+                    placeholder="Search books..."
+                    class="w-64"
                   />
-                </template>
-              </Column>
+                  <Dropdown
+                    v-model="bookStatusFilter"
+                    :options="bookStatusOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="All Status"
+                    class="w-32"
+                  />
+                </div>
+              </div>
 
-              <Column field="created_at" header="Created" sortable>
-                <template #body="{ data }">
-                  <span class="text-sm text-brand-primary/70">{{ formatDate(data.created_at) }}</span>
-                </template>
-              </Column>
+              <!-- Memory Books Data Table -->
+              <DataTable
+                :value="filteredBooks"
+                :paginator="true"
+                :rows="10"
+                :rowsPerPageOptions="[5, 10, 20, 50]"
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} books"
+                responsiveLayout="scroll"
+                class="p-datatable-sm text-sm"
+                style="font-size: 0.875rem;"
+              >
+                <Column field="title" header="Title" sortable style="min-width: 200px; max-width: 400px;">
+                  <template #body="{ data }">
+                    <div class="truncate" :title="data.title">
+                      {{ data.title || 'Untitled' }}
+                    </div>
+                  </template>
+                </Column>
 
-              <Column header="Actions">
-                <template #body="{ data }">
-                  <div class="flex items-center space-x-2">
-                    <Button
-                      v-if="data.status === 'ready'"
-                      icon="pi pi-download"
-                      class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
-                      @click="downloadBook(data)"
+                <Column field="status" header="Status" sortable>
+                  <template #body="{ data }">
+                    <Tag
+                      :value="getBookStatusText(data.status)"
+                      :severity="getBookStatusSeverity(data.status)"
                     />
-                    <Button
-                      v-if="data.status === 'draft'"
-                      icon="pi pi-play"
-                      class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-2 py-1 text-xs"
-                      @click="generateBook(data)"
-                    />
-                    <Button
-                      icon="pi pi-eye"
-                      class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
-                      @click="viewBook(data)"
-                    />
-                  </div>
-                </template>
-              </Column>
-            </DataTable>
+                  </template>
+                </Column>
+
+                <Column field="created_at" header="Created" sortable>
+                  <template #body="{ data }">
+                    <span class="text-sm text-brand-primary/70">{{ formatDate(data.created_at) }}</span>
+                  </template>
+                </Column>
+
+                <Column header="Actions">
+                  <template #body="{ data }">
+                    <div class="flex items-center space-x-2">
+                      <Button
+                        v-if="data.status === 'ready'"
+                        icon="pi pi-download"
+                        class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
+                        @click="downloadBook(data)"
+                      />
+                      <Button
+                        v-if="data.status === 'draft'"
+                        icon="pi pi-play"
+                        class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-2 py-1 text-xs"
+                        @click="generateBook(data)"
+                      />
+                      <Button
+                        icon="pi pi-eye"
+                        class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
+                        @click="viewBook(data)"
+                      />
+                    </div>
+                  </template>
+                </Column>
+              </DataTable>
+            </div>
+
+            <!-- No User Selected Message -->
+            <div v-else class="text-center py-8">
+              <i class="pi pi-book text-4xl text-brand-primary/40 mb-4"></i>
+              <p class="text-brand-primary/70">Select a user above to view their memory books.</p>
+            </div>
           </div>
         </TabPanel>
 
@@ -2300,6 +2344,163 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- Asset View Modal -->
+    <Dialog
+      v-model:visible="showAssetModal"
+      modal
+      header="View Asset"
+      :style="{ width: '90vw', maxWidth: '1400px', height: '90vh' }"
+      :maximizable="true"
+      :resizable="true"
+    >
+      <div v-if="selectedAsset" class="h-full flex flex-col">
+        <!-- Compact Header Info -->
+        <div class="flex items-center justify-between mb-4 p-3 bg-brand-surface-50 rounded-lg">
+          <div class="flex items-center gap-4">
+            <Tag
+              :value="selectedAsset.type"
+              :severity="selectedAsset.type === 'photo' ? 'primary' : 'secondary'"
+            />
+            <Tag
+              :value="selectedAsset.approved ? 'Approved' : 'Pending'"
+              :severity="selectedAsset.approved ? 'success' : 'warning'"
+            />
+            <span class="text-sm text-brand-primary/70">
+              {{ formatDate(selectedAsset.created_at) }}
+            </span>
+          </div>
+          <div class="text-sm text-brand-primary/70 font-mono">
+            ID: {{ selectedAsset.id.slice(-8) }}
+          </div>
+        </div>
+
+        <!-- Full URL Display -->
+        <div v-if="selectedAsset.storage_url" class="mb-4 p-3 bg-brand-surface-100 rounded-lg">
+          <div class="text-xs font-semibold text-brand-primary mb-1">Image URL:</div>
+          <div class="text-xs text-brand-primary/70 font-mono break-all">
+            {{ selectedAsset.storage_url }}
+          </div>
+        </div>
+
+        <!-- All Asset Fields for Debugging -->
+        <div class="mb-4 p-3 bg-brand-surface-100 rounded-lg">
+          <div class="text-xs font-semibold text-brand-primary mb-2">All Asset Fields:</div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div><span class="font-medium">ID:</span> <span class="font-mono">{{ selectedAsset.id }}</span></div>
+            <div><span class="font-medium">User ID:</span> <span class="font-mono">{{ selectedAsset.user_id }}</span></div>
+            <div><span class="font-medium">Type:</span> {{ selectedAsset.type }}</div>
+            <div><span class="font-medium">Title:</span> {{ selectedAsset.title || 'null' }}</div>
+            <div><span class="font-medium">Storage URL:</span> <span class="font-mono break-all">{{ selectedAsset.storage_url || 'null' }}</span></div>
+            <div><span class="font-medium">User Caption:</span> {{ selectedAsset.user_caption || 'null' }}</div>
+            <div><span class="font-medium">AI Caption:</span> {{ selectedAsset.ai_caption || 'null' }}</div>
+            <div><span class="font-medium">AI Description:</span> {{ selectedAsset.ai_description || 'null' }}</div>
+            <div><span class="font-medium">Tags:</span> {{ selectedAsset.tags?.join(', ') || '[]' }}</div>
+            <div><span class="font-medium">User Tags:</span> {{ selectedAsset.user_tags?.join(', ') || '[]' }}</div>
+            <div><span class="font-medium">People Detected:</span> {{ selectedAsset.people_detected || '[]' }}</div>
+            <div><span class="font-medium">User People:</span> {{ selectedAsset.user_people || '[]' }}</div>
+            <div><span class="font-medium">Width:</span> {{ selectedAsset.width || 'null' }}</div>
+            <div><span class="font-medium">Height:</span> {{ selectedAsset.height || 'null' }}</div>
+            <div><span class="font-medium">Orientation:</span> {{ selectedAsset.orientation || 'null' }}</div>
+            <div><span class="font-medium">Location:</span> {{ selectedAsset.location || 'null' }}</div>
+            <div><span class="font-medium">City:</span> {{ selectedAsset.city || 'null' }}</div>
+            <div><span class="font-medium">State:</span> {{ selectedAsset.state || 'null' }}</div>
+            <div><span class="font-medium">Country:</span> {{ selectedAsset.country || 'null' }}</div>
+            <div><span class="font-medium">Zip Code:</span> {{ selectedAsset.zip_code || 'null' }}</div>
+            <div><span class="font-medium">Asset Date:</span> {{ selectedAsset.asset_date ? formatDate(selectedAsset.asset_date) : 'null' }}</div>
+            <div><span class="font-medium">AI Processed:</span> {{ selectedAsset.ai_processed ? 'true' : 'false' }}</div>
+            <div><span class="font-medium">Approved:</span> {{ selectedAsset.approved ? 'true' : 'false' }}</div>
+            <div><span class="font-medium">Rejected:</span> {{ selectedAsset.rejected ? 'true' : 'false' }}</div>
+            <div><span class="font-medium">Fingerprint:</span> <span class="font-mono">{{ selectedAsset.fingerprint || 'null' }}</span></div>
+            <div><span class="font-medium">Created At:</span> {{ formatDate(selectedAsset.created_at) }}</div>
+            <div><span class="font-medium">Updated At:</span> {{ formatDate(selectedAsset.updated_at) }}</div>
+            <div><span class="font-medium">Deleted:</span> {{ selectedAsset.deleted ? 'true' : 'false' }}</div>
+          </div>
+        </div>
+
+        <!-- Compact Text Content (if text asset) -->
+        <div v-if="selectedAsset.type === 'text'" class="mb-4 space-y-2">
+          <div v-if="selectedAsset.user_caption" class="bg-brand-surface-100 p-3 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">User Caption</div>
+            <div class="text-sm text-brand-primary/70">{{ selectedAsset.user_caption }}</div>
+          </div>
+          
+          <div v-if="selectedAsset.ai_caption" class="bg-brand-surface-100 p-3 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">AI Caption</div>
+            <div class="text-sm text-brand-primary/70">{{ selectedAsset.ai_caption }}</div>
+          </div>
+          
+          <div v-if="selectedAsset.ai_description" class="bg-brand-surface-100 p-3 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">AI Description</div>
+            <div class="text-sm text-brand-primary/70">{{ selectedAsset.ai_description }}</div>
+          </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col">
+          <!-- Asset Title (if exists) -->
+          <div v-if="selectedAsset.title" class="mb-3">
+            <h3 class="text-lg font-semibold text-brand-primary">{{ selectedAsset.title }}</h3>
+          </div>
+
+          <!-- Supabase Storage Image Display -->
+          <div class="flex-1 flex items-center justify-center bg-brand-surface-50 rounded-lg p-4">
+            <div v-if="selectedAsset.storage_url" class="text-center">
+              <img 
+                :src="selectedAsset.storage_url" 
+                :alt="selectedAsset.title || 'Asset image'"
+                class="max-w-full object-contain rounded-lg shadow-lg"
+                @error="handleImageError"
+                style="max-width: 600px; max-height: 400px;"
+              />
+              <div class="mt-3 text-sm text-brand-primary/70">
+                <a 
+                  :href="selectedAsset.storage_url" 
+                  target="_blank" 
+                  class="underline hover:text-brand-primary"
+                >
+                  Open in new tab
+                </a>
+              </div>
+            </div>
+            <div v-else class="text-center text-brand-primary/50">
+              <i class="pi pi-image text-4xl mb-2"></i>
+              <p>No image available</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-between items-center">
+          <!-- Approve/Unapprove Buttons -->
+          <div class="flex gap-2">
+            <Button
+              v-if="!selectedAsset?.approved"
+              label="Approve Asset"
+              icon="pi pi-check"
+              @click="approveAssetFromModal"
+              class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 py-2 text-sm"
+            />
+            <Button
+              v-if="selectedAsset?.approved"
+              label="Unapprove Asset"
+              icon="pi pi-times"
+              @click="unapproveAssetFromModal"
+              class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-2 text-sm"
+            />
+          </div>
+          
+          <!-- Close Button -->
+          <Button
+            label="Close"
+            icon="pi pi-times"
+            @click="showAssetModal = false"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-2 text-sm"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -2314,6 +2515,7 @@ import { useToast } from 'primevue/usetoast'
 
 const db = useDatabase()
 const toast = useToast()
+const supabase = useNuxtApp().$supabase
 
 // User profile for admin checks
 const userProfile = ref(null)
@@ -3313,10 +3515,106 @@ const rejectAsset = async (assetId) => {
   }
 }
 
+// Asset viewing modal
+const showAssetModal = ref(false)
+const selectedAsset = ref(null)
+
+// Asset actions
+const viewAsset = (asset) => {
+  selectedAsset.value = asset
+  showAssetModal.value = true
+}
+
+// Handle image loading errors
+const handleImageError = (event) => {
+  console.error('Error loading image:', event)
+  toast.add({
+    severity: 'error',
+    summary: 'Image Error',
+    detail: 'Failed to load image. The image may have been deleted or is inaccessible.',
+    life: 5000
+  })
+}
+
+// Approve asset from modal
+const approveAssetFromModal = async () => {
+  if (!selectedAsset.value) return
+  
+  try {
+    await approveAsset(selectedAsset.value.id)
+    
+    // Update the selected asset's approved status
+    selectedAsset.value.approved = true
+    selectedAsset.value.rejected = false
+    
+    // Update the asset in the main assets list
+    const assetIndex = assets.value.findIndex(a => a.id === selectedAsset.value.id)
+    if (assetIndex !== -1) {
+      assets.value[assetIndex].approved = true
+      assets.value[assetIndex].rejected = false
+    }
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Approved',
+      detail: 'Asset approved successfully',
+      life: 3000
+    })
+  } catch (error) {
+    console.error('Error approving asset from modal:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to approve asset',
+      life: 3000
+    })
+  }
+}
+
+// Unapprove asset from modal
+const unapproveAssetFromModal = async () => {
+  if (!selectedAsset.value) return
+  
+  try {
+    // Update the asset in the database
+    const { data, error } = await supabase
+      .from('assets')
+      .update({ approved: false })
+      .eq('id', selectedAsset.value.id)
+      .select()
+    
+    if (error) throw error
+    
+    // Update the selected asset's approved status
+    selectedAsset.value.approved = false
+    
+    // Update the asset in the main assets list
+    const assetIndex = assets.value.findIndex(a => a.id === selectedAsset.value.id)
+    if (assetIndex !== -1) {
+      assets.value[assetIndex].approved = false
+    }
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Unapproved',
+      detail: 'Asset unapproved successfully',
+      life: 3000
+    })
+  } catch (error) {
+    console.error('Error unapproving asset from modal:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to unapprove asset',
+      life: 3000
+    })
+  }
+}
+
 // Book actions
 const downloadBook = async (book) => {
   try {
-    const pdfUrl = await db.editor.downloadBook(book.id)
+    const pdfUrl = await db.editor.downloadMemoryBook(book.id)
     
     // Create download link
     const link = document.createElement('a')
