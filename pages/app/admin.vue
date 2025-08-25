@@ -2260,6 +2260,12 @@
                   title="View Details"
                 />
                 <Button
+                  icon="pi pi-undo"
+                  class="bg-blue-500 hover:bg-blue-600 text-white border-0 px-2 py-1 text-xs"
+                  @click="confirmRestoreBackup(data)"
+                  title="Restore Backup"
+                />
+                <Button
                   icon="pi pi-download"
                   class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 px-2 py-1 text-xs"
                   @click="downloadBackup(data)"
@@ -2348,6 +2354,83 @@
             class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-3 py-2"
             :loading="deletingBackup"
             :disabled="deletingBackup"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Restore Backup Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showRestoreBackupConfirmDialog"
+      modal
+      header="Restore Backup"
+      :style="{ width: '600px' }"
+    >
+      <div class="space-y-4">
+        <div class="flex items-start gap-3">
+          <i class="pi pi-undo text-brand-success text-xl mt-1"></i>
+          <div>
+            <h3 class="font-semibold text-brand-primary mb-2">Restore User Backup</h3>
+            <div v-if="backupToRestore" class="bg-brand-surface-100 p-3 rounded-lg mb-3">
+              <p class="text-sm font-medium text-brand-primary">
+                User: {{ backupToRestore.summary?.user_email }}
+              </p>
+              <p class="text-sm text-brand-primary/70">
+                Records: {{ backupToRestore.summary?.total_records }} | 
+                Files: {{ backupToRestore.summary?.total_files }} | 
+                Created: {{ formatDate(backupToRestore.created_at) }}
+              </p>
+            </div>
+            
+            <div v-if="userExists" class="p-3 bg-brand-warning/10 border border-brand-warning/20 rounded-lg mb-3">
+              <div class="flex items-start gap-2">
+                <i class="pi pi-exclamation-triangle text-brand-warning mt-0.5"></i>
+                <div class="text-sm">
+                  <strong class="text-brand-warning">User Already Exists:</strong>
+                  <p class="text-brand-primary/70 mt-1">
+                    A user with this email already exists in the system. 
+                    Restoring this backup will overwrite their existing data.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div v-else class="p-3 bg-brand-success/10 border border-brand-success/20 rounded-lg mb-3">
+              <div class="flex items-start gap-2">
+                <i class="pi pi-check-circle text-brand-success mt-0.5"></i>
+                <div class="text-sm">
+                  <strong class="text-brand-success">New User:</strong>
+                  <p class="text-brand-primary/70 mt-1">
+                    This user does not exist in the system. 
+                    A new user account will be created with the backup data.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <p class="text-sm text-brand-primary/70">
+              This will restore all user data including profile, assets, memory books, and storage files.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            @click="cancelRestoreBackup"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-2 text-sm"
+            :disabled="restoringBackup"
+          />
+          <Button
+            :label="userExists ? 'Overwrite User' : 'Create User'"
+            icon="pi pi-undo"
+            @click="restoreBackup"
+            class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 py-2 text-sm"
+            :loading="restoringBackup"
+            :disabled="restoringBackup"
           />
         </div>
       </template>
@@ -2824,6 +2907,12 @@ const totalBackups = ref(0)
 const showDeleteBackupConfirmDialog = ref(false)
 const backupToDelete = ref(null)
 const deletingBackup = ref(false)
+
+// Restore backup variables
+const showRestoreBackupConfirmDialog = ref(false)
+const backupToRestore = ref(null)
+const restoringBackup = ref(false)
+const userExists = ref(false)
 const showDeletedUsers = ref(false)
 const deletedUsers = ref([])
 
@@ -4900,6 +4989,140 @@ const deleteBackup = async () => {
 const cancelDeleteBackup = () => {
   showDeleteBackupConfirmDialog.value = false
   backupToDelete.value = null
+}
+
+// Restore backup functions
+const confirmRestoreBackup = async (backup) => {
+  backupToRestore.value = backup
+  
+  // Check if user already exists by both email and user ID
+  try {
+    const supabase = useNuxtApp().$supabase
+    const { data: { session } } = await supabase.auth.getSession()
+    const accessToken = session?.access_token
+
+    console.log('Backup data for user detection:', {
+      summary: backup.summary,
+      backup_data: backup.backup_data,
+      metadata: backup.backup_data?.metadata,
+      fullBackup: backup
+    })
+
+    // The backup data structure seems to be different than expected
+    // Let's check if the user ID is in the summary or directly in the backup object
+    const userEmail = backup.summary?.user_email
+    const userId = backup.user_id || backup.target_user_id || backup.summary?.user_id
+
+    console.log('Checking for user:', { userEmail, userId })
+
+    // Check by email
+    const emailRes = await fetch(`/api/users/search?email=${encodeURIComponent(userEmail)}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    })
+
+    // Check by user ID (only if we have a valid user ID)
+    let userIdRes = null
+    if (userId) {
+      userIdRes = await fetch(`/api/users/${userId}/info`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      })
+    }
+
+    console.log('API responses:', {
+      emailResStatus: emailRes.status,
+      userIdResStatus: userIdRes ? userIdRes.status : 'No user ID available'
+    })
+
+    // User exists if either email or user ID check returns a result
+    let emailExists = false
+    let userIdExists = false
+
+    if (emailRes.ok) {
+      const emailUsers = await emailRes.json()
+      emailExists = emailUsers && emailUsers.length > 0
+      console.log('Email check result:', { emailUsers, emailExists })
+    }
+
+    if (userIdRes && userIdRes.ok) {
+      const userData = await userIdRes.json()
+      userIdExists = !!userData
+      console.log('User ID check result:', { userData, userIdExists })
+    } else {
+      console.log('User ID check skipped - no valid user ID available')
+    }
+    
+    userExists.value = emailExists || userIdExists
+    
+    console.log(`Final user existence check:`, {
+      userEmail,
+      userId,
+      emailExists,
+      userIdExists,
+      userExists: userExists.value
+    })
+  } catch (error) {
+    console.error('Error checking if user exists:', error)
+    userExists.value = false
+  }
+  
+  showRestoreBackupConfirmDialog.value = true
+}
+
+const restoreBackup = async () => {
+  if (!backupToRestore.value) return
+
+  restoringBackup.value = true
+  try {
+    const supabase = useNuxtApp().$supabase
+    const { data: { session } } = await supabase.auth.getSession()
+    const accessToken = session?.access_token
+
+    const res = await fetch(`/api/users/backup-restore`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        backupId: backupToRestore.value.id,
+        overwrite: userExists.value
+      })
+    })
+
+    if (!res.ok) {
+      const errorData = await res.json()
+      throw new Error(errorData.error || 'Failed to restore backup')
+    }
+
+    const result = await res.json()
+
+    toast.add({
+      severity: 'success',
+      summary: 'Backup Restored',
+      detail: `Successfully restored backup for user: ${backupToRestore.value.summary?.user_email}`,
+      life: 5000
+    })
+
+  } catch (error) {
+    console.error('Restore backup error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Restore Failed',
+      detail: error.message || 'Failed to restore backup',
+      life: 5000
+    })
+  } finally {
+    restoringBackup.value = false
+    showRestoreBackupConfirmDialog.value = false
+    backupToRestore.value = null
+    userExists.value = false
+  }
+}
+
+const cancelRestoreBackup = () => {
+  showRestoreBackupConfirmDialog.value = false
+  backupToRestore.value = null
+  userExists.value = false
 }
 </script>
 
