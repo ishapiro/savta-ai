@@ -36,7 +36,7 @@
         </div>
         <div class="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
           <!-- Memory Cards Card -->
-          <div class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg border border-brand-highlight/30 p-6 sm:p-6">
+          <div data-savta="memory-cards-tile" class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg border border-brand-highlight/30 p-6 sm:p-6 relative">
             <h3 class="text-lg sm:text-xl font-bold text-brand-highlight mb-4 text-center">Memory Cards</h3>
             <div class="flex flex-col sm:flex-row gap-4">
               <div class="flex flex-col items-center">
@@ -53,6 +53,8 @@
                   <p class="mt-3 sm:mt-2 text-sm text-brand-highlight text-center">Perfect for beginners</p>
               </div>
             </div>
+            
+
           </div>
           
           <!-- Memory Books Card -->
@@ -444,6 +446,8 @@
           </button>
       </div>
     </div>
+
+
 
     <!-- Create Memory Book Modal (replaces old Dialog) -->
     <MemoryBookDialog
@@ -1947,6 +1951,18 @@
       </div>
     </div>
   </Dialog>
+
+  <!-- Savta Bubble Component -->
+  <SavtaBubble
+    v-model:open="showSavtaBubble"
+    target="[data-savta='memory-cards-tile']"
+    placement="bottom"
+    :offset="15"
+    text="Start with a Memory Card, honey! ✨"
+    variant="instruction"
+    :dismissible="true"
+    :show-avatar="true"
+  />
 </template>
 
 <script setup>
@@ -1956,6 +1972,8 @@ import { Sparkles, Sparkle, Wand2, Gift } from 'lucide-vue-next'
 import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
 import CaptionRenderer from '~/components/CaptionRenderer.vue'
 import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
+import SavtaIcon from '~/components/SavtaIcon.vue'
+import SavtaBubble from '~/components/SavtaBubble.vue'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { usePhotoSelection } from '~/composables/usePhotoSelection'
 const toast = useToast()
@@ -2032,6 +2050,19 @@ const assetThumbnails = ref({})
 const hasAssets = ref(false)
 const approvedAssetsCount = ref(0)
 const loadingAssets = ref(false)
+
+// Savta Bubble state
+const showSavtaBubble = ref(false)
+
+// Watch for conditions to show Savta bubble
+watch([memoryBooks, hasAssets, approvedAssetsCount], ([books, assets, count]) => {
+  // Show bubble when user has assets but no memory books and not in magic memory dialog
+  if (books.length === 0 && assets && count > 0 && !showMagicMemoryDialog.value) {
+    showSavtaBubble.value = true
+  } else {
+    showSavtaBubble.value = false
+  }
+}, { immediate: true })
 
 // PDF Progress tracking
 const showProgressDialog = ref(false)
@@ -2452,18 +2483,12 @@ onMounted(async () => {
           shouldOpenWizardAfterUpload.value = true
         }, 1000) // Increased delay to ensure DOM is ready
       } else {
-        console.log('[MEMORY-BOOKS] onMounted - user has', photoCount, 'photos, opening wizard directly')
-        // User has enough photos, open wizard directly
-        setTimeout(() => {
-          openMagicMemoryDialog('quick')
-        }, 1000) // Increased delay to ensure DOM is ready
+        console.log('[MEMORY-BOOKS] onMounted - user has', photoCount, 'photos, showing speech bubble guidance')
+        // User has enough photos, show speech bubble guidance instead of auto-opening wizard
       }
     } catch (error) {
       console.error('[MEMORY-BOOKS] Error checking photo count:', error)
-      // Fallback: open wizard directly if we can't check photo count
-      setTimeout(() => {
-        openMagicMemoryDialog('quick')
-      }, 1000)
+      // Fallback: show speech bubble guidance instead of auto-opening wizard
     }
   } else if (route.query.openUploadDialog === 'true') {
     console.log('[MEMORY-BOOKS] onMounted - opening upload dialog')
@@ -2487,11 +2512,8 @@ onMounted(async () => {
           showSpecialUploadMessaging.value = true
         }, 1000)
       } else {
-        console.log('[MEMORY-BOOKS] onMounted - has assets, no memory books, opening wizard directly')
-        // Has assets but no memory books - open wizard directly
-        setTimeout(() => {
-          openMagicMemoryDialog('quick')
-        }, 1000)
+        console.log('[MEMORY-BOOKS] onMounted - has assets, no memory books, showing speech bubble guidance')
+        // Has assets but no memory books - show speech bubble guidance instead of auto-opening wizard
       }
     } else {
       console.log('[MEMORY-BOOKS] onMounted - has memory books, showing normal page')
@@ -5379,8 +5401,8 @@ const finishUpload = async () => {
       const photoCount = approvedAssets?.length || 0
       
       if (photoCount >= 6) {
-        console.log('[MEMORY-BOOKS] User now has', photoCount, 'photos, opening wizard')
-        openMagicMemoryDialog('quick')
+        console.log('[MEMORY-BOOKS] User now has', photoCount, 'photos, showing speech bubble guidance')
+        // Show speech bubble guidance instead of auto-opening wizard
       } else {
         console.log('[MEMORY-BOOKS] User has', photoCount, 'photos, showing recommendation to add more')
         // Show toast encouraging more photos
@@ -5402,9 +5424,8 @@ const finishUpload = async () => {
     setTimeout(async () => {
       await checkAssets()
       if (hasAssets.value && approvedAssetsCount.value > 0) {
-        // User now has approved photos, open magic memory dialog
-        console.log('[MEMORY-BOOKS] User now has approved photos, opening magic memory dialog')
-        openMagicMemoryDialog('quick')
+        // User now has approved photos, show speech bubble guidance instead of auto-opening wizard
+        console.log('[MEMORY-BOOKS] User now has approved photos, showing speech bubble guidance')
       }
     }, 1000)
   }
@@ -5461,8 +5482,8 @@ const skipUpload = () => {
       const photoCount = approvedAssets?.length || 0
       
       if (photoCount > 0) {
-        console.log('[MEMORY-BOOKS] User has', photoCount, 'photos, opening wizard')
-        openMagicMemoryDialog('quick')
+        console.log('[MEMORY-BOOKS] User has', photoCount, 'photos, showing speech bubble guidance')
+        // Show speech bubble guidance instead of auto-opening wizard
       } else {
         console.log('[MEMORY-BOOKS] User has no photos, showing recommendation')
         // Show toast encouraging photos

@@ -18,20 +18,24 @@
           </div>
           <div class="flex flex-col items-center gap-2 sm:gap-1">
             <h1 class="text-xl sm:text-4xl font-extrabold text-brand-secondary font-sans tracking-tight">Savta</h1>
-            <span class="inline-block bg-brand-background/80 text-brand-secondary text-sm sm:text-xs font-semibold px-3 sm:px-2 py-1 sm:py-0.5 rounded-full border border-brand-navigation/30 align-middle shadow-sm">beta: no warranty, no support</span>
+            <span class="inline-block bg-brand-background/80 text-brand-secondary text-sm sm:text-xs font-semibold px-3 sm:px-2 py-1 sm:py-0.5 rounded-full border border-brand-navigation/30 align-middle shadow-sm">pre-beta: no warranty, no support</span>
           </div>
           <div class="max-w-xl mx-auto mt-3 sm:mt-1 px-4 sm:px-3 py-2 sm:py-1 text-center">
             <h2 class="text-base sm:text-base font-semibold mb-2 sm:mb-1 text-brand-secondary drop-shadow-lg">
-              Keep the memories that matter most, beautifully.
+              Keep the memories that matter most, permanently.
             </h2>
             <p class="text-sm sm:text-sm text-brand-secondary/90 leading-relaxed mb-2 sm:mb-0.5 drop-shadow-md">
-              Turn your scattered photos into beautiful, printed memory cards — automatically. 
-              No more dragging photos into layouts. Our AI picks your best moments, writes 
-              captions, and designs everything for you.
+              Savta.ai is a beautifully simple web app that helps families turn their everyday photos into 
+              professionally printed, AI-enhanced 7x5 memory cards. With just a few clicks, users can upload pictures, 
+              get instant captions and stories, and have them mailed to loved ones. 
             </p>
             <p class="text-sm sm:text-sm text-brand-secondary/80 leading-relaxed drop-shadow-md">
-              Just upload and we'll mail the cards to your loved ones or share them digitally. Perfect for grandparents 
-              who don't use social media.
+              These tangible cards offer lasting emotional value — a heartfelt way to keep grandparents, 
+              parents, and relatives connected, especially those who may struggle with technology or 
+              don’t use social media.
+            </p>
+            <p class="text-sm sm:text-sm text-brand-secondary/80 leading-relaxed drop-shadow-md">
+              Think: Instagram meets Hallmark — but mailed, not scrolled.
             </p>
           </div>
         </div>

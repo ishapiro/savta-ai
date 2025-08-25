@@ -35,6 +35,7 @@
     <div class="mb-8 sm:mb-12">
       
       <div 
+        data-savta="memory-books-tile"
         class="bg-gradient-to-br from-brand-highlight/20 via-brand-header/10 to-brand-navigation/20 rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-12 border-2 border-brand-header/30 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500 cursor-pointer group relative overflow-hidden"
         @click="handleCardClick('ai')"
       >
@@ -230,13 +231,30 @@
         </div>
       </div>
     </Dialog>
+
+    <!-- Savta Bubble for New Users -->
+    <SavtaBubble
+      v-model:open="showSavtaBubble"
+      target="[data-savta='memory-books-tile']"
+      placement="center"
+      :offset="0"
+      text="Hi, I'm Savta and I'm here to help you get started! ✨
+
+As a grandmother myself, I know how precious all those photos on your phone are. I'll help you create very special memory cards and books for your family and friends.
+
+Click on 'Create a Memory Card' and I'll guide you through creating your very first one. It's easier than you think, darling!"
+      variant="instruction"
+      :dismissible="true"
+      :show-avatar="true"
+    />
     </div>
   </div>
 </template>
 
 <script setup>
 import { useSupabaseUser } from '~/composables/useSupabase'
-import { watchEffect, ref } from 'vue'
+import { watchEffect, ref, onMounted } from 'vue'
+import SavtaBubble from '~/components/SavtaBubble.vue'
 import { 
   Wand2, 
   Sparkles, 
@@ -262,6 +280,9 @@ import {
 const user = useSupabaseUser()
 const showAuthDialog = ref(false)
 const isGuestMode = ref(false)
+const showSavtaBubble = ref(false)
+const hasAssets = ref(false)
+const memoryBooks = ref([])
 
 definePageMeta({
   layout: 'default'
@@ -269,7 +290,7 @@ definePageMeta({
 
 const { hasInsidersAccess, checkInsidersAccess } = useInsidersAccess()
 
-onMounted(() => {
+onMounted(async () => {
   checkInsidersAccess()
   console.log('Dashboard mounted, insiders access:', hasInsidersAccess.value)
   
@@ -277,7 +298,58 @@ onMounted(() => {
   if (process.client) {
     isGuestMode.value = sessionStorage.getItem('guestMode') === 'true'
   }
+
+  // Check if user is new (no memory books or assets) and show Savta bubble
+  if (user.value && !isGuestMode.value) {
+    await checkIfNewUser()
+  }
 })
+
+// Watch for user changes and check if new user
+watchEffect(async () => {
+  console.log('[Dashboard] watchEffect user:', user)
+  console.log('[Dashboard] watchEffect user.value:', user?.value)
+  
+  if (user.value && !isGuestMode.value) {
+    console.log('[Dashboard] User detected, checking if new user...')
+    // Add a small delay to ensure everything is loaded
+    await new Promise(resolve => setTimeout(resolve, 500))
+    await checkIfNewUser()
+  }
+})
+
+async function checkIfNewUser() {
+  try {
+    console.log('[Dashboard] checkIfNewUser: Starting check...')
+    const db = useDatabase()
+    
+    // Check for assets
+    console.log('[Dashboard] checkIfNewUser: Checking assets...')
+    const assetsResponse = await db.assets.getAssets()
+    hasAssets.value = assetsResponse && assetsResponse.length > 0
+    console.log('[Dashboard] checkIfNewUser: Assets response:', assetsResponse)
+    console.log('[Dashboard] checkIfNewUser: hasAssets:', hasAssets.value)
+    
+    // Check for memory books
+    console.log('[Dashboard] checkIfNewUser: Checking memory books...')
+    const booksResponse = await db.memoryBooks.getMemoryBooks()
+    memoryBooks.value = booksResponse || []
+    console.log('[Dashboard] checkIfNewUser: Memory books response:', booksResponse)
+    console.log('[Dashboard] checkIfNewUser: memoryBooks length:', memoryBooks.value.length)
+    
+    // Show Savta bubble if user has no memory books and no assets
+    console.log('[Dashboard] checkIfNewUser: Checking conditions - memoryBooks.length === 0:', memoryBooks.value.length === 0, '!hasAssets:', !hasAssets.value)
+    if (memoryBooks.value.length === 0 && !hasAssets.value) {
+      console.log('[Dashboard] New user detected, showing Savta bubble')
+      showSavtaBubble.value = true
+      console.log('[Dashboard] showSavtaBubble set to:', showSavtaBubble.value)
+    } else {
+      console.log('[Dashboard] User is not new, not showing Savta bubble')
+    }
+  } catch (error) {
+    console.error('[Dashboard] Error checking if new user:', error)
+  }
+}
 
 watchEffect(() => {
   console.log('[Dashboard] watchEffect user:', user)
