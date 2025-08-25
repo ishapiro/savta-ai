@@ -2093,6 +2093,14 @@
           </small>
         </div>
 
+        <!-- User Email Display -->
+        <div v-if="backupUserEmail" class="field">
+          <label class="block text-sm font-medium text-brand-primary mb-2">User Email</label>
+          <div class="p-3 bg-brand-surface-50 border border-brand-surface-200 rounded-lg">
+            <span class="text-sm text-brand-primary font-medium">{{ backupUserEmail }}</span>
+          </div>
+        </div>
+
         <!-- Backup Progress -->
         <div v-if="backupInProgress" class="space-y-2">
           <div class="flex items-center gap-2">
@@ -2501,6 +2509,157 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- Memory Book View Modal -->
+    <Dialog
+      v-model:visible="showMemoryBookModal"
+      modal
+      header="View Memory Book"
+      :style="{ width: '90vw', maxWidth: '1400px', height: '90vh' }"
+      :maximizable="true"
+      :resizable="true"
+    >
+      <div v-if="selectedMemoryBook" class="h-full flex flex-col">
+        <!-- Compact Header Info -->
+        <div class="flex items-center justify-between mb-4 p-3 bg-brand-surface-50 rounded-lg">
+          <div class="flex items-center gap-4">
+            <Tag
+              :value="selectedMemoryBook.format"
+              :severity="selectedMemoryBook.format === 'book' ? 'primary' : 'secondary'"
+            />
+            <Tag
+              :value="selectedMemoryBook.status"
+              :severity="getBookStatusSeverity(selectedMemoryBook.status)"
+            />
+            <span class="text-sm text-brand-primary/70">
+              {{ formatDate(selectedMemoryBook.created_at) }}
+            </span>
+          </div>
+          <div class="text-sm text-brand-primary/70 font-mono">
+            ID: {{ selectedMemoryBook.id.slice(-8) }}
+          </div>
+        </div>
+
+        <!-- All Memory Book Fields for Debugging -->
+        <div class="mb-4 p-3 bg-brand-surface-100 rounded-lg overflow-auto max-h-96">
+          <div class="text-xs font-semibold text-brand-primary mb-2">All Memory Book Fields:</div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div><span class="font-medium">ID:</span> <span class="font-mono">{{ selectedMemoryBook.id }}</span></div>
+            <div><span class="font-medium">User ID:</span> <span class="font-mono">{{ selectedMemoryBook.user_id }}</span></div>
+            <div><span class="font-medium">Format:</span> {{ selectedMemoryBook.format }}</div>
+            <div><span class="font-medium">Status:</span> {{ selectedMemoryBook.status }}</div>
+            <div><span class="font-medium">UI:</span> {{ selectedMemoryBook.ui }}</div>
+            <div><span class="font-medium">Page Count:</span> {{ selectedMemoryBook.page_count || 'null' }}</div>
+            <div><span class="font-medium">Grid Layout:</span> {{ selectedMemoryBook.grid_layout }}</div>
+            <div><span class="font-medium">Memory Shape:</span> {{ selectedMemoryBook.memory_shape }}</div>
+            <div><span class="font-medium">Print Size:</span> {{ selectedMemoryBook.print_size }}</div>
+            <div><span class="font-medium">Quality:</span> {{ selectedMemoryBook.quality || 'null' }}</div>
+            <div><span class="font-medium">Medium:</span> {{ selectedMemoryBook.medium || 'null' }}</div>
+            <div><span class="font-medium">Theme ID:</span> <span class="font-mono">{{ selectedMemoryBook.theme_id || 'null' }}</span></div>
+            <div><span class="font-medium">Layout Type:</span> {{ selectedMemoryBook.layout_type || 'null' }}</div>
+            <div><span class="font-medium">Output:</span> {{ selectedMemoryBook.output }}</div>
+            <div><span class="font-medium">Memory Event:</span> {{ selectedMemoryBook.memory_event || 'null' }}</div>
+            <div><span class="font-medium">Include Captions:</span> {{ selectedMemoryBook.include_captions ? 'true' : 'false' }}</div>
+            <div><span class="font-medium">Include Tags:</span> {{ selectedMemoryBook.include_tags ? 'true' : 'false' }}</div>
+            <div><span class="font-medium">AI Background:</span> {{ selectedMemoryBook.ai_background ? 'true' : 'false' }}</div>
+            <div><span class="font-medium">Auto Enhance:</span> {{ selectedMemoryBook.auto_enhance ? 'true' : 'false' }}</div>
+            <div><span class="font-medium">Created At:</span> {{ formatDate(selectedMemoryBook.created_at) }}</div>
+            <div><span class="font-medium">Updated At:</span> {{ formatDate(selectedMemoryBook.updated_at) }}</div>
+            <div><span class="font-medium">Generated At:</span> {{ selectedMemoryBook.generated_at ? formatDate(selectedMemoryBook.generated_at) : 'null' }}</div>
+            <div><span class="font-medium">Approved At:</span> {{ selectedMemoryBook.approved_at ? formatDate(selectedMemoryBook.approved_at) : 'null' }}</div>
+            <div><span class="font-medium">Distributed At:</span> {{ selectedMemoryBook.distributed_at ? formatDate(selectedMemoryBook.distributed_at) : 'null' }}</div>
+            <div><span class="font-medium">Deleted:</span> {{ selectedMemoryBook.deleted ? 'true' : 'false' }}</div>
+            <div><span class="font-medium">Deleted At:</span> {{ selectedMemoryBook.deleted_at ? formatDate(selectedMemoryBook.deleted_at) : 'null' }}</div>
+          </div>
+        </div>
+
+        <!-- URLs Section -->
+        <div class="mb-4 space-y-2">
+          <div v-if="selectedMemoryBook.pdf_url" class="p-3 bg-brand-surface-100 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">PDF URL:</div>
+            <div class="text-xs text-brand-primary/70 font-mono break-all">
+              {{ selectedMemoryBook.pdf_url }}
+            </div>
+          </div>
+          <div v-if="selectedMemoryBook.background_url" class="p-3 bg-brand-surface-100 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">Background URL:</div>
+            <div class="text-xs text-brand-primary/70 font-mono break-all">
+              {{ selectedMemoryBook.background_url }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Text Content Section -->
+        <div class="mb-4 space-y-2">
+          <div v-if="selectedMemoryBook.ai_supplemental_prompt" class="p-3 bg-brand-surface-100 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">AI Supplemental Prompt:</div>
+            <div class="text-sm text-brand-primary/70">{{ selectedMemoryBook.ai_supplemental_prompt }}</div>
+          </div>
+          
+          <div v-if="selectedMemoryBook.magic_story" class="p-3 bg-brand-surface-100 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">Magic Story:</div>
+            <div class="text-sm text-brand-primary/70">{{ selectedMemoryBook.magic_story }}</div>
+          </div>
+          
+          <div v-if="selectedMemoryBook.ai_photo_selection_reasoning" class="p-3 bg-brand-surface-100 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">AI Photo Selection Reasoning:</div>
+            <div class="text-sm text-brand-primary/70">{{ selectedMemoryBook.ai_photo_selection_reasoning }}</div>
+          </div>
+          
+          <div v-if="selectedMemoryBook.review_notes" class="p-3 bg-brand-surface-100 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">Review Notes:</div>
+            <div class="text-sm text-brand-primary/70">{{ selectedMemoryBook.review_notes }}</div>
+          </div>
+        </div>
+
+        <!-- Arrays Section -->
+        <div class="mb-4 space-y-2">
+          <div v-if="selectedMemoryBook.created_from_assets?.length" class="p-3 bg-brand-surface-100 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">Created From Assets ({{ selectedMemoryBook.created_from_assets.length }}):</div>
+            <div class="text-xs text-brand-primary/70 font-mono">
+              {{ selectedMemoryBook.created_from_assets.join(', ') }}
+            </div>
+          </div>
+          
+          <div v-if="selectedMemoryBook.photo_selection_pool?.length" class="p-3 bg-brand-surface-100 rounded-lg">
+            <div class="text-xs font-semibold text-brand-primary mb-1">Photo Selection Pool ({{ selectedMemoryBook.photo_selection_pool.length }}):</div>
+            <div class="text-xs text-brand-primary/70 font-mono">
+              {{ selectedMemoryBook.photo_selection_pool.join(', ') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-between items-center">
+          <!-- Action Buttons -->
+          <div class="flex gap-2">
+            <Button
+              v-if="selectedMemoryBook?.pdf_url"
+              label="View PDF"
+              icon="pi pi-eye"
+              @click="viewMemoryBookPDF"
+              class="px-3 py-2 text-sm"
+            />
+            <Button
+              v-if="selectedMemoryBook?.status === 'draft'"
+              label="Generate Book"
+              icon="pi pi-play"
+              @click="generateBookFromModal"
+              class="px-3 py-2 text-sm"
+            />
+          </div>
+          
+          <!-- Close Button -->
+          <Button
+            label="Close"
+            icon="pi pi-times"
+            @click="showMemoryBookModal = false"
+            class="px-3 py-2 text-sm"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -2646,6 +2805,15 @@ const showBackupUserModal = ref(false)
 const backupUserId = ref('')
 const backupUserEmail = ref('')
 const backupInProgress = ref(false)
+
+// Watch for changes in backupUserId to fetch user email
+watch(backupUserId, async (newUserId) => {
+  if (newUserId && newUserId.trim()) {
+    await fetchBackupUserEmail(newUserId.trim())
+  } else {
+    backupUserEmail.value = ''
+  }
+})
 const backupResult = ref(null)
 const showViewBackupsModal = ref(false)
 const backups = ref([])
@@ -3519,6 +3687,10 @@ const rejectAsset = async (assetId) => {
 const showAssetModal = ref(false)
 const selectedAsset = ref(null)
 
+// Memory book viewing modal
+const showMemoryBookModal = ref(false)
+const selectedMemoryBook = ref(null)
+
 // Asset actions
 const viewAsset = (asset) => {
   selectedAsset.value = asset
@@ -3611,6 +3783,47 @@ const unapproveAssetFromModal = async () => {
   }
 }
 
+// View memory book PDF
+const viewMemoryBookPDF = () => {
+  if (!selectedMemoryBook.value?.pdf_url) return
+  
+  // Open PDF in new tab
+  window.open(selectedMemoryBook.value.pdf_url, '_blank')
+}
+
+// Generate book from modal
+const generateBookFromModal = async () => {
+  if (!selectedMemoryBook.value) return
+  
+  try {
+    await generateBook(selectedMemoryBook.value)
+    
+    // Update the selected memory book's status
+    selectedMemoryBook.value.status = 'ready'
+    
+    // Update the memory book in the main books list
+    const bookIndex = books.value.findIndex(b => b.id === selectedMemoryBook.value.id)
+    if (bookIndex !== -1) {
+      books.value[bookIndex].status = 'ready'
+    }
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Generated',
+      detail: 'Memory book generated successfully',
+      life: 3000
+    })
+  } catch (error) {
+    console.error('Error generating book from modal:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to generate memory book',
+      life: 3000
+    })
+  }
+}
+
 // Book actions
 const downloadBook = async (book) => {
   try {
@@ -3668,8 +3881,8 @@ const generateBook = async (book) => {
 }
 
 const viewBook = (book) => {
-  const queryParams = { userId: selectedUser.value?.user_id }
-  router.push({ path: `/app/memory-books/${book.id}`, query: queryParams })
+  selectedMemoryBook.value = book
+  showMemoryBookModal.value = true
 }
 
 // Theme actions
@@ -4478,6 +4691,30 @@ const openLayoutEditorForDefault = () => {
   
   // Open the layout editor dialog
   showLayoutEditorDialog.value = true
+}
+
+// Fetch user email for backup
+const fetchBackupUserEmail = async (userId) => {
+  try {
+    const supabase = useNuxtApp().$supabase
+    const { data: { session } } = await supabase.auth.getSession()
+    const accessToken = session?.access_token
+
+    const res = await fetch(`/api/users/${userId}/info`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    })
+
+    if (!res.ok) {
+      backupUserEmail.value = ''
+      return
+    }
+
+    const userData = await res.json()
+    backupUserEmail.value = userData.email || 'Email not found'
+  } catch (error) {
+    console.error('Error fetching user email:', error)
+    backupUserEmail.value = ''
+  }
 }
 
 // Backup User Functions
