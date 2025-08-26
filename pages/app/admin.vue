@@ -2366,6 +2366,206 @@
       </template>
     </Dialog>
 
+    <!-- Backup Details Dialog -->
+    <Dialog
+      v-model:visible="showBackupDetailsDialog"
+      modal
+      header="Backup Details"
+      :style="{ width: '90vw', maxWidth: '1200px', height: '90vh' }"
+      :maximizable="true"
+      :resizable="true"
+    >
+      <div v-if="selectedBackupForDetails" class="h-full flex flex-col space-y-4">
+        <!-- Basic Information -->
+        <div class="bg-brand-surface-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-brand-primary mb-3">Basic Information</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><span class="font-medium">Backup ID:</span> <span class="font-mono">{{ selectedBackupForDetails.id }}</span></div>
+            <div><span class="font-medium">Status:</span> <Tag :value="selectedBackupForDetails.status" :severity="selectedBackupForDetails.status === 'completed' ? 'success' : 'warning'" /></div>
+            <div><span class="font-medium">Created At:</span> {{ formatDate(selectedBackupForDetails.created_at) }}</div>
+            <div><span class="font-medium">Updated At:</span> {{ formatDate(selectedBackupForDetails.updated_at) }}</div>
+            <div><span class="font-medium">Original UUID:</span> <span class="font-mono">{{ selectedBackupForDetails.original_uuid || 'Not set' }}</span></div>
+            <div><span class="font-medium">Original Email:</span> {{ selectedBackupForDetails.original_email || 'Not set' }}</div>
+          </div>
+        </div>
+
+        <!-- User Information -->
+        <div class="bg-brand-surface-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-brand-primary mb-3">User Information</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><span class="font-medium">Target User ID:</span> <span class="font-mono">{{ selectedBackupForDetails.user_id || 'Not set' }}</span></div>
+            <div><span class="font-medium">Target User Email:</span> {{ selectedBackupForDetails.target_user?.email || selectedBackupForDetails.summary?.user_email || 'Unknown' }}</div>
+            <div><span class="font-medium">Created By:</span> {{ selectedBackupForDetails.created_by_user?.email || 'Unknown' }}</div>
+            <div><span class="font-medium">Created By ID:</span> <span class="font-mono">{{ selectedBackupForDetails.created_by || 'Unknown' }}</span></div>
+          </div>
+        </div>
+
+        <!-- Backup Summary -->
+        <div class="bg-brand-surface-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-brand-primary mb-3">Backup Summary</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><span class="font-medium">Total Records:</span> {{ selectedBackupForDetails.summary?.total_records || 0 }}</div>
+            <div><span class="font-medium">Total Files:</span> {{ selectedBackupForDetails.summary?.total_files || 0 }}</div>
+            <div><span class="font-medium">Backup Size:</span> {{ Math.round((selectedBackupForDetails.summary?.backup_size_estimate || 0) / 1024) }} KB</div>
+            <div><span class="font-medium">User Email:</span> {{ selectedBackupForDetails.summary?.user_email || 'Unknown' }}</div>
+          </div>
+        </div>
+
+        <!-- Backup Metadata -->
+        <div class="bg-brand-surface-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-brand-primary mb-3">Backup Metadata</h3>
+          <div class="bg-brand-surface-100 p-3 rounded border">
+            <pre class="text-xs text-brand-primary/70 overflow-auto max-h-40">{{ JSON.stringify(selectedBackupForDetails.backup_data?.metadata || {}, null, 2) }}</pre>
+          </div>
+        </div>
+
+        <!-- Backup Data Structure -->
+        <div class="bg-brand-surface-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-brand-primary mb-3">Backup Data Structure</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><span class="font-medium">User Profile:</span> {{ selectedBackupForDetails.backup_data?.user_profile ? 'Present' : 'Missing' }}</div>
+            <div><span class="font-medium">Auth User:</span> {{ selectedBackupForDetails.backup_data?.auth_user ? 'Present' : 'Missing' }}</div>
+            <div><span class="font-medium">Families:</span> {{ selectedBackupForDetails.backup_data?.families?.length || 0 }} records</div>
+            <div><span class="font-medium">Assets:</span> {{ selectedBackupForDetails.backup_data?.assets?.length || 0 }} records</div>
+            <div><span class="font-medium">Memory Books:</span> {{ selectedBackupForDetails.backup_data?.memory_books?.length || 0 }} records</div>
+            <div><span class="font-medium">PDF Status:</span> {{ selectedBackupForDetails.backup_data?.pdf_status?.length || 0 }} records</div>
+            <div><span class="font-medium">Activity Logs:</span> {{ selectedBackupForDetails.backup_data?.activity_logs?.length || 0 }} records</div>
+            <div><span class="font-medium">Email Events:</span> {{ selectedBackupForDetails.backup_data?.email_events?.length || 0 }} records</div>
+            <div><span class="font-medium">Storage Files:</span> {{ selectedBackupForDetails.backup_data?.storage_files?.length || 0 }} files</div>
+          </div>
+        </div>
+
+        <!-- Full Backup Data (Collapsible) -->
+        <div class="bg-brand-surface-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-brand-primary mb-3">Full Backup Data (JSON)</h3>
+          <div class="bg-brand-surface-100 p-3 rounded border">
+            <pre class="text-xs text-brand-primary/70 overflow-auto max-h-96">{{ JSON.stringify(selectedBackupForDetails.backup_data || {}, null, 2) }}</pre>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end">
+          <Button
+            label="Close"
+            icon="pi pi-times"
+            @click="closeBackupDetailsDialog"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-4 py-2"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Backup Progress Dialog -->
+    <Dialog
+      v-model:visible="showBackupProgressDialog"
+      modal
+      header="Backup Progress"
+      :style="{ width: '500px' }"
+      :closable="false"
+      :closeOnEscape="false"
+    >
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 rounded-full bg-brand-primary-100 flex items-center justify-center">
+              <i class="pi pi-download text-brand-primary text-xl"></i>
+            </div>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-semibold text-brand-primary">Creating User Backup</h3>
+            <p class="text-sm text-brand-primary/70">{{ backupProgress.userEmail }}</p>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="space-y-2">
+          <div class="flex justify-between text-sm">
+            <span class="text-brand-primary/70">Progress</span>
+            <span class="text-brand-primary font-medium">{{ backupProgress.currentStepNumber }} / {{ backupProgress.totalSteps }}</span>
+          </div>
+          <div class="w-full bg-brand-surface-100 rounded-full h-2">
+            <div 
+              class="bg-brand-primary h-2 rounded-full transition-all duration-300 ease-out"
+              :style="{ width: `${(backupProgress.currentStepNumber / backupProgress.totalSteps) * 100}%` }"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Current Step -->
+        <div class="bg-brand-surface-50 p-3 rounded-lg">
+          <div class="flex items-center gap-2">
+            <i 
+              :class="[
+                backupProgress.isRunning ? 'pi pi-spin pi-spinner' : 'pi pi-check-circle',
+                backupProgress.isRunning ? 'text-brand-primary' : 'text-brand-success'
+              ]"
+            ></i>
+            <span class="text-sm text-brand-primary">{{ backupProgress.currentStep }}</span>
+          </div>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="space-y-2">
+          <div class="text-xs font-medium text-brand-primary/70 mb-2">Backup Steps:</div>
+          <div class="space-y-1 text-xs">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-brand-success" v-if="backupProgress.currentStepNumber >= 1"></i>
+              <i class="pi pi-circle text-brand-primary/30" v-else></i>
+              <span :class="backupProgress.currentStepNumber >= 1 ? 'text-brand-primary' : 'text-brand-primary/50'">Initialize backup process</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-brand-success" v-if="backupProgress.currentStepNumber >= 2"></i>
+              <i class="pi pi-circle text-brand-primary/30" v-else></i>
+              <span :class="backupProgress.currentStepNumber >= 2 ? 'text-brand-primary' : 'text-brand-primary/50'">Fetch user profile</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-brand-success" v-if="backupProgress.currentStepNumber >= 3"></i>
+              <i class="pi pi-circle text-brand-primary/30" v-else></i>
+              <span :class="backupProgress.currentStepNumber >= 3 ? 'text-brand-primary' : 'text-brand-primary/50'">Collect user data</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-brand-success" v-if="backupProgress.currentStepNumber >= 4"></i>
+              <i class="pi pi-circle text-brand-primary/30" v-else></i>
+              <span :class="backupProgress.currentStepNumber >= 4 ? 'text-brand-primary' : 'text-brand-primary/50'">Backup storage files</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-brand-success" v-if="backupProgress.currentStepNumber >= 5"></i>
+              <i class="pi pi-circle text-brand-primary/30" v-else></i>
+              <span :class="backupProgress.currentStepNumber >= 5 ? 'text-brand-primary' : 'text-brand-primary/50'">Create backup record</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-brand-success" v-if="backupProgress.currentStepNumber >= 6"></i>
+              <i class="pi pi-circle text-brand-primary/30" v-else></i>
+              <span :class="backupProgress.currentStepNumber >= 6 ? 'text-brand-primary' : 'text-brand-primary/50'">Validate backup data</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-brand-success" v-if="backupProgress.currentStepNumber >= 7"></i>
+              <i class="pi pi-circle text-brand-primary/30" v-else></i>
+              <span :class="backupProgress.currentStepNumber >= 7 ? 'text-brand-primary' : 'text-brand-primary/50'">Finalize backup</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-circle text-brand-success" v-if="backupProgress.currentStepNumber >= 8"></i>
+              <i class="pi pi-circle text-brand-primary/30" v-else></i>
+              <span :class="backupProgress.currentStepNumber >= 8 ? 'text-brand-primary' : 'text-brand-primary/50'">Backup completed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end">
+          <Button
+            v-if="!backupProgress.isRunning"
+            label="Close"
+            icon="pi pi-times"
+            @click="closeBackupProgressDialog"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-4 py-2"
+          />
+        </div>
+      </template>
+    </Dialog>
+
     <!-- Asset View Modal -->
     <Dialog
       v-model:visible="showAssetModal"
@@ -2960,6 +3160,17 @@ const totalBackups = ref(0)
 const showDeleteBackupConfirmDialog = ref(false)
 const backupToDelete = ref(null)
 const deletingBackup = ref(false)
+const showBackupDetailsDialog = ref(false)
+const selectedBackupForDetails = ref(null)
+const showBackupProgressDialog = ref(false)
+const backupProgress = ref({
+  isRunning: false,
+  currentStep: '',
+  totalSteps: 0,
+  currentStepNumber: 0,
+  userEmail: '',
+  userId: ''
+})
 
 // Restore backup variables
 const showRestoreBackupConfirmDialog = ref(false)
@@ -4863,10 +5074,34 @@ const backupUser = async (userId) => {
     return
   }
 
+  // Get user email for display
+  let userEmail = 'Unknown'
+  try {
+    const user = users.value.find(u => u.user_id === userId)
+    userEmail = user?.email || 'Unknown'
+  } catch (e) {
+    console.log('Could not find user email, using default')
+  }
+
+  // Initialize progress
+  backupProgress.value = {
+    isRunning: true,
+    currentStep: 'Initializing backup...',
+    totalSteps: 8,
+    currentStepNumber: 0,
+    userEmail: userEmail,
+    userId: userId
+  }
+  showBackupProgressDialog.value = true
+
   try {
     const supabase = useNuxtApp().$supabase
     const { data: { session } } = await supabase.auth.getSession()
     const accessToken = session?.access_token
+
+    // Update progress - Starting backup
+    backupProgress.value.currentStep = 'Starting backup process...'
+    backupProgress.value.currentStepNumber = 1
 
     const res = await fetch(`/api/users/backup/${userId}`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
@@ -4879,6 +5114,11 @@ const backupUser = async (userId) => {
 
     const result = await res.json()
 
+    // Update progress - Completed
+    backupProgress.value.currentStep = 'Backup completed successfully!'
+    backupProgress.value.currentStepNumber = backupProgress.value.totalSteps
+
+    // Show success message
     toast.add({
       severity: 'success',
       summary: 'Backup Completed',
@@ -4886,14 +5126,30 @@ const backupUser = async (userId) => {
       life: 5000
     })
 
+    // Close progress dialog after a short delay
+    setTimeout(() => {
+      showBackupProgressDialog.value = false
+      backupProgress.value.isRunning = false
+    }, 1500)
+
   } catch (error) {
     console.error('Backup error:', error)
+    
+    // Update progress - Error
+    backupProgress.value.currentStep = 'Backup failed!'
+    
     toast.add({
       severity: 'error',
       summary: 'Backup Failed',
       detail: error.message || 'Failed to backup user',
       life: 5000
     })
+
+    // Close progress dialog after a short delay
+    setTimeout(() => {
+      showBackupProgressDialog.value = false
+      backupProgress.value.isRunning = false
+    }, 2000)
   }
 }
 
@@ -4944,14 +5200,18 @@ const closeViewBackupsModal = () => {
 }
 
 const viewBackupDetails = (backup) => {
-  // TODO: Implement backup details view
-  console.log('View backup details:', backup)
-  toast.add({
-    severity: 'info',
-    summary: 'Not Implemented',
-    detail: 'Backup details view will be implemented soon',
-    life: 3000
-  })
+  selectedBackupForDetails.value = backup
+  showBackupDetailsDialog.value = true
+}
+
+const closeBackupDetailsDialog = () => {
+  showBackupDetailsDialog.value = false
+  selectedBackupForDetails.value = null
+}
+
+const closeBackupProgressDialog = () => {
+  showBackupProgressDialog.value = false
+  backupProgress.value.isRunning = false
 }
 
 const downloadBackup = (backup) => {

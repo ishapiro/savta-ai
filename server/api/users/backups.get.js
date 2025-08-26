@@ -136,7 +136,8 @@ export default defineEventHandler(async (event) => {
         updated_at: backup.updated_at,
         target_user: targetUser,
         created_by_user: createdByUser,
-        summary: summary
+        summary: summary,
+        backup_data: backupData  // Include the full backup data
       }
     })
 
