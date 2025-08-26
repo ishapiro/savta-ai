@@ -60,6 +60,20 @@ export default defineEventHandler(async (event) => {
     let backupId = null
     
     try {
+      // Get Auth user data first
+      let authUser = null
+      try {
+        const { data: authUserData, error: authError } = await supabase.auth.admin.getUserById(targetUserId)
+        if (authUserData && !authError) {
+          authUser = authUserData
+          console.log(`✅ Retrieved Auth user data for backup: ${targetUserId}`)
+        } else {
+          console.log(`⚠️ Could not retrieve Auth user data: ${authError?.message || 'User not found'}`)
+        }
+      } catch (authError) {
+        console.log(`⚠️ Error retrieving Auth user data: ${authError.message}`)
+      }
+
       // Create backup using the existing backup endpoint logic
       const backup = {
         metadata: {
@@ -70,6 +84,7 @@ export default defineEventHandler(async (event) => {
           backup_reason: 'user_deletion'
         },
         user_profile: userProfile,
+        auth_user: authUser,  // Include Auth user data
         families: [],
         assets: [],
         memory_books: [],
@@ -169,6 +184,8 @@ export default defineEventHandler(async (event) => {
         .from('user_backups')
         .insert([{
           user_id: targetUserId,
+          original_uuid: targetUserId,
+          original_email: userProfile.email,
           backup_data: backup,
           created_by: user.id,
           status: 'completed'

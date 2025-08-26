@@ -2291,6 +2291,12 @@
                     A user with this email already exists in the system. 
                     Restoring this backup will overwrite their existing data.
                   </p>
+                  <div v-if="backupToRestore.original_uuid" class="mt-2 p-2 bg-brand-surface-50 rounded border border-brand-surface-200">
+                    <div class="text-xs font-semibold text-brand-primary mb-1">Original User ID:</div>
+                    <div class="text-xs font-mono text-brand-primary/70 break-all">
+                      {{ backupToRestore.original_uuid }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2304,6 +2310,12 @@
                     This user does not exist in the system. 
                     A new user account will be created with the backup data.
                   </p>
+                  <div v-if="backupToRestore.original_uuid" class="mt-2 p-2 bg-brand-surface-50 rounded border border-brand-surface-200">
+                    <div class="text-xs font-semibold text-brand-primary mb-1">Original User ID:</div>
+                    <div class="text-xs font-mono text-brand-primary/70 break-all">
+                      {{ backupToRestore.original_uuid }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2311,6 +2323,24 @@
             <p class="text-sm text-brand-primary/70">
               This will restore all user data including profile, assets, memory books, and storage files.
             </p>
+            
+            <div v-if="backupToRestore.original_uuid" class="mt-3 p-3 bg-brand-surface-50 rounded-lg border border-brand-surface-200">
+              <div class="text-sm font-semibold text-brand-primary mb-2">Restoration Details:</div>
+              <div class="space-y-2 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-brand-primary/70">Original User ID:</span>
+                  <span class="font-mono text-brand-primary">{{ backupToRestore.original_uuid }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-brand-primary/70">Original Email:</span>
+                  <span class="text-brand-primary">{{ backupToRestore.original_email || backupToRestore.summary?.user_email }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-brand-primary/70">Backup Created:</span>
+                  <span class="text-brand-primary">{{ formatDate(backupToRestore.created_at) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -5005,17 +5035,19 @@ const confirmRestoreBackup = async (backup) => {
       summary: backup.summary,
       backup_data: backup.backup_data,
       metadata: backup.backup_data?.metadata,
+      original_uuid: backup.original_uuid,
+      original_email: backup.original_email,
+      user_id: backup.user_id,
       fullBackup: backup
     })
 
-    // The backup data structure seems to be different than expected
-    // Let's check if the user ID is in the summary or directly in the backup object
-    const userEmail = backup.summary?.user_email
-    const userId = backup.user_id || backup.target_user_id || backup.summary?.user_id
+    // Extract user information from backup data
+    const userEmail = backup.summary?.user_email || backup.original_email
+    const userId = backup.original_uuid || backup.user_id || backup.backup_data?.metadata?.target_user_id
 
     console.log('Checking for user:', { userEmail, userId })
 
-    // Check by email
+    // Check by email and user ID
     const emailRes = await fetch(`/api/users/search?email=${encodeURIComponent(userEmail)}`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     })
@@ -5051,7 +5083,24 @@ const confirmRestoreBackup = async (backup) => {
       console.log('User ID check skipped - no valid user ID available')
     }
     
-    userExists.value = emailExists || userIdExists
+    // Also check Supabase Auth directly for more accurate results
+    let authUserExists = false
+    if (userId) {
+      try {
+        const authRes = await fetch(`/api/users/${userId}/auth-check`, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        })
+        if (authRes.ok) {
+          const authData = await authRes.json()
+          authUserExists = authData.exists
+          console.log('Auth check result:', { authData, authUserExists })
+        }
+      } catch (authError) {
+        console.log('Auth check failed:', authError)
+      }
+    }
+    
+    userExists.value = emailExists || userIdExists || authUserExists
     
     console.log(`Final user existence check:`, {
       userEmail,

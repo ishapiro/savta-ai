@@ -11,11 +11,12 @@ export default defineEventHandler(async (event) => {
     config.supabaseServiceRoleKey || config.public.supabaseKey
   )
 
-  // Search by email only
+  // Search by email only (exclude deleted users)
   const { data, error } = await supabase
     .from('profiles')
     .select('user_id, first_name, last_name, email')
     .ilike('email', `%${q}%`)
+    .is('deleted', null)  // Only active users
     .order('email', { ascending: true })
     .limit(15)
 

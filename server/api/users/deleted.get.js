@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     console.error('[deleted.get.js] Invalid token or user not found', userError)
     return { status: 401, body: { error: 'Unauthorized: Invalid token' } }
   }
-  console.log('[deleted.get.js] Authenticated user:', user.email, user.id)
+  console.log('[deleted.get.js] User requesting deleted users list authenticated:', user.email, user.id)
 
   // Fetch the user's profile to check role
   const { data: profile, error: profileError } = await supabase

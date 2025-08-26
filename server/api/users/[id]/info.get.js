@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
       .from('profiles')
       .select('*')  // ims was user_id, email, first_name, last_name
       .eq('user_id', userId)
+      .is('deleted', null)  // Only active users
       .single()
 
     if (error) {
