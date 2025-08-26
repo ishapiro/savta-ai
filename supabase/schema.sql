@@ -824,6 +824,8 @@ END $$;
 create table if not exists user_backups (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null,
+  original_uuid uuid,
+  original_email text,
   backup_data jsonb not null,
   created_by uuid not null,
   status text default 'completed' check (status in ('pending', 'completed', 'failed')),
@@ -837,6 +839,12 @@ create index if not exists idx_user_backups_user_id on user_backups(user_id);
 create index if not exists idx_user_backups_created_by on user_backups(created_by);
 create index if not exists idx_user_backups_created_at on user_backups(created_at);
 create index if not exists idx_user_backups_status on user_backups(status);
+create index if not exists idx_user_backups_original_email on user_backups(original_email);
+create index if not exists idx_user_backups_original_uuid on user_backups(original_uuid);
+
+-- Add comments for original fields
+COMMENT ON COLUMN user_backups.original_email IS 'Original email of the user who was backed up. Preserved even when user_id becomes null after user deletion.';
+COMMENT ON COLUMN user_backups.original_uuid IS 'Original UUID of the user who was backed up. Preserved even when user_id becomes null after user deletion. Used for accessing storage files.';
 
 -- Add foreign key constraints
 DO $$
@@ -849,7 +857,7 @@ BEGIN
   ) THEN
     ALTER TABLE user_backups
       ADD CONSTRAINT fk_user_backups_user_id
-      FOREIGN KEY (user_id) REFERENCES profiles(user_id);
+      FOREIGN KEY (user_id) REFERENCES profiles(user_id) ON DELETE SET NULL;
   END IF;
   
   IF NOT EXISTS (
@@ -863,6 +871,23 @@ BEGIN
       FOREIGN KEY (created_by) REFERENCES profiles(user_id);
   END IF;
 END $$;
+
+-- Allow user_id to be NULL in user_backups (for preserving backups after user deletion)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'user_backups' 
+      AND column_name = 'user_id'
+      AND is_nullable = 'NO'
+  ) THEN
+    ALTER TABLE user_backups ALTER COLUMN user_id DROP NOT NULL;
+  END IF;
+END $$;
+
+-- Add comment to explain the purpose of nullable user_id
+COMMENT ON COLUMN user_backups.user_id IS 'User ID that was backed up. Can be NULL if user was deleted but backup preserved.';
 
 -- Create trigger for updated_at
 drop trigger if exists update_user_backups_updated_at on user_backups;

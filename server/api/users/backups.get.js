@@ -75,14 +75,23 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 500, statusMessage: 'Failed to fetch backups' })
     }
 
-    // Get unique user IDs for profile lookups
+    // Get unique user IDs for profile lookups (filter out null values)
     const userIds = [...new Set(backups.map(b => b.user_id).concat(backups.map(b => b.created_by)))]
+      .filter(id => id !== null)
     
-    // Fetch user profiles
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('user_id, email, first_name, last_name')
-      .in('user_id', userIds)
+    // Fetch user profiles (only if we have valid user IDs)
+    let profiles = []
+    let profilesError = null
+    
+    if (userIds.length > 0) {
+      const { data: profilesData, error: profilesErrorData } = await supabase
+        .from('profiles')
+        .select('user_id, email, first_name, last_name')
+        .in('user_id', userIds)
+      
+      profiles = profilesData || []
+      profilesError = profilesErrorData
+    }
     
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError)
@@ -99,8 +108,13 @@ export default defineEventHandler(async (event) => {
     // Process backup data to include summary information
     const processedBackups = backups.map(backup => {
       const backupData = backup.backup_data
+      
+      // Get user information from backup data or profile map
+      const targetUser = backup.user_id ? profileMap[backup.user_id] : backupData?.user_profile
+      const createdByUser = backup.created_by ? profileMap[backup.created_by] : null
+      
       const summary = {
-        user_email: backupData?.user_profile?.email || profileMap[backup.user_id]?.email || 'Unknown',
+        user_email: backup.original_email || targetUser?.email || backupData?.user_profile?.email || 'Unknown',
         total_records: (backupData?.families?.length || 0) + 
                       (backupData?.assets?.length || 0) + 
                       (backupData?.memory_books?.length || 0) + 
@@ -115,11 +129,13 @@ export default defineEventHandler(async (event) => {
       return {
         id: backup.id,
         user_id: backup.user_id,
+        original_uuid: backup.original_uuid,
+        original_email: backup.original_email,
         status: backup.status,
         created_at: backup.created_at,
         updated_at: backup.updated_at,
-        target_user: profileMap[backup.user_id],
-        created_by_user: profileMap[backup.created_by],
+        target_user: targetUser,
+        created_by_user: createdByUser,
         summary: summary
       }
     })

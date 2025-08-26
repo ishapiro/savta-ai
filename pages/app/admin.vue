@@ -494,33 +494,13 @@
                   placeholder="All Roles"
                   class="w-32"
                 />
-                <!-- Show Disabled Users Toggle -->
-                <div class="flex items-center gap-2">
-                  <div class="relative">
-                    <input 
-                      type="checkbox" 
-                      id="showDeletedUsers" 
-                      v-model="showDeletedUsers"
-                      @change="loadDeletedUsers"
-                      class="w-4 h-4 text-brand-primary bg-white border-2 border-brand-primary/30 rounded transition-all duration-200 focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary checked:bg-brand-primary checked:border-brand-primary hover:border-brand-primary/50"
-                    />
-                    <div 
-                      v-if="showDeletedUsers"
-                      class="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    >
-                      <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                  <label for="showDeletedUsers" class="text-sm text-brand-primary/70 cursor-pointer select-none">Show disabled users</label>
-                </div>
-                <!-- Backup User Button -->
+                <!-- Trash Button -->
                 <Button
-                  label="Backup User"
-                  icon="pi pi-download"
-                  @click="showBackupUserModal = true"
-                  class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 px-3 py-2"
+                  label="Trash"
+                  icon="pi pi-trash"
+                  @click="showTrashDialog = true; loadDeletedUsers()"
+                  class="bg-gray-600 hover:bg-gray-700 text-white border-0 px-3 py-2"
+                  title="View disabled users"
                 />
                 <!-- View Backups Button -->
                 <Button
@@ -623,8 +603,8 @@
                   <div class="flex items-center space-x-2">
                     <Button
                       v-if="!data.deleted"
-                      icon="pi pi-ban"
-                      class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-2 py-1 text-xs"
+                      icon="pi pi-trash"
+                      class="bg-red-600 hover:bg-red-700 text-white border-0 px-2 py-1 text-xs"
                       @click="disableUser(data.user_id)"
                       title="Disable User"
                     />
@@ -640,86 +620,19 @@
                       class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
                       @click="viewUserDetails(data)"
                     />
+                    <Button
+                      icon="pi pi-download"
+                      class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 px-2 py-1 text-xs"
+                      @click="backupUser(data.user_id)"
+                      title="Backup User"
+                    />
+
                   </div>
                 </template>
               </Column>
             </DataTable>
 
-            <!-- Disabled Users Section -->
-            <div v-if="showDeletedUsers && deletedUsers.length > 0" class="mt-8 space-y-4">
-              <h3 class="text-lg font-semibold text-brand-primary/70 border-b border-brand-primary/20 pb-2">Disabled Users</h3>
-              <DataTable
-                :value="deletedUsers"
-                :paginator="true"
-                :rows="10"
-                :rowsPerPageOptions="[5, 10, 20, 50]"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} disabled users"
-                responsiveLayout="scroll"
-                class="p-datatable-sm"
-              >
-                <Column field="name" header="User" sortable>
-                  <template #body="{ data }">
-                    <div class="flex items-center">
-                      <div class="flex-shrink-0 h-10 w-10">
-                        <div class="h-10 w-10 rounded-full bg-brand-gray-100 flex items-center justify-center">
-                          <span class="text-brand-gray-500 font-medium">
-                            {{ data.first_name ? data.first_name.charAt(0) : data.email.charAt(0).toUpperCase() }}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="ml-4">
-                        <div class="text-sm font-medium text-brand-primary/70">
-                          {{ data.first_name }} {{ data.last_name }}
-                        </div>
-                        <div class="text-sm text-brand-gray-500">{{ data.email }}</div>
-                      </div>
-                    </div>
-                  </template>
-                </Column>
 
-                <Column field="role" header="Role" sortable>
-                  <template #body="{ data }">
-                    <Tag
-                      :value="data.role"
-                      :severity="getRoleSeverity(data.role)"
-                    />
-                  </template>
-                </Column>
-
-                <Column field="subscription_type" header="Subscription" sortable>
-                  <template #body="{ data }">
-                    <Tag
-                      :value="data.subscription_type"
-                      :severity="data.subscription_type === 'premium' ? 'primary' : 'secondary'"
-                    />
-                  </template>
-                </Column>
-
-                <Column field="created_at" header="Created" sortable>
-                  <template #body="{ data }">
-                    <span class="text-sm text-brand-primary/70">{{ formatDateOnlyDate(data.created_at) }}</span>
-                  </template>
-                </Column>
-
-                <Column header="Actions">
-                  <template #body="{ data }">
-                    <div class="flex items-center space-x-2">
-                      <Button
-                        icon="pi pi-refresh"
-                        class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-2 py-1 text-xs"
-                        @click="restoreUser(data.user_id)"
-                      />
-                      <Button
-                        icon="pi pi-eye"
-                        class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
-                        @click="viewUserDetails(data)"
-                      />
-                    </div>
-                  </template>
-                </Column>
-              </DataTable>
-            </div>
           </div>
 
           <!-- Access Denied Message -->
@@ -2069,103 +1982,7 @@
       </template>
     </Dialog>
 
-    <!-- Backup User Modal -->
-    <Dialog
-      v-model:visible="showBackupUserModal"
-      modal
-      header="Backup User Data"
-      :style="{ width: '600px' }"
-      :closable="!backupInProgress"
-      :dismissableMask="!backupInProgress"
-    >
-      <div class="space-y-4">
-        <!-- User ID Input -->
-        <div class="field">
-          <label class="block text-sm font-medium text-brand-primary mb-2">User ID</label>
-          <InputText
-            v-model="backupUserId"
-            placeholder="Enter user ID to backup"
-            class="w-full"
-            :disabled="backupInProgress"
-          />
-          <small class="text-brand-primary/70">
-            Enter the UUID of the user you want to backup. This will create a complete backup of all their data including database records and storage files.
-          </small>
-        </div>
 
-        <!-- User Email Display -->
-        <div v-if="backupUserEmail" class="field">
-          <label class="block text-sm font-medium text-brand-primary mb-2">User Email</label>
-          <div class="p-3 bg-brand-surface-50 border border-brand-surface-200 rounded-lg">
-            <span class="text-sm text-brand-primary font-medium">{{ backupUserEmail }}</span>
-          </div>
-        </div>
-
-        <!-- Backup Progress -->
-        <div v-if="backupInProgress" class="space-y-2">
-          <div class="flex items-center gap-2">
-            <i class="pi pi-spin pi-spinner text-brand-primary"></i>
-            <span class="text-sm text-brand-primary">Creating backup...</span>
-          </div>
-          <small class="text-brand-primary/70">
-            This may take a few moments depending on the amount of data.
-          </small>
-        </div>
-
-        <!-- Backup Result -->
-        <div v-if="backupResult && !backupInProgress" class="space-y-3">
-          <div class="p-3 bg-brand-success/10 border border-brand-success/20 rounded-lg">
-            <h4 class="font-semibold text-brand-success mb-2">Backup Completed Successfully</h4>
-            <div class="space-y-1 text-sm">
-              <div><strong>User:</strong> {{ backupResult.summary.user_email }}</div>
-              <div><strong>Total Records:</strong> {{ backupResult.summary.total_records }}</div>
-              <div><strong>Storage Files:</strong> {{ backupResult.summary.total_files }}</div>
-              <div><strong>Backup Size:</strong> {{ Math.round(backupResult.summary.backup_size_estimate / 1024) }} KB</div>
-              <div v-if="backupResult.backup_id"><strong>Backup ID:</strong> {{ backupResult.backup_id }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Warning -->
-        <div class="p-3 bg-brand-warning/10 border border-brand-warning/20 rounded-lg">
-          <div class="flex items-start gap-2">
-            <i class="pi pi-exclamation-triangle text-brand-warning mt-0.5"></i>
-            <div class="text-sm">
-              <strong class="text-brand-warning">Important:</strong> This backup includes all user data including:
-              <ul class="list-disc list-inside mt-1 ml-2 text-brand-primary/70">
-                <li>User profile and settings</li>
-                <li>All uploaded assets (photos, text)</li>
-                <li>Memory books and PDFs</li>
-                <li>Family information</li>
-                <li>Activity logs</li>
-                <li>Email events</li>
-                <li>Storage files (with download URLs)</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button
-            label="Cancel"
-            icon="pi pi-times"
-            @click="closeBackupModal"
-            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-2"
-            :disabled="backupInProgress"
-          />
-          <Button
-            label="Create Backup"
-            icon="pi pi-download"
-            @click="backupUser"
-            class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 py-2"
-            :loading="backupInProgress"
-            :disabled="!backupUserId.trim() || backupInProgress"
-          />
-        </div>
-      </template>
-    </Dialog>
 
     <!-- View Backups Modal -->
     <Dialog
@@ -2354,6 +2171,89 @@
             class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-3 py-2"
             :loading="deletingBackup"
             :disabled="deletingBackup"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Delete User Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showDeleteUserConfirmDialog"
+      modal
+      header="Permanently Delete User"
+      :style="{ width: '600px' }"
+    >
+      <div class="space-y-4">
+        <div class="flex items-start gap-3">
+          <i class="pi pi-exclamation-triangle text-red-500 text-xl mt-1"></i>
+          <div>
+            <h3 class="font-semibold text-brand-primary mb-2">Are you sure you want to permanently delete this user?</h3>
+            <div v-if="userToDelete" class="bg-brand-surface-100 p-3 rounded-lg mb-3">
+              <p class="text-sm font-medium text-brand-primary">
+                User: {{ userToDelete.email }}
+              </p>
+              <p class="text-sm text-brand-primary/70">
+                Name: {{ userToDelete.first_name }} {{ userToDelete.last_name }}
+              </p>
+              <p class="text-sm text-brand-primary/70">
+                Role: {{ userToDelete.role }} | Subscription: {{ userToDelete.subscription_type }}
+              </p>
+            </div>
+            
+            <div class="p-3 bg-red-50 border border-red-200 rounded-lg mb-3">
+              <div class="flex items-start gap-2">
+                <i class="pi pi-exclamation-triangle text-red-500 mt-0.5"></i>
+                <div class="text-sm">
+                  <strong class="text-red-600">⚠️ WARNING: This action will permanently delete:</strong>
+                  <ul class="list-disc list-inside mt-1 ml-2 text-brand-primary/70">
+                    <li>User's profile and account</li>
+                    <li>All uploaded assets (photos, text)</li>
+                    <li>All memory books and PDFs</li>
+                    <li>Family information</li>
+                    <li>Activity logs and email events</li>
+                    <li>All storage files</li>
+                    <li>Supabase authentication account</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
+              <div class="flex items-start gap-2">
+                <i class="pi pi-info-circle text-blue-500 mt-0.5"></i>
+                <div class="text-sm">
+                  <strong class="text-blue-600">✅ Safety Measure:</strong>
+                  <p class="text-brand-primary/70 mt-1">
+                    A complete backup will be created automatically before deletion, 
+                    allowing you to restore the user if needed.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <p class="text-sm text-red-600 font-medium">
+              This action cannot be undone. The user will be permanently removed from the system.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            @click="cancelDeleteUser"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-2 text-sm"
+            :disabled="deletingUser"
+          />
+          <Button
+            label="Permanently Delete User"
+            icon="pi pi-times"
+            @click="deleteUser"
+            class="bg-red-800 hover:bg-red-900 text-white border-0 px-3 py-2 text-sm"
+            :loading="deletingUser"
+            :disabled="deletingUser"
           />
         </div>
       </template>
@@ -2743,6 +2643,142 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- Trash Dialog -->
+    <Dialog
+      v-model:visible="showTrashDialog"
+      modal
+      header="User Trash"
+      :style="{ width: '90vw', maxWidth: '1200px' }"
+    >
+      <div class="space-y-4">
+        <!-- Trash Header -->
+        <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+          <i class="pi pi-trash text-2xl text-gray-600"></i>
+          <div>
+            <h3 class="text-lg font-semibold text-brand-primary">User Trash</h3>
+            <p class="text-sm text-brand-primary/70">Manage disabled users and permanently delete them if needed.</p>
+          </div>
+        </div>
+
+        <!-- Disabled Users Table -->
+        <div v-if="deletedUsers.length > 0">
+          <DataTable
+            :value="deletedUsers"
+            :paginator="true"
+            :rows="10"
+            :rowsPerPageOptions="[5, 10, 20, 50]"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} disabled users"
+            responsiveLayout="scroll"
+            class="p-datatable-sm"
+          >
+            <Column field="name" header="User" sortable>
+              <template #body="{ data }">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                      <span class="text-gray-500 font-medium">
+                        {{ data.first_name ? data.first_name.charAt(0) : data.email.charAt(0).toUpperCase() }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-brand-primary/70">
+                      {{ data.first_name }} {{ data.last_name }}
+                    </div>
+                    <div class="text-sm text-gray-500">{{ data.email }}</div>
+                  </div>
+                </div>
+              </template>
+            </Column>
+
+            <Column field="role" header="Role" sortable>
+              <template #body="{ data }">
+                <Tag
+                  :value="data.role"
+                  :severity="getRoleSeverity(data.role)"
+                />
+              </template>
+            </Column>
+
+            <Column field="subscription_type" header="Subscription" sortable>
+              <template #body="{ data }">
+                <Tag
+                  :value="data.subscription_type"
+                  :severity="data.subscription_type === 'premium' ? 'primary' : 'secondary'"
+                />
+              </template>
+            </Column>
+
+            <Column field="created_at" header="Created" sortable>
+              <template #body="{ data }">
+                <span class="text-sm text-brand-primary/70">{{ formatDateOnlyDate(data.created_at) }}</span>
+              </template>
+            </Column>
+
+            <Column header="Actions">
+              <template #body="{ data }">
+                <div class="flex items-center space-x-2">
+                  <Button
+                    icon="pi pi-refresh"
+                    class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-2 py-1 text-xs"
+                    @click="restoreUser(data.user_id)"
+                    title="Restore User"
+                  />
+                  <Button
+                    icon="pi pi-eye"
+                    class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
+                    @click="viewUserDetails(data)"
+                    title="View Details"
+                  />
+                  <Button
+                    icon="pi pi-download"
+                    class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 px-2 py-1 text-xs"
+                    @click="backupUser(data.user_id)"
+                    title="Backup User"
+                  />
+                  <Button
+                    v-if="data.user_id !== userProfile?.user_id"
+                    icon="pi pi-times"
+                    class="bg-red-800 hover:bg-red-900 text-white border-0 px-2 py-1 text-xs"
+                    @click="confirmDeleteUser(data)"
+                    title="Permanently Delete User"
+                  />
+                </div>
+              </template>
+            </Column>
+          </DataTable>
+        </div>
+
+        <!-- Empty Trash Message -->
+        <div v-else class="text-center py-12">
+          <i class="pi pi-trash text-6xl text-gray-300 mb-4"></i>
+          <h3 class="text-lg font-semibold text-brand-primary/70 mb-2">Trash is Empty</h3>
+          <p class="text-sm text-brand-primary/50">No disabled users found.</p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-between items-center gap-3">
+          <Button
+            label="Refresh"
+            icon="pi pi-refresh"
+            @click="loadDeletedUsers()"
+            class="bg-blue-500 hover:bg-blue-600 text-white border-0 px-4 py-2 rounded-lg transition-colors duration-200"
+            title="Refresh disabled users list"
+          />
+          <div class="flex">
+            <Button
+              label="Close"
+              icon="pi pi-times"
+              @click="showTrashDialog = false"
+              class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-4 py-2 rounded-lg transition-colors duration-200"
+            />
+          </div>
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -2884,20 +2920,7 @@ const userSearch = ref('')
 const roleFilter = ref('all')
 const showUserModal = ref(false)
 const selectedUserForDetails = ref(null)
-const showBackupUserModal = ref(false)
-const backupUserId = ref('')
-const backupUserEmail = ref('')
-const backupInProgress = ref(false)
 
-// Watch for changes in backupUserId to fetch user email
-watch(backupUserId, async (newUserId) => {
-  if (newUserId && newUserId.trim()) {
-    await fetchBackupUserEmail(newUserId.trim())
-  } else {
-    backupUserEmail.value = ''
-  }
-})
-const backupResult = ref(null)
 const showViewBackupsModal = ref(false)
 const backups = ref([])
 const loadingBackups = ref(false)
@@ -2913,8 +2936,13 @@ const showRestoreBackupConfirmDialog = ref(false)
 const backupToRestore = ref(null)
 const restoringBackup = ref(false)
 const userExists = ref(false)
-const showDeletedUsers = ref(false)
+const showTrashDialog = ref(false)
 const deletedUsers = ref([])
+
+// Delete user variables
+const showDeleteUserConfirmDialog = ref(false)
+const userToDelete = ref(null)
+const deletingUser = ref(false)
 
 // User management options
 const roleOptions = ref([
@@ -3308,6 +3336,13 @@ watch([emailFilter, emailEventTypeFilter], async () => {
   }
 })
 
+// Watch for trash dialog to refresh data when opened
+watch(showTrashDialog, async (isOpen) => {
+  if (isOpen) {
+    await loadDeletedUsers()
+  }
+})
+
 // Load themes
 const loadThemes = async () => {
   try {
@@ -3420,11 +3455,6 @@ const loadUsers = async () => {
 
 // Load disabled users
 const loadDeletedUsers = async () => {
-  if (!showDeletedUsers.value) {
-    deletedUsers.value = []
-    return
-  }
-  
   try {
     const deletedUsersData = await db.admin.getDeletedUsers()
     deletedUsers.value = deletedUsersData
@@ -3675,7 +3705,14 @@ const restoreUser = async (userId) => {
       detail: 'The user has been restored.',
       life: 3000
     })
+    
+    // Reload users list
     await loadUsers()
+    
+    // Refresh trash dialog if it's open
+    if (showTrashDialog.value) {
+      await loadDeletedUsers()
+    }
   } catch (error) {
     toast.add({
       severity: 'error',
@@ -4782,51 +4819,26 @@ const openLayoutEditorForDefault = () => {
   showLayoutEditorDialog.value = true
 }
 
-// Fetch user email for backup
-const fetchBackupUserEmail = async (userId) => {
-  try {
-    const supabase = useNuxtApp().$supabase
-    const { data: { session } } = await supabase.auth.getSession()
-    const accessToken = session?.access_token
 
-    const res = await fetch(`/api/users/${userId}/info`, {
-      headers: { 'Authorization': `Bearer ${accessToken}` }
-    })
-
-    if (!res.ok) {
-      backupUserEmail.value = ''
-      return
-    }
-
-    const userData = await res.json()
-    backupUserEmail.value = userData.email || 'Email not found'
-  } catch (error) {
-    console.error('Error fetching user email:', error)
-    backupUserEmail.value = ''
-  }
-}
 
 // Backup User Functions
-const backupUser = async () => {
-  if (!backupUserId.value.trim()) {
+const backupUser = async (userId) => {
+  if (!userId) {
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'Please enter a user ID',
+      detail: 'No user ID provided',
       life: 3000
     })
     return
   }
 
-  backupInProgress.value = true
-  backupResult.value = null
-
   try {
     const supabase = useNuxtApp().$supabase
     const { data: { session } } = await supabase.auth.getSession()
     const accessToken = session?.access_token
 
-    const res = await fetch(`/api/users/backup/${backupUserId.value.trim()}`, {
+    const res = await fetch(`/api/users/backup/${userId}`, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     })
 
@@ -4836,7 +4848,6 @@ const backupUser = async () => {
     }
 
     const result = await res.json()
-    backupResult.value = result
 
     toast.add({
       severity: 'success',
@@ -4844,10 +4855,6 @@ const backupUser = async () => {
       detail: `Successfully backed up user: ${result.summary.user_email}`,
       life: 5000
     })
-
-    // Clear the form
-    backupUserId.value = ''
-    backupUserEmail.value = ''
 
   } catch (error) {
     console.error('Backup error:', error)
@@ -4857,17 +4864,10 @@ const backupUser = async () => {
       detail: error.message || 'Failed to backup user',
       life: 5000
     })
-  } finally {
-    backupInProgress.value = false
   }
 }
 
-const closeBackupModal = () => {
-  showBackupUserModal.value = false
-  backupUserId.value = ''
-  backupUserEmail.value = ''
-  backupResult.value = null
-}
+
 
 // Load backups
 const loadBackups = async () => {
@@ -5123,6 +5123,73 @@ const cancelRestoreBackup = () => {
   showRestoreBackupConfirmDialog.value = false
   backupToRestore.value = null
   userExists.value = false
+}
+
+// Delete User Functions
+const confirmDeleteUser = (user) => {
+  userToDelete.value = user
+  showDeleteUserConfirmDialog.value = true
+}
+
+const cancelDeleteUser = () => {
+  showDeleteUserConfirmDialog.value = false
+  userToDelete.value = null
+}
+
+const deleteUser = async () => {
+  if (!userToDelete.value) return
+
+  deletingUser.value = true
+  try {
+    const supabase = useNuxtApp().$supabase
+    const { data: { session } } = await supabase.auth.getSession()
+    const accessToken = session?.access_token
+
+    const res = await fetch(`/api/users/delete/${userToDelete.value.user_id}`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!res.ok) {
+      const errorData = await res.json()
+      throw new Error(errorData.error || 'Failed to delete user')
+    }
+
+    const result = await res.json()
+
+    toast.add({
+      severity: 'success',
+      summary: 'User Permanently Deleted',
+      detail: `Successfully permanently deleted user: ${userToDelete.value.email}. Backup created: ${result.backup_id}`,
+      life: 5000
+    })
+
+    // Close dialog and reset
+    showDeleteUserConfirmDialog.value = false
+    userToDelete.value = null
+
+    // Reload users list
+    await loadUsers()
+    
+    // Refresh trash dialog if it's open
+    if (showTrashDialog.value) {
+      await loadDeletedUsers()
+    }
+
+  } catch (error) {
+    console.error('Delete user error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Delete Failed',
+      detail: error.message || 'Failed to delete user',
+      life: 5000
+    })
+  } finally {
+    deletingUser.value = false
+  }
 }
 </script>
 

@@ -146,6 +146,37 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // 4.5. Restore Supabase Auth user (if backup contains Auth data)
+    if (backup.auth_user && !userExistsById) {
+      console.log(`🔐 Restoring Supabase Auth user for: ${targetUserEmail}`)
+      
+      try {
+        // Create Auth user with the same ID and email
+        const { data: createdAuthUser, error: authCreateError } = await supabase.auth.admin.createUser({
+          email: targetUserEmail,
+          user_metadata: backup.auth_user.user_metadata || {},
+          app_metadata: backup.auth_user.app_metadata || {},
+          email_confirm: backup.auth_user.email_confirmed_at ? true : false,
+          phone_confirm: backup.auth_user.phone_confirmed_at ? true : false,
+          user_id: targetUserId // Use the original user ID
+        })
+
+        if (authCreateError) {
+          console.error('Error creating Auth user:', authCreateError)
+          // Don't fail the entire restoration, just log the error
+        } else {
+          console.log(`✅ Restored Supabase Auth user: ${createdAuthUser.user.id}`)
+        }
+      } catch (authError) {
+        console.error('Error in Auth user restoration:', authError)
+        // Continue with restoration even if Auth user creation fails
+      }
+    } else if (backup.auth_user && userExistsById) {
+      console.log(`🔐 Auth user already exists for: ${targetUserEmail}`)
+    } else {
+      console.log(`⚠️ No Auth user data in backup for: ${targetUserEmail}`)
+    }
+
     // 5. Restore families
     if (backup.families && backup.families.length > 0) {
       const { error: familiesError } = await supabase
@@ -263,6 +294,7 @@ export default defineEventHandler(async (event) => {
     console.log(`✅ Backup restoration completed for user: ${targetUserEmail}`)
     console.log(`📊 Restoration summary:`)
     console.log(`   - Profile: ${existingUser && overwrite ? 'updated' : 'created'}`)
+    console.log(`   - Auth User: ${backup.auth_user ? (userExistsById ? 'already exists' : 'restored') : 'not available'}`)
     console.log(`   - Families: ${backup.families?.length || 0} records`)
     console.log(`   - Assets: ${backup.assets?.length || 0} records`)
     console.log(`   - Memory Books: ${backup.memory_books?.length || 0} records`)

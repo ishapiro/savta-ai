@@ -50,14 +50,17 @@ export default defineEventHandler(async (event) => {
     }
 
     const targetUserId = backup.user_id
-    console.log(`🗑️ Deleting backup for user: ${targetUserId}`)
+    const originalUuid = backup.original_uuid
+    const originalEmail = backup.original_email
+    console.log(`🗑️ Deleting backup for user: ${targetUserId || 'null'} (${originalEmail || 'unknown'})`)
 
-    // 2. Delete backup storage files
-    try {
-      // List all files in the backup storage folder
-      const { data: files, error: listError } = await supabase.storage
-        .from('backups')
-        .list(`${targetUserId}/`)
+    // 2. Delete backup storage files using original_uuid
+    if (originalUuid) {
+      try {
+        // List all files in the backup storage folder
+        const { data: files, error: listError } = await supabase.storage
+          .from('backups')
+          .list(`${originalUuid}/`)
       
       if (!listError && files) {
         // Recursively collect all files
@@ -80,7 +83,7 @@ export default defineEventHandler(async (event) => {
           }
         }
         
-        await collectFiles(`${targetUserId}/`)
+        await collectFiles(`${originalUuid}/`)
         
         // Delete all files
         if (allFiles.length > 0) {
@@ -100,6 +103,9 @@ export default defineEventHandler(async (event) => {
       console.error('Error deleting backup storage files:', storageError)
       // Continue with database deletion even if storage deletion fails
     }
+    } else {
+      console.log(`ℹ️ Skipping storage file deletion - original_uuid is null (backup for: ${originalEmail || 'unknown'})`)
+    }
 
     // 3. Delete the backup record from database
     const { error: deleteRecordError } = await supabase
@@ -118,7 +124,9 @@ export default defineEventHandler(async (event) => {
       success: true,
       message: 'Backup deleted successfully',
       deletedBackupId: backupId,
-      deletedUserId: targetUserId
+      deletedUserId: targetUserId,
+      originalUuid: originalUuid,
+      originalEmail: originalEmail
     }
 
   } catch (error) {

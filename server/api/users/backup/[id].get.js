@@ -49,6 +49,13 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'User not found' })
     }
 
+    // 1.5. Get Supabase Auth user data
+    const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserById(targetUserId)
+    
+    if (authUserError) {
+      console.warn('Could not fetch Auth user data:', authUserError.message)
+    }
+
     // 2. Get user's families
     const { data: families, error: familiesError } = await supabase
       .from('families')
@@ -214,6 +221,7 @@ export default defineEventHandler(async (event) => {
         target_user_email: userProfile.email
       },
       user_profile: userProfile,
+      auth_user: authUser || null,
       families: families || [],
       assets: assets || [],
       memory_books: memoryBooks || [],
@@ -228,6 +236,8 @@ export default defineEventHandler(async (event) => {
       .from('user_backups')
       .insert([{
         user_id: targetUserId,
+        original_uuid: targetUserId,
+        original_email: userProfile.email,
         backup_data: backup,
         created_by: user.id,
         status: 'completed'
