@@ -577,43 +577,38 @@
       @hide="resetUploadDialog"
     >
       <template #header>
-        <div class="text-center">✨ Moment (photo) Processing Workshop ✨</div>
+        <div class="text-center">I Need Some Photos to Work My Magic</div>
       </template>
       <div class="space-y-6 max-w-xs w-full mx-auto sm:max-w-2xl sm:mx-auto">
         <!-- Upload Instructions -->
         <div v-if="!isUploading && uploadedFiles.length === 0" class="bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-xl p-6 border-2 border-brand-highlight relative overflow-hidden">
-          <!-- Magical sparkles -->
-          <div class="absolute top-2 right-2 w-3 h-3 bg-yellow-300 rounded-full animate-ping"></div>
-          <div class="absolute bottom-2 left-2 w-2 h-2 bg-brand-highlight rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
-          <div class="absolute top-1/2 right-4 w-2 h-2 bg-blue-300 rounded-full animate-ping" style="animation-delay: 1s;"></div>
           
-          <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 bg-brand-navigation rounded-full flex items-center justify-center shadow-lg relative">
-              <i class="pi pi-sparkles text-brand-header text-xl"></i>
+          <div class="flex items-start gap-3">
+            <div class="shrink-0">
+              <SavtaIcon class="w-12 h-12" />
             </div>
-            <div>
-              <h3 class="text-lg font-bold text-brand-header mb-1">✨ Let Savta help you with your upload your photos ✨</h3>
+            <div class="min-w-0">
+              <h3 class="text-lg font-bold text-brand-header mb-1 font-architects-daughter">Let me help you share your photos, darling!</h3>
             </div>
           </div>
           <div class="bg-white/80 rounded-lg p-4">
             <div class="text-sm text-gray-700 leading-relaxed">
               <ul class="list-disc pl-4 text-xs md:text-sm">
-                <li>Share your special photos with Savta - I'll keep them safe in my workshop</li>
-                <li>The more photos you upload, the better Savta can help you</li>
-                <li>Your memories will be stored securely in your own private collection</li>
-                <li>I'll recognize the faces, places and write sweet notes about each one</li>
-                <li>I'll use my special AI powers to select the best photos and captions for your card or book</li>
+                <li>Just share your photos with me - I'll take good care of them</li>
+                <li>The more photos you share, the better I can help you</li>
+                <li>Your photos stay safe and private, just for you</li>
+                <li>I'll remember the people and places in your photos</li>
+                <li>I'll pick the best photos and write sweet stories about them</li>
               </ul>
               
               <!-- Special recommendation for new users -->
               <div v-if="showSpecialUploadMessaging" class="mt-4 p-3 bg-brand-highlight/10 rounded-lg border border-brand-highlight/20">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-lightbulb text-brand-highlight text-lg"></i>
-                  <span class="font-semibold text-brand-highlight">💡 Getting Started Recommendation</span>
+                  <span class="font-semibold text-brand-highlight font-architects-daughter">💡 A little tip from Savta</span>
                 </div>
                 <p class="text-sm text-brand-primary">
-                  To get started, we recommend loading 6 or more photos from your computer, phone, or tablet. 
-                  This helps Savta create more meaningful and diverse memory cards for you!
+                  Try sharing 6 or more photos to start with, sweetie. That way I can make you the most beautiful memory cards!
                 </p>
               </div>
             </div>
@@ -621,98 +616,48 @@
         </div>
 
         <!-- Upload Progress -->
-        <div v-if="isUploading" class="space-y-4">
-          <!-- Overall Progress -->
-          <div class="bg-brand-navigation rounded-xl p-6 relative overflow-hidden">
-            <!-- Magical sparkles -->
-            <div class="absolute top-3 right-3 w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
-            <div class="absolute bottom-3 left-3 w-2 h-2 bg-brand-highlight rounded-full animate-ping" style="animation-delay: 0.7s;"></div>
-            
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-brand-navigation to-brand-warm rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-sparkles text-brand-header text-lg animate-pulse"></i>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-lg font-bold text-center">✨ Upload and AI Processing in Progress ✨</span>
-                  <span class="text-lg font-bold">{{ uploadProgress }}%</span>
-                </div>
-                <div class="w-full bg-white/60 rounded-full h-4 border border-brand-highlight">
-                  <div 
-                    class="bg-brand-card h-4 rounded-full transition-all duration-500 shadow-lg"
-                    :style="{ width: uploadProgress + '%' }"
-                  ></div>
-                </div>
-                <p class="text-sm mt-2 font-medium">{{ uploadStatus }}</p>
-              </div>
+        <div v-if="isUploading" class="bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="shrink-0">
+              <SavtaIcon class="w-12 h-12" />
+            </div>
+            <div class="min-w-0">
+              <h3 class="font-bold mb-0.5 font-architects-daughter text-brand-header text-lg">I'm reviewing your photos, darling!</h3>
+              <p class="text-sm text-gray-700 leading-relaxed">
+                I'm looking through each photo, remembering the people and places, and writing sweet captions. 
+                This helps me create the most beautiful memory cards and books for you.
+              </p>
             </div>
           </div>
-
-          <!-- Current File Progress -->
-          <div v-if="uploadingFiles.length > 0" class="bg-white/90 rounded-xl p-6 border-2 border-purple-200 shadow-lg">
-            <h4 class="text-lg font-bold mb-4 flex items-center text-center gap-2">
-              <i class="pi pi-sparkles text-brand-header"></i>
-              🌸 Savta is working on your photos 🌸
-            </h4>
-            <div class="space-y-3">
-              <div 
-                v-for="file in uploadingFiles" 
-                :key="file.name"
-                class="flex items-center gap-4 p-4 bg-brand-navigation rounded-xl border border-brand-highlight transition-all duration-200 hover:shadow-md"
-              >
-                <div class="w-10 h-10 bg-brand-navigation rounded-full flex items-center justify-center shadow-md">
-                  <i class="pi pi-image text-brand-header text-sm"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold truncate">{{ file.name }}</p>
-                  <p class="text-xs font-medium">{{ getMagicStatusText(file.status) }}</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div v-if="file.status === 'uploading'" class="w-5 h-5 border-2 border-brand-highlight border-t-transparent rounded-full animate-spin"></div>
-                  <div v-else-if="file.status === 'processing'" class="w-5 h-5 border-2 border-brand-secondary border-t-transparent rounded-full animate-spin"></div>
-                  <div v-else-if="file.status === 'completed'" class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-md">
-                    <i class="pi pi-check text-white text-xs"></i>
-                  </div>
-                  <div v-else-if="file.status === 'failed'" class="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-md">
-                    <i class="pi pi-times text-white text-xs"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
+          
+          <!-- Progress Bar -->
+          <div class="w-full bg-white/60 rounded-full h-4 border border-brand-highlight mb-3">
+            <div 
+              class="bg-brand-card h-4 rounded-full transition-all duration-500 shadow-lg"
+              :style="{ width: uploadProgress + '%' }"
+            ></div>
           </div>
+          <p class="text-sm text-gray-600 text-center">{{ uploadStatus }}</p>
         </div>
 
         <!-- Upload Results -->
-        <div v-if="uploadedFiles.length > 0 || failedFiles.length > 0" class="space-y-4">
-          <!-- Success Results -->
-          <div v-if="uploadedFiles.length > 0" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200 shadow-lg relative overflow-hidden">
-            <!-- Success sparkles -->
-            <div class="absolute top-3 right-3 w-3 h-3 bg-green-300 rounded-full animate-ping"></div>
-            <div class="absolute bottom-3 left-3 w-2 h-2 bg-emerald-300 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
-            
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-sparkles text-green-600 text-xl animate-bounce"></i>
-              </div>
-              <div>
-                <h4 class="text-xl font-bold text-green-800">✨ Upload and AI Processing Complete! ✨</h4>
-                <p class="text-sm text-green-600">Your photos are now enchanted!</p>
-              </div>
+        <div v-if="uploadedFiles.length > 0 || failedFiles.length > 0" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200 shadow-lg">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="shrink-0">
+              <SavtaIcon class="w-12 h-12" />
             </div>
-            <div class="bg-white/80 rounded-lg p-4 border border-green-200">
-              <div class="space-y-2">
-                <div 
-                  v-for="file in uploadedFiles" 
-                  :key="file.name"
-                  class="flex items-center gap-2 text-sm text-green-700"
-                >
-                  <i class="pi pi-check text-green-600"></i>
-                  <span class="font-medium">{{ file.name }}</span>
-                  <span class="text-xs text-green-500">✨ Prepared</span>
-                </div>
-              </div>
+            <div class="min-w-0">
+              <h3 class="font-bold mb-0.5 font-architects-daughter text-green-800 text-lg">All done, sweetie!</h3>
+              <p class="text-sm text-green-700 leading-relaxed">
+                I've reviewed and organized all your photos. They're ready for creating beautiful memory cards and books!
+              </p>
             </div>
           </div>
+          
+          <div v-if="uploadedFiles.length > 0" class="bg-white/80 rounded-lg p-4 border border-green-200">
+            <p class="text-sm text-green-700 mb-2">Successfully prepared {{ uploadedFiles.length }} photo{{ uploadedFiles.length !== 1 ? 's' : '' }}</p>
+          </div>
+        </div>
 
           <!-- Failed Results -->
           <div v-if="failedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border-2 border-red-200 shadow-lg">
@@ -740,7 +685,6 @@
             </div>
           </div>
         </div>
-      </div>
 
       <template #footer>
         <div class="flex flex-col sm:flex-row justify-between items-center w-full gap-2 sm:gap-4 px-2">

@@ -16,7 +16,8 @@
   "include": [
     "nuxt.config.ts",
     "plugins/**/*",
-    ".nuxt/**/*"
+    ".nuxt/**/*",
+    "types/**/*"
   ],
   "exclude": ["node_modules"]
 }

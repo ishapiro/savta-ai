@@ -238,7 +238,7 @@
       target="[data-savta='memory-books-tile']"
       placement="center"
       :offset="0"
-      text="Hi, I'm Savta and I'm here to help you get started! ✨
+      text="Hi, I'm Savta and I'm here to help you get started!
 
 As a grandmother myself, I know how precious all those photos on your phone are. I'll help you create very special memory cards and books for your family and friends.
 

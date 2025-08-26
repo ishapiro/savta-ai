@@ -34,26 +34,28 @@
         aria-live="polite"
       >
         <div
-          class="relative max-w-[480px] px-6 py-4 rounded-2xl shadow-lg border text-[22px] leading-snug"
-          :class="variantClasses[variant]"
+          class="relative max-w-[500px] bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg"
         >
-          <!-- Savta avatar + text -->
-          <div class="flex items-start gap-3">
-            <div v-if="showAvatar" class="shrink-0">
-              <SavtaIcon class="w-12 h-12" />
-            </div>
-
-            <div class="min-w-0">
-              <!-- Optional heading -->
-              <p v-if="heading" class="font-semibold mb-0.5">{{ heading }}</p>
-              <!-- Main text -->
-              <p class="whitespace-pre-line">{{ text }}</p>
-
-              <!-- Actions slot (buttons/links) -->
-              <div v-if="$slots.actions" class="mt-2 flex gap-2">
-                <slot name="actions" />
+                      <!-- Savta avatar + text -->
+            <div class="flex items-start gap-3">
+              <div v-if="showAvatar" class="shrink-0">
+                <SavtaIcon class="w-12 h-12" />
               </div>
-            </div>
+
+              <div class="min-w-0">
+                <!-- Optional heading or first line as heading -->
+                <p v-if="heading" class="font-bold mb-0.5 font-architects-daughter text-brand-header text-lg">{{ heading }}</p>
+                <p v-else-if="text && text.includes('\n')" class="font-bold mb-0.5 font-architects-daughter text-brand-header text-lg">{{ text.split('\n')[0] }}</p>
+                <!-- Main text -->
+                <p v-if="heading" class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ text }}</p>
+                <p v-else-if="text && text.includes('\n')" class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ text.split('\n').slice(1).join('\n') }}</p>
+                <p v-else class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ text }}</p>
+
+                <!-- Actions slot (buttons/links) -->
+                <div v-if="$slots.actions" class="mt-2 flex gap-2">
+                  <slot name="actions" />
+                </div>
+              </div>
 
             <!-- Dismiss (if enabled) -->
             <button
@@ -68,18 +70,14 @@
             </button>
           </div>
 
-          <!-- Tail / Arrow -->
-          <div
-            class="absolute w-3 h-3 rotate-45 border"
-            :class="tailClasses[variant] + ' ' + tailPlacementClass"
-          />
+
         </div>
       </div>
     </transition>
   </Teleport>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { onMounted, onBeforeUnmount, ref, watch, nextTick, computed } from 'vue'
 import SavtaIcon from './SavtaIcon.vue'
 
@@ -98,80 +96,61 @@ import SavtaIcon from './SavtaIcon.vue'
  * - showAvatar: include Savta avatar image
  */
 
-const props = withDefaults(defineProps<{
-  open: boolean
-  target: string
-  placement?: 'top' | 'bottom' | 'left' | 'right' | 'top-center' | 'center'
-  offset?: number
-  heading?: string
-  text: string
-  variant?: 'instruction' | 'tip' | 'warning' | 'celebrate'
-  dismissible?: boolean
-  showAvatar?: boolean
-}>(), {
-  placement: 'top',
-  offset: 10,
-  variant: 'instruction',
-  dismissible: true,
-  showAvatar: true
-})
-
-const emit = defineEmits<{ (e: 'update:open', v: boolean): void }>()
-
-const coords = ref<{ left: number; top: number } | null>(null)
-let cleanupFns: Array<() => void> = []
-
-const variantClasses: Record<string, string> = {
-  instruction: 'bg-[#F9F6F2] border-[#E7D8DE] text-[#3c2d33] shadow-rose-100',
-  tip: 'bg-[#F3EDF4] border-[#E0CCE3] text-[#3a2a35]',
-  warning: 'bg-[#FDECEF] border-[#F4C4CD] text-[#52242c]',
-  celebrate: 'bg-[#FFF6E5] border-[#FFE1B3] text-[#4a3521]'
-}
-
-const tailClasses: Record<string, string> = {
-  instruction: 'bg-[#F9F6F2] border-[#E7D8DE]',
-  tip: 'bg-[#F3EDF4] border-[#E0CCE3]',
-  warning: 'bg-[#FDECEF] border-[#F4C4CD]',
-  celebrate: 'bg-[#FFF6E5] border-[#FFE1B3]'
-}
-
-const tailPlacementClass = computed(() => {
-  switch (props.placement) {
-    case 'top':
-      return 'left-6 -bottom-1 border-t border-l'
-    case 'bottom':
-      return 'left-6 -top-1 border-b border-r'
-    case 'left':
-      return '-right-1 top-5 border-l border-b'
-    case 'right':
-      return '-left-1 top-5 border-r border-t'
-    case 'top-center':
-      return 'left-1/2 transform -translate-x-1/2 -bottom-1 border-t border-l'
-    case 'center':
-      return '' // No tail/pointer for center placement
+const props = defineProps({
+  open: Boolean,
+  target: String,
+  placement: {
+    type: String,
+    default: 'top',
+    validator: (value) => ['top', 'bottom', 'left', 'right', 'top-center', 'center'].includes(value)
+  },
+  offset: {
+    type: Number,
+    default: 10
+  },
+  heading: String,
+  text: String,
+  variant: {
+    type: String,
+    default: 'instruction',
+    validator: (value) => ['instruction', 'tip', 'warning', 'celebrate'].includes(value)
+  },
+  dismissible: {
+    type: Boolean,
+    default: true
+  },
+  showAvatar: {
+    type: Boolean,
+    default: true
   }
 })
 
+const emit = defineEmits(['update:open'])
+
+const coords = ref(null)
+let cleanupFns = []
+
+
+
 function calcPosition() {
-  const el = document.querySelector(props.target) as HTMLElement | null
+  const el = document.querySelector(props.target)
   if (!el) return
   const r = el.getBoundingClientRect()
   const bubble = document.createElement('div')
   bubble.style.position = 'fixed'
   bubble.style.visibility = 'hidden'
-  bubble.style.maxWidth = '480px'
-  bubble.style.padding = '16px 24px'
-  bubble.style.fontSize = '22px'
-  bubble.style.lineHeight = '1.2'
+  bubble.style.maxWidth = '500px'
+  bubble.style.padding = '24px'
+  bubble.style.fontSize = '14px'
+  bubble.style.lineHeight = '1.5'
   bubble.style.fontFamily = 'system-ui, sans-serif'
-  bubble.style.borderRadius = '16px'
-  bubble.style.border = '1px solid #E7D8DE'
+  bubble.style.borderRadius = '12px'
+  bubble.style.border = '2px solid #41706C'
   bubble.style.backgroundColor = '#F9F6F2'
-  bubble.style.boxShadow = '0 10px 20px rgba(209, 109, 132, 0.08), 0 6px 6px rgba(0,0,0,0.04)'
+  bubble.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)'
   bubble.style.whiteSpace = 'pre-line'
   bubble.style.wordWrap = 'break-word'
   bubble.style.overflowWrap = 'break-word'
-  bubble.style.maxWidth = '480px'
   bubble.style.width = 'max-content'
   bubble.style.minWidth = '200px'
   

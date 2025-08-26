@@ -1,4 +1,6 @@
 /* eslint-disable */
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter:wght@400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -95,6 +97,11 @@
   .p-dialog .p-dialog-footer {
     border-bottom-left-radius: 12px !important;
     border-bottom-right-radius: 12px !important;
+  }
+
+  /* Custom font class for Architects Daughter */
+  .font-architects-daughter {
+    font-family: 'Architects Daughter';
   }
 
   /* Custom progress dialog styling */
