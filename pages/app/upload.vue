@@ -139,7 +139,7 @@
 
       <!-- Upload Tabs (Hidden During Upload) -->
       <div class="mb-6" v-if="uploadingFiles.length === 0">
-        <TabView v-model:activeIndex="activeTabIndex" class="w-full">
+        <TabView v-model:activeIndex="activeTabIndex" class="w-full" :pt="{ nav: 'flex-col sm:flex-row' }">
           <TabPanel header="📸 Photos">
             <div class="space-y-6">
               <Card>
@@ -260,62 +260,7 @@
         </TabView>
       </div>
 
-      <!-- Recent Uploads -->
-      <div class="mt-8">
-        <h2 class="text-xl font-semibold text-brand-primary mb-4">Recent Uploads</h2>
-        
-        <!-- Review Button Section -->
-        <div class="bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-2xl p-6 mb-6 border border-brand-highlight shadow-lg">
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-brand-navigation to-brand-warm rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-heart text-brand-secondary text-xl"></i>
-              </div>
-              <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">✨ Manage Your Library</h3>
-                <p class="text-sm text-gray-600">Use review to manage and edit your photos and posts</p>
-              </div>
-            </div>
-            <button
-              class="bg-gradient-to-r from-brand-secondary to-purple-500 hover:from-brand-secondary hover:to-purple-600 text-white font-bold rounded-full px-8 py-4 sm:py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 w-full sm:w-auto min-h-[48px] sm:min-h-0"
-              @click="navigateTo('/app/review')"
-            >
-              <i class="pi pi-list text-lg"></i>
-              <span>Review</span>
-            </button>
-          </div>
-        </div>
-        
-        <p class="text-sm text-gray-600 mb-4">
-          Showing your 10 most recent uploads. Visit the Review page to see all your photos and posts.
-        </p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          <Card
-            v-for="asset in recentAssets"
-            :key="asset.id"
-            class="bg-white rounded-2xl shadow-xl p-0 flex flex-col justify-between hover:shadow-2xl transition-shadow border border-gray-100 text-xs"
-          >
-            <template #content>
-              <!-- Photo -->
-              <div class="rounded-t-2xl overflow-hidden bg-gray-100">
-                <div class="w-full h-40 flex items-center justify-center">
-                <img
-                  v-if="asset.storage_url"
-                  :src="asset.storage_url"
-                  :alt="asset.user_caption || 'Family photo'"
-                    class="max-w-full max-h-full object-contain"
-                />
-                  <i v-else class="pi pi-image text-2xl text-gray-400"></i>
-                </div>
-              </div>
-              <!-- Action Bar -->
-              <div class="rounded-b-2xl bg-brand-navigation px-4 py-3 flex items-center justify-center gap-4 border-t border-gray-200">
-                <span class="inline-block px-3 py-1 rounded-full bg-orange-200 text-orange-800 font-semibold text-xs shadow">{{ asset.approved ? 'Approved' : 'Pending' }}</span>
-              </div>
-            </template>
-          </Card>
-        </div>
-      </div>
+
 
       <!-- Help Modal -->
       <Dialog
