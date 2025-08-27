@@ -54,11 +54,14 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-brand-header to-brand-secondary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
               </div>
-              <h3 class="text-xl sm:text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Create a Memory Card</h3>
-              <p class="text-brand-primary text-base sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
+              <h3 class="text-xl sm:text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Create a Memory</h3>
+              <p class="text-brand-primary text-base sm:text-xl leading-relaxed  max-w-2xl font-medium">
+                Start here to create your first memory card or book, or return here anytime to make new ones!
                 I'll pick your best photos, write heartwarming captions, and design beautiful layouts for you.
-                Just upload your pictures and I'll create a stunning memory card that's perfect for mailing or sharing digitally.
               </p>
+              <p class="mt-2 text-brand-primary text-base sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
+                Whether you're just beginning or creating your next masterpiece, this is your go-to place for making 
+                stunning memory cards or books.</p>
             </div>
             
             <!-- Right Column (1/3 width) -->
@@ -238,11 +241,11 @@
       target="[data-savta='memory-books-tile']"
       placement="center"
       :offset="0"
-      text="Hi, I'm Savta and I'm here to help you get started!
-
-As a grandmother myself, I know how precious all those photos on your phone are. I'll help you create very special memory cards and books for your family and friends.
-
-Click on 'Create a Memory Card' and I'll guide you through creating your very first one. It's easier than you think, darling!"
+      heading="Hi, I'm Savta and I'm here to help you get started!"
+      text="As a grandmother myself, I know how precious all those photos on your phone are. 
+      I'll help you create very special memory cards and books for your family and friends.
+      Click on 'Create a Memory' and I'll guide you through creating your very first one. 
+      It's easier than you think, darling!"
       variant="instruction"
       :dismissible="true"
       :show-avatar="true"

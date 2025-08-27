@@ -1903,7 +1903,7 @@
     target="[data-savta='memory-cards-tile']"
     placement="bottom"
     :offset="15"
-    text="Start with a Memory Card, honey! ✨"
+    text="It is easier to get started with a memory card.\nI'll step you through the process. ❤️"
     variant="instruction"
     :dismissible="true"
     :show-avatar="true"

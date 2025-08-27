@@ -43,13 +43,10 @@
               </div>
 
               <div class="min-w-0">
-                <!-- Optional heading or first line as heading -->
-                <p v-if="heading" class="font-bold mb-0.5 font-architects-daughter text-brand-header text-lg">{{ heading }}</p>
-                <p v-else-if="text && text.includes('\n')" class="font-bold mb-0.5 font-architects-daughter text-brand-header text-lg">{{ text.split('\n')[0] }}</p>
-                <!-- Main text -->
-                <p v-if="heading" class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ text }}</p>
-                <p v-else-if="text && text.includes('\n')" class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ text.split('\n').slice(1).join('\n') }}</p>
-                <p v-else class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ text }}</p>
+                <!-- Optional heading -->
+                <p v-if="heading" class="font-bold mb-2 font-architects-daughter text-brand-header text-xl">{{ cleanedHeading }}</p>
+                <!-- Main text with line break support -->
+                <p v-if="text" class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ cleanedText }}</p>
 
                 <!-- Actions slot (buttons/links) -->
                 <div v-if="$slots.actions" class="mt-2 flex gap-2">
@@ -129,6 +126,41 @@ const emit = defineEmits(['update:open'])
 
 const coords = ref(null)
 let cleanupFns = []
+
+// Clean text by removing unwanted whitespace/line breaks while preserving intentional \n
+const cleanedHeading = computed(() => {
+  if (!props.heading) return ''
+  // Remove line breaks and extra whitespace from code formatting, but preserve intentional \n
+  return props.heading.replace(/\n(?!\n)/g, ' ').replace(/\s+/g, ' ').trim()
+})
+
+const cleanedText = computed(() => {
+  if (!props.text) return ''
+  
+  // Debug: log the raw text to see what we're getting
+  console.log('SavtaBubble raw text:', JSON.stringify(props.text))
+  
+  let processedText = props.text
+  
+  // Check if this contains intentional \n characters (literal \n in the string)
+  if (props.text.includes('\\n')) {
+    // Handle literal \n strings - convert to actual newlines
+    processedText = props.text
+      .replace(/\\n/g, '\n')
+      .split('\n')
+      .map(line => line.replace(/\s+/g, ' ').trim())
+      .join('\n')
+      .trim()
+  } else {
+    // This is formatted text in source code - clean it up to single paragraph
+    processedText = props.text
+      .replace(/\s+/g, ' ') // Replace all whitespace (including newlines) with single spaces
+      .trim()
+  }
+  
+  console.log('SavtaBubble processed text:', JSON.stringify(processedText))
+  return processedText
+})
 
 
 
