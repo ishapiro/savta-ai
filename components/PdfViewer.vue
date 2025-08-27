@@ -2,16 +2,16 @@
 <!-- PDF/Image Viewer for Savta.AI -->
 <template>
   <ClientOnly>
-    <div class="relative w-full h-full bg-brand-navigation" :class="{ 'mobile-fullscreen': isMobile }">
+    <div class="relative w-full h-full bg-brand-navigation">
       <!-- Document/Image Container -->
-      <div class="w-full h-full overflow-hidden scrollbar-hide" :class="{ 'pb-20': !isMobile }">
+      <div class="w-full h-full overflow-hidden scrollbar-hide" :class="{ 'pb-16 sm:pb-20': true }">
         <div 
           ref="panContainer"
           class="w-full h-full relative"
           :class="[
             shouldPositionAtTop ? 'flex items-start justify-center' : 'flex items-center justify-center',
             isPanningAvailable ? 'cursor-grab active:cursor-grabbing' : 'cursor-default',
-            { 'mobile-pan-container': isMobile }
+            { 'touch-none': isPanningAvailable && isMobile }
           ]"
           @vue:mounted="logPositioningClasses"
           @mousedown="startPan"
@@ -1240,7 +1240,7 @@ img, div {
 }
 
 .mobile-fullscreen .scrollbar-hide {
-  padding-bottom: 0 !important;
+  padding-bottom: 4rem !important; /* Ensure space for controls */
 }
 
 /* Ensure pan container fills entire screen on mobile */

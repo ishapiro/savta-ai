@@ -1231,7 +1231,7 @@
     <Dialog
       v-model:visible="showPdfModal"
       modal
-      header="Special Memory Preview"
+      header="Your Memory Preview"
       class="w-full max-w-6xl h-[90vh] sm:h-[85vh] mt-2 sm:mt-6"
       :contentStyle="{ height: '90vh', maxHeight: '90vh', padding: 0 }"
       :closable="false"
@@ -1239,8 +1239,8 @@
       :z-index="40"
     >
       <div class="flex flex-col h-full w-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
-        <!-- PDF Viewer - Mobile (with overflow) -->
-        <div class="flex-1 min-h-0 w-full flex items-center justify-center overflow-auto sm:hidden px-0 pb-4">
+        <!-- PDF Viewer - Mobile (without overflow) -->
+        <div class="flex-1 min-h-0 w-full flex items-center justify-center sm:hidden px-0 pb-4 relative">
           <ClientOnly>
             <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
             <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
