@@ -203,11 +203,30 @@ const isUserDisabled = ref(false)
 
 const checkUserDisabled = async () => {
   if (user.value) {
-    // Fetch the user profile from the backend
-    const res = await fetch(`/api/users/${user.value.id}/info`)
-    const profile = await res.json()
-    console.log('[CONFIRM] Profile:', profile)
-    if (profile.deleted) {
+    try {
+      // Fetch the user profile from the backend
+      const res = await fetch(`/api/users/${user.value.id}/info`)
+      
+      if (!res.ok) {
+        console.warn('[CONFIRM] User info API returned error:', res.status, res.statusText)
+        // If API returns error, assume user might be deleted
+        isUserDisabled.value = true
+        return
+      }
+      
+      const profile = await res.json()
+      console.log('[CONFIRM] Profile:', profile)
+      
+      // Check if user exists and is not deleted
+      if (profile.deleted === true || profile.exists === false) {
+        console.log('[CONFIRM] User is deleted or does not exist, marking as disabled')
+        isUserDisabled.value = true
+      } else {
+        isUserDisabled.value = false
+      }
+    } catch (error) {
+      console.error('[CONFIRM] Error checking user status:', error)
+      // On error, assume user might be deleted and handle gracefully
       isUserDisabled.value = true
     }
   }

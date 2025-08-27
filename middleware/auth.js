@@ -56,12 +56,30 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   checkForLoginLoop()
 
   if (user.value) {
-    // Fetch the user profile from the backend
-    const res = await fetch(`/api/users/${user.value.id}/info`)
-    const profile = await res.json()
-    if (profile.deleted) {
-      await supabase.auth.signOut()
-      return navigateTo('/app/login?disabled=1')
+    try {
+      // Fetch the user profile from the backend
+      const res = await fetch(`/api/users/${user.value.id}/info`)
+      
+      if (res.ok) {
+        const profile = await res.json()
+        if (profile.deleted === true || profile.exists === false) {
+          console.log('[AUTH] User is deleted or does not exist, signing out')
+          await supabase.auth.signOut()
+          return navigateTo('/app/login?disabled=1')
+        }
+      } else {
+        // If API returns error, check if it's a 404 (user not found)
+        if (res.status === 404) {
+          console.log('[AUTH] User not found (404), signing out')
+          await supabase.auth.signOut()
+          return navigateTo('/app/login?disabled=1')
+        }
+        // For other errors, log but continue
+        console.warn('[AUTH] Error checking user status:', res.status, res.statusText)
+      }
+    } catch (error) {
+      console.error('[AUTH] Error checking user profile:', error)
+      // On network errors, continue but user might have limited functionality
     }
   }
   

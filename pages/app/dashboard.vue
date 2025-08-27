@@ -139,7 +139,7 @@
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
             <Edit class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h3 class="text-lg sm:text-h3 text-brand-secondary mb-4 tracking-tight">Review Photos</h3>
+          <h3 class="text-lg sm:text-h3 text-brand-secondary mb-4 tracking-tight">Review Photos in Your Library</h3>
           <p class="text-brand-primary text-sm sm:text-lg leading-relaxed mb-6 font-medium">
             Review and approve your photos. Edit captions, crop photos, and organize your collection.
           </p>

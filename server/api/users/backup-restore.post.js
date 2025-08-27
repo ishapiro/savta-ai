@@ -83,14 +83,14 @@ export default defineEventHandler(async (event) => {
       .from('profiles')
       .select('*')
       .eq('user_id', targetUserId)
-      .is('deleted', null)  // Only active users
+.eq('deleted', false)  // Only active users (deleted is boolean, not null)
       .maybeSingle()
 
     const { data: existingUserByEmail, error: emailCheckError } = await supabase
       .from('profiles')
       .select('*')
       .eq('email', targetUserEmail)
-      .is('deleted', null)  // Only active users
+.eq('deleted', false)  // Only active users (deleted is boolean, not null)
       .maybeSingle()
 
     existingProfile = existingUserById || existingUserByEmail

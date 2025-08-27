@@ -526,7 +526,7 @@
               <span class="text-sm sm:text-base font-semibold text-blue-800">⏱️ Estimated Time</span>
             </div>
             <p class="text-sm sm:text-base text-blue-700 leading-relaxed">
-              Compose this book will take about <span class="font-bold text-blue-800 text-base sm:text-lg">{{ calculateComposeTime() }} seconds</span>. 
+              Composing this book will take about <span class="font-bold text-blue-800 text-base sm:text-lg">{{ calculateComposeTime() }} seconds</span>. 
               <br><span class="text-xs sm:text-sm text-blue-600">Do you want to do it now or later?</span>
             </p>
           </div>
@@ -627,6 +627,7 @@
                 I'm looking through each photo, remembering the people and places, and writing sweet captions. 
                 This helps me create the most beautiful memory cards and books for you.
               </p>
+              <p class="text-sm text-gray-700 leading-relaxed">This may take a few minutes, but I'll let you know when I'm done.</p>
             </div>
           </div>
           
@@ -647,9 +648,9 @@
               <SavtaIcon class="w-12 h-12" />
             </div>
             <div class="min-w-0">
-              <h3 class="font-bold mb-0.5 font-architects-daughter text-green-800 text-lg">All done, sweetie!</h3>
+              <h3 class="font-bold mb-0.5 font-architects-daughter text-green-800 text-lg">I've reviewed these photos, darling!</h3>
               <p class="text-sm text-green-700 leading-relaxed">
-                I've reviewed and organized all your photos. They're ready for creating beautiful memory cards and books!
+                I've reviewed and organized these photos. They're ready for creating beautiful memory cards and books!
               </p>
             </div>
           </div>
@@ -1081,10 +1082,10 @@
             </div>
             
             <h2 class="text-lg sm:text-xl font-bold text-brand-header mb-2 animate-fade-in">
-              {{ isRegenerating ? '🌸 Recreating Your Memory Book 🌸' : '🌸 Creating Your Memory Book 🌸' }}
+              {{ isRegenerating ? '🌸 Re 🌸' : '🌸 Creating Your Memory 🌸' }}
             </h2>
             <p class="text-sm sm:text-base text-brand-primary font-medium">
-              {{ isRegenerating ? 'Baking fresh memories with love...' : 'Baking your memory book with love...' }}
+              {{ isRegenerating ? 'Baking fresh memories with love...' : 'Baking your memory with love...' }}
             </p>
           </div>
 
@@ -1141,7 +1142,7 @@
       </div>
     </Dialog>
     <!-- Regenerate Confirmation Dialog -->
-    <Dialog v-model:visible="showRegenerateDialog" modal header="Recreate Memory Book" class="w-full max-w-xl">
+    <Dialog v-model:visible="showRegenerateDialog" modal header="Recreate Memory" class="w-full max-w-xl">
       <div class="p-4">
         <p class="text-brand-header text-sm sm:text-xl font-bold mb-2">
           Create a fresh version of your memory?
@@ -1873,7 +1874,7 @@
         <i class="pi pi-upload text-3xl text-white"></i>
       </div>
       <h3 class="text-xl font-bold text-gray-900 mb-2">🌸 Savta is working her magic! 🌸</h3>
-      <p class="text-gray-600 mb-4">Uploading and captioning your precious memories...</p>
+      <p class="text-gray-600 mb-4">Uploading, tagging and captioning your precious memories...</p>
       
       <div class="bg-white rounded-lg p-4 mb-4 border-2 border-brand-flash/20">
         <div class="flex items-center justify-between mb-2">
@@ -2306,8 +2307,8 @@ const continueRegeneration = async () => {
       if (toast) {
         toast.add({
           severity: 'info',
-          summary: 'Regenerating Memory Book',
-          detail: 'Your memory book is being regenerated with fresh settings.',
+          summary: 'Regenerating Memory',
+          detail: 'Your memory is being regenerated with fresh settings.',
           life: 6000
         })
       }
@@ -2663,8 +2664,8 @@ const pollPdfStatus = async () => {
         })
         currentProgress.value = 100
         currentProgressMessage.value = isRegenerating.value 
-          ? 'Your special memory is ready!' 
-          : 'Your memory book is ready!'
+          ? 'Your memory is ready!' 
+          : 'Your memory is ready!'
         setTimeout(async () => {
           stopProgressPolling()
           showProgressDialog.value = false
@@ -2699,7 +2700,7 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = 'Adding the final special touches...'
       } else if (status.pdf_status === 'completed') {
         currentProgress.value = 100
-        currentProgressMessage.value = 'Your memory book is ready!'
+        currentProgressMessage.value = 'Your memory is ready!'
         // Do NOT close the dialog here. Wait for the pdf_url and book_status === 'ready'.
         // Previously, the dialog was closed here, which could be too early for multi-page books.
       } else if (status.pdf_status === 'error') {
@@ -2720,9 +2721,9 @@ const pollPdfStatus = async () => {
       } else if (status.pdf_status === 'Saving background to storage...') {
         currentProgress.value = 30
         currentProgressMessage.value = 'Saving background to storage...'
-      } else if (status.pdf_status === 'Background ready for PDF generation') {
+      } else if (status.pdf_status === 'Background ready for outputgeneration') {
         currentProgress.value = 35
-        currentProgressMessage.value = 'Background ready for PDF generation'
+        currentProgressMessage.value = 'Background ready for output generation'
       } else if (status.pdf_status === 'Setting up PDF document...') {
         currentProgress.value = 40
         currentProgressMessage.value = 'Setting up PDF document...'
@@ -2796,7 +2797,7 @@ const pollPdfStatus = async () => {
         currentProgressMessage.value = 'Adding final touches...'
       } else if (status.pdf_status === 'Finalizing magic memory status...') {
         currentProgress.value = 95
-        currentProgressMessage.value = 'Finalizing memory book status...'
+        currentProgressMessage.value = 'Finalizing memory status...'
       } else if (status.pdf_status === 'Processing...') {
         currentProgress.value = Math.min(currentProgress.value + 2, 90)
         currentProgressMessage.value = 'Processing your memory book...'
@@ -2808,7 +2809,7 @@ const pollPdfStatus = async () => {
       console.log('No status available, showing generic progress')
       if (currentProgress.value < 90) {
         currentProgress.value += 5
-        currentProgressMessage.value = 'Processing your memory book...'
+        currentProgressMessage.value = 'Processing your memory ...'
       }
     }
   } catch (error) {
@@ -2816,7 +2817,7 @@ const pollPdfStatus = async () => {
     // Fallback: show generic progress on error
     if (currentProgress.value < 90) {
       currentProgress.value += 5
-      currentProgressMessage.value = 'Processing your memory book...'
+      currentProgressMessage.value = 'Processing your memory ...'
     }
   }
 }
@@ -2828,7 +2829,7 @@ const startProgressPolling = (bookId, regenerating = false) => {
   isRegenerating.value = regenerating
   currentProgressMessage.value = regenerating 
             ? 'Preparing your recipe...' 
-    : 'Starting memory book creation...'
+    : 'Starting memory creation...'
   showProgressDialog.value = true
   console.log('showProgressDialog set to:', showProgressDialog.value)
   

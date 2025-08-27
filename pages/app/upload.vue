@@ -26,112 +26,68 @@
         </div>
       </div>
 
-      <!-- Upload Progress (Always Visible When Uploading) -->
-      <div v-if="uploadingFiles.length > 0" class="mb-6 space-y-4 sm:space-y-3">
-        <!-- Upload Warning -->
-        <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-4 sm:p-3 border border-amber-200">
-          <div class="flex items-center gap-3 sm:gap-2">
-            <i class="pi pi-exclamation-triangle text-amber-600 text-base sm:text-sm"></i>
-            <span class="text-sm font-semibold text-amber-800">⚠️ Please stay on this page while photos are uploading</span>
+      <!-- Upload Progress Dialog -->
+      <Dialog
+        v-model:visible="showUploadProgressDialog"
+        modal
+        :closable="false"
+        :dismissableMask="false"
+        class="w-full max-w-sm rounded-2xl magic-upload-dialog"
+      >
+        <div class="text-center py-8 px-6">
+          <div class="w-20 h-20 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse">
+            <SavtaIcon icon-class="w-10 h-10" />
           </div>
-        </div>
-
-        <!-- Oversized Files Warning -->
-        <div v-if="oversizedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-brand-navigation rounded-lg p-4 sm:p-3 border border-red-200">
-          <div class="flex items-center gap-3 sm:gap-2 mb-3 sm:mb-2">
-            <i class="pi pi-times-circle text-red-600 text-base sm:text-sm"></i>
-            <span class="text-sm font-semibold text-red-800">📁 Photos too large ({{ oversizedFiles.length }} skipped)</span>
-          </div>
-          <div class="space-y-2 sm:space-y-1">
-            <div v-for="file in oversizedFiles" :key="file.name" class="bg-white rounded p-3 sm:p-2 border border-red-100">
-              <div class="flex items-center justify-between text-sm sm:text-xs">
-                <span class="text-gray-800 truncate flex-1 mr-3 sm:mr-2">{{ file.name }}</span>
-                <span class="text-red-600 font-semibold flex-shrink-0">{{ formatFileSize(file.size) }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Overall Progress Bar -->
-        <div class="bg-gradient-to-r from-blue-50 to-brand-navigation rounded-lg p-4 sm:p-3 border border-blue-200">
-          <div class="flex items-center justify-between mb-3 sm:mb-2">
-            <div class="flex items-center gap-3 sm:gap-2">
-              <i class="pi pi-cloud-upload text-blue-500 text-base sm:text-sm"></i>
-              <span class="text-sm font-semibold text-gray-800">{{ currentFileIndex }}/{{ totalFilesToUpload }} photos</span>
-            </div>
-            <span class="text-sm font-medium text-gray-600">{{ Math.round(overallProgress) }}%</span>
-          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">🌸 Savta is working her magic! 🌸</h3>
+          <p class="text-gray-600 mb-4">Uploading, tagging, and captioning your precious memories...</p>
           
-          <!-- Overall Progress Bar -->
-          <div class="w-full bg-gray-200 rounded-full h-3 sm:h-2 mb-3 sm:mb-2">
-            <div 
-              class="bg-gradient-to-r from-blue-500 to-brand-secondary h-3 sm:h-2 rounded-full transition-all duration-300 ease-out"
-              :style="{ width: overallProgress + '%' }"
-            ></div>
-          </div>
-          
-          <!-- Progress Stats -->
-          <div class="flex justify-between text-sm sm:text-xs text-gray-600">
-            <span>{{ successfulUploads }} uploaded</span>
-            <span>{{ uploadingFiles.length }} uploading</span>
-            <span>{{ failedUploads }} failed</span>
-          </div>
-        </div>
-
-        <!-- Individual File Progress -->
-        <div class="space-y-3 sm:space-y-2">
-          <div v-for="(file, idx) in uploadingFiles" :key="file.id" class="bg-white rounded-lg p-4 sm:p-3 border border-gray-200 shadow-sm">
-            <div class="flex items-center justify-between mb-3 sm:mb-2">
-              <div class="flex items-center gap-3 sm:gap-2 flex-1 min-w-0">
-                <i class="pi pi-image text-blue-600 text-base sm:text-sm"></i>
-                <div class="min-w-0 flex-1">
-                  <p class="text-sm font-medium text-gray-800 truncate">{{ file.name }}</p>
-                  <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-3 sm:gap-2 flex-shrink-0">
-                <!-- Status Icon -->
-                <div v-if="file.processing" class="w-6 h-6 sm:w-5 sm:h-5 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <i class="pi pi-spin pi-spinner text-yellow-600 text-sm sm:text-xs"></i>
-                </div>
-                <div v-else-if="file.uploading" class="w-6 h-6 sm:w-5 sm:h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                  <i class="pi pi-spin pi-spinner text-blue-600 text-sm sm:text-xs"></i>
-                </div>
-                <div v-else-if="file.error" class="w-6 h-6 sm:w-5 sm:h-5 bg-red-100 rounded-full flex items-center justify-center">
-                  <i class="pi pi-times text-red-600 text-sm sm:text-xs"></i>
-                </div>
-                <div v-else class="w-6 h-6 sm:w-5 sm:h-5 bg-green-100 rounded-full flex items-center justify-center">
-                  <i class="pi pi-check text-green-600 text-sm sm:text-xs"></i>
-                </div>
-                
-                <!-- Status Text -->
-                <span class="text-sm sm:text-xs font-medium">
-                  <span v-if="file.processing" class="text-yellow-600">Processing</span>
-                  <span v-else-if="file.uploading" class="text-blue-600">Uploading</span>
-                  <span v-else-if="file.error" class="text-red-600">Failed</span>
-                  <span v-else class="text-green-600">Done</span>
-                </span>
-              </div>
+          <div class="bg-white rounded-lg p-4 mb-4 border-2 border-brand-flash/20">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium text-gray-700">Progress</span>
+              <span class="text-sm font-bold text-brand-flash">{{ completedUploads }} of {{ totalFilesToUpload }}</span>
             </div>
-            
-            <!-- File Progress Bar -->
-            <div class="w-full bg-gray-100 rounded-full h-2 sm:h-1.5">
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
               <div 
-                class="h-2 sm:h-1.5 rounded-full transition-all duration-300 ease-out"
-                :class="{
-                  'bg-gradient-to-r from-blue-500 to-blue-600': file.uploading,
-                  'bg-gradient-to-r from-yellow-500 to-orange-500': file.processing,
-                  'bg-gradient-to-r from-green-500 to-green-600': !file.uploading && !file.processing && !file.error,
-                  'bg-gradient-to-r from-red-500 to-red-600': file.error
-                }"
-                :style="{ width: getFileProgress(file) + '%' }"
+                class="bg-gradient-to-r from-brand-flash to-brand-highlight h-3 rounded-full transition-all duration-500 ease-out"
+                :style="{ width: totalFilesToUpload > 0 ? `${(completedUploads / totalFilesToUpload) * 100}%` : '0%' }"
               ></div>
             </div>
+            <p class="text-xs text-gray-500 truncate mb-2">{{ currentUploadingFileName }}</p>
             
-            <!-- Error Message -->
-            <div v-if="file.error" class="mt-2 sm:mt-1 text-sm sm:text-xs text-red-600 bg-red-50 rounded p-2 sm:p-1">
-              <i class="pi pi-exclamation-triangle mr-2 sm:mr-1"></i>
-              {{ file.error }}
+            <!-- Success/Failure Counts -->
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-3">
+                <span class="text-green-600 font-medium">
+                  <i class="pi pi-check-circle mr-1"></i>
+                  {{ successfulUploads }} success
+                </span>
+                <span v-if="failedUploads > 0" class="text-red-600 font-medium">
+                  <i class="pi pi-times-circle mr-1"></i>
+                  {{ failedUploads }} failed
+                </span>
+              </div>
+              <span class="text-gray-500">{{ remainingUploads }} remaining</span>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-center gap-2 text-brand-flash">
+            <i class="pi pi-spin pi-spinner text-lg"></i>
+            <span class="text-sm font-medium">Processing with love...</span>
+          </div>
+        </div>
+      </Dialog>
+
+      <!-- Oversized Files Warning -->
+      <div v-if="oversizedFiles.length > 0" class="mb-6 bg-gradient-to-r from-red-50 to-brand-navigation rounded-lg p-4 sm:p-3 border border-red-200">
+        <div class="flex items-center gap-3 sm:gap-2 mb-3 sm:mb-2">
+          <i class="pi pi-times-circle text-red-600 text-base sm:text-sm"></i>
+          <span class="text-sm font-semibold text-red-800">📁 Photos too large ({{ oversizedFiles.length }} skipped)</span>
+        </div>
+        <div class="space-y-2 sm:space-y-1">
+          <div v-for="file in oversizedFiles" :key="file.name" class="bg-white rounded p-3 sm:p-2 border border-red-100">
+            <div class="flex items-center justify-between text-sm sm:text-xs">
+              <span class="text-gray-800 truncate flex-1 mr-3 sm:mr-2">{{ file.name }}</span>
+              <span class="text-red-600 font-semibold flex-shrink-0">{{ formatFileSize(file.size) }}</span>
             </div>
           </div>
         </div>
@@ -235,7 +191,7 @@
                         :loading="submittingStory"
                         :disabled="!textStory.title || !textStory.content"
                         v-tooltip.top="'Share Story'"
-                        class="w-full sm:w-auto min-h-[48px] sm:min-h-0"
+                        class="w-full sm:w-auto min-h-[48px] sm:min-h-0 bg-brand-secondary hover:bg-brand-header text-white border-0 px-8 py-3 rounded-full font-semibold transition-all duration-200 shadow-lg flex items-center justify-center"
                       >
                         <span class="hidden sm:inline ml-1">Share Story</span>
                         <span class="sm:hidden">Share Story</span>
@@ -243,10 +199,9 @@
                       <Button
                         type="button"
                         icon="pi pi-times"
-                        severity="secondary"
                         v-tooltip.top="'Clear Form'"
                         @click="clearTextStory"
-                        class="w-full sm:w-auto min-h-[48px] sm:min-h-0"
+                        class="w-full sm:w-auto min-h-[48px] sm:min-h-0 bg-gray-500 hover:bg-gray-600 text-white border-0 px-8 py-3 rounded-full font-semibold transition-all duration-200 shadow-lg flex items-center justify-center"
                       >
                         <span class="hidden sm:inline ml-1">Clear</span>
                         <span class="sm:hidden">Clear</span>
@@ -439,7 +394,7 @@
         modal
         :closable="false"
         :dismissableMask="true"
-        class="w-full max-w-md"
+        class="w-full max-w-lg"
         :header="false"
       >
         <div class="text-center p-6">
@@ -495,7 +450,7 @@
           </div>
 
           <!-- Completion Dialog Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <div class="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center">
             <Button
               @click="showCompletionDialog = false"
               class="bg-brand-dialog-save text-white border-0 px-8 py-3 rounded-full font-semibold hover:bg-brand-header/80 transition-all duration-200 shadow-lg whitespace-nowrap flex items-center justify-center"
@@ -506,11 +461,11 @@
             <Button
               v-if="successfulUploads > 0"
               @click="navigateTo('/app/review')"
-              class="bg-brand-dialog-edit text-white border-0 px-8 py-3 rounded-full font-semibold hover:bg-brand-secondary/80 transition-all duration-200 whitespace-nowrap flex items-center justify-center"
+              class="bg-brand-dialog-edit text-white border-0 px-4 py-3 rounded-full font-semibold hover:bg-brand-secondary/80 transition-all duration-200 flex items-center justify-center flex-1 sm:flex-initial"
             >
-              <i class="pi pi-eye mr-2"></i>
-              <span class="hidden sm:inline pr-2">Review Moments</span>
-              <span class="sm:hidden pr-2">Review</span>
+              <i class="pi pi-eye mr-2 flex-shrink-0"></i>
+              <span class="hidden sm:inline whitespace-nowrap">Review Photos in Library</span>
+              <span class="sm:hidden">Review</span>
             </Button>
           </div>
         </div>
@@ -531,7 +486,7 @@
           </div>
           <h3 class="text-lg font-bold text-gray-800 mb-2">Uploads in Progress</h3>
           <p class="text-gray-600 mb-6">
-            You have {{ uploadingFiles.length }} file(s) currently uploading. 
+            You have uploads currently in progress. 
             If you leave now, your uploads will be canceled and you'll lose your progress.
           </p>
           
@@ -546,7 +501,7 @@
             </Button>
             <Button
               @click="cancelNavigation"
-              class="bg-brand-dialog-cancel text-white px-6 py-3 rounded-full font-semibold hover:bg-brand-dialog-cancel/80 flex items-center justify-center"
+              class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-full font-semibold transition-all duration-200 flex items-center justify-center"
             >
               <i class="pi pi-check mr-2"></i>
               Stay Here
@@ -561,6 +516,7 @@
 <script setup>
 // Set the layout for this page
 import { ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
+import SavtaIcon from '~/components/SavtaIcon.vue'
 
 const router = useRouter()
 
@@ -571,6 +527,10 @@ definePageMeta({
 const db = useDatabase()
 const user = useSupabaseUser()
 
+// Configuration
+const MAX_CONCURRENT_UPLOADS = 3 // Limit concurrent uploads to prevent memory issues and app crashes
+                                  // Processing 3 files at a time provides good performance while staying within memory limits
+
 // Reactive data
 const activeTabIndex = ref(0)
 const isDragOver = ref(false)
@@ -580,6 +540,8 @@ const currentFileIndex = ref(0)
 const successfulUploads = ref(0)
 const failedUploads = ref(0)
 const showCompletionDialog = ref(false)
+const showUploadProgressDialog = ref(false)
+const currentUploadingFileName = ref('')
 const recentAssets = ref([])
 const submittingStory = ref(false)
 const showHelpModal = ref(false)
@@ -600,6 +562,14 @@ const overallProgress = computed(() => {
   
   const completed = successfulUploads.value + failedUploads.value
   return (completed / totalFilesToUpload.value) * 100
+})
+
+const completedUploads = computed(() => {
+  return successfulUploads.value + failedUploads.value
+})
+
+const remainingUploads = computed(() => {
+  return totalFilesToUpload.value - completedUploads.value
 })
 
 // Helper function to get individual file progress
@@ -659,7 +629,7 @@ const setupNavigationProtection = () => {
   // Override router.push
   originalPush = router.push
   router.push = function(to) {
-    if (uploadingFiles.value.length > 0) {
+    if (showUploadProgressDialog.value) {
       pendingNavigation.value = to
       showNavigationWarning.value = true
       return Promise.resolve(false)
@@ -670,7 +640,7 @@ const setupNavigationProtection = () => {
   // Override router.replace
   originalReplace = router.replace
   router.replace = function(to) {
-    if (uploadingFiles.value.length > 0) {
+    if (showUploadProgressDialog.value) {
       pendingNavigation.value = to
       showNavigationWarning.value = true
       return Promise.resolve(false)
@@ -681,7 +651,7 @@ const setupNavigationProtection = () => {
   // Override router.go for back/forward navigation
   originalGo = router.go
   router.go = function(delta) {
-    if (uploadingFiles.value.length > 0) {
+    if (showUploadProgressDialog.value) {
       pendingNavigation.value = delta > 0 ? 'forward' : 'back'
       showNavigationWarning.value = true
       return Promise.resolve(false)
@@ -692,7 +662,7 @@ const setupNavigationProtection = () => {
   // Override router.back specifically
   originalBack = router.back
   router.back = function() {
-    if (uploadingFiles.value.length > 0) {
+    if (showUploadProgressDialog.value) {
       pendingNavigation.value = 'back'
       showNavigationWarning.value = true
       return Promise.resolve(false)
@@ -703,7 +673,7 @@ const setupNavigationProtection = () => {
   // Override router.forward
   originalForward = router.forward
   router.forward = function() {
-    if (uploadingFiles.value.length > 0) {
+    if (showUploadProgressDialog.value) {
       pendingNavigation.value = 'forward'
       showNavigationWarning.value = true
       return Promise.resolve(false)
@@ -714,7 +684,7 @@ const setupNavigationProtection = () => {
 
 // Enhanced beforeunload handler
 const handleBeforeUnload = (event) => {
-  if (uploadingFiles.value.length > 0) {
+  if (showUploadProgressDialog.value) {
     event.preventDefault()
     event.returnValue = 'You have uploads in progress. Are you sure you want to leave?'
     return 'You have uploads in progress. Are you sure you want to leave?'
@@ -723,7 +693,7 @@ const handleBeforeUnload = (event) => {
 
 // Enhanced popstate handler for browser back/forward buttons
 const handlePopstate = (event) => {
-  if (uploadingFiles.value.length > 0) {
+  if (showUploadProgressDialog.value) {
     // Prevent the navigation
     event.preventDefault()
     
@@ -764,8 +734,8 @@ onBeforeUnmount(() => {
 })
 
 // Watch for uploads and add/remove navigation guard
-watch(uploadingFiles, (files) => {
-  if (files.length > 0) {
+watch(showUploadProgressDialog, (isUploading) => {
+  if (isUploading) {
     // Add navigation guard when uploads start
     window.addEventListener('beforeunload', handleBeforeUnload)
   } else {
@@ -823,69 +793,108 @@ const uploadFiles = async (files) => {
   successfulUploads.value = 0
   failedUploads.value = 0
   
-  for (const file of validFiles) {
-    currentFileIndex.value++
-
-    const fileId = Date.now() + Math.random()
+  // Show progress dialog if we have files to upload
+  if (validFiles.length > 0) {
+    showUploadProgressDialog.value = true
+  }
+  
+  // Process files with concurrency limit to prevent memory issues
+  
+  // Create upload file objects first
+  const uploadTasks = validFiles.map((file, index) => {
+    const fileId = Date.now() + Math.random() + index
     const uploadFile = {
       id: fileId,
       file,
       name: file.name,
       size: file.size,
-      uploading: true,
+      uploading: false,
       processing: false,
-      error: null
+      error: null,
+      completed: false
     }
-
     uploadingFiles.value.push(uploadFile)
+    return { uploadFile, file }
+  })
 
-    try {
-      // Upload asset (compression, geocoding, and metadata extraction handled in composable)
-      const asset = await db.assets.uploadAsset({
-        type: 'photo',
-        title: file.name, // Use filename as default title
-        user_caption: '' // Initially blank caption
-      }, file)
+  // Process files in controlled batches
+  const processBatch = async (tasks) => {
+    const batchPromises = tasks.map(async ({ uploadFile, file }) => {
+      try {
+        // Mark as uploading and set current filename
+        uploadFile.uploading = true
+        currentUploadingFileName.value = file.name
+        
+        // Upload asset (compression, geocoding, and metadata extraction handled in composable)
+        const asset = await db.assets.uploadAsset({
+          type: 'photo',
+          title: file.name, // Use filename as default title
+          user_caption: '' // Initially blank caption
+        }, file)
 
-      uploadFile.uploading = false
-      uploadFile.processing = true
+        uploadFile.uploading = false
+        uploadFile.processing = true
 
-      // Process with AI
-      await $fetch('/api/ai/process-asset', {
-        method: 'POST',
-        body: {
-          assetId: asset.id,
-          assetType: 'photo',
-          storageUrl: asset.storage_url,
-          userId: user.value?.id
-        }
-      })
+        // Process with AI
+        await $fetch('/api/ai/process-asset', {
+          method: 'POST',
+          body: {
+            assetId: asset.id,
+            assetType: 'photo',
+            storageUrl: asset.storage_url,
+            userId: user.value?.id
+          }
+        })
 
-      uploadFile.processing = false
-      successfulUploads.value++
-      
-      // Remove file from uploadingFiles immediately
-      uploadingFiles.value = uploadingFiles.value.filter(f => f.id !== uploadFile.id)
-      await loadRecentAssets()
+        uploadFile.processing = false
+        uploadFile.completed = true
+        successfulUploads.value++
+        
+        // Keep successful files in the array for display
+        await loadRecentAssets()
 
-    } catch (error) {
-      uploadFile.error = error.message
-      uploadFile.uploading = false
-      uploadFile.processing = false
-      failedUploads.value++
-      
-      console.error(`Failed to upload ${file.name}:`, error.message)
-      // Remove file from uploadingFiles immediately on error
-      uploadingFiles.value = uploadingFiles.value.filter(f => f.id !== uploadFile.id)
-    }
+      } catch (error) {
+        uploadFile.error = error.message
+        uploadFile.uploading = false
+        uploadFile.processing = false
+        uploadFile.completed = true
+        failedUploads.value++
+        
+        console.error(`Failed to upload ${file.name}:`, error.message)
+        // Keep failed files in the array for display
+      }
+    })
+
+    await Promise.allSettled(batchPromises)
+  }
+
+  // Process files in batches to limit memory usage
+  console.log(`🔄 Processing ${uploadTasks.length} files in batches of ${MAX_CONCURRENT_UPLOADS}`)
+  
+  for (let i = 0; i < uploadTasks.length; i += MAX_CONCURRENT_UPLOADS) {
+    const batch = uploadTasks.slice(i, i + MAX_CONCURRENT_UPLOADS)
+    const batchNumber = Math.floor(i / MAX_CONCURRENT_UPLOADS) + 1
+    const totalBatches = Math.ceil(uploadTasks.length / MAX_CONCURRENT_UPLOADS)
+    
+    console.log(`📦 Processing batch ${batchNumber}/${totalBatches} (${batch.length} files)`)
+    await processBatch(batch)
+    console.log(`✅ Completed batch ${batchNumber}/${totalBatches}`)
   }
   
-  // Reset total files when all uploads are complete
-  if (uploadingFiles.value.length === 0) {
+  console.log(`🎉 All ${uploadTasks.length} files processed!`)
+  
+  // Hide progress dialog and show completion dialog when all uploads are complete
+  showUploadProgressDialog.value = false
+  currentUploadingFileName.value = ''
+  
+  // Clear the uploading files array after showing completion
+  setTimeout(() => {
+    uploadingFiles.value = []
     totalFilesToUpload.value = 0
     currentFileIndex.value = 0
-    showCompletionDialog.value = true
-  }
+  }, 1000) // Small delay to show final state
+  
+  showCompletionDialog.value = true
 }
 
 // Submit text story
@@ -949,4 +958,21 @@ const formatDate = (dateString) => {
     return 'Unknown date'
   }
 }
-</script> 
+</script>
+
+<style scoped>
+/* Magic upload dialog styling to match memory books */
+.magic-upload-dialog {
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.magic-upload-dialog :deep(.p-dialog-header) {
+  display: none !important;
+}
+
+.magic-upload-dialog :deep(.p-dialog-content) {
+  padding: 0 !important;
+  border-radius: 1rem !important;
+}
+</style> 

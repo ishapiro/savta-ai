@@ -17,18 +17,34 @@ export default defineEventHandler(async (event) => {
       .from('profiles')
       .select('*')  // ims was user_id, email, first_name, last_name
       .eq('user_id', userId)
-      .is('deleted', null)  // Only active users
+      .eq('deleted', false)  // Only active users (deleted is boolean, not null)
       .single()
 
     if (error) {
       console.error('Error fetching user info:', error)
+      
+      // Handle specific case where user doesn't exist (PGRST116)
+      if (error.code === 'PGRST116') {
+        // Return a structured response instead of throwing an error
+        return {
+          user_id: userId,
+          exists: false,
+          deleted: true,
+          error: 'User not found or has been deleted'
+        }
+      }
+      
       throw createError({
         statusCode: 404,
         statusMessage: 'User not found'
       })
     }
 
-    return data
+    return {
+      ...data,
+      exists: true,
+      deleted: false
+    }
   } catch (error) {
     console.error('Error in user info API:', error)
     throw createError({

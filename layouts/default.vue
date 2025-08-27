@@ -57,7 +57,7 @@
                 <NuxtLink to="/app/review" class="no-underline">
                   <button class="border-0 flex items-center justify-center gap-2 bg-brand-accent hover:bg-brand-secondary text-white font-bold rounded-full px-2 py-1 text-xs lg:px-2 lg:py-1 lg:text-xs xl:px-4 xl:py-1.5 xl:text-sm 2xl:px-6 2xl:py-2 2xl:text-base shadow transition-all duration-200 no-underline">
                     <i class="pi pi-check-circle text-lg"></i>
-                    <span>Review</span>
+                    <span>Photo Library</span>
                   </button>
                 </NuxtLink>
                 <NuxtLink to="/app/memory-books" class="no-underline">
@@ -160,7 +160,7 @@
             </NuxtLink>
             <NuxtLink to="/app/review" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="closeMobileMenu">
               <i class="pi pi-check-circle text-xl text-brand-accent"></i>
-              <span class="font-medium text-brand-secondary">Review</span>
+              <span class="font-medium text-brand-secondary">Photo Library</span>
             </NuxtLink>
             <NuxtLink to="/app/memory-books" class="flex items-center gap-3 px-6 py-3 hover:bg-brand-highlight/20 transition rounded-xl" @click="closeMobileMenu">
               <i class="pi pi-book text-xl text-brand-header"></i>
@@ -272,8 +272,18 @@ watch(() => user.value, async (newUser) => {
       const db = useDatabase()
       userProfile.value = await db.getCurrentProfile()
       console.log('[NAV] Loaded userProfile:', userProfile.value)
+      
+      // If profile is null and user still exists, it might be a deleted user
+      if (!userProfile.value && newUser) {
+        console.warn('[NAV] User exists but no profile found - user may have been deleted')
+        // The getCurrentProfile method should handle signing out deleted users
+      }
     } catch (error) {
       console.error('[NAV] Error loading user profile:', error)
+      userProfile.value = null
+      
+      // If there's a persistent error loading profile, it might indicate a deleted user
+      // Let the user continue but with limited functionality
     }
   } else {
     userProfile.value = null

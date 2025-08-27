@@ -13,20 +13,44 @@ export const useDatabase = () => {
       .from('profiles')
       .select('*')
       .eq('user_id', user.value.id)
+      .eq('deleted', false)  // Only get active users (deleted is boolean, not null)
       .single()
     
     if (error) {
       console.error('Error fetching profile:', error)
       
-      // If profile doesn't exist, try to create one
+      // If profile doesn't exist, check if user was deleted
       if (error.code === 'PGRST116') {
+        // Check if user exists but is deleted
+        const { data: deletedUser, error: deletedError } = await supabase
+          .from('profiles')
+          .select('deleted')
+          .eq('user_id', user.value.id)
+          .single()
+        
+        if (!deletedError && deletedUser?.deleted === true) {
+          console.log('User profile found but marked as deleted, signing out')
+          // User exists but is deleted, sign them out
+          const supabaseClient = useNuxtApp().$supabase
+          await supabaseClient.auth.signOut()
+          if (process.client) {
+            await navigateTo('/app/login')
+          }
+          return null
+        }
+        
+        // Profile truly doesn't exist, try to create one
         try {
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
-            .insert([{
+            .upsert([{
               user_id: user.value.id,
-              email: user.value.email
-            }])
+              email: user.value.email,
+              deleted: false
+            }], {
+              onConflict: 'user_id',
+              ignoreDuplicates: false
+            })
             .select()
             .single()
           

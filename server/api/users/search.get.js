@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     .from('profiles')
     .select('user_id, first_name, last_name, email')
     .ilike('email', `%${q}%`)
-    .is('deleted', null)  // Only active users
+    .eq('deleted', false)  // Only active users (deleted is boolean, not null)
     .order('email', { ascending: true })
     .limit(15)
 

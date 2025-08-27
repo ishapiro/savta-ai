@@ -72,8 +72,8 @@
       <!-- Filters -->
       <Card class="mb-8">
         <template #content>
-          <div class="flex flex-col sm:flex-wrap items-start sm:items-center gap-4">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-2 w-full sm:w-auto">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-2 w-full sm:w-auto">
               <label class="text-sm font-medium text-brand-primary">Filter:</label>
               <Dropdown
                 v-model="activeFilter"
@@ -81,10 +81,10 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Filter"
-                class="w-full sm:w-60"
+                class="w-full sm:w-48"
               />
             </div>
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-2 w-full sm:w-auto">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-2 w-full sm:w-auto">
               <label class="text-sm font-medium text-brand-primary">Type:</label>
               <Dropdown
                 v-model="typeFilter"
@@ -92,10 +92,33 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Type"
-                class="w-full sm:w-60"
+                class="w-full sm:w-48"
               />
             </div>
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-2 w-full sm:w-auto">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-2 w-full sm:w-auto">
+              <label class="text-sm font-medium text-brand-primary">Tags:</label>
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <MultiSelect
+                  v-model="tagFilter"
+                  :options="tagOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select Tags"
+                  :maxSelectedLabels="2"
+                  selectedItemsLabel="{0} tags selected"
+                  class="w-full sm:w-48"
+                />
+                <button
+                  v-if="tagFilter && tagFilter.length > 0"
+                  @click="tagFilter = []"
+                  class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-800 transition-colors"
+                  v-tooltip.top="'Clear tag filters'"
+                >
+                  <i class="pi pi-times text-xs"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-2 w-full sm:w-auto">
               <label class="text-sm font-medium text-brand-primary">Sort:</label>
               <Dropdown
                 v-model="sortBy"
@@ -103,7 +126,7 @@
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select Sort"
-                class="w-full sm:w-60"
+                class="w-full sm:w-48"
               />
             </div>
           </div>
@@ -834,6 +857,7 @@ const detailsAsset = ref(null)
 // Filters
 const activeFilter = ref('all')
 const typeFilter = ref('all')
+const tagFilter = ref([])
 const sortBy = ref('newest')
 
 // Filter options
@@ -849,6 +873,8 @@ const typeOptions = ref([
   { label: 'Photos', value: 'photo' },
   { label: 'Stories', value: 'text' }
 ])
+
+const tagOptions = ref([])
 
 const sortOptions = ref([
   { label: 'Newest First', value: 'newest' },
@@ -873,6 +899,18 @@ const filteredAssets = computed(() => {
   // Apply type filter
   if (typeFilter.value !== 'all') {
     filtered = filtered.filter(asset => asset.type === typeFilter.value)
+  }
+
+  // Apply tag filter
+  if (tagFilter.value && tagFilter.value.length > 0) {
+    filtered = filtered.filter(asset => {
+      const allTags = [
+        ...(asset.tags || []),
+        ...(asset.user_tags || [])
+      ]
+      // Check if asset has ANY of the selected tags
+      return tagFilter.value.some(selectedTag => allTags.includes(selectedTag))
+    })
   }
 
   // Apply sorting
@@ -915,6 +953,7 @@ const estimatedTimeRemaining = computed(() => {
 // Load assets and stats
 onMounted(async () => {
   await loadAssets()
+  await loadTagOptions()
   calculateStats()
 })
 
@@ -933,6 +972,18 @@ const loadAssets = async () => {
         life: 3000
       })
     }
+  }
+}
+
+// Load tag options
+const loadTagOptions = async () => {
+  try {
+    const allTags = await db.assets.getAllTags()
+    tagOptions.value = allTags.map(tag => ({ label: tag, value: tag }))
+  } catch (error) {
+    console.error('Error loading tags:', error)
+    // Keep empty options on error
+    tagOptions.value = []
   }
 }
 
