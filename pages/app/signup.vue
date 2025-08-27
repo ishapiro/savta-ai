@@ -189,15 +189,16 @@ const user = useSupabaseUser()
 const origin = process.client ? localStorage.getItem('auth_origin') || 'dashboard' : 'dashboard'
 console.log('[SIGNUP] Origin from localStorage:', origin)
 
-// Redirect if already logged in
+// Redirect if already logged in (this handles Google OAuth flow)
 watchEffect(() => {
   if (user.value) {
     console.log('[SIGNUP] User authenticated, redirecting based on origin:', origin)
+    // For Google OAuth, user gets authenticated immediately and should go to confirm page
     if (origin === 'home') {
-      console.log('[SIGNUP] Redirecting to confirm page')
+      console.log('[SIGNUP] Redirecting to confirm page (Google OAuth)')
       navigateTo('/app/confirm')
     } else {
-      console.log('[SIGNUP] Redirecting to dashboard')
+      console.log('[SIGNUP] Redirecting to dashboard (Google OAuth)')
       navigateTo('/app/dashboard')
     }
   }
@@ -265,8 +266,16 @@ const handleEmailSignup = async () => {
     if (authError) {
       error.value = authError.message
     } else {
-      // Show success message or redirect
-      error.value = 'Please check your email to confirm your account.'
+      // Show success message and redirect to landing page
+      console.log('[SIGNUP] Email signup successful, redirecting to landing page')
+      
+      // Show success message briefly
+      error.value = 'Please check your email to confirm your account. Redirecting...'
+      
+      // Redirect to landing page after a brief delay
+      setTimeout(() => {
+        navigateTo('/')
+      }, 2000)
     }
   } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
