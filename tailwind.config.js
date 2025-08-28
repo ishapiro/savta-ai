@@ -75,13 +75,13 @@ export default {
           'dialog-edit-hover': '#5A3F52', // darker plum
           'dialog-save': '#41706C', // darker teal  -- was #7BAAA7
           'dialog-save-hover': '#355A57', // darker teal
-          'dialog-delete': '#D16D84', // raspberry
-          'dialog-delete-hover': '#B85A6F', // darker raspberry
-          'dialog-primary': '#6E4B63', // plum - for primary actions
+          'dialog-delete': '#D16D84', // raspberry #B85A6F
+          'dialog-delete-hover': '#B85A6F', // darker raspberry #B85A6F
+          'dialog-primary': '#6E4B63', // plum - for primary actions #6E4B63
           'dialog-primary-hover': '#5A3F52', // darker plum
           'dialog-secondary': '#F4E4D6', // warm cream - for secondary actions
           'dialog-secondary-hover': '#E8D4C2', // darker warm cream
-          'flash': '#3B82F6', // blue
+          'flash': '#3B82F6', // blue #3B82F6
         },
         primary: {
           DEFAULT: 'var(--primary-color)',
