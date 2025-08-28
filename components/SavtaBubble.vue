@@ -12,7 +12,7 @@
     >
       <div
         v-if="open"
-        class="fixed inset-0 bg-black/20 z-[999]"
+        class="fixed inset-0 bg-black/20 z-[1199]"
         @click="$emit('update:open', false)"
       />
     </transition>
@@ -29,12 +29,15 @@
       <div
         v-if="open && coords"
         :style="{ left: coords.left + 'px', top: coords.top + 'px' }"
-        class="fixed z-[1000]"
+        class="fixed z-[1200]"
         role="dialog"
         aria-live="polite"
       >
         <div
-          class="relative max-w-[500px] bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg"
+          :class="[
+            'relative bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg',
+            html ? 'max-w-[600px] max-h-[80vh]' : 'max-w-[500px]'
+          ]"
         >
                       <!-- Savta avatar + text -->
             <div class="flex items-start gap-3">
@@ -45,8 +48,9 @@
               <div class="min-w-0">
                 <!-- Optional heading -->
                 <p v-if="heading" class="font-bold mb-2 font-architects-daughter text-brand-header text-xl">{{ cleanedHeading }}</p>
-                <!-- Main text with line break support -->
-                <p v-if="text" class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ cleanedText }}</p>
+                <!-- Main content - HTML or text with line break support -->
+                <div v-if="html" class="text-sm text-gray-700 leading-relaxed max-h-[60vh] overflow-y-auto pr-2" v-html="html"></div>
+                <p v-else-if="text" class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ cleanedText }}</p>
 
                 <!-- Actions slot (buttons/links) -->
                 <div v-if="$slots.actions" class="mt-2 flex gap-2">
@@ -107,6 +111,7 @@ const props = defineProps({
   },
   heading: String,
   text: String,
+  html: String,
   variant: {
     type: String,
     default: 'instruction',
@@ -250,10 +255,13 @@ function calcPosition() {
     })
   }
 
-  // Clamp to viewport with padding
+  // Clamp to viewport with padding - adjust for HTML content
   const pad = 12
-  left = Math.max(pad, Math.min(left, window.innerWidth - pad - 480))
-  top = Math.max(pad, Math.min(top, window.innerHeight - pad - 300))
+  const maxWidth = props.html ? 600 : 480
+  const maxHeight = props.html ? window.innerHeight * 0.8 : 300
+  
+  left = Math.max(pad, Math.min(left, window.innerWidth - pad - maxWidth))
+  top = Math.max(pad, Math.min(top, window.innerHeight - pad - maxHeight))
   coords.value = { left, top }
 }
 

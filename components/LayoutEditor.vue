@@ -10,7 +10,7 @@
             @click="showInstructionsDialog = true"
             class="flex items-center gap-1.5 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-xs font-medium transition-colors"
           >
-            <i class="pi pi-info-circle text-sm"></i>
+            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
             <span>Help</span>
           </button>
           

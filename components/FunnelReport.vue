@@ -18,7 +18,7 @@
             class="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
             title="Learn more about funnel reports"
           >
-            <i class="pi pi-info-circle text-sm"></i>
+            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
           </button>
           <Button
             label="View Full Funnel Report"

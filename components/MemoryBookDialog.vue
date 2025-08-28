@@ -80,9 +80,15 @@
               class="w-full"
               :loading="loadingThemes"
             />
-            <small class="text-brand-primary/70 text-xs mt-1 block">
-              Select a custom theme for your memory book layout
-            </small>
+            <div class="bg-brand-accent/10 rounded-lg p-3 mt-2">
+              <div class="flex items-start gap-2">
+                <i class="pi pi-info-circle text-brand-accent text-sm mt-0.5" title="Ask Savta"></i>
+                <div class="text-xs text-brand-primary/80">
+                  <p class="font-medium mb-1">Theme layouts are always single page</p>
+                  <p>Each theme has a fixed design with a specific number of photos. The theme determines the layout, size, and photo count automatically.</p>
+                </div>
+              </div>
+            </div>
           </div>
           
           <!-- Print Size -->
@@ -134,9 +140,9 @@
       <div v-if="form.layoutType !== 'theme'" class="bg-gradient-to-r from-brand-secondary/10 to-brand-accent/10 rounded-lg p-4 border border-brand-secondary/30">
         <h3 class="text-lg font-semibold text-brand-primary mb-4 flex items-center gap-2">
           <i class="pi pi-th-large text-brand-secondary"></i>
-          Grid & Shape
+          Grid & Pages
         </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="space-y-4">
           <!-- Grid Layout -->
           <div>
             <label class="block text-sm font-medium text-brand-primary mb-2">Grid Layout</label>
@@ -151,8 +157,16 @@
           </div>
           
           <!-- Number of Pages Input -->
-          <div>
-            <label class="block text-sm font-medium text-brand-primary mb-2">Number of Pages</label>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-2 mb-2">
+              <label class="block text-sm font-medium text-brand-primary">Number of Pages</label>
+              <i 
+                class="pi pi-info-circle text-brand-secondary text-lg hover:text-brand-highlight transition-colors cursor-help"
+                data-savta="pages-info-icon"
+                title="Ask Savta"
+                @click="showPagesInfoBubble = true"
+              ></i>
+            </div>
             <div class="flex items-center gap-3">
               <InputNumber
                 v-model="form.page_count"
@@ -160,22 +174,23 @@
                 :max="maxPagesAllowed"
                 :step="1"
                 placeholder="Enter number of pages"
-                class="flex-1"
-                show-buttons
-                button-layout="horizontal"
-                spinner-mode="horizontal"
+                class="w-full"
                 :pt="{
-                  input: 'text-center',
-                  button: 'bg-brand-flash border-brand-flash text-white hover:bg-brand-highlight'
+                  input: 'text-center'
                 }"
               />
-              <span class="text-sm text-brand-primary/70 whitespace-nowrap">
-                (max {{ maxPagesAllowed }} pages)
-              </span>
             </div>
-            <p class="text-xs text-brand-primary/60 mt-1">
-              Total photos needed: {{ totalPhotosNeeded }} photos
-            </p>
+            <div class="text-sm text-brand-primary/70 whitespace-nowrap mt-1">
+                (max {{ maxPagesAllowed }} pages supported)
+            </div>
+            <div class="bg-brand-secondary/10 rounded-lg p-3 mt-2">
+              <p class="text-sm font-medium text-brand-primary mb-1">
+                Photos needed: <span class="font-bold text-brand-highlight">{{ totalPhotosNeeded }}</span>
+              </p>
+              <p class="text-xs text-brand-primary/70">
+                {{ form.gridLayout }} grid × {{ form.page_count }} page{{ form.page_count > 1 ? 's' : '' }} = {{ totalPhotosNeeded }} photos
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -485,11 +500,22 @@
       </template>
     </Dialog>
   </Dialog>
+
+  <!-- Info Bubble for Pages Explanation -->
+  <SavtaBubble
+    v-model:open="showPagesInfoBubble"
+    target="[data-savta='pages-info-icon']"
+    placement="top"
+    :offset="10"
+    heading="Grid Layouts & Pages"
+    text="Grid layouts: Each page contains your selected grid (e.g., 2x2 = 4 photos per page).\n\nTotal photos needed: Grid size × Number of pages\n\nExample: 2x2 grid × 3 pages = 12 photos needed\n\nTheme layouts: Always single page with a fixed number of photos determined by the theme"
+  />
 </template>
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
+import SavtaBubble from '~/components/SavtaBubble.vue'
 
 // Import database composable
 const db = useDatabase()
@@ -526,6 +552,9 @@ const form = ref({
 // Photo selection state
 const showPhotoSelector = ref(false)
 const selectedAssets = ref([])
+
+// Info bubble state
+const showPagesInfoBubble = ref(false)
 
 // Use the photo selection composable
 const {

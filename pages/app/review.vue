@@ -158,7 +158,7 @@
             <div class="flex items-center gap-3 sm:gap-3 flex-1 justify-center">
               <div class="flex flex-col items-center cursor-pointer group" @click="openDetailsDialog(asset)" v-tooltip.top="'Details'">
                 <button class="bg-brand-dialog-edit text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full min-h-[40px] sm:min-h-0">
-                  <i class="pi pi-info-circle text-base sm:text-lg"></i>
+                  <i class="pi pi-info-circle text-base sm:text-lg" title="Ask Savta"></i>
                 </button>
                 <span class="text-xs sm:text-[10px] text-brand-secondary mt-1 sm:mt-0.5">Details</span>
               </div>

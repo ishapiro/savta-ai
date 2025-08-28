@@ -16,7 +16,7 @@
             class="text-brand-primary/60 hover:text-brand-primary transition-colors"
             title="Learn more about time ranges"
           >
-            <i class="pi pi-info-circle text-sm"></i>
+            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
           </button>
         </div>
         <Dropdown
@@ -38,7 +38,7 @@
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
       <div class="flex items-start">
         <div class="flex-shrink-0">
-          <i class="pi pi-info-circle text-blue-600 text-lg"></i>
+          <i class="pi pi-info-circle text-blue-600 text-lg" title="Ask Savta"></i>
         </div>
         <div class="ml-3">
           <h3 class="text-sm font-medium text-blue-800">Analytics Overview</h3>
@@ -82,7 +82,7 @@
               class="text-brand-primary/60 hover:text-brand-primary transition-colors"
               title="Learn more about unique users"
             >
-              <i class="pi pi-info-circle text-sm"></i>
+              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
             </button>
           </div>
         </div>
@@ -103,7 +103,7 @@
               class="text-brand-primary/60 hover:text-brand-primary transition-colors"
               title="Learn more about page views"
             >
-              <i class="pi pi-info-circle text-sm"></i>
+              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
             </button>
           </div>
         </div>
@@ -124,7 +124,7 @@
               class="text-brand-primary/60 hover:text-brand-primary transition-colors"
               title="Learn more about session duration"
             >
-              <i class="pi pi-info-circle text-sm"></i>
+              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
             </button>
           </div>
         </div>
@@ -145,7 +145,7 @@
               class="text-brand-primary/60 hover:text-brand-primary transition-colors"
               title="Learn more about engagement score"
             >
-              <i class="pi pi-info-circle text-sm"></i>
+              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
             </button>
           </div>
         </div>
@@ -162,7 +162,7 @@
               class="text-brand-primary/60 hover:text-brand-primary transition-colors"
               title="Learn more about top pages"
             >
-              <i class="pi pi-info-circle text-sm"></i>
+              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
             </button>
           </div>
           <div class="space-y-3">
@@ -186,7 +186,7 @@
               class="text-brand-primary/60 hover:text-brand-primary transition-colors"
               title="Learn more about geographic data"
             >
-              <i class="pi pi-info-circle text-sm"></i>
+              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
             </button>
           </div>
           <div class="space-y-3">
@@ -211,7 +211,7 @@
             class="text-brand-primary/60 hover:text-brand-primary transition-colors"
             title="Learn more about engagement analysis"
           >
-            <i class="pi pi-info-circle text-sm"></i>
+            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
           </button>
         </div>
         <DataTable
@@ -284,7 +284,7 @@
               class="text-brand-primary/60 hover:text-brand-primary transition-colors"
               title="Learn more about device types"
             >
-              <i class="pi pi-info-circle text-sm"></i>
+              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
             </button>
           </div>
           <div class="space-y-3">
@@ -308,7 +308,7 @@
               class="text-brand-primary/60 hover:text-brand-primary transition-colors"
               title="Learn more about browsers"
             >
-              <i class="pi pi-info-circle text-sm"></i>
+              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
             </button>
           </div>
           <div class="space-y-3">
@@ -333,7 +333,7 @@
             class="text-brand-primary/60 hover:text-brand-primary transition-colors"
             title="Learn more about marketing analytics"
           >
-            <i class="pi pi-info-circle text-sm"></i>
+            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
           </button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -346,7 +346,7 @@
                 class="text-brand-primary/60 hover:text-brand-primary transition-colors"
                 title="Learn more about referrers"
               >
-                <i class="pi pi-info-circle text-xs"></i>
+                <i class="pi pi-info-circle text-xs" title="Ask Savta"></i>
               </button>
             </div>
             <div class="space-y-2">
@@ -370,7 +370,7 @@
                 class="text-brand-primary/60 hover:text-brand-primary transition-colors"
                 title="Learn more about UTM sources"
               >
-                <i class="pi pi-info-circle text-xs"></i>
+                <i class="pi pi-info-circle text-xs" title="Ask Savta"></i>
               </button>
             </div>
             <div class="space-y-2">

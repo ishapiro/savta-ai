@@ -18,9 +18,11 @@
           <h1 class="text-xl sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-primary">Create Memory Cards & Books</h1>
           <button
             data-testid="info-button"
+            data-savta="memory-books-info"
             class="w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
-            @click="showInfoDialog = true"
+            @click="showMemoryBooksInfoBubble = true"
             aria-label="Information about memory cards and booklets"
+            title="Ask Savta"
           >
             <i class="pi pi-info text-base sm:text-lg text-brand-highlight"></i>
           </button>
@@ -77,79 +79,15 @@
         </div>
       </div>
 
-    <!-- Info Dialog -->
-    <Dialog v-model:visible="showInfoDialog" modal header="About Memory Cards & Books" class="w-full max-w-3xl sm:rounded-2xl">
-      <div class="space-y-4">
-        <div class="bg-brand-highlight/10 rounded-lg p-4 border border-brand-highlight/20">
-          <h2 class="text-lg font-bold text-brand-highlight mb-2">What are Memory Cards?</h2>
-          <p class="text-base text-brand-primary">
-            Memory Cards are single-page designs with beautiful themes. Our AI picks your best photos and writes heartwarming captions. 
-            Perfect for mailing to family members or sharing digitally. Each card tells a story in one beautiful page.
-          </p>
-        </div>
-        <div class="bg-brand-secondary/10 rounded-lg p-4 border border-brand-secondary/20">
-          <h2 class="text-lg font-bold text-brand-secondary mb-2">What are Memory Books?</h2>
-          <p class="text-base text-brand-primary mb-3">
-            Memory Books are multi-page collections that can use themes or grid layouts. You choose which photos to include and our AI creates 
-            beautiful designs. Perfect for printing and mailing to family members or sharing digitally.
-          </p>
-          <h3 class="text-md font-bold text-brand-secondary mb-2">Why Create Memory Cards?</h3>
-          <ul class="list-disc pl-5 text-base text-brand-primary space-y-1">
-            <li>To keep your precious memories safe and easy to find.</li>
-            <li>To share your stories with children, grandchildren, and friends.</li>
-            <li>To have a lovely stack of cards to look through whenever you want to remember happy times.</li>
-          </ul>
-        </div>
-        <div class="bg-brand-accent/10 rounded-lg p-4 border border-brand-accent/20">
-          <h2 class="text-lg font-bold text-brand-accent mb-2">How Do I Use It?</h2>
-          <p class="text-base text-brand-primary">
-            Just pick your favorite memory moments, design your cards, and let the magic happen! 
-            You can view your memory card as a PDF, print it, or share it with your loved ones. 
-            It's easy and fun—no computer skills needed! No tedious dropping and dragging photos into a photo album.
-          </p>
-        </div>
-        <div class="bg-white rounded-lg p-4 border border-gray-100">
-          <h2 class="text-base font-bold text-brand-primary mb-2">What do the buttons mean?</h2>
-          <ul class="space-y-3">
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-highlight/20"><i class="pi pi-external-link text-lg text-brand-highlight"></i></span>
-                              <span class="text-brand-primary"><b>View</b>: Open your Special Memory Card to view or download it.</span>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-secondary/20"><i class="pi pi-bolt text-lg text-brand-secondary"></i></span>
-              <span class="text-brand-primary"><b>Compose</b>: Create your Special Memory Card for the first time.</span>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-yellow-100"><i class="pi pi-refresh text-lg text-yellow-600"></i></span>
-              <span class="text-brand-primary"><b>Recreate</b>: Make a new version of your Special Memory Card with a fresh design.</span>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-secondary/20"><i class="pi pi-check text-lg text-brand-secondary"></i></span>
-                              <span class="text-brand-primary"><b>Approve</b>: Mark your Special Memory Card as finished and ready to share or print.</span>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-100"><i class="pi pi-undo text-lg text-orange-600"></i></span>
-                              <span class="text-brand-primary"><b>Unapprove</b>: Move your Special Memory Card back to editing if you want to make changes.</span>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-primary/20"><i class="pi pi-list text-lg text-brand-primary"></i></span>
-              <span class="text-brand-primary"><b>Details</b>: See more information about your Special Memory Card.</span>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-highlight/20"><i class="pi pi-cog text-lg text-brand-highlight"></i></span>
-              <span class="text-brand-primary"><b>Settings</b>: Change the title, layout, or which memories moments are included.</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <template #footer>
-        <div class="flex justify-end">
-          <button data-testid="info-dialog-close-button" class="bg-brand-dialog-cancel text-white font-bold rounded-full px-6 py-2 text-base shadow border-0" @click="showInfoDialog = false">
-            Close
-          </button>
-        </div>
-      </template>
-    </Dialog>
+    <!-- Info Bubble for Memory Books & Cards -->
+    <SavtaBubble
+      v-model:open="showMemoryBooksInfoBubble"
+      target="[data-savta='memory-books-info']"
+      placement="center"
+      :offset="10"
+      heading="About Memory Cards & Books"
+      :html="memoryBooksInfoHtml"
+    />
 
     <!-- Approval Dialog -->
     <Dialog 
@@ -170,7 +108,7 @@
           <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
             <div class="flex">
               <div class="flex-shrink-0">
-                <i class="pi pi-info-circle text-blue-400 text-lg"></i>
+                <i class="pi pi-info-circle text-blue-400 text-lg" title="Ask Savta"></i>
               </div>
               <div class="ml-3">
                 <p class="text-sm text-blue-700">
@@ -971,7 +909,7 @@
             </div>
             <div class="border-0 bg-gradient-to-br from-brand-primary/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 mt-4">
               <div class="flex items-start gap-2 text-xs sm:text-sm text-brand-primary">
-                <i class="pi pi-info-circle text-brand-primary text-xs sm:text-sm mt-0.5 flex-shrink-0"></i>
+                <i class="pi pi-info-circle text-brand-primary text-xs sm:text-sm mt-0.5 flex-shrink-0" title="Ask Savta"></i>
                 <span>Click download to save your memory book as a {{ getFileTypeDisplay(selectedBook) }} file to your device</span>
               </div>
             </div>
@@ -1302,7 +1240,7 @@
         
         <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
           <div class="flex items-start space-x-2">
-            <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
+            <i class="pi pi-info-circle text-blue-600 mt-0.5" title="Ask Savta"></i>
             <div>
               <p class="text-xs sm:text-sm font-medium text-gray-900">What happens next:</p>
               <ul class="text-xs text-gray-600 mt-1 space-y-1">
@@ -3976,9 +3914,76 @@ const cleanupBook = async (bookId) => {
   }
 }
 
-const showInfoDialog = ref(false)
+const showMemoryBooksInfoBubble = ref(false)
 const showApprovalDialog = ref(false)
 const pendingApprovalBookId = ref(null)
+
+// HTML content for the info bubble
+const memoryBooksInfoHtml = `
+  <div class="space-y-4">
+    <div class="bg-brand-highlight/10 rounded-lg p-4 border border-brand-highlight/20">
+      <h2 class="text-lg font-bold text-brand-highlight mb-2">What are Memory Cards?</h2>
+      <p class="text-sm text-brand-primary">
+        Memory Cards are single-page designs with beautiful themes. I pick your best photos and write heartwarming captions. 
+        Perfect for mailing to family members or sharing digitally. Each card tells a story in one beautiful page.
+      </p>
+    </div>
+    <div class="bg-brand-secondary/10 rounded-lg p-4 border border-brand-secondary/20">
+      <h2 class="text-lg font-bold text-brand-secondary mb-2">What are Memory Books?</h2>
+      <p class="text-sm text-brand-primary mb-3">
+        Memory Books are multi-page collections that can use themes or grid layouts. You choose which photos to include and I create 
+        beautiful designs. Perfect for printing and mailing to family members or sharing digitally.
+      </p>
+      <h3 class="text-md font-bold text-brand-secondary mb-2">Why Create Memory Cards?</h3>
+      <ul class="list-disc pl-5 text-sm text-brand-primary space-y-1">
+        <li>To keep your precious memories safe and easy to find.</li>
+        <li>To share your stories with children, grandchildren, and friends.</li>
+        <li>To have a lovely stack of cards to look through whenever you want to remember happy times.</li>
+      </ul>
+    </div>
+    <div class="bg-brand-accent/10 rounded-lg p-4 border border-brand-accent/20">
+      <h2 class="text-lg font-bold text-brand-accent mb-2">How Do I Use It?</h2>
+      <p class="text-sm text-brand-primary">
+        Just pick your favorite memory moments, design your cards, and let the magic happen! 
+        You can view your memory card as a PDF, print it, or share it with your loved ones. 
+        It's easy and fun—no computer skills needed! No tedious dropping and dragging photos into a photo album.
+      </p>
+    </div>
+    <div class="bg-white rounded-lg p-4 border border-gray-100">
+      <h2 class="text-sm font-bold text-brand-primary mb-2">What do the buttons mean?</h2>
+      <ul class="space-y-2">
+        <li class="flex items-center gap-2">
+          <span class="w-6 h-6 flex items-center justify-center rounded-full bg-brand-highlight/20"><i class="pi pi-external-link text-sm text-brand-highlight"></i></span>
+          <span class="text-sm text-brand-primary"><b>View</b>: Open your Special Memory Card to view or download it.</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="w-6 h-6 flex items-center justify-center rounded-full bg-brand-secondary/20"><i class="pi pi-bolt text-sm text-brand-secondary"></i></span>
+          <span class="text-sm text-brand-primary"><b>Compose</b>: Create your Special Memory Card for the first time.</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-100"><i class="pi pi-refresh text-sm text-yellow-600"></i></span>
+          <span class="text-sm text-brand-primary"><b>Recreate</b>: Make a new version of your Special Memory Card with a fresh design.</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="w-6 h-6 flex items-center justify-center rounded-full bg-brand-secondary/20"><i class="pi pi-check text-sm text-brand-secondary"></i></span>
+          <span class="text-sm text-brand-primary"><b>Approve</b>: Mark your Special Memory Card as finished and ready to share or print.</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100"><i class="pi pi-undo text-sm text-orange-600"></i></span>
+          <span class="text-sm text-brand-primary"><b>Unapprove</b>: Move your Special Memory Card back to editing if you want to make changes.</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="w-6 h-6 flex items-center justify-center rounded-full bg-brand-primary/20"><i class="pi pi-list text-sm text-brand-primary"></i></span>
+          <span class="text-sm text-brand-primary"><b>Details</b>: See more information about your Special Memory Card.</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="w-6 h-6 flex items-center justify-center rounded-full bg-brand-highlight/20"><i class="pi pi-cog text-sm text-brand-highlight"></i></span>
+          <span class="text-sm text-brand-primary"><b>Settings</b>: Change the title, layout, or which memories moments are included.</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+`
 
 // import PdfViewer from '~/components/PdfViewer.vue'
 import { defineAsyncComponent } from 'vue'

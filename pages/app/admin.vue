@@ -2220,7 +2220,7 @@
             
             <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
               <div class="flex items-start gap-2">
-                <i class="pi pi-info-circle text-blue-500 mt-0.5"></i>
+                <i class="pi pi-info-circle text-blue-500 mt-0.5" title="Ask Savta"></i>
                 <div class="text-sm">
                   <strong class="text-blue-600">✅ Safety Measure:</strong>
                   <p class="text-brand-primary/70 mt-1">
