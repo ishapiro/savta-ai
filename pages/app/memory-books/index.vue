@@ -588,7 +588,7 @@
               <SavtaIcon class="w-12 h-12" />
             </div>
             <div class="min-w-0">
-              <h3 class="text-lg font-bold text-brand-header mb-1 font-architects-daughter">Let me help you share your photos, darling!</h3>
+              <h3 class="text-lg font-bold text-brand-header mb-1 font-architects-daughter">Let me help you share your photos.</h3>
             </div>
           </div>
           <div class="bg-white/80 rounded-lg p-4">
@@ -608,7 +608,7 @@
                   <span class="font-semibold text-brand-highlight font-architects-daughter">💡 A little tip from Savta</span>
                 </div>
                 <p class="text-sm text-brand-primary">
-                  Try sharing 6 or more photos to start with, sweetie. That way I can make you the most beautiful memory cards!
+                  Try sharing 6 or more photos to start with. That way I can make you the most beautiful memory cards!
                 </p>
               </div>
             </div>
@@ -622,7 +622,7 @@
               <SavtaIcon class="w-12 h-12" />
             </div>
             <div class="min-w-0">
-              <h3 class="font-bold mb-0.5 font-architects-daughter text-brand-header text-lg">I'm reviewing your photos, darling!</h3>
+              <h3 class="font-bold mb-0.5 font-architects-daughter text-brand-header text-lg">I'm reviewing your photos.</h3>
               <p class="text-sm text-gray-700 leading-relaxed">
                 I'm looking through each photo, remembering the people and places, and writing sweet captions. 
                 This helps me create the most beautiful memory cards and books for you.
@@ -648,7 +648,7 @@
               <SavtaIcon class="w-12 h-12" />
             </div>
             <div class="min-w-0">
-              <h3 class="font-bold mb-0.5 font-architects-daughter text-green-800 text-lg">I've reviewed these photos, darling!</h3>
+              <h3 class="font-bold mb-0.5 font-architects-daughter text-green-800 text-lg">I've reviewed these photos.</h3>
               <p class="text-sm text-green-700 leading-relaxed">
                 I've reviewed and organized these photos. They're ready for creating beautiful memory cards and books!
               </p>

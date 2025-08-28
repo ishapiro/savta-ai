@@ -245,7 +245,7 @@
       text="As a grandmother myself, I know how precious all those photos on your phone are. 
       I'll help you create very special memory cards and books for your family and friends.
       Click on 'Create a Memory' and I'll guide you through creating your very first one. 
-      It's easier than you think, darling!"
+      It's easier than you think."
       variant="instruction"
       :dismissible="true"
       :show-avatar="true"
