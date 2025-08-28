@@ -2706,9 +2706,9 @@ export default defineEventHandler(async (event) => {
       
       const borderMargin = pageBorder > 0 ? (pageBorderOffset * 72 / 25.4) : 9 // Convert mm to points, or use 9 points default
       
-      // For solid backgrounds, use transparent fill to show the background color
-      // For other backgrounds, use white fill
-      const borderFillColor = book.background_type === 'solid' ? undefined : rgb(1, 1, 1)
+      // For solid backgrounds and magical backgrounds, use transparent fill to show the background
+      // For white backgrounds, use white fill
+      const borderFillColor = (book.background_type === 'solid' || book.background_type === 'magical') ? undefined : rgb(1, 1, 1)
       
       // Use theme border color if available, otherwise use black
       const borderColor = theme?.body_font_color ? 
