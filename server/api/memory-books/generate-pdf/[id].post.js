@@ -973,26 +973,16 @@ export default defineEventHandler(async (event) => {
                 console.log(`🔄 Face-preserving adjustment: Y position ${smartcropArea.y} is acceptable (below max allowed ${maxAllowedY})`)
               }
               
-                            // Create a sophisticated bounding box around ALL faces
-              // Top faces: use top edge, Bottom faces: use bottom edge
-              const imageCenter = processedMetadata.height / 2
-              const topHalfFaces = faceBoosts.filter(face => face.y < 0.5)
-              const bottomHalfFaces = faceBoosts.filter(face => face.y >= 0.5)
-              
+                            // Create a bounding box around ALL faces - always use full face area
+              // CRITICAL: Never split faces - always preserve the complete face area
               const faceBoundingBox = {
                 left: Math.min(...faceBoosts.map(face => face.x)),
-                // For top: use the highest (lowest Y) face in the top half, or all faces if none in top half
-                top: topHalfFaces.length > 0 
-                  ? Math.min(...topHalfFaces.map(face => face.y))
-                  : Math.min(...faceBoosts.map(face => face.y)),
+                top: Math.min(...faceBoosts.map(face => face.y)),           // Always use top of highest face
                 right: Math.max(...faceBoosts.map(face => face.x + face.width)),
-                // For bottom: use the lowest (highest Y) face in the bottom half, or all faces if none in bottom half  
-                bottom: bottomHalfFaces.length > 0
-                  ? Math.max(...bottomHalfFaces.map(face => face.y + face.height))
-                  : Math.max(...faceBoosts.map(face => face.y + face.height))
+                bottom: Math.max(...faceBoosts.map(face => face.y + face.height))  // Always use bottom of lowest face
               }
               
-              console.log(`🔄 Smart face bounding: ${topHalfFaces.length} top faces, ${bottomHalfFaces.length} bottom faces`)
+              console.log(`🔄 Complete face bounding: preserving all ${faceBoosts.length} faces`)
               
               // Convert to pixel coordinates
               const faceBoxPixels = {
@@ -1007,9 +997,32 @@ export default defineEventHandler(async (event) => {
               // Calculate the maximum possible crop for this aspect ratio
               const targetAspectRatio = targetWidth / targetHeight
               
-              // Start with the maximum possible crop for this aspect ratio
-              let maxCropWidth, maxCropHeight
-              if (processedMetadata.width / processedMetadata.height > targetAspectRatio) {
+                          // Check if aspect ratios are very different - if so, use conservative cropping
+            const imageAspectRatio = processedMetadata.width / processedMetadata.height
+            const aspectRatioDifference = Math.abs(imageAspectRatio - targetAspectRatio) / Math.max(imageAspectRatio, targetAspectRatio)
+            
+            console.log(`🔍 Aspect ratio analysis: image=${imageAspectRatio.toFixed(3)}, target=${targetAspectRatio.toFixed(3)}, difference=${(aspectRatioDifference * 100).toFixed(1)}%`)
+            
+            let maxCropWidth, maxCropHeight
+            
+            if (aspectRatioDifference > 0.3) {
+              // Aspect ratios are very different (>30% difference) - use conservative cropping
+              // Prioritize preserving the entire image over perfect aspect ratio matching
+              console.log(`🔄 Large aspect ratio difference detected - using conservative cropping`)
+              
+              if (imageAspectRatio > targetAspectRatio) {
+                // Image is wider than target - crop width conservatively
+                maxCropHeight = processedMetadata.height
+                maxCropWidth = Math.min(processedMetadata.width, maxCropHeight * targetAspectRatio * 1.2) // 20% more lenient
+              } else {
+                // Image is taller than target - crop height conservatively  
+                maxCropWidth = processedMetadata.width
+                maxCropHeight = Math.min(processedMetadata.height, maxCropWidth / targetAspectRatio * 1.2) // 20% more lenient
+              }
+            } else {
+              // Aspect ratios are similar - use standard cropping
+              console.log(`🔄 Similar aspect ratios - using standard cropping`)
+              if (imageAspectRatio > targetAspectRatio) {
                 // Image is wider than target - use full height
                 maxCropHeight = processedMetadata.height
                 maxCropWidth = maxCropHeight * targetAspectRatio
@@ -1018,6 +1031,7 @@ export default defineEventHandler(async (event) => {
                 maxCropWidth = processedMetadata.width
                 maxCropHeight = maxCropWidth / targetAspectRatio
               }
+            }
               
               // Ensure the maximum crop includes all faces
               // Calculate the minimum crop area needed to include all faces
@@ -1063,26 +1077,20 @@ export default defineEventHandler(async (event) => {
                 const faceLeftWithBuffer = Math.max(0, faceBoxPixels.left - Math.min(topBuffer, 50))
                 const faceRightWithBuffer = Math.min(processedMetadata.width, faceBoxPixels.right + Math.min(topBuffer, 50))
                 
-                // Ensure crop includes all faces with buffers
+                // CRITICAL: Always start with the face-safe top position - NEVER compromise
+                cropY = faceTopWithBuffer
                 cropX = Math.max(0, Math.min(processedMetadata.width - maxCropWidth, faceLeftWithBuffer))
-                cropY = Math.max(0, Math.min(processedMetadata.height - maxCropHeight, faceTopWithBuffer))
                 
-                // If the crop would cut off faces on the right or bottom, adjust position
+                console.log(`🔄 FACE-SAFE PRIORITY: Starting with cropY=${cropY} (faceTopWithBuffer=${faceTopWithBuffer})`)
+                console.log(`🔄 FACE-SAFE PRIORITY: Face pixels top=${faceBoxPixels.top}, buffer=${topBuffer}`)
+                
+                // If the crop would cut off faces on the right, adjust position
                 if (cropX + maxCropWidth < faceRightWithBuffer) {
                   cropX = Math.max(0, faceRightWithBuffer - maxCropWidth)
+                  console.log(`🔄 Adjusted cropX to ${cropX} to include right faces`)
                 }
-                // CRITICAL: For Y position, NEVER go below faceTopWithBuffer - tops of heads are sacred!
-                if (cropY > faceTopWithBuffer) {
-                  cropY = faceTopWithBuffer
-                  console.log(`🔄 PRIORITY FIX: Moved crop Y to ${cropY} to absolutely preserve tops of heads`)
-                }
-                // Only adjust for bottom faces if it doesn't compromise the top
-                if (cropY + maxCropHeight < faceBottomWithBuffer && cropY <= faceTopWithBuffer) {
-                  const newCropY = Math.max(faceTopWithBuffer, faceBottomWithBuffer - maxCropHeight)
-                  if (newCropY >= faceTopWithBuffer) {
-                    cropY = newCropY
-                  }
-                }
+                
+                // ABSOLUTELY NO ADJUSTMENTS TO cropY - tops of heads are sacred!
                 
                 console.log(`🔄 Face-safe positioning: faces at ${faceBoxPixels.left},${faceBoxPixels.top} to ${faceBoxPixels.right},${faceBoxPixels.bottom}`)
                 console.log(`🔄 Face-safe positioning: with buffer ${faceLeftWithBuffer},${faceTopWithBuffer} to ${faceRightWithBuffer},${faceBottomWithBuffer}`)

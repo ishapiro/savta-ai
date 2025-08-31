@@ -1020,7 +1020,7 @@
             </div>
             
             <h2 class="text-lg sm:text-xl font-bold text-brand-header mb-2 animate-fade-in">
-              {{ isRegenerating ? '🌸 Re 🌸' : '🌸 Creating Your Memory 🌸' }}
+              {{ isRegenerating ? '🌸 Recreating Your Memory 🌸' : '🌸 Creating Your Memory 🌸' }}
             </h2>
             <p class="text-sm sm:text-base text-brand-primary font-medium">
               {{ isRegenerating ? 'Baking fresh memories with love...' : 'Baking your memory with love...' }}
@@ -1141,6 +1141,40 @@
             placeholder="For example: 'Photos from our New York trip' or 'Our family vacation memories'"
             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-highlight focus:border-brand-highlight"
           />
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-3">
+            Photo Selection
+          </label>
+          <div class="space-y-3">
+            <div class="flex items-center">
+              <input
+                type="radio"
+                id="samePhotos"
+                :value="false"
+                v-model="useNewPhotos"
+                class="h-4 w-4 text-brand-highlight focus:ring-brand-highlight border-gray-300"
+              />
+              <label for="samePhotos" class="ml-3 text-sm text-gray-700">
+                <span class="font-medium">Use the same photos</span>
+                <span class="block text-xs text-gray-500 mt-1">Keep the current photos and just update the story</span>
+              </label>
+            </div>
+            <div class="flex items-center">
+              <input
+                type="radio"
+                id="newPhotos"
+                :value="true"
+                v-model="useNewPhotos"
+                class="h-4 w-4 text-brand-highlight focus:ring-brand-highlight border-gray-300"
+              />
+              <label for="newPhotos" class="ml-3 text-sm text-gray-700">
+                <span class="font-medium">Select new photos</span>
+                <span class="block text-xs text-gray-500 mt-1">Let Savta choose different photos based on the updated description</span>
+              </label>
+            </div>
+          </div>
         </div>
         
         <div class="flex flex-col sm:flex-row gap-3 justify-end mt-4">
@@ -2107,6 +2141,7 @@ const showGenerateDialog = ref(false)
 const showRegenerateDialog = ref(false)
 const showUpdateDescriptionDialog = ref(false)
 const newDescription = ref('')
+const useNewPhotos = ref(false)
 
 // Error dialog state
 const showErrorDialog = ref(false)
@@ -2159,6 +2194,7 @@ const confirmRegenerate = async () => {
   if (pendingBook.value.layout_type === 'theme') {
     // Show dialog to update description
             newDescription.value = pendingBook.value.ai_supplemental_prompt || ''
+    useNewPhotos.value = false // Default to using same photos
     showUpdateDescriptionDialog.value = true
     return // Exit early, will continue after dialog confirmation
   }
@@ -2257,7 +2293,10 @@ const continueRegeneration = async () => {
       const accessToken = sessionData.session?.access_token
       await $fetch('/api/memory-books/reset-for-regeneration', {
         method: 'POST',
-        body: { bookId: pendingBook.value.id },
+        body: { 
+          bookId: pendingBook.value.id,
+          useNewPhotos: useNewPhotos.value 
+        },
         headers: {
           Authorization: `Bearer ${accessToken}`
         }

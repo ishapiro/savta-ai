@@ -21,9 +21,10 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, statusMessage: 'Invalid token' })
     }
 
-    // Get book ID from request body
+    // Get book ID and photo selection preference from request body
     const body = await readBody(event)
     const bookId = body.bookId
+    const useNewPhotos = body.useNewPhotos || false
     if (!bookId) {
       throw createError({ statusCode: 400, statusMessage: 'Book ID is required' })
     }
@@ -39,22 +40,32 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Memory book not found' })
     }
 
-    // Store previously used photos before clearing them
-    const previouslyUsedPhotos = book.created_from_assets || []
+    // Prepare update object based on photo selection preference
+    let updateData = {
+      status: 'draft',
+      background_url: null,
+      pdf_url: null,
+      magic_story: null, // Always clear story to regenerate it
+      ai_photo_selection_reasoning: null
+    }
     
-    // Reset fields for regeneration - clear photo selection and story to force regeneration
+    if (useNewPhotos) {
+      // User wants new photos - clear current selection and store them as previously used
+      const previouslyUsedPhotos = book.created_from_assets || []
+      updateData.created_from_assets = null
+      updateData.previously_used_assets = previouslyUsedPhotos
+      console.log(`🔄 Regenerating with NEW photos for book ${bookId}`)
+    } else {
+      // User wants same photos - clear previously used list so AI can reuse them
+      updateData.previously_used_assets = null
+      console.log(`🔄 Regenerating with SAME photos for book ${bookId}`)
+      // Keep created_from_assets as is, but clear previously_used_assets
+    }
+    
+    // Reset fields for regeneration
     const { error: updateError } = await supabase
       .from('memory_books')
-      .update({
-        status: 'draft',
-        background_url: null,
-        pdf_url: null,
-        created_from_assets: null,
-        magic_story: null,
-        ai_photo_selection_reasoning: null,
-        previously_used_assets: previouslyUsedPhotos // Store previously used photos to exclude them
-        // Clear photo selection and story to force AI to rerun with updated prompt
-      })
+      .update(updateData)
       .eq('id', bookId)
     if (updateError) {
       throw createError({ statusCode: 500, statusMessage: updateError.message })
