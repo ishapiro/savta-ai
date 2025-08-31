@@ -958,11 +958,12 @@ export default defineEventHandler(async (event) => {
               const highestFacePixelY = Math.floor(highestFace.y * processedMetadata.height)
               const faceHeight = Math.floor(highestFace.height * processedMetadata.height)
               
-              // Ensure we have enough space above the highest face - be very conservative
-              const requiredTopSpace = Math.max(faceHeight * 0.5, 100) // At least 50% of face height or 100px
-              const maxAllowedY = Math.max(0, highestFacePixelY - requiredTopSpace)
+              // CRITICAL: Prioritize keeping tops of heads - be extremely conservative
+              // Always prefer keeping the top of faces over the bottom
+              const topBuffer = Math.max(faceHeight * 0.5, 100) // 50% of face height or 100px, whichever is larger
+              const maxAllowedY = Math.max(0, highestFacePixelY - topBuffer)
               
-              console.log(`🔄 Face analysis: Highest face at Y=${highestFacePixelY}px, face height=${faceHeight}px, max allowed Y=${maxAllowedY}px`)
+              console.log(`🔄 Face analysis: Highest face at Y=${highestFacePixelY}px, face height=${faceHeight}px, top buffer=${topBuffer}px, max allowed Y=${maxAllowedY}px`)
               
               if (smartcropArea.y > maxAllowedY) {
                 const originalY = smartcropArea.y
@@ -972,13 +973,26 @@ export default defineEventHandler(async (event) => {
                 console.log(`🔄 Face-preserving adjustment: Y position ${smartcropArea.y} is acceptable (below max allowed ${maxAllowedY})`)
               }
               
-                            // Create a bounding box around ALL faces to ensure they are included
+                            // Create a sophisticated bounding box around ALL faces
+              // Top faces: use top edge, Bottom faces: use bottom edge
+              const imageCenter = processedMetadata.height / 2
+              const topHalfFaces = faceBoosts.filter(face => face.y < 0.5)
+              const bottomHalfFaces = faceBoosts.filter(face => face.y >= 0.5)
+              
               const faceBoundingBox = {
                 left: Math.min(...faceBoosts.map(face => face.x)),
-                top: Math.min(...faceBoosts.map(face => face.y)),
+                // For top: use the highest (lowest Y) face in the top half, or all faces if none in top half
+                top: topHalfFaces.length > 0 
+                  ? Math.min(...topHalfFaces.map(face => face.y))
+                  : Math.min(...faceBoosts.map(face => face.y)),
                 right: Math.max(...faceBoosts.map(face => face.x + face.width)),
-                bottom: Math.max(...faceBoosts.map(face => face.y + face.height))
+                // For bottom: use the lowest (highest Y) face in the bottom half, or all faces if none in bottom half  
+                bottom: bottomHalfFaces.length > 0
+                  ? Math.max(...bottomHalfFaces.map(face => face.y + face.height))
+                  : Math.max(...faceBoosts.map(face => face.y + face.height))
               }
+              
+              console.log(`🔄 Smart face bounding: ${topHalfFaces.length} top faces, ${bottomHalfFaces.length} bottom faces`)
               
               // Convert to pixel coordinates
               const faceBoxPixels = {
@@ -1042,21 +1056,106 @@ export default defineEventHandler(async (event) => {
                   }
                 }
                 
-                // Position crop to center on faces while staying within image bounds
-                cropX = Math.max(0, Math.min(processedMetadata.width - maxCropWidth, 
-                  Math.floor(faceCenterX - maxCropWidth / 2)))
-                cropY = Math.max(0, Math.min(processedMetadata.height - maxCropHeight, 
-                  Math.floor(faceCenterY - maxCropHeight / 2)))
+                // Position crop to ensure NO faces are cut off - PRIORITIZE TOPS OF HEADS
+                // Calculate the minimum crop area that includes ALL faces with proper buffers
+                const faceTopWithBuffer = Math.max(0, faceBoxPixels.top - topBuffer)
+                const faceBottomWithBuffer = Math.min(processedMetadata.height, faceBoxPixels.bottom + Math.min(topBuffer, 50))
+                const faceLeftWithBuffer = Math.max(0, faceBoxPixels.left - Math.min(topBuffer, 50))
+                const faceRightWithBuffer = Math.min(processedMetadata.width, faceBoxPixels.right + Math.min(topBuffer, 50))
                 
-                console.log(`🔄 Adjusted crop to: ${cropX},${cropY} (${maxCropWidth}x${maxCropHeight})`)
+                // Ensure crop includes all faces with buffers
+                cropX = Math.max(0, Math.min(processedMetadata.width - maxCropWidth, faceLeftWithBuffer))
+                cropY = Math.max(0, Math.min(processedMetadata.height - maxCropHeight, faceTopWithBuffer))
+                
+                // If the crop would cut off faces on the right or bottom, adjust position
+                if (cropX + maxCropWidth < faceRightWithBuffer) {
+                  cropX = Math.max(0, faceRightWithBuffer - maxCropWidth)
+                }
+                // CRITICAL: For Y position, NEVER go below faceTopWithBuffer - tops of heads are sacred!
+                if (cropY > faceTopWithBuffer) {
+                  cropY = faceTopWithBuffer
+                  console.log(`🔄 PRIORITY FIX: Moved crop Y to ${cropY} to absolutely preserve tops of heads`)
+                }
+                // Only adjust for bottom faces if it doesn't compromise the top
+                if (cropY + maxCropHeight < faceBottomWithBuffer && cropY <= faceTopWithBuffer) {
+                  const newCropY = Math.max(faceTopWithBuffer, faceBottomWithBuffer - maxCropHeight)
+                  if (newCropY >= faceTopWithBuffer) {
+                    cropY = newCropY
+                  }
+                }
+                
+                console.log(`🔄 Face-safe positioning: faces at ${faceBoxPixels.left},${faceBoxPixels.top} to ${faceBoxPixels.right},${faceBoxPixels.bottom}`)
+                console.log(`🔄 Face-safe positioning: with buffer ${faceLeftWithBuffer},${faceTopWithBuffer} to ${faceRightWithBuffer},${faceBottomWithBuffer}`)
+                console.log(`🔄 Final face-safe crop: ${cropX},${cropY} (${maxCropWidth}x${maxCropHeight})`)
               }
               
-              // Ensure all coordinates are integers
-              smartcropArea = {
-                x: Math.floor(cropX),
-                y: Math.floor(cropY),
-                width: Math.floor(maxCropWidth),
-                height: Math.floor(maxCropHeight)
+              // Final safety check: ensure no faces are cut off
+              const finalCropRight = cropX + maxCropWidth
+              const finalCropBottom = cropY + maxCropHeight
+              
+              // Verify all faces are within the final crop area
+              const allFacesIncluded = faceBoosts.every(face => {
+                const faceLeft = face.x * processedMetadata.width
+                const faceTop = face.y * processedMetadata.height
+                const faceRight = (face.x + face.width) * processedMetadata.width
+                const faceBottom = (face.y + face.height) * processedMetadata.height
+                
+                return faceLeft >= cropX && faceRight <= finalCropRight && 
+                       faceTop >= cropY && faceBottom <= finalCropBottom
+              })
+              
+              if (!allFacesIncluded) {
+                console.log('⚠️ WARNING: Some faces may still be cut off after crop adjustment')
+              } else {
+                console.log('✅ All faces confirmed to be within crop area')
+              }
+              
+              // Check if we need to extend beyond image boundaries to preserve faces
+              const needsExtension = {
+                top: cropY < 0,
+                bottom: (cropY + maxCropHeight) > processedMetadata.height,
+                left: cropX < 0, 
+                right: (cropX + maxCropWidth) > processedMetadata.width
+              }
+              
+              if (needsExtension.top || needsExtension.bottom || needsExtension.left || needsExtension.right) {
+                console.log(`🔄 Image extension needed:`, needsExtension)
+                
+                // Calculate the final image dimensions and offsets
+                const finalWidth = Math.floor(maxCropWidth)
+                const finalHeight = Math.floor(maxCropHeight)
+                const sourceX = Math.max(0, Math.floor(cropX))
+                const sourceY = Math.max(0, Math.floor(cropY))
+                const sourceWidth = Math.min(processedMetadata.width - sourceX, finalWidth)
+                const sourceHeight = Math.min(processedMetadata.height - sourceY, finalHeight)
+                
+                // Calculate where to place the source image in the final canvas
+                const destX = Math.max(0, -Math.floor(cropX))
+                const destY = Math.max(0, -Math.floor(cropY))
+                
+                console.log(`🔄 Extension details: source(${sourceX},${sourceY},${sourceWidth}x${sourceHeight}) -> dest(${destX},${destY}) in ${finalWidth}x${finalHeight} canvas`)
+                
+                // Store extension info for later processing
+                smartcropArea = {
+                  x: sourceX,
+                  y: sourceY,
+                  width: sourceWidth,
+                  height: sourceHeight,
+                  needsExtension: true,
+                  finalWidth: finalWidth,
+                  finalHeight: finalHeight,
+                  destX: destX,
+                  destY: destY
+                }
+              } else {
+                // Normal crop without extension
+                smartcropArea = {
+                  x: Math.floor(cropX),
+                  y: Math.floor(cropY),
+                  width: Math.floor(maxCropWidth),
+                  height: Math.floor(maxCropHeight),
+                  needsExtension: false
+                }
               }
               
               console.log(`🔄 Maximized crop area: ${smartcropArea.width}x${smartcropArea.height} at (${smartcropArea.x}, ${smartcropArea.y}) - using ${((smartcropArea.width * smartcropArea.height) / (processedMetadata.width * processedMetadata.height) * 100).toFixed(1)}% of original image`)
@@ -1218,14 +1317,51 @@ export default defineEventHandler(async (event) => {
           }
         }
         
-        // Apply the crop
-        const croppedImage = await sharp(workingImageBuffer)
-          .extract({
-            left: cropArea.x,
-            top: cropArea.y,
-            width: cropArea.width,
-            height: cropArea.height
+        // Apply the crop with optional black fill extension
+        let croppedImage
+        
+        if (cropArea.needsExtension) {
+          console.log(`🔄 Applying crop with black fill extension`)
+          
+          // First extract the available portion of the image
+          const extractedBuffer = await sharp(workingImageBuffer)
+            .extract({
+              left: cropArea.x,
+              top: cropArea.y,
+              width: cropArea.width,
+              height: cropArea.height
+            })
+            .toBuffer()
+          
+          // Create a black canvas of the target size
+          croppedImage = sharp({
+            create: {
+              width: cropArea.finalWidth,
+              height: cropArea.finalHeight,
+              channels: 3,
+              background: { r: 0, g: 0, b: 0 }
+            }
           })
+          .composite([{
+            input: extractedBuffer,
+            left: cropArea.destX,
+            top: cropArea.destY
+          }])
+          
+          console.log(`🔄 Black fill extension applied: ${cropArea.width}x${cropArea.height} image placed at (${cropArea.destX},${cropArea.destY}) on ${cropArea.finalWidth}x${cropArea.finalHeight} black canvas`)
+        } else {
+          // Normal crop without extension
+          croppedImage = sharp(workingImageBuffer)
+            .extract({
+              left: cropArea.x,
+              top: cropArea.y,
+              width: cropArea.width,
+              height: cropArea.height
+            })
+        }
+        
+        // Apply resize and preserve metadata
+        croppedImage = croppedImage
           .resize(targetWidth, targetHeight, { 
             fit: 'cover',
             kernel: 'mitchell'
