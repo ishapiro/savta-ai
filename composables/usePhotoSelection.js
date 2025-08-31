@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 // Photo pool size constant for easy configuration
 const PHOTO_POOL_SIZE = 100
@@ -6,6 +6,11 @@ const PHOTO_POOL_SIZE = 100
 export const usePhotoSelection = () => {
   // Photo selection method
   const photoSelection_method = ref('last_100')
+  
+  // Watch for method changes to debug
+  watch(photoSelection_method, (newMethod, oldMethod) => {
+    console.log('🔍 [usePhotoSelection] photoSelection_method changed from:', oldMethod, 'to:', newMethod)
+  }, { immediate: true })
   
   // Date range selection
   const photoSelection_dateRange = ref({ start: null, end: null })

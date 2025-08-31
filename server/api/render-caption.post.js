@@ -12,13 +12,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    console.log('🎨 Rendering caption with high-quality text renderer:', {
-      text: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
-      width,
-      height,
-      fontSize,
-      color
-    })
+
 
     // Render the caption using the same high-quality text renderer as theme cards
     const imageBuffer = await renderTextToImage(text, width, height, {

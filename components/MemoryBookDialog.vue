@@ -457,6 +457,7 @@
           :filteredAssets="photoSelection_filteredAssets"
           :loadingAssets="photoSelection_loadingAssets"
           :isUploading="photoSelection_isUploading"
+          :maxPhotoCount="selectedThemePhotoCount || totalPhotosNeeded"
           @upload-photos="handleUploadPhotos"
           @no-photos-found="handleNoPhotosFound"
           @close-photo-library="handleClosePhotoLibrary"

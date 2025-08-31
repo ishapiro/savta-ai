@@ -267,7 +267,7 @@
               :key="asset.id"
               class="relative group cursor-pointer touch-manipulation magic-photo-card"
               :class="{
-                'opacity-60 pointer-events-none': selectedMemoriesValue.length >= 12 && !selectedMemoriesValue.includes(asset.id),
+                'opacity-60 pointer-events-none': selectedMemoriesValue.length >= maxPhotoCount && !selectedMemoriesValue.includes(asset.id),
                 'ring-4 ring-purple-400 ring-offset-2 scale-105 z-10 bg-purple-100 shadow-xl': selectedMemoriesValue.includes(asset.id)
               }"
             @click="toggleMemorySelection(asset.id)"
@@ -297,7 +297,7 @@
           </div>
         </div>
                   <div class="mt-2 text-xs text-gray-600 text-center">
-            <span>{{ selectedMemoriesValue.length }} selected (up to 12 photos)</span>
+            <span>{{ selectedMemoriesValue.length }} selected (up to {{ maxPhotoCount }} photo{{ maxPhotoCount !== 1 ? 's' : '' }})</span>
             <span v-if="selectedTagFilterValue && selectedTagFilterValue.length > 0"> • Filtered by: {{ selectedTagFilterValue.join(', ') }}</span>
           </div>
       </div>
@@ -427,6 +427,11 @@ const props = defineProps({
   isUploading: {
     type: Boolean,
     default: false
+  },
+  // Maximum number of photos that can be selected (from theme or grid layout)
+  maxPhotoCount: {
+    type: Number,
+    default: 12
   }
 })
 
@@ -635,7 +640,10 @@ const selectMethod = (newMethod) => {
 }
 
 const selectPhotoLibrary = () => {
+  console.log('🔍 [PhotoSelectionInterface] selectPhotoLibrary clicked!')
+  console.log('🔍 [PhotoSelectionInterface] Current method before:', props.method)
   emit('update:method', 'photo_library')
+  console.log('🔍 [PhotoSelectionInterface] Emitted update:method with photo_library')
   // Note: Don't emit 'photo-library-selected' here - that should only be emitted
   // when the user actually proceeds to the next step, not when they select the method
 }
@@ -652,7 +660,7 @@ const toggleMemorySelection = (assetId) => {
   
   if (index > -1) {
     newSelectedMemories.splice(index, 1)
-  } else if (newSelectedMemories.length < 12) {
+  } else if (newSelectedMemories.length < props.maxPhotoCount) {
     newSelectedMemories.push(assetId)
   }
   

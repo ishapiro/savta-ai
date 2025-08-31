@@ -1619,6 +1619,7 @@
                       :filteredAssets="photoSelection_filteredAssets"
                       :loadingAssets="photoSelection_loadingAssets"
                       :isUploading="isUploading"
+                      :maxPhotoCount="selectedThemePhotoCount"
                       @upload-photos="selectFilesForMagicMemory"
                       @photo-library-selected="nextMagicMemoryStep"
                       @no-photos-found="handleNoPhotosFound"
@@ -1627,7 +1628,7 @@
         </div>
 
       <!-- Step 5: Photo Library Selection (MANUAL step for photo_library method) -->
-      <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library'"
+      <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method.value === 'photo_library'"
         class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
         <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
           <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
@@ -1656,6 +1657,7 @@
                       :filteredAssets="photoSelection_filteredAssets"
                       :loadingAssets="photoSelection_loadingAssets"
                       :isUploading="isUploading"
+                      :maxPhotoCount="selectedThemePhotoCount"
                       @upload-photos="selectFilesForMagicMemory"
                       @photo-library-selected="nextMagicMemoryStep"
                       @no-photos-found="handleNoPhotosFound"
@@ -1690,7 +1692,7 @@
             v-if="!isLastStep()"
             :label="`Next: ${getNextStepName()}`"
             icon="pi pi-arrow-right"
-            :disabled="(magicMemoryStep === MAGIC_STEPS.TITLE && !magicMemoryTitle.trim()) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && !photoSelection_method.value) || (magicMemoryStep === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'geo_code' && !photoSelection_selectedLocation.value)"
+            :disabled="isNextButtonDisabled"
             @click="nextMagicMemoryStep"
             class="bg-brand-secondary hover:to-blue-700 text-white font-bold rounded-full px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
           />
@@ -1700,7 +1702,26 @@
             v-if="isLastStep()"
             label="Let's create something beautiful together"
             icon="pi pi-bolt"
-            :disabled="(magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method.value === 'photo_library' && photoSelection_selectedMemories.value.length < 1) || magicLoading"
+            :disabled="(() => {
+              const photoCheck = magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method.value === 'photo_library' && (!photoSelection_selectedMemories.value || photoSelection_selectedMemories.value.length < selectedThemePhotoCount)
+              const disabled = photoCheck || magicLoading
+              
+              // Only log when on MANUAL step to avoid spam
+              if (magicMemoryStep === MAGIC_STEPS.MANUAL) {
+                console.log('🔍 [CONTINUE-BUTTON-MANUAL] Button validation:', {
+                  step: magicMemoryStep,
+                  method: photoSelection_method.value,
+                  selectedCount: photoSelection_selectedMemories.value ? photoSelection_selectedMemories.value.length : 'undefined',
+                  requiredCount: selectedThemePhotoCount,
+                  hasSelectedMemories: !!photoSelection_selectedMemories.value,
+                  photoCheck,
+                  magicLoading,
+                  disabled
+                })
+              }
+              
+              return disabled
+            })()"
             :loading="magicLoading"
             @click="onMagicMemoryContinue"
             class="bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto animate-pulse"
@@ -4198,6 +4219,35 @@ const defaultThemeName = computed(() => {
   return defaultTheme ? defaultTheme.label.split(' (')[0] : null // Extract just the name without photo count
 })
 
+// Computed property to get the selected theme's photo count for UI display
+const selectedThemePhotoCount = computed(() => {
+  if (!magicSelectedTheme.value) return 12 // Default to 12 if no theme selected
+  
+  const selectedTheme = magicThemeOptions.value.find(theme => theme.value === magicSelectedTheme.value)
+  return selectedTheme ? selectedTheme.photoCount || 12 : 12
+})
+
+// Computed property for Next button disabled state
+const isNextButtonDisabled = computed(() => {
+  const currentStep = magicMemoryStep.value
+  const currentMethod = photoSelection_method.value
+  const currentTitle = magicMemoryTitle.value?.trim()
+  const currentSelectedLocation = photoSelection_selectedLocation.value
+  const currentSelectedMemories = photoSelection_selectedMemories.value
+  const currentSelectedCount = currentSelectedMemories?.length || 0
+  const currentRequiredCount = selectedThemePhotoCount.value
+  
+  // Calculate disabled conditions
+  const titleEmpty = currentStep === MAGIC_STEPS.TITLE && !currentTitle
+  const photosNoMethod = currentStep === MAGIC_STEPS.PHOTOS && !currentMethod
+  const photosGeoNoLocation = currentStep === MAGIC_STEPS.PHOTOS && currentMethod === 'geo_code' && !currentSelectedLocation
+  const manualNotEnoughPhotos = currentStep === MAGIC_STEPS.MANUAL && currentMethod === 'photo_library' && (!currentSelectedMemories || currentSelectedCount < currentRequiredCount)
+  
+  const disabled = titleEmpty || photosNoMethod || photosGeoNoLocation || manualNotEnoughPhotos
+  
+  return disabled
+})
+
 // Computed property to get the selected theme's background color
 const selectedThemeBackgroundColor = computed(() => {
   if (!magicSelectedTheme.value) {
@@ -4231,9 +4281,15 @@ const selectedThemeBackgroundColor = computed(() => {
 })
 
 // Watch for magic memory step changes to handle Step 5 redirect
-watch(magicMemoryStep, (newStep) => {
+watch(magicMemoryStep, (newStep, oldStep) => {
+  console.log('🔍 [magicMemoryStep watcher] Step changed from:', oldStep, 'to:', newStep)
+  console.log('🔍 [magicMemoryStep watcher] Current step index:', currentStepIndex.value)
+  console.log('🔍 [magicMemoryStep watcher] Current button config steps:', currentButtonConfig.value?.steps)
+  console.log('🔍 [magicMemoryStep watcher] photoSelection_method.value:', photoSelection_method.value)
+  
   if (newStep === MAGIC_STEPS.PHOTOS && photoSelection_availableAssets.value.length === 0) {
     // User has no photos, redirect to upload dialog
+    console.log('🔍 [magicMemoryStep watcher] No photos available, redirecting to upload')
     showMagicMemoryDialog.value = false
     showUploadDialog.value = true
   }
@@ -4253,6 +4309,12 @@ watch(magicMemoryStep, (newStep) => {
       console.log('🔍 [magicMemoryStep watcher] Keeping existing color picker value:', magicSolidBackgroundColor.value)
     }
   }
+  
+  if (newStep === MAGIC_STEPS.MANUAL) {
+    console.log('🔍 [magicMemoryStep watcher] Entering MANUAL step for photo selection')
+    console.log('🔍 [magicMemoryStep watcher] photoSelection_method.value:', photoSelection_method.value)
+    console.log('🔍 [magicMemoryStep watcher] Should show photo library interface:', photoSelection_method.value === 'photo_library')
+  }
 })
 
 // Watch for theme changes to update the background color
@@ -4268,6 +4330,13 @@ watch(magicSelectedTheme, (newThemeId) => {
   } else {
     console.log('🔍 [magicSelectedTheme watcher] Not on BACKGROUND step, skipping color update')
   }
+})
+
+// Watch for photo selection method changes to sync with magicPhotoSelectionMethod
+watch(() => photoSelection_method.value, (newMethod) => {
+  console.log('🔍 [photoSelection_method watcher] Method changed to:', newMethod)
+  magicPhotoSelectionMethod.value = newMethod
+  console.log('🔍 [photoSelection_method watcher] Updated magicPhotoSelectionMethod to:', magicPhotoSelectionMethod.value)
 })
 
 
@@ -4843,26 +4912,8 @@ const nextMagicMemoryStep = () => {
     }
   }
   
-  // Special handling for photo_library selection - add MANUAL step programmatically
-  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'photo_library') {
-    console.log('🔍 [nextMagicMemoryStep] Photo library selected, checking MANUAL step')
-    console.log('🔍 [nextMagicMemoryStep] Current steps before:', currentButtonConfig.value.steps)
-    
-    // Only add MANUAL step if it doesn't already exist
-    if (!currentButtonConfig.value.steps.includes(MAGIC_STEPS.MANUAL)) {
-      console.log('🔍 [nextMagicMemoryStep] Adding MANUAL step')
-    currentButtonConfig.value.steps.push(MAGIC_STEPS.MANUAL)
-    } else {
-      console.log('🔍 [nextMagicMemoryStep] MANUAL step already exists')
-    }
-    
-    console.log('🔍 [nextMagicMemoryStep] Current steps after:', currentButtonConfig.value.steps)
-    // Move to the MANUAL step
-    currentStepIndex.value = currentButtonConfig.value.steps.indexOf(MAGIC_STEPS.MANUAL)
-    magicMemoryStep.value = MAGIC_STEPS.MANUAL
-    console.log('🔍 [nextMagicMemoryStep] Advanced to MANUAL step:', magicMemoryStep.value)
-    return
-  }
+  // Photo library selection should just proceed to the next normal step (no special MANUAL step needed)
+  console.log('🔍 [nextMagicMemoryStep] Photo library selected, proceeding to next step normally')
   
   // Find next step in the button's sequence
   const nextIndex = currentStepIndex.value + 1
@@ -4895,10 +4946,7 @@ const previousMagicMemoryStep = () => {
 
 // Helper functions for navigation
 const getNextStepName = () => {
-  // Special case: if we're on PHOTOS step and photo_library is selected, the next step is MANUAL
-  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'photo_library') {
-    return "Photo Selection"
-  }
+
   
   const nextIndex = currentStepIndex.value + 1
   if (nextIndex < currentButtonConfig.value.steps.length) {
@@ -4915,10 +4963,6 @@ const getNextStepName = () => {
 }
 
 const isLastStep = () => {
-  // Special case: if we're on PHOTOS step and photo_library is selected, we're not on the last step
-  if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'photo_library') {
-    return false
-  }
   return currentStepIndex.value === currentButtonConfig.value.steps.length - 1
 }
 

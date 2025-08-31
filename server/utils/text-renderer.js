@@ -237,18 +237,7 @@ export async function renderTextToImage(text, width, height, options = {}) {
     // Auto-adjust font size to fit
     const { lines, fontSize, wasTruncated } = autoSizeText(text, maxWidth, maxHeight, startFontSize, lineHeight)
     
-    // Log dynamic font size calculations
-    console.log('📝 Dynamic font size calculation:', {
-      textLength: text.length,
-      maxWidth,
-      maxHeight,
-      aspectRatio: (maxWidth / maxHeight).toFixed(2),
-      area: maxWidth * maxHeight,
-      startFontSize,
-      finalFontSize: fontSize,
-      linesCount: lines.length,
-      wasTruncated
-    })
+
     
     // Create ultra high-resolution image for 600 DPI
     const scaledWidth = intWidth * scale
