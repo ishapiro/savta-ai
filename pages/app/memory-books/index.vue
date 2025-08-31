@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-brand-background p-4">
+  <div class="min-h-screen bg-brand-background p-4 no-zoom">
     <!-- Backdrop overlay when magic memory dialog is open -->
     <div 
       v-if="showMagicMemoryDialog" 
@@ -5617,7 +5617,48 @@ const fileErrorDialogMessage = ref('')
 const showUploadProgressDialog = ref(false)
 const magicUploadProgress = ref({ current: 0, total: 0, filename: '' })
 
-</script> 
+// Add meta viewport for mobile to disable zoom
+useHead({
+  meta: [
+    {
+      name: 'viewport',
+      content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no'
+    }
+  ]
+})
+
+</script>
+
+<style scoped>
+/* Disable zoom on mobile devices */
+.no-zoom {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.no-zoom * {
+  touch-action: manipulation;
+}
+
+/* Prevent double-tap zoom */
+.no-zoom, .no-zoom * {
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Additional mobile zoom prevention */
+@media screen and (max-width: 768px) {
+  .no-zoom {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+</style> 
 
 <style scoped>
 .magic-memory-btn {

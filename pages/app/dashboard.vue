@@ -1,6 +1,6 @@
 <template>
   <!-- <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4"> -->
-  <div class="min-h-screen bg-brand-background shadow-sm border-b border-gray-200 p-4">
+  <div class="min-h-screen bg-brand-background shadow-sm border-b border-gray-200 p-4 no-zoom">
     <div class="max-w-7xl mx-auto">
     <!-- Guest Mode Warning Banner -->
     <div v-if="isGuestMode" class="mb-6 bg-brand-highlight/20 border border-brand-header/30 rounded-lg p-4">
@@ -448,4 +448,45 @@ function navigateToLogin() {
   clearGuestMode()
   navigateTo('/app/login')
 }
-</script> 
+
+// Add meta viewport for mobile to disable zoom
+useHead({
+  meta: [
+    {
+      name: 'viewport',
+      content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no'
+    }
+  ]
+})
+</script>
+
+<style scoped>
+/* Disable zoom on mobile devices */
+.no-zoom {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.no-zoom * {
+  touch-action: manipulation;
+}
+
+/* Prevent double-tap zoom */
+.no-zoom, .no-zoom * {
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Additional mobile zoom prevention */
+@media screen and (max-width: 768px) {
+  .no-zoom {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+</style> 
