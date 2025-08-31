@@ -94,6 +94,10 @@ create table if not exists assets (
   approved boolean default false,
   rejected boolean default false,
   fingerprint text,
+  face_detection_data jsonb default null,
+  face_detection_provider text default null,
+  face_detection_processed_at timestamp with time zone default null,
+  has_exif_data boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false
@@ -231,6 +235,8 @@ create index if not exists idx_assets_orientation on assets(orientation);
 create index if not exists idx_assets_dimensions on assets(width, height);
 create index if not exists idx_assets_fingerprint on assets(fingerprint);
 create index if not exists idx_assets_ai_description on assets(ai_description) where ai_description is not null;
+create index if not exists idx_assets_face_detection on assets(face_detection_processed_at) where face_detection_data is not null;
+create index if not exists idx_assets_has_exif_data on assets(has_exif_data);
 create index if not exists idx_asset_tags_asset_id on asset_tags(asset_id);
 create index if not exists idx_asset_tags_tag_id on asset_tags(tag_id);
 create index if not exists idx_memory_books_user_id on memory_books(user_id);
@@ -888,6 +894,12 @@ END $$;
 
 -- Add comment to explain the purpose of nullable user_id
 COMMENT ON COLUMN user_backups.user_id IS 'User ID that was backed up. Can be NULL if user was deleted but backup preserved.';
+
+-- Add comments for face detection caching fields
+COMMENT ON COLUMN assets.face_detection_data IS 'Cached results from AWS Rekognition or OpenAI face detection';
+COMMENT ON COLUMN assets.face_detection_provider IS 'Service used for face detection: aws_rekognition or openai_vision';
+COMMENT ON COLUMN assets.face_detection_processed_at IS 'Timestamp when face detection was last processed';
+COMMENT ON COLUMN assets.has_exif_data IS 'Indicates if EXIF metadata (including GPS coordinates) was available in the original photo';
 
 -- Create trigger for updated_at
 drop trigger if exists update_user_backups_updated_at on user_backups;

@@ -2,7 +2,9 @@
 // Handles image analysis, caption generation, and tagging using OpenAI
 
 import { analyzeImage, analyzeText } from '~/server/utils/openai-client.js';
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
+import { invalidateFaceDetectionCache } from '~/server/utils/face-detection-cache.js';
+import { enhanceLocationDetection, hasUsefulExifData } from '~/server/utils/location-detection.js';
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -84,6 +86,12 @@ export default defineEventHandler(async (event) => {
     console.log('👤 User ID:', finalUserId)
     console.log('📚 Memory Book ID:', memoryBookId)
     
+    // STEP 1: Invalidate face detection cache when AI rerun is triggered
+    if (assetId) {
+      await invalidateFaceDetectionCache(assetId);
+      console.log('🔄 Face detection cache invalidated for asset:', assetId);
+    }
+    
     let analysisResult = null
     
     // Use centralized OpenAI client based on asset type
@@ -110,6 +118,55 @@ export default defineEventHandler(async (event) => {
     
     console.log('✅ Asset analysis completed:', analysisResult)
     
+    // STEP 2: Enhanced location detection for image assets
+    let enhancedLocationData = null;
+    let hasExifData = false;
+    
+    if ((assetType === 'image' || assetType === 'photo') && analysisResult) {
+      console.log('🌍 Running enhanced location detection...');
+      
+      // Extract EXIF data from analysis result
+      const exifData = analysisResult.exif_data || {};
+      hasExifData = hasUsefulExifData(exifData);
+      
+      console.log(`📊 EXIF data available: ${hasExifData}`);
+      if (hasExifData) {
+        console.log('📍 GPS coordinates:', exifData.gps_latitude, exifData.gps_longitude);
+      }
+      
+      // Enhance location detection with Mapbox fallback
+      enhancedLocationData = await enhanceLocationDetection(analysisResult, exifData);
+      console.log('🌍 Enhanced location data:', enhancedLocationData);
+    }
+    
+    // STEP 3: Run face detection for image assets (only after successful AI analysis)
+    if ((assetType === 'image' || assetType === 'photo') && assetId) {
+      console.log('🔍 Running face detection as part of AI rerun...');
+      try {
+        const config = useRuntimeConfig();
+        const faceDetectionResponse = await fetch(`${config.public.siteUrl}/api/ai/detect-faces-rekognition`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            imageUrl: finalAssetUrl,
+            assetId: assetId,
+            forceRefresh: true // Always fresh since we just invalidated cache
+          })
+        });
+        
+        if (faceDetectionResponse.ok) {
+          const faceData = await faceDetectionResponse.json();
+          console.log(`✅ Face detection completed: ${faceData.faceCount} faces detected`);
+        } else {
+          const errorText = await faceDetectionResponse.text();
+          console.warn('⚠️ Face detection failed during AI rerun:', errorText);
+        }
+      } catch (faceError) {
+        console.warn('⚠️ Face detection error during AI rerun:', faceError.message);
+        // Continue with AI processing even if face detection fails
+      }
+    }
+    
     // Update existing asset with AI analysis results
     console.log('💾 Updating asset with AI analysis...')
     
@@ -127,12 +184,30 @@ export default defineEventHandler(async (event) => {
       tags: analysisResult.tags || [],
       people_detected: analysisResult.people_detected || [],
       ai_processed: true,
+      has_exif_data: hasExifData,
       updated_at: new Date().toISOString()
     }
     
-    // Add location data if available
-    if (analysisResult.location) {
-      updateData.location = analysisResult.location
+    // Add enhanced location data if available
+    if (enhancedLocationData) {
+      if (enhancedLocationData.location) {
+        updateData.location = enhancedLocationData.location;
+      }
+      if (enhancedLocationData.city) {
+        updateData.city = enhancedLocationData.city;
+      }
+      if (enhancedLocationData.state) {
+        updateData.state = enhancedLocationData.state;
+      }
+      if (enhancedLocationData.country) {
+        updateData.country = enhancedLocationData.country;
+      }
+      if (enhancedLocationData.zip_code) {
+        updateData.zip_code = enhancedLocationData.zip_code;
+      }
+    } else if (analysisResult.location) {
+      // Fallback to original AI location if enhancement failed
+      updateData.location = analysisResult.location;
     }
     
     const { data: updatedAsset, error: updateError } = await supabase

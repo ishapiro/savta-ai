@@ -1,4 +1,5 @@
 import { RekognitionClient, DetectFacesCommand } from "@aws-sdk/client-rekognition";
+import { checkFaceDetectionCache, saveFaceDetectionCache } from '~/server/utils/face-detection-cache.js';
 
 const client = new RekognitionClient({
   region: process.env.AWS_REGION,
@@ -6,7 +7,7 @@ const client = new RekognitionClient({
 
 export default defineEventHandler(async (event) => {
   try {
-    const { imageUrl } = await readBody(event);
+    const { imageUrl, assetId = null, forceRefresh = false } = await readBody(event);
     
     if (!imageUrl) {
       throw createError({ 
@@ -15,7 +16,19 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    console.log('🔍 AWS Rekognition: Starting face detection for:', imageUrl);
+    // Check cache first (if assetId provided and not forcing refresh)
+    if (assetId && !forceRefresh) {
+      const cachedResult = await checkFaceDetectionCache(assetId);
+      if (cachedResult) {
+        console.log('🎯 Using cached face detection data for asset:', assetId);
+        return cachedResult;
+      }
+    }
+
+    console.log('🔍 AWS Rekognition: Starting fresh face detection for:', imageUrl);
+    if (assetId) {
+      console.log('📝 Asset ID:', assetId, '| Force refresh:', forceRefresh);
+    }
 
     // Download the image (must be raw bytes for Rekognition)
     const res = await fetch(imageUrl);
@@ -34,20 +47,27 @@ export default defineEventHandler(async (event) => {
       Attributes: ["DEFAULT"], // or ["ALL"] if you want age/gender/emotion
     });
 
-    const result = await client.send(cmd);
+    const awsResult = await client.send(cmd);
     
-    const faces = result.FaceDetails?.map(f => ({
+    const faces = awsResult.FaceDetails?.map(f => ({
       box: f.BoundingBox,  // {Left,Top,Width,Height} relative to [0,1]
       confidence: f.Confidence,
     })) || [];
 
     console.log('✅ AWS Rekognition: Detected', faces.length, 'faces');
 
-    return {
+    const result = {
       success: true,
       faces: faces,
       faceCount: faces.length
     };
+
+    // Cache the results (if assetId provided)
+    if (assetId && result.success) {
+      await saveFaceDetectionCache(assetId, result, 'aws_rekognition');
+    }
+
+    return result;
 
   } catch (error) {
     console.error('❌ AWS Rekognition face detection error:', error);

@@ -324,6 +324,34 @@
                 </div>
               </div>
 
+              <!-- Face Detection Results (read-only) -->
+              <div v-if="editingAsset.face_detection_data && editingAsset.face_detection_data.faceCount !== undefined">
+                <label class="block text-sm font-semibold text-brand-primary mb-2">Face Detection</label>
+                <div class="text-sm text-brand-primary/80 bg-brand-navigation/20 rounded p-3 border-l-4 border-brand-primary/30">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-user text-brand-primary"></i>
+                    <span>{{ editingAsset.face_detection_data.faceCount }} face{{ editingAsset.face_detection_data.faceCount !== 1 ? 's' : '' }} detected</span>
+                    <small class="text-brand-primary/60 ml-2">
+                      ({{ editingAsset.face_detection_provider || 'aws_rekognition' }})
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- EXIF Data Availability (read-only) -->
+              <div v-if="editingAsset.has_exif_data !== undefined">
+                <label class="block text-sm font-semibold text-brand-primary mb-2">EXIF Metadata</label>
+                <div class="text-sm text-brand-primary/80 bg-brand-navigation/20 rounded p-3 border-l-4 border-brand-primary/30">
+                  <div class="flex items-center gap-2">
+                    <i :class="editingAsset.has_exif_data ? 'pi pi-check text-green-600' : 'pi pi-times text-orange-500'"></i>
+                    <span>{{ editingAsset.has_exif_data ? 'EXIF data available' : 'No EXIF data found' }}</span>
+                    <small class="text-brand-primary/60 ml-2">
+                      ({{ editingAsset.has_exif_data ? 'GPS, camera info, or date found' : 'Limited location detection' }})
+                    </small>
+                  </div>
+                </div>
+              </div>
+
               <!-- Location Data (read-only) -->
               <div>
                 <label class="block text-sm font-semibold text-brand-primary mb-2">Location Data</label>
@@ -440,6 +468,22 @@
             <div class="flex flex-wrap gap-1">
               <Chip v-for="person in detailsAsset.people_detected || []" :key="`ai-${person}`" :label="person" class="text-xs bg-brand-primary/10 text-brand-primary px-2 py-1" />
               <Chip v-for="person in detailsAsset.user_people || []" :key="`user-${person}`" :label="person" class="text-xs bg-brand-accent/20 text-brand-accent px-2 py-1" />
+            </div>
+          </div>
+          <!-- Face Detection Info -->
+          <div v-if="detailsAsset.face_detection_data && detailsAsset.face_detection_data.faceCount !== undefined">
+            <label class="block text-sm font-semibold text-brand-primary mb-1">Face Detection</label>
+            <div class="flex items-center gap-2 text-sm text-brand-primary/80 bg-brand-navigation/20 rounded p-2 border border-brand-primary/20">
+              <i class="pi pi-user text-brand-primary"></i>
+              <span>{{ detailsAsset.face_detection_data.faceCount }} face{{ detailsAsset.face_detection_data.faceCount !== 1 ? 's' : '' }} detected</span>
+            </div>
+          </div>
+          <!-- EXIF Data Availability -->
+          <div v-if="detailsAsset.has_exif_data !== undefined">
+            <label class="block text-sm font-semibold text-brand-primary mb-1">EXIF Metadata</label>
+            <div class="flex items-center gap-2 text-sm text-brand-primary/80 bg-brand-navigation/20 rounded p-2 border border-brand-primary/20">
+              <i :class="detailsAsset.has_exif_data ? 'pi pi-check text-green-600' : 'pi pi-times text-orange-500'"></i>
+              <span>{{ detailsAsset.has_exif_data ? 'EXIF data available' : 'No EXIF data' }}</span>
             </div>
           </div>
           <div v-if="detailsAsset.location || detailsAsset.city || detailsAsset.state || detailsAsset.country || detailsAsset.zip_code">

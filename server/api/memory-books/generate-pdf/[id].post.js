@@ -737,9 +737,10 @@ export default defineEventHandler(async (event) => {
         console.log(`🔄 Processing image orientation for ${format} image...`)
         const processedImage = await sharp(imageBuffer)
           .rotate() // Auto-rotate based on EXIF orientation
+          .withMetadata() // Preserve EXIF data including GPS coordinates
           .toFormat(format === 'png' ? 'png' : 'jpeg')
           .toBuffer()
-        console.log(`✅ Image orientation processed successfully`)
+        console.log(`✅ Image orientation processed successfully with EXIF preserved`)
         return processedImage
       } catch (error) {
         console.warn(`⚠️ Failed to process image orientation, using original:`, error.message)
@@ -777,7 +778,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Helper function to perform smart cropping
-    async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null, photoIndex = null, totalPhotos = null) {
+    async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null, photoIndex = null, totalPhotos = null, assetId = null) {
       try {
         console.log('🧠 Performing OpenAI person detection crop...')
         if (photoIndex !== null && totalPhotos !== null) {
@@ -800,13 +801,13 @@ export default defineEventHandler(async (event) => {
           // Apply the correct rotation based on EXIF orientation
           switch (metadata.orientation) {
             case 3: // 180 degrees
-              processedImageBuffer = await sharpInstance.rotate(180).toBuffer()
+              processedImageBuffer = await sharpInstance.rotate(180).withMetadata().toBuffer()
               break
             case 6: // 90 degrees clockwise
-              processedImageBuffer = await sharpInstance.rotate(90).toBuffer()
+              processedImageBuffer = await sharpInstance.rotate(90).withMetadata().toBuffer()
               break
             case 8: // 90 degrees counter-clockwise
-              processedImageBuffer = await sharpInstance.rotate(-90).toBuffer()
+              processedImageBuffer = await sharpInstance.rotate(-90).withMetadata().toBuffer()
               break
             default:
               // For other orientations, let Sharp handle it
@@ -858,7 +859,11 @@ export default defineEventHandler(async (event) => {
                 headers: {
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ imageUrl: storageUrl })
+                body: JSON.stringify({ 
+                  imageUrl: storageUrl,
+                  assetId: assetId, // Pass asset ID for caching
+                  forceRefresh: false // Use cache if available
+                })
               })
               
               if (rekognitionResponse.ok) {
@@ -1698,7 +1703,7 @@ export default defineEventHandler(async (event) => {
                 console.log('🎯 Smart crop will prioritize faces in center area')
                 console.log('🔍 Debug: imageUrl for smartCropImage:', imageUrl)
                 // First apply smart cropping to ensure subject is properly positioned
-                const smartCroppedImage = await smartCropImage(imageBuffer, highResWidth, highResHeight, imageUrl, null, null)
+                const smartCroppedImage = await smartCropImage(imageBuffer, highResWidth, highResHeight, imageUrl, null, null, null)
                 resizedImage = smartCroppedImage
               } else {
                 console.log('📚 Regular memory book - using standard resize for rounded shape')
@@ -2226,7 +2231,7 @@ export default defineEventHandler(async (event) => {
           let finalImageBuffer
           console.log(`🔍 Debug: Asset ${i + 1} storage_url:`, asset.storage_url)
           try {
-            finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight, asset.storage_url, i, matchedAssets.length)
+            finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight, asset.storage_url, i, matchedAssets.length, asset.id)
           } catch (smartCropError) {
             finalImageBuffer = await sharp(imageBuffer)
               .resize(targetWidth, targetHeight, { fit: 'cover' })
