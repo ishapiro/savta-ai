@@ -53,52 +53,31 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div class="flex items-center gap-3">
               <span class="text-brand-header text-lg">🎯</span>
-              <span class="text-sm sm:text-base text-brand-primary/80">Select your best photos automatically</span>
+              <span class="text-sm sm:text-base text-brand-primary/80">I intelligently select your best photos based on your story prompt</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="text-brand-header text-lg">✍️</span>
-              <span class="text-sm sm:text-base text-brand-primary/80">Write heartwarming captions for each photo</span>
+              <span class="text-sm sm:text-base text-brand-primary/80">I write personalized, heartwarming captions that tell your story</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="text-brand-header text-lg">🎨</span>
-              <span class="text-sm sm:text-base text-brand-primary/80">Design beautiful card layouts automatically</span>
+              <span class="text-sm sm:text-base text-brand-primary/80">I automatically design beautiful memory cards and books based on themes you select</span>
             </div>
             <div class="flex items-center gap-3">
               <span class="text-brand-header text-lg">📤</span>
-              <span class="text-sm sm:text-base text-brand-primary/80">Mail or share cards with your loved ones</span>
+              <span class="text-sm sm:text-base text-brand-primary/80">Share digitally or I'll print and mail them for you</span>
             </div>
+          </div>
+          <div class="mt-3 pt-3 border-t border-brand-accent/30">
+            <p class="text-xs text-brand-primary/70 italic">
+              Unlike traditional photo services, I do the creative work for you—no design skills needed 
+              and no dragging and dropping photos into a layout.
+            </p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- How It Works -->
-    <div class="max-w-4xl mx-auto mt-8 pt-8 border-t border-brand-primary/20 px-4">
-      <h3 class="text-center font-semibold text-brand-primary mb-6">How It Works</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-        <div class="text-center space-y-2">
-          <div class="w-12 h-12 bg-brand-header/20 rounded-full flex items-center justify-center mx-auto">
-            <span class="text-xl">📸</span>
-          </div>
-          <h4 class="font-medium text-brand-primary text-sm">Upload Photos</h4>
-          <p class="text-xs text-brand-primary/70">Add photos from anywhere</p>
-        </div>
-        <div class="text-center space-y-2">
-          <div class="w-12 h-12 bg-brand-secondary/20 rounded-full flex items-center justify-center mx-auto">
-            <span class="text-xl">✨</span>
-          </div>
-          <h4 class="font-medium text-brand-primary text-sm">AI Creates Cards</h4>
-          <p class="text-xs text-brand-primary/70">Picks photos & writes captions</p>
-        </div>
-        <div class="text-center space-y-2">
-          <div class="w-12 h-12 bg-brand-highlight/20 rounded-full flex items-center justify-center mx-auto">
-            <span class="text-xl">💝</span>
-          </div>
-          <h4 class="font-medium text-brand-primary text-sm">Cards Delivered</h4>
-                      <p class="text-xs text-brand-primary/70">Print & mail or share digitally</p>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
