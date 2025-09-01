@@ -150,6 +150,7 @@ export default defineEventHandler(async (event) => {
           body: JSON.stringify({ 
             imageUrl: finalAssetUrl,
             assetId: assetId,
+            userId: finalUserId, // Pass user ID directly to avoid auth issues
             forceRefresh: true // Always fresh since we just invalidated cache
           })
         });

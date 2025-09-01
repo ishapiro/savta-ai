@@ -862,6 +862,7 @@ export default defineEventHandler(async (event) => {
                 body: JSON.stringify({ 
                   imageUrl: storageUrl,
                   assetId: assetId, // Pass asset ID for caching
+                  userId: userId, // Pass user ID directly to avoid auth issues
                   forceRefresh: false // Use cache if available
                 })
               })

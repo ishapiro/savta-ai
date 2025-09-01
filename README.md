@@ -12,6 +12,7 @@ npm run dev
 ## ✨ Features
 
 - **AI-Powered Memory Books**: Generate beautiful memory books with custom DALL-E 3 backgrounds
+- **Face Recognition**: AWS Rekognition-powered face detection and person identification
 - **Location-Based Photo Selection**: Intelligent 6-tier location hierarchy with ZipCodeAPI.com integration
 - **Smart Asset Management**: Upload photos and text stories with AI captioning and tagging
 - **Review System**: Approve/reject assets with AI-generated captions
@@ -27,6 +28,7 @@ npm run dev
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
 - **AI Processing**: OpenAI (GPT-5, DALL-E 3)
+- **Face Recognition**: AWS Rekognition
 - **Email**: SendGrid SMTP + Webhooks
 - **PDF Generation**: PDF-lib
 - **Deployment**: Railway.com
@@ -99,6 +101,11 @@ ZIP_CODE_API=your_zipcode_api_key
 
 # Note: MapBox token is no longer required - geolocation now uses IP-API (free service)
 
+# AWS Configuration (for face recognition)
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+AWS_REGION=us-east-1
+
 ### Installation
 
 1. **Clone and install**:
@@ -121,6 +128,70 @@ ZIP_CODE_API=your_zipcode_api_key
    ```bash
    npm run dev
    ```
+
+### AWS IAM User Setup (for Face Recognition)
+
+The face recognition system requires an AWS IAM user with specific permissions for AWS Rekognition.
+
+#### **Required IAM User**
+- **Username**: `savta-ai`
+- **Purpose**: AWS Rekognition operations for face detection and indexing
+
+#### **Required Permissions**
+Attach the **AmazonRekognitionFullAccess** managed policy to the `savta-ai` user:
+
+**Via AWS Console:**
+1. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
+2. Navigate to **Users** → **savta-ai**
+3. Go to **Permissions** tab
+4. Click **Add permissions** → **Attach policies directly**
+5. Search for and select **AmazonRekognitionFullAccess**
+
+**Via AWS CLI:**
+```bash
+aws iam attach-user-policy \
+    --user-name savta-ai \
+    --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
+```
+
+#### **Alternative: Custom Policy**
+For more granular control, create a custom policy with these permissions:
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "rekognition:CreateCollection",
+                "rekognition:DeleteCollection",
+                "rekognition:ListCollections",
+                "rekognition:DescribeCollection",
+                "rekognition:IndexFaces",
+                "rekognition:DeleteFaces",
+                "rekognition:ListFaces",
+                "rekognition:DetectFaces",
+                "rekognition:SearchFacesByImage",
+                "rekognition:SearchFaces"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+#### **Fallback Mode**
+If AWS permissions are not configured, the system will automatically use fallback mode:
+- Face detection still works (using AWS Rekognition DetectFaces)
+- Face indexing and similarity search are disabled
+- Faces are stored in database without vectors
+- System continues to function with basic face detection
+
+#### **Cost Considerations**
+- **AWS Rekognition**: Pay per API call
+- **Typical Usage**: ~$0.001 per face detection, ~$0.001 per face indexing
+- **Monthly Cost**: ~$0.50-2.00 per user (depending on photo volume)
+- **Fallback Mode**: No additional AWS costs beyond basic detection
 
 ## 🗄️ Database Setup
 
