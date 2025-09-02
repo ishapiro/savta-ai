@@ -81,7 +81,7 @@ export default {
           'dialog-primary-hover': '#5A3F52', // darker plum
           'dialog-secondary': '#F4E4D6', // warm cream - for secondary actions
           'dialog-secondary-hover': '#E8D4C2', // darker warm cream
-          'flash': '#3B82F6', // blue #3B82F6
+          'flash': '#4A90E2', // compatible blue that works with brand palette
         },
         primary: {
           DEFAULT: 'var(--primary-color)',
