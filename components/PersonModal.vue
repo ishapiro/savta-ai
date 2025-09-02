@@ -133,7 +133,7 @@
                       <button
               type="button"
               @click="$emit('close')"
-              class="mt-3 w-full inline-flex justify-center rounded-full border border-brand-primary/20 shadow-sm px-3 sm:px-4 py-2 bg-white text-xs sm:text-sm font-bold text-brand-primary hover:bg-brand-accent/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight sm:mt-0 sm:w-auto transition-all duration-200"
+              class="mt-3 w-full inline-flex justify-center rounded-full border border-brand-primary/20 shadow-sm px-3 sm:px-4 py-2 bg-gray-50 text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight sm:mt-0 sm:w-auto transition-all duration-200"
             >
               Cancel
             </button>

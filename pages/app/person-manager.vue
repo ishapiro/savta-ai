@@ -155,6 +155,7 @@
       @close="closeFaceAssignmentModal"
       @assign="assignFaceToPerson"
       @create-person-and-assign="createPersonAndAssignFace"
+      @skip="skipFace"
     />
 
     <!-- Person Gallery Modal -->
@@ -186,6 +187,9 @@ const {
 
 // Get user from Supabase
 const user = useSupabaseUser();
+
+// Get Supabase client
+const supabase = useNuxtApp().$supabase;
 
 // Modal states
 const showCreatePersonModal = ref(false);
@@ -319,6 +323,28 @@ const createPersonAndAssignFace = async (data) => {
     closeFaceAssignmentModal();
   } catch (err) {
     console.error('Error creating person and assigning face:', err);
+  }
+};
+
+// Skip face (mark as skipped)
+const skipFace = async (faceId) => {
+  try {
+    // Call the skip_face RPC function
+    const { error } = await supabase.rpc('skip_face', {
+      face_id_param: faceId
+    });
+    
+    if (error) {
+      throw error;
+    }
+    
+    console.log('Face skipped successfully:', faceId);
+    
+    // Close the modal and refresh unassigned faces
+    closeFaceAssignmentModal();
+    await fetchUnassignedFaces();
+  } catch (err) {
+    console.error('Error skipping face:', err);
   }
 };
 

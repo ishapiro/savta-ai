@@ -981,6 +981,7 @@ create table if not exists faces (
   quality jsonb, -- Quality metrics from AWS
   landmarks jsonb, -- Facial landmarks from AWS
   is_fallback boolean default false,
+  skipped boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false
@@ -1275,6 +1276,7 @@ BEGIN
   INNER JOIN assets a ON f.asset_id = a.id
   WHERE f.user_id = user_id_param
     AND f.deleted = false
+    AND f.skipped = false
     AND a.deleted = false
     AND NOT EXISTS (
       SELECT 1 
@@ -1284,6 +1286,20 @@ BEGIN
     )
   ORDER BY f.created_at DESC
   LIMIT limit_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to mark a face as skipped
+CREATE OR REPLACE FUNCTION skip_face(
+  face_id_param UUID
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+  UPDATE faces 
+  SET skipped = true 
+  WHERE id = face_id_param;
+  
+  RETURN FOUND;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -1367,6 +1383,7 @@ GRANT EXECUTE ON FUNCTION get_person_statistics(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION find_unassigned_faces(UUID, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_face_detection_stats(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION suggest_person_assignments(UUID, DECIMAL, INTEGER) TO authenticated;
+GRANT EXECUTE ON FUNCTION skip_face(UUID) TO authenticated;
 
 -- Add comments for face recognition functions
 COMMENT ON FUNCTION find_similar_faces(UUID, DECIMAL, INTEGER) IS 'Find faces similar to a given face using vector similarity search';
@@ -1374,5 +1391,6 @@ COMMENT ON FUNCTION find_faces_by_person(UUID, INTEGER) IS 'Find all faces assig
 COMMENT ON FUNCTION get_person_statistics(UUID) IS 'Get statistics for all people in a user account';
 COMMENT ON FUNCTION find_unassigned_faces(UUID, INTEGER) IS 'Find faces that have not been assigned to any person';
 COMMENT ON FUNCTION get_face_detection_stats(UUID) IS 'Get overall face detection statistics for a user';
-COMMENT ON FUNCTION suggest_person_assignments(UUID, DECIMAL, INTEGER) IS 'Suggest person assignments for unassigned faces based on similarity'; 
+COMMENT ON FUNCTION suggest_person_assignments(UUID, DECIMAL, INTEGER) IS 'Suggest person assignments for unassigned faces based on similarity';
+COMMENT ON FUNCTION skip_face(UUID) IS 'Mark a face as skipped so it will not appear in unassigned faces again'; 
 

@@ -158,22 +158,33 @@
         </div>
 
         <div class="mt-4 sm:mt-6 sm:flex sm:flex-row-reverse">
-                      <button
-              type="button"
-              @click="handleAssign"
-              :disabled="!canAssign || assigning"
-              class="w-full inline-flex justify-center rounded-full border border-transparent shadow-sm px-3 sm:px-4 py-2 bg-brand-highlight text-xs sm:text-sm font-bold text-white hover:bg-brand-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight sm:ml-3 sm:w-auto transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <i v-if="assigning" class="pi pi-spin pi-spinner mr-2"></i>
-              {{ createNewPerson ? 'Create & Assign' : 'Assign Face' }}
-            </button>
-                      <button
-              type="button"
-              @click="$emit('close')"
-              class="mt-3 w-full inline-flex justify-center rounded-full border border-brand-primary/20 shadow-sm px-3 sm:px-4 py-2 bg-white text-xs sm:text-sm font-bold text-brand-primary hover:bg-brand-accent/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight sm:mt-0 sm:w-auto transition-all duration-200"
-            >
-              Cancel
-            </button>
+          <button
+            type="button"
+            @click="handleAssign"
+            :disabled="!canAssign || assigning"
+            class="w-full inline-flex justify-center rounded-full border border-transparent shadow-sm px-3 sm:px-4 py-2 bg-brand-highlight text-xs sm:text-sm font-bold text-white hover:bg-brand-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight sm:ml-3 sm:w-auto transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i v-if="assigning" class="pi pi-spin pi-spinner mr-2"></i>
+            {{ createNewPerson ? 'Create & Assign' : 'Assign Face' }}
+          </button>
+          
+          <button
+            type="button"
+            @click="handleSkip"
+            :disabled="assigning"
+            class="w-full inline-flex justify-center rounded-full border border-brand-primary/20 shadow-sm px-3 sm:px-4 py-2 bg-gray-50 text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight sm:ml-3 sm:w-auto transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="pi pi-forward mr-2"></i>
+            Skip Face
+          </button>
+          
+          <button
+            type="button"
+            @click="$emit('close')"
+            class="mt-3 w-full inline-flex justify-center rounded-full border border-brand-primary/20 shadow-sm px-3 sm:px-4 py-2 bg-gray-50 text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight sm:mt-0 sm:w-auto transition-all duration-200"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
@@ -201,7 +212,7 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['close', 'assign', 'create-person-and-assign']);
+const emit = defineEmits(['close', 'assign', 'create-person-and-assign', 'skip']);
 
 // Form state
 const selectedPersonId = ref('');
@@ -303,6 +314,29 @@ const selectPerson = (personId) => {
   console.log('selectPerson called with:', personId);
   selectedPersonId.value = personId;
   console.log('selectedPersonId set to:', selectedPersonId.value);
+};
+
+// Handle skip
+const handleSkip = async () => {
+  try {
+    assigning.value = true;
+    
+    // Extract reactive variables to local variables for better reliability
+    const face = props.face;
+    const faceId = face?.face_id;
+    
+    console.log('handleSkip - extracted values:', {
+      face,
+      faceId
+    });
+    
+    // Emit skip event
+    emit('skip', faceId);
+  } catch (error) {
+    console.error('Error skipping face:', error);
+  } finally {
+    assigning.value = false;
+  }
 };
 
 // Watch for changes
