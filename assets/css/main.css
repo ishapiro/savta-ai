@@ -70,7 +70,6 @@
     border: 1px solid var(--dialog-border-color) !important;
     border-radius: 12px !important;
     overflow: hidden !important; /* Ensures content doesn't break the rounded corners */
-    z-index: 9999 !important; /* Ensure dialogs appear above all content */
   }
 
   .p-dialog .p-dialog-header {
@@ -87,38 +86,14 @@
     border-bottom-right-radius: 12px !important;
   }
 
-  /* Ensure dialog overlay/mask has proper z-index */
-  .p-dialog-mask {
-    z-index: 9998 !important; /* Just below the dialog but above everything else */
-  }
 
-  /* Ensure dialog content is above the mask */
-  .p-dialog-content {
-    z-index: 9999 !important;
-  }
-
-  /* Ensure all PrimeVue dialogs have proper z-index */
-  .p-dialog,
-  .p-dialog-mask,
-  .p-dialog-content,
-  .p-dialog-header,
-  .p-dialog-footer {
-    z-index: 9999 !important;
-  }
-
-  /* Specific dialog classes that might need higher z-index */
-  .memory-book-dialog,
-  .success-dialog,
-  .magic-upload-dialog,
-  .cleanup-confirmation-dialog,
-  .select-memories-dialog {
-    z-index: 9999 !important;
-  }
 
   /* Custom font class for Architects Daughter */
   .font-architects-daughter {
     font-family: 'Architects Daughter';
   }
+
+
 
   /* Custom progress dialog styling */
   .custom-progress-dialog {

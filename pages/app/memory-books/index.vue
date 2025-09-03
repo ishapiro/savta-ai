@@ -833,7 +833,7 @@
         margin: '0',
         borderRadius: '0',
         overflow: 'hidden'
-      }"
+              }"
       @hide="resetUploadDialog"
     >
       <template #header>
@@ -989,8 +989,6 @@
       v-model:visible="showDetailsModal"
       modal
       class="w-[95vw] max-w-4xl mx-auto mb-15 mt-20"
-      :auto-z-index="false"
-      :z-index="9999"
     >
       <div v-if="selectedBook" class="bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen">
         <!-- Header Section -->
@@ -1530,8 +1528,6 @@
       class="w-full max-w-6xl h-[90vh] sm:h-[85vh] mt-2 sm:mt-6"
       :contentStyle="{ height: '90vh', maxHeight: '90vh', padding: 0 }"
       :closable="false"
-      :auto-z-index="false"
-      :z-index="40"
     >
       <div class="flex flex-col h-full w-full" style="height: 90vh; max-height: 90vh; width: 100%; padding: 0;">
         <!-- PDF Viewer - Mobile (without overflow) -->
@@ -1831,8 +1827,6 @@
       :dismissableMask="false"
       :style="{ maxWidth: '700px', maxHeight: '100vh' }"
       :class="['w-full', 'sm:w-[700px]', 'sm:max-w-[700px]', 'h-full', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl']"
-      :auto-z-index="false"
-      :z-index="9999"
     >
       <!-- Step 1: AI Prompt Input -->
       <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
@@ -1891,7 +1885,6 @@
             class="w-full p-1.5 sm:p-2 lg:p-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
             :pt="{
               root: { class: 'w-full' },
-              input: { class: 'text-xs sm:text-sm lg:text-base' },
               item: { class: 'text-xs sm:text-sm lg:text-base' }
             }"
             :loading="loadingMagicThemes"
