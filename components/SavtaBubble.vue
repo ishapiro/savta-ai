@@ -35,7 +35,7 @@
       >
         <div
           :class="[
-            'relative bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg',
+            'relative bg-gradient-to-r from-brand-navigation via-brand-accent-light to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg',
             html ? 'max-w-[600px] max-h-[80vh]' : 'max-w-[500px]'
           ]"
         >

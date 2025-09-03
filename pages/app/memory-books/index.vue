@@ -38,46 +38,46 @@
         </button>
       </div>
       <!-- MEMORY CARDS SECTION - Prominent Hero -->
-      <div class="mb-12">
-        <div class="text-center mb-8">
-          <h2 class="text-3xl lg:text-4xl font-bold text-brand-primary mb-4">Create Beautiful Memory Cards</h2>
-          <p class="text-lg text-brand-text-muted max-w-2xl mx-auto">
+      <div class="mb-8">
+        <div class="text-center mb-6">
+          <h2 class="text-2xl lg:text-3xl font-bold text-brand-primary mb-3">Create Beautiful Memory Cards</h2>
+          <p class="text-base text-brand-text-muted max-w-2xl mx-auto">
             Turn your photos into stunning memory cards in minutes. Perfect for printing and mailing to family and friends.
           </p>
         </div>
         
-        <div class="max-w-4xl mx-auto">
-          <div data-savta="memory-cards-tile" class="bg-gradient-to-br from-brand-secondary/10 to-brand-secondary/5 rounded-2xl shadow-xl border border-brand-secondary/20 p-8 relative overflow-hidden">
+        <div class="max-w-3xl mx-auto">
+          <div data-savta="memory-cards-tile" class="bg-gradient-to-br from-brand-secondary/10 to-brand-secondary/5 rounded-xl shadow-lg border border-brand-secondary/20 p-6 relative overflow-hidden">
             <!-- Decorative background elements -->
-            <div class="absolute top-0 right-0 w-32 h-32 bg-brand-secondary/10 rounded-full -translate-y-16 translate-x-16"></div>
-            <div class="absolute bottom-0 left-0 w-24 h-24 bg-brand-accent/10 rounded-full translate-y-12 -translate-x-12"></div>
+            <div class="absolute top-0 right-0 w-20 h-20 bg-brand-secondary/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <div class="absolute bottom-0 left-0 w-16 h-16 bg-brand-accent/10 rounded-full translate-y-8 -translate-x-8"></div>
             
             <div class="relative z-10 text-center">
-              <div class="w-20 h-20 bg-gradient-to-br from-brand-secondary to-brand-secondary/80 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Sparkles class="w-10 h-10 text-white" />
+              <div class="w-16 h-16 bg-gradient-to-br from-brand-secondary to-brand-secondary/80 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Sparkles class="w-8 h-8 text-white" />
               </div>
               
-              <h3 class="text-2xl font-bold text-brand-secondary mb-4">Magic Memory Cards</h3>
-              <p class="text-brand-text-muted mb-6 max-w-md mx-auto">
+              <h3 class="text-xl font-bold text-brand-secondary mb-3">Magic Memory Cards</h3>
+              <p class="text-brand-text-muted mb-4 max-w-md mx-auto text-sm">
                 Our AI wizard guides you through creating beautiful memory cards step-by-step. 
                 Perfect for beginners and experienced users alike.
               </p>
               
               <button
                 data-testid="create-memory-card-button"
-                class="border-0 bg-gradient-to-r from-brand-secondary to-brand-secondary/80 hover:from-brand-secondary/90 hover:to-brand-secondary text-white font-bold rounded-xl px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 magic-memory-btn min-h-[56px]"
+                class="border-0 bg-gradient-to-r from-brand-secondary to-brand-secondary/80 hover:from-brand-secondary/90 hover:to-brand-secondary text-white font-bold rounded-lg px-6 py-3 text-base shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105 magic-memory-btn min-h-[48px]"
                 @click="openMagicMemoryDialog('quick')"
               >
-                <Sparkles class="w-6 h-6 text-yellow-300 drop-shadow mr-3" />
+                <Sparkles class="w-5 h-5 text-yellow-300 drop-shadow mr-2" />
                 Create a Memory Card
               </button>
               
-              <div class="flex justify-center items-center gap-6 mt-6 text-sm text-brand-text-muted">
-                <div class="flex items-center gap-2">
+              <div class="flex justify-center items-center gap-4 mt-4 text-xs text-brand-text-muted">
+                <div class="flex items-center gap-1">
                   <i class="pi pi-check-circle text-brand-secondary"></i>
                   <span>Simple wizard</span>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1">
                   <i class="pi pi-check-circle text-brand-secondary"></i>
                   <span>Print & mail</span>
                 </div>
@@ -140,20 +140,20 @@
             </div>
 
             <!-- Card Body -->
-            <div class="p-4">
+            <div class="p-4 h-56 flex flex-col">
               <!-- Magic Story Preview -->
-              <div v-if="card.magic_story" class="mb-3 p-3 bg-brand-warm/20 rounded-lg border border-brand-warm/30">
-                <div class="flex items-start gap-2">
+              <div v-if="card.magic_story" class="flex-1 p-3 bg-brand-accent-light/20 rounded-lg border border-brand-accent-light/30 mb-3">
+                <div class="flex items-start gap-2 h-full">
                   <Sparkle class="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-                  <p class="text-sm text-brand-text-muted leading-relaxed">
-                    {{ card.magic_story.length > 80 ? card.magic_story.slice(0, 80) + '...' : card.magic_story }}
+                  <p class="text-xs text-brand-text-muted leading-relaxed overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical;">
+                    {{ card.magic_story.length > 150 ? card.magic_story.slice(0, 150) + '...' : card.magic_story }}
                   </p>
                 </div>
               </div>
 
               <!-- Photo Thumbnail -->
-              <div v-if="!card.magic_story && getFirstAssetThumbnail(card)" class="mb-3">
-                <div class="relative w-full h-20 rounded-lg overflow-hidden border border-brand-surface-border">
+              <div v-else-if="!card.magic_story && getFirstAssetThumbnail(card)" class="flex-1 mb-3">
+                <div class="relative w-full h-32 rounded-lg overflow-hidden border border-brand-surface-border">
                   <img 
                     :src="getFirstAssetThumbnail(card)" 
                     :alt="card.ai_supplemental_prompt || 'Memory Card'"
@@ -164,7 +164,7 @@
               </div>
 
               <!-- Key Info -->
-              <div class="space-y-2 text-sm">
+              <div class="space-y-1 text-xs mt-auto">
                 <div class="flex justify-between items-center">
                   <span class="text-brand-text-muted">Created:</span>
                   <span class="font-mono text-xs text-brand-text-muted">{{ formatDate(card.created_at) }}</span>
@@ -178,8 +178,8 @@
               </div>
 
               <!-- Review Notes -->
-              <div v-if="card.review_notes" class="mt-3 p-2 bg-brand-accent/10 rounded border border-brand-accent/20">
-                <p class="text-xs text-brand-accent font-medium leading-relaxed">{{ card.review_notes }}</p>
+              <div v-if="card.review_notes" class="mt-2 p-2 bg-brand-accent/10 rounded border border-brand-accent/20">
+                <p class="text-xs text-brand-accent font-medium leading-relaxed overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">{{ card.review_notes }}</p>
               </div>
             </div>
 
@@ -187,8 +187,8 @@
             <div class="h-0.5 w-full bg-brand-primary/10"></div>
 
             <!-- Card Footer -->
-            <div class="border-t border-brand-surface-border bg-brand-surface-hover/30 px-4 py-3">
-              <div class="flex items-center justify-between gap-2">
+            <div class="border-t border-brand-surface-border bg-brand-surface-hover/30 px-4 py-3 h-16 flex items-center">
+              <div class="flex items-center justify-between gap-2 w-full">
                 <!-- Primary Action Button -->
                 <div v-if="card.status === 'draft'" class="flex-1">
                   <button
@@ -298,36 +298,35 @@
       </div>
 
       <!-- MEMORY BOOKS SECTION - Smaller Hero Design -->
-      <div class="mb-8">
-        <div class="text-center mb-6">
-          <h2 class="text-2xl lg:text-3xl font-bold text-brand-primary mb-3">Create Advanced Memory Books</h2>
-          <p class="text-base text-brand-text-muted max-w-2xl mx-auto">
-            Memory books offer advanced customization with custom layouts, themes, and detailed options. 
-            Perfect for creating keepsakes, family albums, or professional presentations.
+      <div class="mb-6">
+        <div class="text-center mb-4">
+          <h2 class="text-xl lg:text-2xl font-bold text-brand-primary mb-2">Create Advanced Memory Books</h2>
+          <p class="text-sm text-brand-text-muted max-w-xl mx-auto">
+            Memory books have multiple pages and both grid and predefined layouts.
           </p>
         </div>
         
-        <div class="max-w-3xl mx-auto">
-          <div class="bg-gradient-to-br from-brand-highlight/10 to-brand-highlight/5 rounded-xl shadow-lg border border-brand-highlight/20 p-6 relative overflow-hidden">
+        <div class="max-w-2xl mx-auto">
+          <div class="bg-gradient-to-br from-brand-highlight/10 to-brand-highlight/5 rounded-lg shadow-md border border-brand-highlight/20 p-4 relative overflow-hidden">
             <!-- Decorative background elements -->
-            <div class="absolute top-0 right-0 w-24 h-24 bg-brand-highlight/10 rounded-full -translate-y-12 translate-x-12"></div>
-            <div class="absolute bottom-0 left-0 w-16 h-16 bg-brand-accent/10 rounded-full translate-y-8 -translate-x-8"></div>
+            <div class="absolute top-0 right-0 w-16 h-16 bg-brand-highlight/10 rounded-full -translate-y-8 translate-x-8"></div>
+            <div class="absolute bottom-0 left-0 w-12 h-12 bg-brand-accent/10 rounded-full translate-y-6 -translate-x-6"></div>
             
             <div class="relative z-10 text-center">
-              <div class="w-16 h-16 bg-gradient-to-br from-brand-highlight to-brand-highlight/80 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <i class="pi pi-book text-2xl text-white"></i>
+              <div class="w-12 h-12 bg-gradient-to-br from-brand-highlight to-brand-highlight/80 rounded-lg flex items-center justify-center mx-auto mb-3 shadow-md">
+                <i class="pi pi-book text-lg text-white"></i>
               </div>
               
-              <h3 class="text-xl font-bold text-brand-highlight mb-3">Advanced Memory Books</h3>
-              <p class="text-brand-text-muted mb-4 max-w-md mx-auto text-sm">
+              <h3 class="text-lg font-bold text-brand-highlight mb-2">Advanced Memory Books</h3>
+              <p class="text-brand-text-muted mb-3 max-w-sm mx-auto text-xs">
                 Unlike memory cards which are quick and simple, memory books provide extensive customization 
                 options including custom layouts, themes, and photo arrangements for digital use.
               </p>
               
-              <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <div class="flex flex-col sm:flex-row gap-2 justify-center items-center">
                 <button
                   data-testid="create-memory-book-button"
-                  class="border-0 bg-gradient-to-r from-brand-highlight to-brand-highlight/80 hover:from-brand-highlight/90 hover:to-brand-highlight text-white font-bold rounded-lg px-6 py-3 text-base shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                  class="border-0 bg-gradient-to-r from-brand-highlight to-brand-highlight/80 hover:from-brand-highlight/90 hover:to-brand-highlight text-white font-bold rounded-md px-4 py-2 text-sm shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105"
                   @click="showCreateModal = true"
                 >
                   <i class="pi pi-plus mr-2"></i>
@@ -337,7 +336,7 @@
 
               </div>
               
-              <div class="flex justify-center items-center gap-4 mt-4 text-xs text-brand-text-muted">
+              <div class="flex justify-center items-center gap-3 mt-3 text-xs text-brand-text-muted">
                 <div class="flex items-center gap-1">
                   <i class="pi pi-check-circle text-brand-highlight"></i>
                   <span>Custom layouts</span>
@@ -490,31 +489,31 @@
         </div>
 
         <!-- Card Body -->
-        <div class="p-4">
+        <div class="p-4 h-56 flex flex-col">
           <!-- Magic Story Preview -->
-          <div v-if="book.magic_story" class="mb-3 p-3 bg-brand-warm/20 rounded-lg border border-brand-warm/30">
-            <div class="flex items-start gap-2">
+          <div v-if="book.magic_story" class="flex-1 p-3 bg-brand-accent-light/20 rounded-lg border border-brand-accent-light/30 mb-3">
+            <div class="flex items-start gap-2 h-full">
               <Sparkle class="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
-              <p class="text-sm text-brand-text-muted leading-relaxed">
-                {{ book.magic_story.length > 80 ? book.magic_story.slice(0, 80) + '...' : book.magic_story }}
+              <p class="text-xs text-brand-text-muted leading-relaxed overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical;">
+                {{ book.magic_story.length > 150 ? book.magic_story.slice(0, 150) + '...' : book.magic_story }}
               </p>
             </div>
           </div>
 
           <!-- Photo Thumbnail -->
-          <div v-if="!book.magic_story && getFirstAssetThumbnail(book)" class="mb-3">
-            <div class="relative w-full h-20 rounded-lg overflow-hidden border border-brand-surface-border">
-              <img 
-                :src="getFirstAssetThumbnail(book)" 
-                :alt="book.ai_supplemental_prompt || 'Memory'"
-                class="w-full h-full object-cover"
-              />
+          <div v-else-if="!book.magic_story && getFirstAssetThumbnail(book)" class="flex-1 mb-3">
+            <div class="relative w-full h-32 rounded-lg overflow-hidden border border-brand-surface-border">
+                              <img 
+                  :src="getFirstAssetThumbnail(book)" 
+                  :alt="book.ai_supplemental_prompt || 'Memory'"
+                  class="w-full h-full object-cover"
+                />
               <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
             </div>
           </div>
 
           <!-- Key Info -->
-          <div class="space-y-2 text-sm">
+          <div class="space-y-1 text-xs mt-auto">
             <div class="flex justify-between items-center">
               <span class="text-brand-text-muted">Created:</span>
               <span class="font-mono text-xs text-brand-text-muted">{{ formatDate(book.created_at) }}</span>
@@ -528,15 +527,15 @@
           </div>
 
           <!-- Review Notes -->
-          <div v-if="book.review_notes" class="mt-3 p-2 bg-brand-accent/10 rounded border border-brand-accent/20">
-            <p class="text-xs text-brand-accent font-medium leading-relaxed">{{ book.review_notes }}</p>
+          <div v-if="book.review_notes" class="mt-2 p-2 bg-brand-accent/10 rounded border border-brand-accent/20">
+            <p class="text-xs text-brand-accent font-medium leading-relaxed overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">{{ book.review_notes }}</p>
           </div>
         </div>
         <!-- Divider -->
         <div class="h-0.5 w-full bg-brand-primary/10"></div>
         <!-- Card Footer -->
-        <div class="border-t border-brand-surface-border bg-brand-surface-hover/30 px-4 py-3">
-          <div class="flex items-center justify-between gap-2">
+        <div class="border-t border-brand-surface-border bg-brand-surface-hover/30 px-4 py-3 h-16 flex items-center">
+          <div class="flex items-center justify-between gap-2 w-full">
             <!-- Primary Action Button -->
             <div v-if="book.status === 'draft'" class="flex-1">
               <button
@@ -675,7 +674,7 @@
 
               <!-- Has assets but no memories state -->
         <div v-else class="text-center max-w-md">
-          <div class="w-20 h-20 bg-brand-warm/20 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div class="w-20 h-20 bg-brand-accent-light/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <i class="pi pi-book text-3xl text-brand-highlight"></i>
           </div>
           <h3 class="text-xl font-semibold text-brand-primary mb-3">No memories created yet</h3>
@@ -841,7 +840,7 @@
       </template>
       <div class="space-y-6 max-w-xs w-full mx-auto sm:max-w-2xl sm:mx-auto">
         <!-- Upload Instructions -->
-        <div v-if="!isUploading && uploadedFiles.length === 0" class="bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-xl p-6 border-2 border-brand-highlight relative overflow-hidden">
+        <div v-if="!isUploading && uploadedFiles.length === 0" class="bg-gradient-to-r from-brand-navigation via-brand-accent-light to-blue-50 rounded-xl p-6 border-2 border-brand-highlight relative overflow-hidden">
           
           <div class="flex items-start gap-3">
             <div class="shrink-0">
@@ -876,7 +875,7 @@
         </div>
 
         <!-- Upload Progress -->
-        <div v-if="isUploading" class="bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg">
+        <div v-if="isUploading" class="bg-gradient-to-r from-brand-navigation via-brand-accent-light to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg">
           <div class="flex items-start gap-3 mb-4">
             <div class="shrink-0">
               <SavtaIcon class="w-12 h-12" />

@@ -136,7 +136,7 @@
         
         <!-- Review Memories Card -->
         <div 
-          class="bg-gradient-to-br from-brand-warm/30 to-brand-warm/20 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-warm/40 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group min-h-[280px] sm:min-h-0"
+          class="bg-gradient-to-br from-brand-accent-light/30 to-brand-accent-light/20 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-accent-light/40 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group min-h-[280px] sm:min-h-0"
           @click="handleCardClick('review')"
         >
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">

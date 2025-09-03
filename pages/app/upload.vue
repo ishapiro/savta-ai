@@ -228,9 +228,9 @@
       >
         <div class="space-y-6">
           <!-- Welcome Section -->
-          <div class="bg-gradient-to-r from-brand-navigation via-brand-warm to-blue-50 rounded-2xl p-6 border border-brand-highlight">
+          <div class="bg-gradient-to-r from-brand-navigation via-brand-accent-light to-blue-50 rounded-2xl p-6 border border-brand-highlight">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-brand-navigation to-brand-warm rounded-full flex items-center justify-center shadow-lg">
+              <div class="w-12 h-12 bg-gradient-to-br from-brand-navigation to-brand-accent-light rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-magic text-brand-header text-xl"></i>
               </div>
               <div>
@@ -328,9 +328,9 @@
           </div>
 
           <!-- Tips Section -->
-          <div class="bg-gradient-to-r from-brand-navigation to-brand-warm rounded-2xl p-6 border border-brand-highlight">
+          <div class="bg-gradient-to-r from-brand-navigation to-brand-accent-light rounded-2xl p-6 border border-brand-highlight">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-brand-navigation to-brand-warm rounded-full flex items-center justify-center shadow-lg">
+              <div class="w-10 h-10 bg-gradient-to-br from-brand-navigation to-brand-accent-light rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-lightbulb text-brand-secondary text-lg"></i>
               </div>
               <div>

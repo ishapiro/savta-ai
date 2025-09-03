@@ -64,21 +64,17 @@ export default {
           header: '#9F1239',        // Sophisticated burgundy-rose (was #FF6B9D vibrant coral-pink)
           background: '#FEFCF8',    // Bright warm white (was #F9F6F2 cream)
           primary: '#2D3748',       // Modern charcoal #2D3748 (was #333333 dark gray)
+          'primary-hover-color': '#4A5568',    // Modern hover state
+          'primary-active-color': '#2D3748',   // Active state
+          'primary-contrast-color': '#FFFFFF', // White text
           secondary: '#1E3A8A',     // Navy blue #1E3A8A (was #3B82F6 warm blue)
           
           // Navigation & UI Elements
           navigation: '#F1F5F9',    // Cool light gray (was #e4e4e7)
           highlight: '#41706C',     // Teal #41706C(was Emerald green  #10B981)
           accent: '#D97706',        // Sophisticated amber (was #F59E0B bright golden amber)
-          
-          // Warm & Inviting
-          warm: '#FDE68A',          // Rich yellow (was #FEF3C7 very light yellow)
+          'accent-light': '#FDE68A',          // Rich yellow (was #FEF3C7 very light yellow)
           card: '#FFFFFF',          // Pure white (was #F6E7D8 tan)
-          
-          // Enhanced Color System
-          'primary-hover-color': '#4A5568',    // Modern hover state
-          'primary-active-color': '#2D3748',   // Active state
-          'primary-contrast-color': '#FFFFFF', // White text
           
           // Surface System - Clean & Modern
           'surface-ground': '#FEFCF8',         // Bright warm white
