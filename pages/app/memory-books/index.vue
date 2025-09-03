@@ -12,68 +12,347 @@
         showMagicMemoryDialog ? 'opacity-50 blur-sm pointer-events-none' : ''
       ]"
     >
-      <!-- Header -->
-      <div class="flex flex-col items-center justify-between mb-6 sm:mb-8 gap-4">
-        <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-primary">Create Memory Cards & Books</h1>
+      <!-- Clean Header -->
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl lg:text-3xl font-bold text-brand-primary">Memory Studio</h1>
           <button
             data-testid="info-button"
             data-savta="memory-books-info"
-            class="w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-gray-50 transition-colors focus:outline-none"
             @click="showMemoryBooksInfoBubble = true"
             aria-label="Information about memory cards and booklets"
             title="Ask Savta"
           >
-            <i class="pi pi-info text-base sm:text-lg text-brand-highlight"></i>
-          </button>
-          <button
-            data-testid="trash-button"
-            class="w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-brand-accent shadow hover:bg-brand-accent/80 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
-            @click="navigateToTrash"
-            aria-label="View trash"
-            v-tooltip.top="'View Trash'"
-          >
-            <i class="pi pi-trash text-base sm:text-lg text-white"></i>
+            <i class="pi pi-info text-base text-brand-highlight"></i>
           </button>
         </div>
-        <div class="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
-          <!-- Memory Cards Card -->
-          <div data-savta="memory-cards-tile" class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg border border-brand-highlight/30 p-6 sm:p-6 relative">
-            <h3 class="text-lg sm:text-xl font-bold text-brand-highlight mb-4 text-center">Memory Cards</h3>
-            <div class="flex flex-col sm:flex-row gap-4">
-              <div class="flex flex-col items-center">
-                <button
-                  data-testid="create-memory-card-button"
-                  class="border-0 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-4 sm:px-4 lg:px-6 py-3 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto flex items-center gap-2 focus:outline-none magic-memory-btn min-h-[48px] sm:min-h-0"
-                  @click="openMagicMemoryDialog('quick')"
-                >
-                  <Sparkles class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow" />
-                  <span class="hidden sm:inline">Create a Memory Card</span>
-                  <span class="sm:hidden">Create Card</span>
-                </button>
-                  <p class="mt-3 sm:mt-2 text-sm text-brand-highlight text-center">Simple step-by-step wizard</p>
-                  <p class="mt-3 sm:mt-2 text-sm text-brand-highlight text-center">Perfect for beginners</p>
+        <button
+          data-testid="trash-button"
+          class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-accent shadow-sm hover:bg-brand-accent/80 transition-colors focus:outline-none"
+          @click="navigateToTrash"
+          aria-label="View trash"
+          v-tooltip.top="'View Trash'"
+        >
+          <i class="pi pi-trash text-base text-white"></i>
+        </button>
+      </div>
+      <!-- MEMORY CARDS SECTION - Prominent Hero -->
+      <div class="mb-12">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl lg:text-4xl font-bold text-brand-primary mb-4">Create Beautiful Memory Cards</h2>
+          <p class="text-lg text-brand-text-muted max-w-2xl mx-auto">
+            Turn your photos into stunning memory cards in minutes. Perfect for sharing with family and friends.
+          </p>
+        </div>
+        
+        <div class="max-w-4xl mx-auto">
+          <div data-savta="memory-cards-tile" class="bg-gradient-to-br from-brand-highlight/10 to-brand-highlight/5 rounded-2xl shadow-xl border border-brand-highlight/20 p-8 relative overflow-hidden">
+            <!-- Decorative background elements -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-brand-highlight/10 rounded-full -translate-y-16 translate-x-16"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 bg-brand-accent/10 rounded-full translate-y-12 -translate-x-12"></div>
+            
+            <div class="relative z-10 text-center">
+              <div class="w-20 h-20 bg-gradient-to-br from-brand-highlight to-brand-highlight/80 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Sparkles class="w-10 h-10 text-white" />
+              </div>
+              
+              <h3 class="text-2xl font-bold text-brand-highlight mb-4">Magic Memory Cards</h3>
+              <p class="text-brand-text-muted mb-6 max-w-md mx-auto">
+                Our AI wizard guides you through creating beautiful memory cards step-by-step. 
+                Perfect for beginners and experienced users alike.
+              </p>
+              
+              <button
+                data-testid="create-memory-card-button"
+                class="border-0 bg-gradient-to-r from-brand-highlight to-brand-highlight/80 hover:from-brand-highlight/90 hover:to-brand-highlight text-white font-bold rounded-xl px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 magic-memory-btn min-h-[56px]"
+                @click="openMagicMemoryDialog('quick')"
+              >
+                <Sparkles class="w-6 h-6 text-yellow-300 drop-shadow mr-3" />
+                Create Your First Memory Card
+              </button>
+              
+              <div class="flex justify-center items-center gap-6 mt-6 text-sm text-brand-text-muted">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-check-circle text-brand-highlight"></i>
+                  <span>Simple wizard</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-check-circle text-brand-highlight"></i>
+                  <span>AI-powered</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-check-circle text-brand-highlight"></i>
+                  <span>Perfect results</span>
+                </div>
               </div>
             </div>
-            
-
           </div>
-          
-          <!-- Memory Books Card -->
-          <div class="bg-gradient-to-br from-brand-warm/30 to-brand-warm/20 rounded-xl shadow-lg border border-brand-warm/40 p-6 sm:p-6">
-            <h3 class="text-lg sm:text-xl font-bold text-brand-secondary mb-4 text-center">Memory Books</h3>
-            <div class="flex flex-col items-center">
-              <button
-                data-testid="create-memory-book-button"
-                class="border-0 bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 sm:px-4 lg:px-6 py-3 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
-                @click="showCreateModal = true"
-              >
-                <i class="pi pi-plus mr-1 sm:mr-2"></i>
-                <span class="hidden sm:inline">Create a Memory Book</span>
-                <span class="sm:hidden">Create Book</span>
-              </button>
-              <p class="mt-3 sm:mt-2 text-sm text-brand-secondary text-center">Advanced form with many options</p>
-              <p class="mt-3 sm:mt-2 text-sm text-brand-secondary text-center">For experienced users</p>
+        </div>
+      </div>
+
+      <!-- MEMORY CARDS LISTING SECTION -->
+      <div class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-semibold text-brand-primary">Your Memory Cards</h2>
+          <div class="text-sm text-brand-text-muted">
+            {{ memoryCards.length }} card{{ memoryCards.length !== 1 ? 's' : '' }}
+          </div>
+        </div>
+        
+        <!-- Memory Cards Grid -->
+        <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-12">
+          <div class="text-center">
+            <i class="pi pi-spin pi-spinner text-3xl mb-4 text-brand-highlight"></i>
+            <p class="text-base text-brand-text-muted">Loading memory cards...</p>
+          </div>
+        </div>
+
+        <div v-else-if="memoryCards.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div
+            v-for="card in paginatedMemoryCards"
+            :key="card.id"
+            class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-brand-surface-border overflow-hidden group"
+          >
+            <!-- Card Header -->
+            <div class="relative flex items-center justify-center h-16 px-4 bg-brand-highlight">
+              <!-- Status Badge -->
+              <div class="absolute top-2 right-2">
+                <div :class="getStatusBadgeClass(card.status)" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm">
+                  <i :class="getStatusIcon(card.status)" class="text-xs"></i>
+                  <span class="hidden sm:inline">{{ getStatusText(card.status) }}</span>
+                </div>
+              </div>
+              
+              <!-- Icon and Title -->
+              <div class="flex flex-col items-center text-center">
+                <div class="mb-1">
+                  <Wand2 class="w-6 h-6 text-white" />
+                </div>
+                <span class="text-xs font-medium text-white leading-tight">
+                  {{ 
+                    card.ai_supplemental_prompt 
+                      ? (card.ai_supplemental_prompt.length > 25 ? card.ai_supplemental_prompt.slice(0, 25) + '...' : card.ai_supplemental_prompt)
+                      : 'Memory Card'
+                  }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-4">
+              <!-- Magic Story Preview -->
+              <div v-if="card.magic_story" class="mb-3 p-3 bg-brand-warm/20 rounded-lg border border-brand-warm/30">
+                <div class="flex items-start gap-2">
+                  <Sparkle class="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+                  <p class="text-sm text-brand-text-muted leading-relaxed">
+                    {{ card.magic_story.length > 80 ? card.magic_story.slice(0, 80) + '...' : card.magic_story }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Photo Thumbnail -->
+              <div v-if="!card.magic_story && getFirstAssetThumbnail(card)" class="mb-3">
+                <div class="relative w-full h-20 rounded-lg overflow-hidden border border-brand-surface-border">
+                  <img 
+                    :src="getFirstAssetThumbnail(card)" 
+                    :alt="card.ai_supplemental_prompt || 'Memory Card'"
+                    class="w-full h-full object-cover"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+                </div>
+              </div>
+
+              <!-- Key Info -->
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between items-center">
+                  <span class="text-brand-text-muted">Created:</span>
+                  <span class="font-mono text-xs text-brand-text-muted">{{ formatDate(card.created_at) }}</span>
+                </div>
+                <div v-if="card.created_from_assets" class="flex justify-between items-center">
+                  <span class="text-brand-text-muted">Photos:</span>
+                  <span class="bg-brand-surface-hover px-2 py-1 rounded-full text-xs font-medium text-brand-text-muted">
+                    {{ card.created_from_assets.length }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Review Notes -->
+              <div v-if="card.review_notes" class="mt-3 p-2 bg-brand-accent/10 rounded border border-brand-accent/20">
+                <p class="text-xs text-brand-accent font-medium leading-relaxed">{{ card.review_notes }}</p>
+              </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="h-0.5 w-full bg-brand-primary/10"></div>
+
+            <!-- Card Footer -->
+            <div class="border-t border-brand-surface-border bg-brand-surface-hover/30 px-4 py-3">
+              <div class="flex items-center justify-between gap-2">
+                <!-- Primary Action Button -->
+                <div v-if="card.status === 'draft'" class="flex-1">
+                  <button
+                    data-testid="compose-button"
+                    class="w-full bg-brand-highlight hover:bg-brand-highlight/80 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                    @click="onGenerateClick(card)"
+                  >
+                    <Wand2 class="w-4 h-4 inline mr-2" />
+                    {{ card.magic_story ? 'Create Story' : 'Compose' }}
+                  </button>
+                </div>
+                
+                <div v-else-if="card.status === 'ready'" class="flex-1">
+                  <button
+                    data-testid="approve-button"
+                    class="w-full bg-brand-header hover:bg-brand-header/80 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                    @click="approveBook(card.id)"
+                    v-tooltip.top="'Approve this Card and I\'ll Send it Out For You'"
+                  >
+                    <i class="pi pi-check mr-2"></i>
+                    Approve
+                  </button>
+                </div>
+                
+                <div v-else-if="card.status === 'approved'" class="flex-1">
+                  <button
+                    data-testid="unapprove-button"
+                    class="w-full bg-brand-accent hover:bg-brand-accent/80 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                    @click="unapproveBook(card.id)"
+                  >
+                    <i class="pi pi-undo mr-2"></i>
+                    Unapprove
+                  </button>
+                </div>
+                
+                <div v-else-if="card.status === 'background_ready'" class="flex-1">
+                  <button
+                    data-testid="recreate-button"
+                    class="w-full bg-brand-accent/50 text-brand-accent text-sm font-medium py-2 px-3 rounded-lg cursor-not-allowed opacity-50"
+                    disabled
+                  >
+                    <i class="pi pi-refresh mr-2"></i>
+                    Processing
+                  </button>
+                </div>
+                
+                <!-- Secondary Actions -->
+                <div class="flex gap-2">
+                  <button
+                    data-testid="view-button"
+                    class="p-2 text-brand-highlight hover:bg-brand-highlight/10 rounded-lg transition-colors"
+                    @click="onDownloadClick(card)"
+                    title="View"
+                  >
+                    <i class="pi pi-external-link text-lg"></i>
+                  </button>
+                  
+                  <button
+                    data-testid="details-button"
+                    class="p-2 text-brand-text-muted hover:bg-brand-surface-hover rounded-lg transition-colors"
+                    @click="viewBookDetails(card)"
+                    title="Details"
+                  >
+                    <i class="pi pi-list text-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Memory Cards Pagination -->
+        <div v-if="memoryCards.length > cardsPerPage" class="flex justify-center items-center mt-8">
+          <div class="flex items-center gap-2">
+            <button
+              @click="currentCardsPage = Math.max(1, currentCardsPage - 1)"
+              :disabled="currentCardsPage === 1"
+              class="px-3 py-2 text-brand-text-muted hover:text-brand-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i class="pi pi-chevron-left"></i>
+            </button>
+            
+            <span class="text-sm text-brand-text-muted">
+              Page {{ currentCardsPage }} of {{ totalCardsPages }}
+            </span>
+            
+            <button
+              @click="currentCardsPage = Math.min(totalCardsPages, currentCardsPage + 1)"
+              :disabled="currentCardsPage === totalCardsPages"
+              class="px-3 py-2 text-brand-text-muted hover:text-brand-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i class="pi pi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Memory Cards Empty State -->
+        <div v-else-if="!loadingMemoryBooks && memoryCards.length === 0" class="text-center py-12">
+          <div class="w-20 h-20 bg-brand-highlight/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Wand2 class="w-10 h-10 text-brand-highlight" />
+          </div>
+          <h3 class="text-xl font-semibold text-brand-primary mb-3">No memory cards yet</h3>
+          <p class="text-brand-text-muted mb-6">
+            You have memory books but no memory cards yet. Create your first memory card using the wizard above!
+          </p>
+        </div>
+      </div>
+
+      <!-- MEMORY BOOKS SECTION - Smaller Hero Design -->
+      <div class="mb-8">
+        <div class="text-center mb-6">
+          <h2 class="text-2xl lg:text-3xl font-bold text-brand-primary mb-3">Create Advanced Memory Books</h2>
+          <p class="text-base text-brand-text-muted max-w-2xl mx-auto">
+            Memory books offer advanced customization with custom layouts, themes, and detailed options. 
+            Perfect for creating keepsakes, family albums, or professional presentations.
+          </p>
+        </div>
+        
+        <div class="max-w-3xl mx-auto">
+          <div class="bg-gradient-to-br from-brand-secondary/10 to-brand-secondary/5 rounded-xl shadow-lg border border-brand-secondary/20 p-6 relative overflow-hidden">
+            <!-- Decorative background elements -->
+            <div class="absolute top-0 right-0 w-24 h-24 bg-brand-secondary/10 rounded-full -translate-y-12 translate-x-12"></div>
+            <div class="absolute bottom-0 left-0 w-16 h-16 bg-brand-accent/10 rounded-full translate-y-8 -translate-x-8"></div>
+            
+            <div class="relative z-10 text-center">
+              <div class="w-16 h-16 bg-gradient-to-br from-brand-secondary to-brand-secondary/80 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <i class="pi pi-book text-2xl text-white"></i>
+              </div>
+              
+              <h3 class="text-xl font-bold text-brand-secondary mb-3">Advanced Memory Books</h3>
+              <p class="text-brand-text-muted mb-4 max-w-md mx-auto text-sm">
+                Unlike memory cards which are quick and simple, memory books provide extensive customization 
+                options including custom layouts, themes, photo arrangements, and professional printing options.
+              </p>
+              
+              <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <button
+                  data-testid="create-memory-book-button"
+                  class="border-0 bg-gradient-to-r from-brand-secondary to-brand-secondary/80 hover:from-brand-secondary/90 hover:to-brand-secondary text-white font-bold rounded-lg px-6 py-3 text-base shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                  @click="showCreateModal = true"
+                >
+                  <i class="pi pi-plus mr-2"></i>
+                  Create Memory Book
+                </button>
+                
+                <div class="text-sm text-brand-text-muted">
+                  {{ memoryBooksOnly.length }} book{{ memoryBooksOnly.length !== 1 ? 's' : '' }} created
+                </div>
+              </div>
+              
+              <div class="flex justify-center items-center gap-4 mt-4 text-xs text-brand-text-muted">
+                <div class="flex items-center gap-1">
+                  <i class="pi pi-check-circle text-brand-secondary"></i>
+                  <span>Custom layouts</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <i class="pi pi-check-circle text-brand-secondary"></i>
+                  <span>Professional themes</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <i class="pi pi-check-circle text-brand-secondary"></i>
+                  <span>Print options</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -174,186 +453,221 @@
     </Dialog>
 
     <!-- Memory Books Grid -->
-    <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-12 sm:py-16">
+    <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-12">
       <div class="text-center">
-        <i class="pi pi-spin pi-spinner text-3xl sm:text-4xl mb-3 sm:mb-4 text-brand-highlight"></i>
-        <p class="text-sm sm:text-base text-brand-primary/70">Loading memories...</p>
+        <i class="pi pi-spin pi-spinner text-3xl mb-4 text-brand-highlight"></i>
+        <p class="text-base text-brand-text-muted">Loading memories...</p>
       </div>
     </div>
 
-    <div v-else-if="memoryBooks.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+    <div v-else-if="memoryBooksOnly.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <div
-        v-for="book in memoryBooks"
+        v-for="book in paginatedMemoryBooks"
         :key="book.id"
-        :class="[
-          'rounded-xl flex flex-col overflow-hidden',
-          'bg-brand-card',
-          'border-brand-highlight/30'
-        ]"
+        class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-brand-surface-border overflow-hidden group"
       >
         <!-- Card Header -->
-        <div
-          :class="[
-            'relative flex items-center justify-center h-20',
-            book.format === 'card' ? 'bg-brand-highlight' : 'bg-brand-secondary'
-          ]"
-        >
-          <!-- Status Badge: absolute top-right, smaller -->
-          <div class="absolute top-2 right-2 z-1">
-            <div :class="getStatusBadgeClass(book.status)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md backdrop-blur-sm min-w-[48px] min-h-[22px] justify-center">
+        <div class="relative flex items-center justify-center h-16 px-4 bg-brand-secondary">
+          <!-- Status Badge -->
+          <div class="absolute top-2 right-2">
+            <div :class="getStatusBadgeClass(book.status)" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm">
               <i :class="getStatusIcon(book.status)" class="text-xs"></i>
               <span class="hidden sm:inline">{{ getStatusText(book.status) }}</span>
             </div>
           </div>
-          <div class="flex flex-col items-center relative z-1">
-            <div class="mb-2 relative group-hover:scale-110 transition-transform duration-300">
-                              <Wand2 v-if="book.format === 'card'" class="w-8 h-8 text-white" />
-              <i v-else class="pi pi-book w-8 h-8 text-white flex items-center justify-center text-2xl"></i>
+          
+          <!-- Icon and Title -->
+          <div class="flex flex-col items-center text-center">
+            <div class="mb-1">
+              <i class="pi pi-book w-6 h-6 text-white text-xl"></i>
             </div>
-                            <span class="text-xs font-semibold text-white text-center px-2 leading-tight">{{ 
-                              book.ai_supplemental_prompt 
-                                ? (book.ai_supplemental_prompt.length > 20 ? book.ai_supplemental_prompt.slice(0, 20) + '...' : book.ai_supplemental_prompt)
-                                : (book.format === 'card' ? 'Select Photos That Tell a Story' : ('Memory Recipe #' + book.id.slice(-6)))
-                            }}</span>
+            <span class="text-xs font-medium text-white leading-tight">
+              {{ 
+                book.ai_supplemental_prompt 
+                  ? (book.ai_supplemental_prompt.length > 25 ? book.ai_supplemental_prompt.slice(0, 25) + '...' : book.ai_supplemental_prompt)
+                  : 'Memory Book'
+              }}
+            </span>
           </div>
         </div>
-        <!-- Divider -->
-        <div class="h-0.5 w-full bg-brand-primary/10"></div>
-        <!-- Card Body (center) -->
-        <div 
-          :class="[
-            'flex-1 flex flex-col p-5 pb-3 min-h-[160px] rounded-b-xl sm:rounded-b-2xl',
-            book.format === 'card' 
-              ? 'bg-gradient-to-br from-brand-highlight/10 to-brand-highlight/5'
-              : 'bg-gradient-to-br from-brand-warm/20 to-brand-warm/10'
-          ]"
-        >
-                      <div v-if="book.magic_story" class="text-brand-secondary text-xs magic-story animate-fade-in mb-3 relative leading-relaxed">
-            <div class="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-              <Sparkle class="w-4 h-4 text-yellow-400 absolute left-0 top-0" />
-              <span class="ml-6">{{ book.magic_story.length > 115 ? book.magic_story.slice(0, 115) + '...' : book.magic_story }}</span>
+
+        <!-- Card Body -->
+        <div class="p-4">
+          <!-- Magic Story Preview -->
+          <div v-if="book.magic_story" class="mb-3 p-3 bg-brand-warm/20 rounded-lg border border-brand-warm/30">
+            <div class="flex items-start gap-2">
+              <Sparkle class="w-4 h-4 text-brand-accent flex-shrink-0 mt-0.5" />
+              <p class="text-sm text-brand-text-muted leading-relaxed">
+                {{ book.magic_story.length > 80 ? book.magic_story.slice(0, 80) + '...' : book.magic_story }}
+              </p>
             </div>
           </div>
-          <!-- Regular Memory Thumbnail -->
-                      <div v-if="!book.magic_story && getFirstAssetThumbnail(book)" class="mb-3">
-            <div class="relative w-full h-24 rounded-lg overflow-hidden border border-gray-200">
+
+          <!-- Photo Thumbnail -->
+          <div v-if="!book.magic_story && getFirstAssetThumbnail(book)" class="mb-3">
+            <div class="relative w-full h-20 rounded-lg overflow-hidden border border-brand-surface-border">
               <img 
                 :src="getFirstAssetThumbnail(book)" 
-                :alt="book.ai_supplemental_prompt || 'Memory Book'"
+                :alt="book.ai_supplemental_prompt || 'Memory'"
                 class="w-full h-full object-cover"
               />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
             </div>
           </div>
-          <div class="space-y-2 text-sm text-gray-600 mb-3">
+
+          <!-- Key Info -->
+          <div class="space-y-2 text-sm">
             <div class="flex justify-between items-center">
-              <span class="font-semibold text-gray-700">Created:</span>
-              <span class="font-mono text-xs">{{ formatDate(book.created_at) }}</span>
-            </div>
-            <div v-if="book.generated_at" class="flex justify-between items-center">
-              <span class="font-semibold text-gray-700">Generated:</span>
-              <span class="font-mono text-xs">{{ formatDate(book.generated_at) }}</span>
-            </div>
-            <div v-if="book.approved_at" class="flex justify-between items-center">
-              <span class="font-semibold text-gray-700">Approved:</span>
-              <span class="font-mono text-xs">{{ formatDate(book.approved_at) }}</span>
+              <span class="text-brand-text-muted">Created:</span>
+              <span class="font-mono text-xs text-brand-text-muted">{{ formatDate(book.created_at) }}</span>
             </div>
             <div v-if="book.created_from_assets" class="flex justify-between items-center">
-              <span class="font-semibold text-gray-700">Assets:</span>
-              <span class="bg-gradient-to-r from-blue-100 to-brand-navigation px-3 py-1 rounded-full text-xs font-bold text-gray-700 border border-gray-200">{{ book.created_from_assets.length }}</span>
+              <span class="text-brand-text-muted">Photos:</span>
+              <span class="bg-brand-surface-hover px-2 py-1 rounded-full text-xs font-medium text-brand-text-muted">
+                {{ book.created_from_assets.length }}
+              </span>
             </div>
           </div>
-          <div v-if="book.review_notes" class="mb-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200">
-            <p class="text-xs text-amber-800 font-medium leading-relaxed">{{ book.review_notes }}</p>
+
+          <!-- Review Notes -->
+          <div v-if="book.review_notes" class="mt-3 p-2 bg-brand-accent/10 rounded border border-brand-accent/20">
+            <p class="text-xs text-brand-accent font-medium leading-relaxed">{{ book.review_notes }}</p>
           </div>
         </div>
         <!-- Divider -->
         <div class="h-0.5 w-full bg-brand-primary/10"></div>
         <!-- Card Footer -->
-        <div
-          :class="[
-            'rounded-b-xl sm:rounded-b-2xl px-4 py-3 flex items-center justify-between gap-2 border-t shadow-sm h-20',
-            book.format === 'card' 
-              ? 'bg-brand-highlight/20 border-brand-highlight/20'
-              : 'bg-brand-secondary/20 border-brand-secondary/20'
-          ]"
-        >
-          <div class="flex flex-row flex-1 justify-between items-center gap-2">
-            <!-- View Button -->
-            <div data-testid="view-button" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onDownloadClick(book)">
-              <i class="pi pi-external-link text-lg sm:text-xl text-green-600 group-hover:scale-125 transition-transform"></i>
-              <span class="border-0 text-[10px] sm:text-[11px] text-green-700 mt-1 font-medium">View</span>
+        <div class="border-t border-brand-surface-border bg-brand-surface-hover/30 px-4 py-3">
+          <div class="flex items-center justify-between gap-2">
+            <!-- Primary Action Button -->
+            <div v-if="book.status === 'draft'" class="flex-1">
+              <button
+                data-testid="compose-button"
+                class="w-full bg-brand-highlight hover:bg-brand-highlight/80 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                @click="onGenerateClick(book)"
+              >
+                <Wand2 class="w-4 h-4 inline mr-2" />
+                {{ book.magic_story ? 'Create Story' : 'Compose' }}
+              </button>
             </div>
-            <!-- Generate Button (for draft books without story) -->
-            <div data-testid="compose-button" v-if="book.status === 'draft' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
-              <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-brand-header group-hover:scale-125 transition-transform" />
-              <span class="border-0 text-[10px] sm:text-[11px] text-brand-header mt-1 font-medium">Compose</span>
+            
+            <div v-else-if="book.status === 'ready'" class="flex-1">
+              <button
+                data-testid="approve-button"
+                class="w-full bg-brand-header hover:bg-brand-header/80 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                @click="approveBook(book.id)"
+                v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'"
+              >
+                <i class="pi pi-check mr-2"></i>
+                Approve
+              </button>
             </div>
-            <!-- Generate Button (for draft books with story) -->
-            <div data-testid="create-story-button" v-if="book.status === 'draft' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onGenerateClick(book)">
-              <Wand2 class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 group-hover:scale-125 transition-transform" />
-              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Create Story</span>
+            
+            <div v-else-if="book.status === 'approved'" class="flex-1">
+              <button
+                data-testid="unapprove-button"
+                class="w-full bg-brand-accent hover:bg-brand-accent/80 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                @click="unapproveBook(book.id)"
+              >
+                <i class="pi pi-undo mr-2"></i>
+                Unapprove
+              </button>
             </div>
-            <!-- Regenerate Button (for ready or background_ready books without story) -->
-            <div data-testid="recreate-button" v-if="(book.status === 'ready' || book.status === 'background_ready') && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
-              <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
+            
+            <div v-else-if="book.status === 'background_ready'" class="flex-1">
+              <button
+                data-testid="recreate-button"
+                class="w-full bg-brand-accent/50 text-brand-accent text-sm font-medium py-2 px-3 rounded-lg cursor-not-allowed opacity-50"
+                disabled
+              >
+                <i class="pi pi-refresh mr-2"></i>
+                Processing
+              </button>
             </div>
-            <!-- Regenerate Button (for ready or background_ready books with story) -->
-            <div data-testid="recreate-story-button" v-if="(book.status === 'ready' || book.status === 'background_ready') && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="onRegenerateClick(book)" :class="{ 'opacity-50': book.status === 'background_ready' }">
-              <i class="pi pi-refresh text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">{{ book.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
-            </div>
-            <!-- Approve Button (books without story) -->
-            <div data-testid="approve-button" v-if="book.status === 'ready' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)" v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'">
-              <i class="pi pi-check text-lg sm:text-xl text-brand-header group-hover:scale-125 transition-transform"></i>
-              <span class="border-0 text-[10px] sm:text-[11px] text-brand-header mt-1 font-medium">Approve</span>
-            </div>
-            <!-- Approve Button (books with story) -->
-            <div data-testid="approve-story-button" v-if="book.status === 'ready' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="approveBook(book.id)" v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'">
-              <i class="pi pi-check text-lg sm:text-xl text-yellow-600 group-hover:scale-125 transition-transform"></i>
-              <span class="border-0 text-[10px] sm:text-[11px] text-yellow-700 mt-1 font-medium">Approve</span>
-            </div>
-            <!-- Unapprove Button (books without story) -->
-            <div data-testid="unapprove-button" v-if="book.status === 'approved' && !book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
-              <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
-              <span class="border-0 text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
-            </div>
-            <!-- Unapprove Button (books with story) -->
-            <div data-testid="unapprove-story-button" v-if="book.status === 'approved' && book.magic_story" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="unapproveBook(book.id)">
-              <i class="pi pi-undo text-lg sm:text-xl text-orange-600 group-hover:scale-125 transition-transform"></i>
-              <span class="border-0 text-[10px] sm:text-[11px] text-orange-700 mt-1 font-medium">Unapprove</span>
-            </div>
-            <!-- View Details Button -->
-            <div data-testid="details-button" class="flex flex-col items-center cursor-pointer group p-2 rounded-lg hover:bg-white/50 transition-all duration-200 min-w-[48px]" @click="viewBookDetails(book)">
-              <i class="pi pi-list text-lg sm:text-xl text-gray-600 group-hover:scale-125 transition-transform"></i>
-              <span class="border-0 text-[10px] sm:text-[11px] text-gray-700 mt-1 font-medium">Details</span>
+            
+            <!-- Secondary Actions -->
+            <div class="flex gap-2">
+              <button
+                data-testid="view-button"
+                class="p-2 text-brand-highlight hover:bg-brand-highlight/10 rounded-lg transition-colors"
+                @click="onDownloadClick(book)"
+                title="View"
+              >
+                <i class="pi pi-external-link text-lg"></i>
+              </button>
+              
+              <button
+                data-testid="details-button"
+                class="p-2 text-brand-text-muted hover:bg-brand-surface-hover rounded-lg transition-colors"
+                @click="viewBookDetails(book)"
+                title="Details"
+              >
+                <i class="pi pi-list text-lg"></i>
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div v-else class="flex flex-col items-center justify-center py-12 sm:py-20 px-4">
+    <!-- Memory Books Pagination -->
+    <div v-if="memoryBooksOnly.length > booksPerPage" class="flex justify-center items-center mt-8">
+      <div class="flex items-center gap-2">
+        <button
+          @click="currentBooksPage = Math.max(1, currentBooksPage - 1)"
+          :disabled="currentBooksPage === 1"
+          class="px-3 py-2 text-brand-text-muted hover:text-brand-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <i class="pi pi-chevron-left"></i>
+        </button>
+        
+        <span class="text-sm text-brand-text-muted">
+          Page {{ currentBooksPage }} of {{ totalBooksPages }}
+        </span>
+        
+        <button
+          @click="currentBooksPage = Math.min(totalBooksPages, currentBooksPage + 1)"
+          :disabled="currentBooksPage === totalBooksPages"
+          class="px-3 py-2 text-brand-text-muted hover:text-brand-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <i class="pi pi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Memory Books Empty State -->
+    <div v-else-if="!loadingMemoryBooks && memoryBooksOnly.length === 0" class="text-center py-12">
+      <div class="w-20 h-20 bg-brand-secondary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="pi pi-book text-3xl text-brand-secondary"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-brand-primary mb-3">No memory books yet</h3>
+      <p class="text-brand-text-muted mb-6">
+        You have memory cards but no memory books yet. Create your first memory book using the button above!
+      </p>
+    </div>
+
+    <!-- Empty State - Only show when there are no memory books at all in the database -->
+    <div v-else-if="!loadingMemoryBooks && memoryBooks.length === 0" class="flex flex-col items-center justify-center py-16 px-4">
       <!-- No assets state -->
-      <div v-if="!hasAssets" class="text-center">
-        <div class="text-gray-600 mb-4">
-          <i class="pi pi-images text-4xl sm:text-6xl"></i>
+      <div v-if="!hasAssets" class="text-center max-w-md">
+        <div class="w-20 h-20 bg-brand-surface-hover rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="pi pi-images text-3xl text-brand-text-muted"></i>
         </div>
-        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No photos uploaded yet</h3>
-        <p class="text-sm sm:text-base text-gray-500 mb-6 text-center max-w-md">You need some photos to create your first special memory. Would you like to upload some now?</p>
+        <h3 class="text-xl font-semibold text-brand-primary mb-3">No photos uploaded yet</h3>
+        <p class="text-brand-text-muted mb-6 leading-relaxed">
+          You need some photos to create your first special memory. Would you like to upload some now?
+        </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             data-testid="upload-photos-button"
-            class="border-0 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
+            class="bg-brand-highlight hover:bg-brand-highlight/80 text-white font-medium rounded-lg px-6 py-3 shadow-sm hover:shadow-md transition-all duration-200"
             @click="showUploadDialog = true"
           >
-            <i class="pi pi-upload mr-1 sm:mr-2"></i> Upload Photos
+            <i class="pi pi-upload mr-2"></i> Upload Photos
           </button>
           <button
             data-testid="skip-upload-button"
-            class="border-0 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200"
+            class="bg-brand-surface-hover hover:bg-brand-surface-hover/80 text-brand-text-muted font-medium rounded-lg px-6 py-3 transition-colors"
             @click="skipUpload"
           >
             Maybe Later
@@ -361,28 +675,35 @@
         </div>
       </div>
 
-      <!-- Has assets but no magic memories state -->
-      <div v-else class="text-center">
-        <div class="text-gray-600 mb-4">
-          <i class="pi pi-book text-4xl sm:text-6xl"></i>
+              <!-- Has assets but no memories state -->
+        <div v-else class="text-center max-w-md">
+          <div class="w-20 h-20 bg-brand-warm/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="pi pi-book text-3xl text-brand-secondary"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-brand-primary mb-3">No memories created yet</h3>
+          <p class="text-brand-text-muted mb-6 leading-relaxed">
+            Wonderful! You have {{ approvedAssetsCount }} approved photos ready.
+            <span v-if="approvedAssetsCount < 6" class="block mt-3 text-brand-secondary font-medium">
+              💡 Tip: Savta works better with at least 6 photos for the best results!
+            </span>
+          </p>
+          <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              data-testid="create-first-memory-card-button"
+              class="bg-gradient-to-r from-brand-highlight to-brand-highlight/80 hover:from-brand-highlight/90 hover:to-brand-highlight text-white font-medium rounded-lg px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              @click="openMagicMemoryDialog('quick')"
+            >
+              <i class="pi pi-plus mr-2"></i> Create Memory Card
+            </button>
+            <button
+              data-testid="create-first-memory-book-button"
+              class="bg-gradient-to-r from-brand-secondary to-brand-secondary/80 hover:from-brand-secondary/90 hover:to-brand-secondary text-white font-medium rounded-lg px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              @click="showCreateModal = true"
+            >
+              <i class="pi pi-book mr-2"></i> Create Memory Book
+            </button>
+          </div>
         </div>
-        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">No special memories yet</h3>
-        <p class="text-sm sm:text-base text-gray-500 mb-4 text-center max-w-md">
-          Wonderful! You have {{ approvedAssetsCount }} approved photos ready. 
-          <span v-if="approvedAssetsCount < 6" class="block mt-2 text-brand-secondary font-medium">
-            💡 Tip: Savta, our special AI, works better when she can select from a library of at least 6 photos. 
-            Consider adding more photos for the best results!
-          </span>
-          Are you ready to create your first memory card?
-        </p>
-                  <button
-            data-testid="create-first-memory-card-button"
-            class="border-0 bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base shadow transition-all duration-200 w-full max-w-sm"
-            @click="openMagicMemoryDialog('quick')"
-          >
-            <i class="pi pi-plus mr-1 sm:mr-2"></i> Create Your First Memory Card
-          </button>
-      </div>
     </div>
 
 
@@ -1977,6 +2298,44 @@ const memoryBooks = ref([])
 const loadingMemoryBooks = ref(true)
 const showCreateModal = ref(false)
 
+// Pagination for memory cards
+const currentCardsPage = ref(1)
+const cardsPerPage = ref(12)
+
+// Pagination for memory books
+const currentBooksPage = ref(1)
+const booksPerPage = ref(12)
+
+// Computed properties for filtering and pagination
+// Use the format field from the database schema to distinguish between cards and books
+const memoryCards = computed(() => {
+  return memoryBooks.value.filter(book => book.format === 'card')
+})
+
+const memoryBooksOnly = computed(() => {
+  return memoryBooks.value.filter(book => book.format === 'book')
+})
+
+const totalCardsPages = computed(() => {
+  return Math.ceil(memoryCards.value.length / cardsPerPage.value)
+})
+
+const totalBooksPages = computed(() => {
+  return Math.ceil(memoryBooksOnly.value.length / booksPerPage.value)
+})
+
+const paginatedMemoryCards = computed(() => {
+  const start = (currentCardsPage.value - 1) * cardsPerPage.value
+  const end = start + cardsPerPage.value
+  return memoryCards.value.slice(start, end)
+})
+
+const paginatedMemoryBooks = computed(() => {
+  const start = (currentBooksPage.value - 1) * booksPerPage.value
+  const end = start + booksPerPage.value
+  return memoryBooksOnly.value.slice(start, end)
+})
+
 const showSuccessDialog = ref(false)
 const newlyCreatedBook = ref(null)
 const showDetailsModal = ref(false)
@@ -2001,6 +2360,12 @@ watch([memoryBooks, hasAssets, approvedAssetsCount], ([books, assets, count]) =>
     showSavtaBubble.value = false
   }
 }, { immediate: true })
+
+// Reset pagination when data changes
+watch(memoryBooks, () => {
+  currentCardsPage.value = 1
+  currentBooksPage.value = 1
+})
 
 // PDF Progress tracking
 const showProgressDialog = ref(false)
