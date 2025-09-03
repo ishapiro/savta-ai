@@ -61,18 +61,18 @@ export default {
       colors: {
         brand: {
           // Primary Brand Identity - Bright & Welcoming
-          header: '#FF6B9D',        // Vibrant coral-pink (was #D16D84 raspberry)
+          header: '#9F1239',        // Sophisticated burgundy-rose (was #FF6B9D vibrant coral-pink)
           background: '#FEFCF8',    // Bright warm white (was #F9F6F2 cream)
-          primary: '#2D3748',       // Modern charcoal (was #333333 dark gray)
-          secondary: '#3B82F6',     // Warm blue #3B82F6 (was #6366F1 muted blue-purple)
+          primary: '#2D3748',       // Modern charcoal #2D3748 (was #333333 dark gray)
+          secondary: '#1E3A8A',     // Navy blue #1E3A8A (was #3B82F6 warm blue)
           
           // Navigation & UI Elements
           navigation: '#F1F5F9',    // Cool light gray (was #e4e4e7)
-          highlight: '#10B981',     // Emerald green (was #41706C teal)
-          accent: '#F59E0B',        // Golden amber (was #F1B8B8 blush)
+          highlight: '#41706C',     // Teal #41706C(was Emerald green  #10B981)
+          accent: '#D97706',        // Sophisticated amber (was #F59E0B bright golden amber)
           
           // Warm & Inviting
-          warm: '#FEF3C7',          // Soft yellow (was #F4E4D6 cream)
+          warm: '#FDE68A',          // Rich yellow (was #FEF3C7 very light yellow)
           card: '#FFFFFF',          // Pure white (was #F6E7D8 tan)
           
           // Enhanced Color System
@@ -89,29 +89,29 @@ export default {
           
           // Text System - High Contrast & Readable
           'text-color': '#2D3748',            // Modern charcoal
-          'text-color-secondary': '#3B82F6',  // Warm blue
+          'text-color-secondary': '#1E3A8A',  // Navy blue
           'text-muted': '#64748B',            // Modern muted gray
           
           // Dialog System - Enhanced & Playful
           'dialog-cancel': 'rgba(100, 116, 139, 0.2)',      // Modern cancel
           'dialog-cancel-hover': 'rgba(100, 116, 139, 0.4)', // Hover state
-          'dialog-edit': '#3B82F6',           // Warm blue
-          'dialog-edit-hover': '#2563EB',     // Darker warm blue
-          'dialog-save': '#10B981',           // Emerald green
-          'dialog-save-hover': '#059669',     // Darker green
-          'dialog-delete': '#FF6B9D',         // Vibrant coral
-          'dialog-delete-hover': '#EC4899',   // Darker coral
-          'dialog-primary': '#3B82F6',        // Warm blue
-          'dialog-primary-hover': '#2563EB',  // Darker warm blue
-          'dialog-secondary': '#FEF3C7',      // Soft yellow
-          'dialog-secondary-hover': '#FDE68A', // Darker yellow
+          'dialog-edit': '#1E3A8A',           // Navy blue
+          'dialog-edit-hover': '#1E40AF',     // Darker navy blue
+          'dialog-save': '#41706C',           // Teal
+          'dialog-save-hover': '#2D4A47',     // Darker teal
+          'dialog-delete': '#9F1239',         // Sophisticated burgundy-rose (was #FF6B9D vibrant coral)
+          'dialog-delete-hover': '#7F0D2E',   // Darker burgundy-rose (was #EC4899 darker coral)
+          'dialog-primary': '#1E3A8A',        // Navy blue
+          'dialog-primary-hover': '#1E40AF',  // Darker navy blue
+          'dialog-secondary': '#FDE68A',      // Rich yellow (was #FEF3C7 soft yellow)
+          'dialog-secondary-hover': '#FCD34D', // Darker yellow (was #FDE68A)
           
           // Modern Accent Colors
-          'flash': '#3B82F6',                 // Modern blue
-          'success': '#10B981',               // Emerald green
-          'warning': '#F59E0B',               // Golden amber
-          'error': '#EF4444',                 // Modern red
-          'info': '#3B82F6',                  // Modern blue
+          'flash': '#1E3A8A',                 // Navy blue
+          'success': '#41706C',               // Teal
+          'warning': '#D97706',                // Sophisticated amber (was #F59E0B bright golden amber)
+          'error': '#DC2626',                 // Sophisticated red (was #EF4444 bright red)
+          'info': '#1E3A8A',                  // Navy blue
         },
         primary: {
           DEFAULT: '#2D3748', // brand.primary - Modern charcoal
@@ -127,7 +127,7 @@ export default {
           border: '#E2E8F0', // brand.surface-border - Modern border
           highlight: '#F8FAFC', // brand.surface-hover - Subtle hover
           text: '#2D3748', // brand.text-color - Modern charcoal
-          'text-secondary': '#3B82F6', // brand.text-color-secondary - Warm blue
+          'text-secondary': '#1E3A8A', // brand.text-color-secondary - Navy blue
           'text-muted': '#64748B' // brand.text-color-secondary - Modern muted gray
         }
       },

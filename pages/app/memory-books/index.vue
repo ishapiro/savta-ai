@@ -47,17 +47,17 @@
         </div>
         
         <div class="max-w-4xl mx-auto">
-          <div data-savta="memory-cards-tile" class="bg-gradient-to-br from-brand-highlight/10 to-brand-highlight/5 rounded-2xl shadow-xl border border-brand-highlight/20 p-8 relative overflow-hidden">
+          <div data-savta="memory-cards-tile" class="bg-gradient-to-br from-brand-secondary/10 to-brand-secondary/5 rounded-2xl shadow-xl border border-brand-secondary/20 p-8 relative overflow-hidden">
             <!-- Decorative background elements -->
-            <div class="absolute top-0 right-0 w-32 h-32 bg-brand-highlight/10 rounded-full -translate-y-16 translate-x-16"></div>
+            <div class="absolute top-0 right-0 w-32 h-32 bg-brand-secondary/10 rounded-full -translate-y-16 translate-x-16"></div>
             <div class="absolute bottom-0 left-0 w-24 h-24 bg-brand-accent/10 rounded-full translate-y-12 -translate-x-12"></div>
             
             <div class="relative z-10 text-center">
-              <div class="w-20 h-20 bg-gradient-to-br from-brand-highlight to-brand-highlight/80 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <div class="w-20 h-20 bg-gradient-to-br from-brand-secondary to-brand-secondary/80 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <Sparkles class="w-10 h-10 text-white" />
               </div>
               
-              <h3 class="text-2xl font-bold text-brand-highlight mb-4">Magic Memory Cards</h3>
+              <h3 class="text-2xl font-bold text-brand-secondary mb-4">Magic Memory Cards</h3>
               <p class="text-brand-text-muted mb-6 max-w-md mx-auto">
                 Our AI wizard guides you through creating beautiful memory cards step-by-step. 
                 Perfect for beginners and experienced users alike.
@@ -65,7 +65,7 @@
               
               <button
                 data-testid="create-memory-card-button"
-                class="border-0 bg-gradient-to-r from-brand-highlight to-brand-highlight/80 hover:from-brand-highlight/90 hover:to-brand-highlight text-white font-bold rounded-xl px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 magic-memory-btn min-h-[56px]"
+                class="border-0 bg-gradient-to-r from-brand-secondary to-brand-secondary/80 hover:from-brand-secondary/90 hover:to-brand-secondary text-white font-bold rounded-xl px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 magic-memory-btn min-h-[56px]"
                 @click="openMagicMemoryDialog('quick')"
               >
                 <Sparkles class="w-6 h-6 text-yellow-300 drop-shadow mr-3" />
@@ -74,15 +74,15 @@
               
               <div class="flex justify-center items-center gap-6 mt-6 text-sm text-brand-text-muted">
                 <div class="flex items-center gap-2">
-                  <i class="pi pi-check-circle text-brand-highlight"></i>
+                  <i class="pi pi-check-circle text-brand-secondary"></i>
                   <span>Simple wizard</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <i class="pi pi-check-circle text-brand-highlight"></i>
+                  <i class="pi pi-check-circle text-brand-secondary"></i>
                   <span>Print & mail</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <i class="pi pi-check-circle text-brand-highlight"></i>
+                  <i class="pi pi-check-circle text-brand-secondary"></i>
                   <span>AI-powered</span>
                 </div>
               </div>
@@ -115,7 +115,7 @@
             class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-brand-surface-border overflow-hidden group"
           >
             <!-- Card Header -->
-            <div class="relative flex items-center justify-center h-16 px-4 bg-brand-highlight">
+            <div class="relative flex items-center justify-center h-16 px-4 bg-brand-secondary">
               <!-- Status Badge -->
               <div class="absolute top-2 right-2">
                 <div :class="getStatusBadgeClass(card.status)" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm">
@@ -287,8 +287,8 @@
 
         <!-- Memory Cards Empty State -->
         <div v-else-if="!loadingMemoryBooks && memoryCards.length === 0" class="text-center py-12">
-          <div class="w-20 h-20 bg-brand-highlight/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Wand2 class="w-10 h-10 text-brand-highlight" />
+          <div class="w-20 h-20 bg-brand-secondary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Wand2 class="w-10 h-10 text-brand-secondary" />
           </div>
           <h3 class="text-xl font-semibold text-brand-primary mb-3">No memory cards yet</h3>
           <p class="text-brand-text-muted mb-6">
@@ -308,17 +308,17 @@
         </div>
         
         <div class="max-w-3xl mx-auto">
-          <div class="bg-gradient-to-br from-brand-secondary/10 to-brand-secondary/5 rounded-xl shadow-lg border border-brand-secondary/20 p-6 relative overflow-hidden">
+          <div class="bg-gradient-to-br from-brand-highlight/10 to-brand-highlight/5 rounded-xl shadow-lg border border-brand-highlight/20 p-6 relative overflow-hidden">
             <!-- Decorative background elements -->
-            <div class="absolute top-0 right-0 w-24 h-24 bg-brand-secondary/10 rounded-full -translate-y-12 translate-x-12"></div>
+            <div class="absolute top-0 right-0 w-24 h-24 bg-brand-highlight/10 rounded-full -translate-y-12 translate-x-12"></div>
             <div class="absolute bottom-0 left-0 w-16 h-16 bg-brand-accent/10 rounded-full translate-y-8 -translate-x-8"></div>
             
             <div class="relative z-10 text-center">
-              <div class="w-16 h-16 bg-gradient-to-br from-brand-secondary to-brand-secondary/80 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <div class="w-16 h-16 bg-gradient-to-br from-brand-highlight to-brand-highlight/80 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <i class="pi pi-book text-2xl text-white"></i>
               </div>
               
-              <h3 class="text-xl font-bold text-brand-secondary mb-3">Advanced Memory Books</h3>
+              <h3 class="text-xl font-bold text-brand-highlight mb-3">Advanced Memory Books</h3>
               <p class="text-brand-text-muted mb-4 max-w-md mx-auto text-sm">
                 Unlike memory cards which are quick and simple, memory books provide extensive customization 
                 options including custom layouts, themes, and photo arrangements for digital use.
@@ -327,7 +327,7 @@
               <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
                 <button
                   data-testid="create-memory-book-button"
-                  class="border-0 bg-gradient-to-r from-brand-secondary to-brand-secondary/80 hover:from-brand-secondary/90 hover:to-brand-secondary text-white font-bold rounded-lg px-6 py-3 text-base shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                  class="border-0 bg-gradient-to-r from-brand-highlight to-brand-highlight/80 hover:from-brand-highlight/90 hover:to-brand-highlight text-white font-bold rounded-lg px-6 py-3 text-base shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
                   @click="showCreateModal = true"
                 >
                   <i class="pi pi-plus mr-2"></i>
@@ -339,15 +339,15 @@
               
               <div class="flex justify-center items-center gap-4 mt-4 text-xs text-brand-text-muted">
                 <div class="flex items-center gap-1">
-                  <i class="pi pi-check-circle text-brand-secondary"></i>
+                  <i class="pi pi-check-circle text-brand-highlight"></i>
                   <span>Custom layouts</span>
                 </div>
                 <div class="flex items-center gap-1">
-                  <i class="pi pi-check-circle text-brand-secondary"></i>
+                  <i class="pi pi-check-circle text-brand-highlight"></i>
                   <span>Professional themes</span>
                 </div>
                 <div class="flex items-center gap-1">
-                  <i class="pi pi-check-circle text-brand-secondary"></i>
+                  <i class="pi pi-check-circle text-brand-highlight"></i>
                   <span>Digital themes</span>
                 </div>
               </div>
@@ -465,7 +465,7 @@
         class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-brand-surface-border overflow-hidden group"
       >
         <!-- Card Header -->
-        <div class="relative flex items-center justify-center h-16 px-4 bg-brand-secondary">
+        <div class="relative flex items-center justify-center h-16 px-4 bg-brand-highlight">
           <!-- Status Badge -->
           <div class="absolute top-2 right-2">
             <div :class="getStatusBadgeClass(book.status)" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium shadow-sm">
@@ -635,8 +635,8 @@
 
     <!-- Memory Books Empty State -->
     <div v-else-if="!loadingMemoryBooks && memoryBooksOnly.length === 0" class="text-center py-12">
-      <div class="w-20 h-20 bg-brand-secondary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-        <i class="pi pi-book text-3xl text-brand-secondary"></i>
+      <div class="w-20 h-20 bg-brand-highlight/20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="pi pi-book text-3xl text-brand-highlight"></i>
       </div>
       <h3 class="text-xl font-semibold text-brand-primary mb-3">No memory books yet</h3>
       <p class="text-brand-text-muted mb-6">
@@ -658,7 +658,7 @@
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             data-testid="upload-photos-button"
-            class="bg-brand-highlight hover:bg-brand-highlight/80 text-white font-medium rounded-lg px-6 py-3 shadow-sm hover:shadow-md transition-all duration-200"
+            class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-medium rounded-lg px-6 py-3 shadow-sm hover:shadow-md transition-all duration-200"
             @click="showUploadDialog = true"
           >
             <i class="pi pi-upload mr-2"></i> Upload Photos
@@ -676,7 +676,7 @@
               <!-- Has assets but no memories state -->
         <div v-else class="text-center max-w-md">
           <div class="w-20 h-20 bg-brand-warm/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <i class="pi pi-book text-3xl text-brand-secondary"></i>
+            <i class="pi pi-book text-3xl text-brand-highlight"></i>
           </div>
           <h3 class="text-xl font-semibold text-brand-primary mb-3">No memories created yet</h3>
           <p class="text-brand-text-muted mb-6 leading-relaxed">
@@ -688,14 +688,14 @@
           <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               data-testid="create-first-memory-card-button"
-              class="bg-gradient-to-r from-brand-highlight to-brand-highlight/80 hover:from-brand-highlight/90 hover:to-brand-highlight text-white font-medium rounded-lg px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              class="bg-gradient-to-r from-brand-secondary to-brand-secondary/80 hover:from-brand-secondary/90 hover:to-brand-secondary text-white font-medium rounded-lg px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               @click="openMagicMemoryDialog('quick')"
             >
               <i class="pi pi-plus mr-2"></i> Create Memory Card
             </button>
             <button
               data-testid="create-first-memory-book-button"
-              class="bg-gradient-to-r from-brand-secondary to-brand-secondary/80 hover:from-brand-secondary/90 hover:to-brand-secondary text-white font-medium rounded-lg px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              class="bg-gradient-to-r from-brand-highlight to-brand-highlight/80 hover:from-brand-highlight/90 hover:to-brand-highlight text-white font-medium rounded-lg px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               @click="showCreateModal = true"
             >
               <i class="pi pi-book mr-2"></i> Create a Memory Book
