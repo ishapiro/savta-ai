@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#F9F6F2]">
+  <div class="min-h-screen bg-brand-background">
     <!-- Add Google Fonts -->
     <Head>
       <link rel="preconnect" href="https://fonts.googleapis.com">

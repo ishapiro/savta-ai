@@ -495,7 +495,7 @@ onMounted(() => {
 
 <style scoped>
 .funnel-report-section {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, theme('colors.brand.surface-section') 0%, theme('colors.brand.surface-ground') 100%);
 }
 
 /* Smooth transitions for all interactive elements */
@@ -506,7 +506,7 @@ onMounted(() => {
 /* Custom scrollbar for the dialog */
 :deep(.p-dialog-content) {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+  scrollbar-color: theme('colors.brand.navigation') theme('colors.brand.surface-hover');
 }
 
 :deep(.p-dialog-content::-webkit-scrollbar) {
@@ -514,17 +514,17 @@ onMounted(() => {
 }
 
 :deep(.p-dialog-content::-webkit-scrollbar-track) {
-  background: #f1f5f9;
+  background: theme('colors.brand.surface-hover');
   border-radius: 3px;
 }
 
 :deep(.p-dialog-content::-webkit-scrollbar-thumb) {
-  background: #cbd5e1;
+  background: theme('colors.brand.navigation');
   border-radius: 3px;
 }
 
 :deep(.p-dialog-content::-webkit-scrollbar-thumb:hover) {
-  background: #94a3b8;
+  background: theme('colors.brand.secondary');
 }
 </style>
 

@@ -7,19 +7,6 @@
 
 /* CSS Custom Properties for colors */
 :root {
-  --primary-color: #333333; /* Dark gray - text color */
-  --primary-hover-color: #4A4742; /* Darker gray for hover */
-  --primary-active-color: #3A3732; /* Even darker gray for active */
-  --primary-contrast-color: #ffffff; /* White text on primary */
-  
-  --surface-ground: #F9F6F2;
-  --surface-section: #ffffff;
-  --surface-card: #ffffff;
-  --surface-hover: #f4f4f5;
-  --surface-border: #e4e4e7;
-  --text-color: #333333;
-  --text-color-secondary: #6E4B63;
-  
   /* Dialog border color */
   --dialog-border-color: #41706C; /* brand-highlight color */
 }

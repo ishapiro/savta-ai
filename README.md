@@ -33,6 +33,59 @@ npm run dev
 - **PDF Generation**: PDF-lib
 - **Deployment**: Railway.com
 
+## 🎨 Color System
+
+The project uses a centralized color system defined in the Tailwind configuration. All colors are organized into a cohesive brand palette that ensures consistency across the UI.
+
+### Color Definition Location
+
+**Primary Configuration**: `tailwind.config.js`
+- Colors are defined in the `colors.brand` section
+- Primary and surface colors reference the brand palette directly
+- Typography colors are also sourced from the brand palette
+
+**CSS Variables**: `assets/css/main.css`
+- Only essential custom properties remain (e.g., `--dialog-border-color`)
+- Most color definitions have been moved to Tailwind config for better maintainability
+
+### Brand Color Palette
+
+```javascript
+brand: {
+  header: '#D16D84',        // H1 - Raspberry
+  background: '#F9F6F2',    // Cream
+  primary: '#333333',       // Text - Dark Gray
+  secondary: '#6E4B63',     // H2 - Plum
+  navigation: '#e4e4e7',    // Light Grey
+  highlight: '#41706C',     // H3 - Darker Teal
+  accent: '#F1B8B8',        // H4 - Blush
+  warm: '#F4E4D6',          // Warm Cream
+  card: '#F6E7D8',          // Light Tan
+  // ... additional brand colors
+}
+```
+
+### Usage in Components
+
+**Tailwind Classes**: Use semantic color names for consistent theming
+- `bg-primary` → Primary background color
+- `text-surface-text` → Surface text color
+- `border-surface-border` → Surface border color
+- `bg-brand-header` → Direct brand color access
+
+**PrimeVue Integration**: The color system works seamlessly with PrimeVue components
+- Dialog borders use `--dialog-border-color` for consistent styling
+- Button and form elements inherit from the Tailwind color palette
+- All UI components maintain visual consistency through the centralized color system
+
+### Benefits of This Approach
+
+1. **Centralized Management**: All colors defined in one place
+2. **Semantic Naming**: Colors have meaningful names (e.g., `primary`, `surface-card`)
+3. **Easy Maintenance**: Update colors once in the config, changes apply everywhere
+4. **PrimeVue Compatibility**: Seamless integration with PrimeVue component library
+5. **Design Consistency**: Ensures uniform appearance across all UI elements
+
 ## 📁 Project Structure
 
 ```

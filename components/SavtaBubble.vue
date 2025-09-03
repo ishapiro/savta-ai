@@ -182,8 +182,8 @@ function calcPosition() {
   bubble.style.lineHeight = '1.5'
   bubble.style.fontFamily = 'system-ui, sans-serif'
   bubble.style.borderRadius = '12px'
-  bubble.style.border = '2px solid #41706C'
-  bubble.style.backgroundColor = '#F9F6F2'
+  bubble.style.border = '2px solid #41706C' // brand.highlight
+  bubble.style.backgroundColor = '#F9F6F2' // brand.background
   bubble.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)'
   bubble.style.whiteSpace = 'pre-line'
   bubble.style.wordWrap = 'break-word'

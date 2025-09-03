@@ -69,6 +69,18 @@ export default {
           accent: '#F1B8B8', // H4 - blush
           warm: '#F4E4D6', // warm cream color #F4E4D6
           card: '#F6E7D8', // light tan
+          primary: '#333333', // text - darker gray was #5A5752
+          'primary-hover-color': '#4A4742', // darker gray was #5A5752
+          'primary-active-color': '#3A3732', // even darker gray was #3A3732
+          'primary-contrast-color': '#ffffff', // white
+          'surface-ground': '#F9F6F2', // cream
+          'surface-section': '#ffffff', // white
+          'surface-card': '#ffffff', // white
+          'surface-hover': '#f4f4f5', // light grey
+          'surface-border': '#e4e4e7', // light grey
+          'text-color': '#333333', // text - darker gray was #5A5752
+          'text-color-secondary': '#6E4B63', // H2 - plum
+          'text-muted': '#6E4B63', // H2 - plum
           'dialog-cancel': 'rgba(130, 130, 130, 0.44)', 
           'dialog-cancel-hover': 'rgba(100, 100, 100, 0.6)',
           'dialog-edit': '#6E4B63', // same as secondary
@@ -84,21 +96,21 @@ export default {
           'flash': '#4A90E2', // compatible blue that works with brand palette
         },
         primary: {
-          DEFAULT: 'var(--primary-color)',
-          hover: 'var(--primary-hover-color)',
-          active: 'var(--primary-active-color)',
-          contrast: 'var(--primary-contrast-color)'
+          DEFAULT: '#333333', // brand.primary
+          hover: '#4A4742', // brand.primary-hover-color
+          active: '#3A3732', // brand.primary-active-color
+          contrast: '#ffffff' // brand.primary-contrast-color
         },
         surface: {
-          DEFAULT: 'var(--surface-ground)',
-          section: 'var(--surface-section)',
-          card: 'var(--surface-card)',
-          hover: 'var(--surface-hover)',
-          border: 'var(--surface-border)',
-          highlight: 'var(--surface-hover)',
-          text: 'var(--text-color)',
-          'text-secondary': 'var(--text-color-secondary)',
-          'text-muted': 'var(--text-color-secondary)'
+          DEFAULT: '#F9F6F2', // brand.surface-ground
+          section: '#ffffff', // brand.surface-section
+          card: '#ffffff', // brand.surface-card
+          hover: '#f4f4f5', // brand.surface-hover
+          border: '#e4e4e7', // brand.surface-border
+          highlight: '#f4f4f5', // brand.surface-hover
+          text: '#333333', // brand.text-color
+          'text-secondary': '#6E4B63', // brand.text-color-secondary
+          'text-muted': '#6E4B63' // brand.text-color-secondary
         }
       },
       fontFamily: {
@@ -113,11 +125,11 @@ export default {
         DEFAULT: {
           css: {
             maxWidth: '65ch',
-            color: 'var(--text-color)',
+            color: '#333333', // brand.text-color
             a: {
-              color: 'var(--primary-color)',
+              color: '#333333', // brand.primary
               '&:hover': {
-                color: 'var(--primary-hover-color)',
+                color: '#4A4742', // brand.primary-hover-color
               },
             },
           },

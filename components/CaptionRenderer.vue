@@ -55,7 +55,7 @@ const renderCaption = async () => {
         width: props.maxWidth,
         height: props.maxHeight,
         fontSize: props.fontSize,
-        color: '#D16D84', // brand-header color
+        color: '#D16D84', // brand.header
         backgroundColor: 'transparent'
       })
     })

@@ -359,7 +359,7 @@ watch(selectedPersonId, (newValue) => {
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background: #41706C;
+  background: theme('colors.brand.highlight');
   cursor: pointer;
 }
 
@@ -367,7 +367,7 @@ watch(selectedPersonId, (newValue) => {
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  background: #41706C;
+  background: theme('colors.brand.highlight');
   cursor: pointer;
   border: none;
 }

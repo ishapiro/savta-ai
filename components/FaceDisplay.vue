@@ -95,9 +95,4 @@ const boundingBoxStyle = computed(() => {
 });
 </script>
 
-<style scoped>
-/* Bounding box overlay styling */
-.border-brand-highlight {
-  border-color: #41706C;
-}
-</style>
+<!-- No custom styles needed - using Tailwind classes -->
