@@ -64,7 +64,7 @@ export default {
           header: '#FF6B9D',        // Vibrant coral-pink (was #D16D84 raspberry)
           background: '#FEFCF8',    // Bright warm white (was #F9F6F2 cream)
           primary: '#2D3748',       // Modern charcoal (was #333333 dark gray)
-          secondary: '#8B5CF6',     // Electric purple (was #6E4B63 plum)
+          secondary: '#3B82F6',     // Warm blue #3B82F6 (was #6366F1 muted blue-purple)
           
           // Navigation & UI Elements
           navigation: '#F1F5F9',    // Cool light gray (was #e4e4e7)
@@ -89,20 +89,20 @@ export default {
           
           // Text System - High Contrast & Readable
           'text-color': '#2D3748',            // Modern charcoal
-          'text-color-secondary': '#8B5CF6',  // Electric purple
+          'text-color-secondary': '#3B82F6',  // Warm blue
           'text-muted': '#64748B',            // Modern muted gray
           
           // Dialog System - Enhanced & Playful
           'dialog-cancel': 'rgba(100, 116, 139, 0.2)',      // Modern cancel
           'dialog-cancel-hover': 'rgba(100, 116, 139, 0.4)', // Hover state
-          'dialog-edit': '#8B5CF6',           // Electric purple
-          'dialog-edit-hover': '#7C3AED',     // Darker purple
+          'dialog-edit': '#3B82F6',           // Warm blue
+          'dialog-edit-hover': '#2563EB',     // Darker warm blue
           'dialog-save': '#10B981',           // Emerald green
           'dialog-save-hover': '#059669',     // Darker green
           'dialog-delete': '#FF6B9D',         // Vibrant coral
           'dialog-delete-hover': '#EC4899',   // Darker coral
-          'dialog-primary': '#8B5CF6',        // Electric purple
-          'dialog-primary-hover': '#7C3AED',  // Darker purple
+          'dialog-primary': '#3B82F6',        // Warm blue
+          'dialog-primary-hover': '#2563EB',  // Darker warm blue
           'dialog-secondary': '#FEF3C7',      // Soft yellow
           'dialog-secondary-hover': '#FDE68A', // Darker yellow
           
@@ -127,7 +127,7 @@ export default {
           border: '#E2E8F0', // brand.surface-border - Modern border
           highlight: '#F8FAFC', // brand.surface-hover - Subtle hover
           text: '#2D3748', // brand.text-color - Modern charcoal
-          'text-secondary': '#8B5CF6', // brand.text-color-secondary - Electric purple
+          'text-secondary': '#3B82F6', // brand.text-color-secondary - Warm blue
           'text-muted': '#64748B' // brand.text-color-secondary - Modern muted gray
         }
       },

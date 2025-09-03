@@ -5,6 +5,8 @@
     :header="isEditing ? 'Edit Memory Recipe' : 'Create a New Memory Recipe'"
     class="w-[95vw] max-w-4xl memory-book-dialog mt-3"
     :closable="false"
+    :auto-z-index="false"
+    :z-index="9999"
   >
     <form @submit.prevent="handleSubmit" class="space-y-6">
       <!-- Book Details Section -->

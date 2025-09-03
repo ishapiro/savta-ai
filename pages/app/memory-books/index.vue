@@ -42,7 +42,7 @@
         <div class="text-center mb-8">
           <h2 class="text-3xl lg:text-4xl font-bold text-brand-primary mb-4">Create Beautiful Memory Cards</h2>
           <p class="text-lg text-brand-text-muted max-w-2xl mx-auto">
-            Turn your photos into stunning memory cards in minutes. Perfect for sharing with family and friends.
+            Turn your photos into stunning memory cards in minutes. Perfect for printing and mailing to family and friends.
           </p>
         </div>
         
@@ -69,7 +69,7 @@
                 @click="openMagicMemoryDialog('quick')"
               >
                 <Sparkles class="w-6 h-6 text-yellow-300 drop-shadow mr-3" />
-                Create Your First Memory Card
+                Create a Memory Card
               </button>
               
               <div class="flex justify-center items-center gap-6 mt-6 text-sm text-brand-text-muted">
@@ -79,11 +79,11 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <i class="pi pi-check-circle text-brand-highlight"></i>
-                  <span>AI-powered</span>
+                  <span>Print & mail</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <i class="pi pi-check-circle text-brand-highlight"></i>
-                  <span>Perfect results</span>
+                  <span>AI-powered</span>
                 </div>
               </div>
             </div>
@@ -209,7 +209,7 @@
                     v-tooltip.top="'Approve this Card and I\'ll Send it Out For You'"
                   >
                     <i class="pi pi-check mr-2"></i>
-                    Approve
+                    Print and Mail
                   </button>
                 </div>
                 
@@ -292,7 +292,7 @@
           </div>
           <h3 class="text-xl font-semibold text-brand-primary mb-3">No memory cards yet</h3>
           <p class="text-brand-text-muted mb-6">
-            You have memory books but no memory cards yet. Create your first memory card using the wizard above!
+            You have memory books but no memory cards yet. Create your first memory card to print and mail to loved ones!
           </p>
         </div>
       </div>
@@ -321,7 +321,7 @@
               <h3 class="text-xl font-bold text-brand-secondary mb-3">Advanced Memory Books</h3>
               <p class="text-brand-text-muted mb-4 max-w-md mx-auto text-sm">
                 Unlike memory cards which are quick and simple, memory books provide extensive customization 
-                options including custom layouts, themes, photo arrangements, and professional printing options.
+                options including custom layouts, themes, and photo arrangements for digital use.
               </p>
               
               <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -331,12 +331,10 @@
                   @click="showCreateModal = true"
                 >
                   <i class="pi pi-plus mr-2"></i>
-                  Create Memory Book
+                  Create a Memory Book
                 </button>
                 
-                <div class="text-sm text-brand-text-muted">
-                  {{ memoryBooksOnly.length }} book{{ memoryBooksOnly.length !== 1 ? 's' : '' }} created
-                </div>
+
               </div>
               
               <div class="flex justify-center items-center gap-4 mt-4 text-xs text-brand-text-muted">
@@ -350,7 +348,7 @@
                 </div>
                 <div class="flex items-center gap-1">
                   <i class="pi pi-check-circle text-brand-secondary"></i>
-                  <span>Print options</span>
+                  <span>Digital themes</span>
                 </div>
               </div>
             </div>
@@ -559,7 +557,7 @@
                 v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'"
               >
                 <i class="pi pi-check mr-2"></i>
-                Approve
+                Print and Mail
               </button>
             </div>
             
@@ -700,9 +698,12 @@
               class="bg-gradient-to-r from-brand-secondary to-brand-secondary/80 hover:from-brand-secondary/90 hover:to-brand-secondary text-white font-medium rounded-lg px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               @click="showCreateModal = true"
             >
-              <i class="pi pi-book mr-2"></i> Create Memory Book
+              <i class="pi pi-book mr-2"></i> Create a Memory Book
             </button>
           </div>
+          <p class="text-sm text-brand-text-muted mt-4">
+            Memory cards can be printed and mailed to your grandmother and loved ones!
+          </p>
         </div>
     </div>
 
@@ -989,7 +990,7 @@
       modal
       class="w-[95vw] max-w-4xl mx-auto mb-15 mt-20"
       :auto-z-index="false"
-      :z-index="1000"
+      :z-index="9999"
     >
       <div v-if="selectedBook" class="bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen">
         <!-- Header Section -->
@@ -1829,7 +1830,9 @@
       :closable="false"
       :dismissableMask="false"
       :style="{ maxWidth: '700px', maxHeight: '100vh' }"
-      :class="['z-50', 'w-full', 'sm:w-[700px]', 'sm:max-w-[700px]', 'h-full', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl']"
+      :class="['w-full', 'sm:w-[700px]', 'sm:max-w-[700px]', 'h-full', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl']"
+      :auto-z-index="false"
+      :z-index="9999"
     >
       <!-- Step 1: AI Prompt Input -->
       <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
