@@ -37,6 +37,8 @@ npm run dev
 
 The project uses a centralized color system defined in the Tailwind configuration. All colors are organized into a cohesive brand palette that ensures consistency across the UI.
 
+**Updated 2025**: The color palette has been modernized to reflect current design trends while maintaining the warm, caring grandmotherly feel. Colors are now brighter, more playful, and feel contemporary rather than vintage.
+
 ### Color Definition Location
 
 **Primary Configuration**: `tailwind.config.js`
@@ -52,15 +54,16 @@ The project uses a centralized color system defined in the Tailwind configuratio
 
 ```javascript
 brand: {
-  header: '#D16D84',        // H1 - Raspberry
-  background: '#F9F6F2',    // Cream
-  primary: '#333333',       // Text - Dark Gray
-  secondary: '#6E4B63',     // H2 - Plum
-  navigation: '#e4e4e7',    // Light Grey
-  highlight: '#41706C',     // H3 - Darker Teal
-  accent: '#F1B8B8',        // H4 - Blush
-  warm: '#F4E4D6',          // Warm Cream
-  card: '#F6E7D8',          // Light Tan
+  // Primary Brand Identity - Bright & Welcoming
+  header: '#FF6B9D',        // H1 - Vibrant Coral-Pink
+  background: '#FEFCF8',    // Bright Warm White
+  primary: '#2D3748',       // Text - Modern Charcoal
+  secondary: '#8B5CF6',     // H2 - Electric Purple
+  navigation: '#F1F5F9',    // Cool Light Gray
+  highlight: '#10B981',     // H3 - Emerald Green
+  accent: '#F59E0B',        // H4 - Golden Amber
+  warm: '#FEF3C7',          // Soft Yellow
+  card: '#FFFFFF',           // Pure White
   // ... additional brand colors
 }
 ```

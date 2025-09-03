@@ -60,57 +60,75 @@ export default {
       },
       colors: {
         brand: {
-          header: '#D16D84', // H1 - raspberry
-          background: '#F9F6F2', // cream #F9F6F2
-          primary: '#333333', // text - darker gray was #5A5752
-          secondary: '#6E4B63', // H2 - plum
-          navigation: '#e4e4e7', // light grey
-          highlight: '#41706C', // H3 - darker teal -- was #7BAAA7
-          accent: '#F1B8B8', // H4 - blush
-          warm: '#F4E4D6', // warm cream color #F4E4D6
-          card: '#F6E7D8', // light tan
-          primary: '#333333', // text - darker gray was #5A5752
-          'primary-hover-color': '#4A4742', // darker gray was #5A5752
-          'primary-active-color': '#3A3732', // even darker gray was #3A3732
-          'primary-contrast-color': '#ffffff', // white
-          'surface-ground': '#F9F6F2', // cream
-          'surface-section': '#ffffff', // white
-          'surface-card': '#ffffff', // white
-          'surface-hover': '#f4f4f5', // light grey
-          'surface-border': '#e4e4e7', // light grey
-          'text-color': '#333333', // text - darker gray was #5A5752
-          'text-color-secondary': '#6E4B63', // H2 - plum
-          'text-muted': '#6E4B63', // H2 - plum
-          'dialog-cancel': 'rgba(130, 130, 130, 0.44)', 
-          'dialog-cancel-hover': 'rgba(100, 100, 100, 0.6)',
-          'dialog-edit': '#6E4B63', // same as secondary
-          'dialog-edit-hover': '#5A3F52', // darker plum
-          'dialog-save': '#41706C', // darker teal  -- was #7BAAA7
-          'dialog-save-hover': '#355A57', // darker teal
-          'dialog-delete': '#D16D84', // raspberry #B85A6F
-          'dialog-delete-hover': '#B85A6F', // darker raspberry #B85A6F
-          'dialog-primary': '#6E4B63', // plum - for primary actions #6E4B63
-          'dialog-primary-hover': '#5A3F52', // darker plum
-          'dialog-secondary': '#F4E4D6', // warm cream - for secondary actions
-          'dialog-secondary-hover': '#E8D4C2', // darker warm cream
-          'flash': '#4A90E2', // compatible blue that works with brand palette
+          // Primary Brand Identity - Bright & Welcoming
+          header: '#FF6B9D',        // Vibrant coral-pink (was #D16D84 raspberry)
+          background: '#FEFCF8',    // Bright warm white (was #F9F6F2 cream)
+          primary: '#2D3748',       // Modern charcoal (was #333333 dark gray)
+          secondary: '#8B5CF6',     // Electric purple (was #6E4B63 plum)
+          
+          // Navigation & UI Elements
+          navigation: '#F1F5F9',    // Cool light gray (was #e4e4e7)
+          highlight: '#10B981',     // Emerald green (was #41706C teal)
+          accent: '#F59E0B',        // Golden amber (was #F1B8B8 blush)
+          
+          // Warm & Inviting
+          warm: '#FEF3C7',          // Soft yellow (was #F4E4D6 cream)
+          card: '#FFFFFF',          // Pure white (was #F6E7D8 tan)
+          
+          // Enhanced Color System
+          'primary-hover-color': '#4A5568',    // Modern hover state
+          'primary-active-color': '#2D3748',   // Active state
+          'primary-contrast-color': '#FFFFFF', // White text
+          
+          // Surface System - Clean & Modern
+          'surface-ground': '#FEFCF8',         // Bright warm white
+          'surface-section': '#FFFFFF',        // Pure white
+          'surface-card': '#FFFFFF',           // Pure white
+          'surface-hover': '#F8FAFC',          // Subtle hover
+          'surface-border': '#E2E8F0',        // Modern border
+          
+          // Text System - High Contrast & Readable
+          'text-color': '#2D3748',            // Modern charcoal
+          'text-color-secondary': '#8B5CF6',  // Electric purple
+          'text-muted': '#64748B',            // Modern muted gray
+          
+          // Dialog System - Enhanced & Playful
+          'dialog-cancel': 'rgba(100, 116, 139, 0.2)',      // Modern cancel
+          'dialog-cancel-hover': 'rgba(100, 116, 139, 0.4)', // Hover state
+          'dialog-edit': '#8B5CF6',           // Electric purple
+          'dialog-edit-hover': '#7C3AED',     // Darker purple
+          'dialog-save': '#10B981',           // Emerald green
+          'dialog-save-hover': '#059669',     // Darker green
+          'dialog-delete': '#FF6B9D',         // Vibrant coral
+          'dialog-delete-hover': '#EC4899',   // Darker coral
+          'dialog-primary': '#8B5CF6',        // Electric purple
+          'dialog-primary-hover': '#7C3AED',  // Darker purple
+          'dialog-secondary': '#FEF3C7',      // Soft yellow
+          'dialog-secondary-hover': '#FDE68A', // Darker yellow
+          
+          // Modern Accent Colors
+          'flash': '#3B82F6',                 // Modern blue
+          'success': '#10B981',               // Emerald green
+          'warning': '#F59E0B',               // Golden amber
+          'error': '#EF4444',                 // Modern red
+          'info': '#3B82F6',                  // Modern blue
         },
         primary: {
-          DEFAULT: '#333333', // brand.primary
-          hover: '#4A4742', // brand.primary-hover-color
-          active: '#3A3732', // brand.primary-active-color
-          contrast: '#ffffff' // brand.primary-contrast-color
+          DEFAULT: '#2D3748', // brand.primary - Modern charcoal
+          hover: '#4A5568', // brand.primary-hover-color - Modern hover state
+          active: '#2D3748', // brand.primary-active-color - Active state
+          contrast: '#FFFFFF' // brand.primary-contrast-color - White text
         },
         surface: {
-          DEFAULT: '#F9F6F2', // brand.surface-ground
-          section: '#ffffff', // brand.surface-section
-          card: '#ffffff', // brand.surface-card
-          hover: '#f4f4f5', // brand.surface-hover
-          border: '#e4e4e7', // brand.surface-border
-          highlight: '#f4f4f5', // brand.surface-hover
-          text: '#333333', // brand.text-color
-          'text-secondary': '#6E4B63', // brand.text-color-secondary
-          'text-muted': '#6E4B63' // brand.text-color-secondary
+          DEFAULT: '#FEFCF8', // brand.surface-ground - Bright warm white
+          section: '#FFFFFF', // brand.surface-section - Pure white
+          card: '#FFFFFF', // brand.surface-card - Pure white
+          hover: '#F8FAFC', // brand.surface-hover - Subtle hover
+          border: '#E2E8F0', // brand.surface-border - Modern border
+          highlight: '#F8FAFC', // brand.surface-hover - Subtle hover
+          text: '#2D3748', // brand.text-color - Modern charcoal
+          'text-secondary': '#8B5CF6', // brand.text-color-secondary - Electric purple
+          'text-muted': '#64748B' // brand.text-color-secondary - Modern muted gray
         }
       },
       fontFamily: {
@@ -125,11 +143,11 @@ export default {
         DEFAULT: {
           css: {
             maxWidth: '65ch',
-            color: '#333333', // brand.text-color
+            color: '#2D3748', // brand.text-color - Modern charcoal
             a: {
-              color: '#333333', // brand.primary
+              color: '#2D3748', // brand.primary - Modern charcoal
               '&:hover': {
-                color: '#4A4742', // brand.primary-hover-color
+                color: '#4A5568', // brand.primary-hover-color - Modern hover state
               },
             },
           },

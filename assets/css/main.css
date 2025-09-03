@@ -8,7 +8,7 @@
 /* CSS Custom Properties for colors */
 :root {
   /* Dialog border color */
-  --dialog-border-color: #41706C; /* brand-highlight color */
+  --dialog-border-color: #10B981; /* brand-highlight color - Emerald green */
 }
 
 @layer base {
@@ -220,7 +220,7 @@ html, body {
 }
 
 body {
-  background-color: #F9F6F2;
+  background-color: #FEFCF8; /* brand.background - Bright warm white */
   color: text-brand-primary;
   font-family: "Inter", "Nunito", "Helvetica Neue", sans-serif;
 }
