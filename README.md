@@ -23,8 +23,8 @@ npm run dev
 ## 🛠️ Tech Stack
 
 - **Framework**: Nuxt 3
-- **UI Components**: PrimeVue 3
-- **Styling**: Tailwind CSS
+- **UI Components**: PrimeVue 3.49.1 (manual integration)
+- **Styling**: Tailwind CSS with custom color system
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
 - **AI Processing**: OpenAI (GPT-5, DALL-E 3)
@@ -32,6 +32,8 @@ npm run dev
 - **Email**: SendGrid SMTP + Webhooks
 - **PDF Generation**: PDF-lib
 - **Deployment**: Railway.com
+
+**Note**: We use PrimeVue 3 instead of PrimeVue 4 due to migration challenges with the Volt component system. See the UI Framework Configuration section for detailed reasoning.
 
 ## 🎨 Color System
 
@@ -537,26 +539,124 @@ const analytics = await $fetch('/api/admin/analytics-dashboard?timeRange=30d')
 
 ## 🎨 UI Framework Configuration
 
-### PrimeVue Setup
+### PrimeVue 3 Implementation
 
-This project uses **manual PrimeVue integration** via `plugins/primevue.ts`.
+This project uses **PrimeVue 3.49.1** with a **manual integration** approach via `plugins/primevue.ts`.
+
+**Current Configuration:**
+- ✅ **PrimeVue Version**: 3.49.1 (stable, production-ready)
+- ✅ **Manual Integration**: Custom plugin setup (not via Nuxt modules)
+- ✅ **Tailwind CSS Integration**: Deep integration with custom color system
+- ✅ **Custom Styling**: Full control over component appearance
 
 **Important Notes:**
-- ✅ PrimeVue configured manually (not via Nuxt modules)
 - ❌ Do NOT install `@nuxtjs/primevue` or `primevue/nuxt`
 - ❌ Do NOT add PrimeVue modules to `nuxt.config.ts`
+- ❌ Do NOT attempt to upgrade to PrimeVue 4 (see migration challenges below)
 
 **If you see PrimeVue errors:**
 1. Check `plugins/primevue.ts` for missing component registrations
 2. Ensure the plugin is loading correctly
 3. Do NOT attempt to install Nuxt PrimeVue modules
 
-### Styling System
+### PrimeVue 4 Migration Challenges
 
-- **PrimeVue Theme**: `lara-light-purple` with CSS custom properties
-- **Tailwind Integration**: Custom colors mapped to PrimeVue theme variables
+**Attempted Migration to PrimeVue 4:**
+We attempted to upgrade to PrimeVue 4 and implement the Volt component system, but encountered significant challenges that led us to revert to PrimeVue 3.
+
+#### **Migration Attempts Made:**
+
+1. **PrimeVue 4 + Volt Components:**
+   - Attempted to use PrimeVue 4 with the new Volt component system
+   - Volt components are built on PrimeVue's unstyled mode with Tailwind CSS
+   - Downloaded and integrated Volt components from the official repository
+
+2. **Volt Component Integration:**
+   - Created custom Volt components in `primevue/volt/` directory
+   - Implemented Dialog, Button, InputText, and other core components
+   - Configured PrimeVue 4 with `unstyled: true` mode
+
+3. **Styling System Overhaul:**
+   - Attempted to synchronize Tailwind config with Volt component requirements
+   - Added missing color classes (surface-0, surface-900, primary variants)
+   - Refactored color system to use centralized brand definitions
+
+#### **Critical Issues Encountered:**
+
+1. **Dialog Transparency Problems:**
+   - Volt Dialog components displayed with transparent backgrounds
+   - Theme styling not being applied correctly to DOM elements
+   - CSS specificity conflicts between Volt themes and global styles
+   - Required extensive debugging and workarounds
+
+2. **Component Styling Inconsistencies:**
+   - Volt components didn't match existing PrimeVue 3 styling
+   - Button components appeared as plain grey elements
+   - Input components lost their custom styling
+   - Required `!important` overrides and manual CSS fixes
+
+3. **Volt System Limitations:**
+   - **Alpha Status**: Volt is still in alpha/beta phase (as of 2024-2025)
+   - **Not First-Class**: Volt is not a first-class component of PrimeVue 4
+   - **Documentation Gaps**: Limited documentation and examples
+   - **Breaking Changes**: Frequent changes in Volt component APIs
+
+4. **Tailwind CSS Integration Issues:**
+   - PrimeVue 4 moved away from Tailwind CSS as a key feature
+   - Volt system requires complex pass-through (pt) prop configurations
+   - Theme system conflicts with existing Tailwind color definitions
+   - Loss of the seamless Tailwind integration that PrimeVue 3 provided
+
+#### **Research Findings:**
+
+Based on web research and migration attempts:
+
+- **PrimeVue 4 Philosophy Change**: PrimeVue 4 has moved away from making Tailwind CSS a key feature, unlike PrimeVue 3
+- **Volt Status**: Volt components are still in alpha/beta and not considered first-class components
+- **Migration Complexity**: Upgrading from PrimeVue 3 to 4 requires significant architectural changes
+- **Stability Concerns**: Volt components lack the stability and documentation of PrimeVue 3 components
+
+#### **Decision to Stay with PrimeVue 3:**
+
+After extensive testing and research, we decided to remain with PrimeVue 3 because:
+
+1. **Stability**: PrimeVue 3 is mature, stable, and well-documented
+2. **Tailwind Integration**: Seamless integration with Tailwind CSS
+3. **Customization**: Full control over component styling without complexity
+4. **Production Ready**: Battle-tested in production environments
+5. **Team Productivity**: No learning curve or migration overhead
+
+### Current Styling System
+
+- **PrimeVue Theme**: Custom theme with CSS custom properties
+- **Tailwind Integration**: Deep integration with centralized color system
 - **Custom Styles**: Additional styles in `assets/css/main.css`
+- **Color System**: Centralized brand colors in `tailwind.config.js`
 - **Animations**: Custom animations defined in `tailwind.config.js`
+
+### Future Considerations
+
+**When to Revisit PrimeVue 4:**
+- When Volt components reach stable release status
+- When PrimeVue 4 provides better Tailwind CSS integration
+- When the migration path becomes clearer and less disruptive
+- When Volt becomes a first-class component system
+
+**Current Recommendation:**
+Continue using PrimeVue 3 for all new development. The current implementation provides excellent stability, performance, and developer experience.
+
+#### **Volt Components Removed:**
+
+The `primevue/volt/` directory and its components have been removed from the codebase due to the migration challenges described above. The Volt components that were attempted include:
+
+- `Dialog.vue` - Modal dialog component
+- `ConfirmDialog.vue` - Confirmation dialog component  
+- `Button.vue` - Button component with variants
+- `SecondaryButton.vue` - Secondary button variant
+- `InputText.vue` - Text input component
+- And other core UI components
+
+These components were causing styling inconsistencies and transparency issues that couldn't be resolved without extensive workarounds. The project now uses the standard PrimeVue 3 components with custom Tailwind CSS styling.
 
 ## 🔒 Authentication & Database
 
