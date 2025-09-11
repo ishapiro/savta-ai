@@ -15,7 +15,7 @@
         Just upload and we'll mail them to your loved ones or share them digitally.
       </h2>
       <Button
-        label="Create My First Memory Card"
+        label="Getting Started"
         class="w-full sm:w-auto bg-brand-header hover:bg-brand-secondary text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 mb-3 border-0"
         @click="openMagicMemoryDialog('quick')"
       />

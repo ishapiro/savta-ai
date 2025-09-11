@@ -24,11 +24,78 @@
       </div>
     </div>
 
-    <div class="text-center mb-8 sm:mb-12">
-      <h2 class="text-2xl sm:text-h1 text-brand-header mb-3 sm:mb-4">Create Memory Cards</h2>
-      <p class="text-base sm:text-xl text-brand-primary max-w-4xl mx-auto px-4 sm:px-0">
-        Turn your photos into beautiful memory cards. Perfect for mailing to family members or sharing digitally.
-      </p>
+    <!-- How Savta.ai Works - Visual Process Flow -->
+    <div class="mb-12 sm:mb-16">
+      <div class="text-center mb-8 sm:mb-12">
+        <h2 class="text-2xl sm:text-h1 text-brand-header mb-3 sm:mb-4">Getting Started</h2>
+        <p class="text-base sm:text-xl text-brand-primary max-w-4xl mx-auto px-4 sm:px-0">
+          Here's how Savta.ai works to create your beautiful memory books and cards
+        </p>
+      </div>
+      
+      <!-- 4-Step Process Flow -->
+      <div class="max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+          <!-- Step 1: Upload Photos -->
+          <div class="text-center group">
+            <div class="relative mb-4">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-highlight to-brand-highlight/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <Upload class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+              </div>
+              <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+            </div>
+            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Upload Photos</h3>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Add your favorite photos to create a collection</p>
+          </div>
+          
+          <!-- Step 2: Give Instructions -->
+          <div class="text-center group">
+            <div class="relative mb-4">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-accent to-brand-accent/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <MessageCircle class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+              </div>
+              <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
+            </div>
+            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Tell Savta</h3>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Give Savta instructions about what you want to create</p>
+          </div>
+          
+          <!-- Step 3: Savta Works Magic -->
+          <div class="text-center group">
+            <div class="relative mb-4">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-header to-brand-header/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+              </div>
+              <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
+            </div>
+            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Savta Works Magic</h3>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Savta selects the best photos and writes captions</p>
+          </div>
+          
+          <!-- Step 4: Get Memory Book -->
+          <div class="text-center group">
+            <div class="relative mb-4">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-secondary to-brand-secondary/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <BookOpen class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+              </div>
+              <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
+            </div>
+            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Get Your Memory</h3>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Receive your beautiful memory card or book</p>
+          </div>
+        </div>
+        
+        <!-- Connecting Arrows (hidden on mobile) -->
+        <div class="hidden lg:flex items-center justify-center mt-8 space-x-4">
+          <div class="flex-1 h-0.5 bg-gradient-to-r from-transparent via-brand-highlight/30 to-brand-accent/30"></div>
+          <ArrowRight class="w-6 h-6 text-brand-accent" />
+          <div class="flex-1 h-0.5 bg-gradient-to-r from-brand-accent/30 via-brand-header/30 to-brand-secondary/30"></div>
+          <ArrowRight class="w-6 h-6 text-brand-header" />
+          <div class="flex-1 h-0.5 bg-gradient-to-r from-brand-header/30 via-brand-secondary/30 to-transparent"></div>
+          <ArrowRight class="w-6 h-6 text-brand-secondary" />
+          <div class="flex-1 h-0.5 bg-gradient-to-r from-brand-secondary/30 to-transparent"></div>
+        </div>
+      </div>
     </div>
     
     <!-- Primary Action: Create Special Memories -->
@@ -54,14 +121,13 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-brand-header to-brand-secondary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
               </div>
-              <h3 class="text-xl sm:text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Create a Memory</h3>
+              <h3 class="text-xl sm:text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Create A Memory</h3>
               <p class="text-brand-primary text-base sm:text-xl leading-relaxed  max-w-2xl font-medium">
-                Start here to create your first memory card or book, or return here anytime to make new ones!
-                I'll pick your best photos, write heartwarming captions, and design beautiful layouts for you.
+                Ready to get started? Click here to begin creating your first memory card or book!
+                Savta will guide you through the entire process.
               </p>
               <p class="mt-2 text-brand-primary text-base sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
-                Whether you're just beginning or creating your next masterpiece, this is your go-to place for making 
-                stunning memory cards or books.</p>
+                This is your main starting point for creating beautiful memories with Savta's help.</p>
             </div>
             
             <!-- Right Column (1/3 width) -->
@@ -98,95 +164,6 @@
       </div>
     </div>
     
-    <!-- Secondary Actions -->
-    <div class="mb-8">
-      <div class="text-center mb-6">
-        <h3 class="text-xl sm:text-h2 text-brand-secondary mb-3 tracking-tight">Manage Your Photos</h3>
-        <p class="text-base sm:text-lg text-brand-primary font-medium px-4 sm:px-0">Upload, review, and organize your photos</p>
-      </div>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        <!-- Photo Upload Card -->
-        <div 
-          class="bg-gradient-to-br from-brand-accent/20 to-brand-accent/10 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-accent/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group min-h-[280px] sm:min-h-0"
-          @click="handleCardClick('upload')"
-        >
-          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-accent to-brand-header rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-            <Camera class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-          </div>
-          <h3 class="text-lg sm:text-h3 text-brand-secondary mb-4 tracking-tight">Add Photos</h3>
-          <p class="text-brand-primary text-sm sm:text-lg leading-relaxed mb-6 font-medium">
-            Upload photos from your phone, computer, or social media. I'll add captions and organize them for you.
-          </p>
-          <div class="space-y-3 sm:space-y-2">
-            <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <Tag class="w-4 h-4 text-brand-header" />
-              <span class="font-semibold">Smart Tagging</span>
-            </div>
-            <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <MessageCircle class="w-4 h-4 text-brand-header" />
-              <span class="font-semibold">Automatic captions</span>
-            </div>
-              <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-                <FileText class="w-4 h-4 text-brand-header" />
-                <span class="font-semibold">Add Text Based Moments</span>
-              </div>
-          </div>
-        </div>
-        
-        <!-- Review Memories Card -->
-        <div 
-          class="bg-gradient-to-br from-brand-accent-light/30 to-brand-accent-light/20 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-accent-light/40 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group min-h-[280px] sm:min-h-0"
-          @click="handleCardClick('review')"
-        >
-          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-            <Edit class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-          </div>
-          <h3 class="text-lg sm:text-h3 text-brand-secondary mb-4 tracking-tight">Review Photos in Your Library</h3>
-          <p class="text-brand-primary text-sm sm:text-lg leading-relaxed mb-6 font-medium">
-            Review and approve your photos. Edit captions, crop photos, and organize your collection.
-          </p>
-          <div class="space-y-3 sm:space-y-2">
-            <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <CheckCircle class="w-4 h-4 text-brand-header" />
-              <span class="font-semibold">Approve/reject photos shared via email</span>
-            </div>
-            <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <Edit class="w-4 h-4 text-brand-header" />
-              <span class="font-semibold">Edit captions and tags</span>
-            </div>
-            <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <Tag class="w-4 h-4 text-brand-header" />
-              <span class="font-semibold">Crop and Adjust Photos</span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Monthly Delivery Card -->
-        <div 
-          class="bg-gradient-to-br from-brand-highlight/20 to-brand-highlight/10 rounded-xl shadow-lg p-6 sm:p-8 border border-brand-highlight/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group min-h-[280px] sm:min-h-0"
-          @click="handleCardClick('monthly')"
-        >
-          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-brand-highlight to-brand-header rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-            <Send class="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-          </div>
-          <h3 class="text-lg sm:text-h3 text-brand-secondary mb-4 tracking-tight">Download & Share</h3>
-          <p class="text-brand-primary text-sm sm:text-lg leading-relaxed mb-6 font-medium">
-            Download your memory cards as PDFs to mail or share digitally with family and friends.
-          </p>
-          <div class="space-y-3 sm:space-y-2">
-            <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <Share2 class="w-4 h-4 text-brand-header" />
-              <span class="font-semibold">Digital sharing</span>
-            </div>
-            <div class="flex items-center gap-3 text-sm sm:text-base text-brand-secondary">
-              <Printer class="w-4 h-4 text-brand-header" />
-              <span class="font-semibold">Print & mail</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Authentication Dialog -->
     <Dialog 
@@ -266,16 +243,9 @@ import {
   Share2, 
   BookOpen, 
   ArrowRight, 
-  Camera, 
-  Tag, 
   MessageCircle, 
-  FileText,
   Upload, 
-  Edit, 
-  CheckCircle, 
   Eye, 
-  Send, 
-  Printer, 
   Heart, 
   AlertTriangle 
 } from 'lucide-vue-next'
@@ -420,17 +390,8 @@ function handleCardClick(cardType) {
   
   // Handle navigation for authenticated users
   switch (cardType) {
-    case 'upload':
-      navigateTo('/app/upload')
-      break
-    case 'review':
-      navigateTo('/app/review')
-      break
     case 'ai':
       navigateTo('/app/memory-books')
-      break
-    case 'monthly':
-      navigateTo('/app/monthly-delivery')
       break
     default:
       console.warn('Unknown card type:', cardType)

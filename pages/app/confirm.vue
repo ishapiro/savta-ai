@@ -96,7 +96,7 @@
       <div class="flex flex-col sm:flex-row gap-2 justify-center w-full">
         <Button
           v-if="!isUserDisabled"
-          :label="isNewUser ? 'Create My First Memory Card' : 'Continue to Dashboard'"
+          :label="isNewUser ? 'Getting Started' : 'Continue to Memory Manor'"
           class="bg-brand-header hover:bg-brand-secondary text-white px-4 py-2 rounded-lg font-semibold text-sm"
           @click="goToDashboard"
         />
