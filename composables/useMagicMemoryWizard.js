@@ -1,0 +1,538 @@
+import { ref, computed, watch } from 'vue'
+import { usePhotoSelection } from '~/composables/usePhotoSelection'
+import { useProgressDialog } from '~/composables/useProgressDialog'
+
+export const useMagicMemoryWizard = () => {
+  // Dialog visibility
+  const showMagicMemoryDialog = ref(false)
+
+  // Step identifiers
+  const MAGIC_STEPS = {
+    TITLE: 'title',
+    EVENT: 'event', 
+    COUNT: 'count',
+    BACKGROUND: 'background',
+    THEME: 'theme',
+    PHOTOS: 'photos',
+    MANUAL: 'manual'
+  }
+
+  // Step definitions with required/optional flags
+  const stepDefinitions = {
+    [MAGIC_STEPS.TITLE]: { name: "Title Input", required: true },
+    [MAGIC_STEPS.THEME]: { name: "Theme Selection", required: false },
+    [MAGIC_STEPS.BACKGROUND]: { name: "Background Selection", required: true },
+    [MAGIC_STEPS.PHOTOS]: { name: "Photo Selection Method", required: true },
+    [MAGIC_STEPS.MANUAL]: { name: "Photo Selection", required: true }
+  }
+
+  // Button configurations defining which steps to include
+  const buttonConfigs = {
+    full: { 
+      steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.THEME, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.PHOTOS], 
+      name: "Full Magic Memory" 
+    },
+    basic: { 
+      steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.THEME, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.PHOTOS], 
+      name: "Basic Magic Memory" 
+    },
+    quick: { 
+      steps: [MAGIC_STEPS.TITLE, MAGIC_STEPS.THEME, MAGIC_STEPS.BACKGROUND, MAGIC_STEPS.PHOTOS], 
+      name: "Quick Magic Memory" 
+    }
+  }
+
+  // Current wizard state
+  const magicMemoryStep = ref(MAGIC_STEPS.TITLE)
+  const currentButtonConfig = ref(null)
+  const currentStepIndex = ref(0)
+  
+  // Form data
+  const magicMemoryTitle = ref('')
+  const magicMemoryEvent = ref('')
+  const magicCustomMemoryEvent = ref('')
+  const magicPhotoCount = ref(4)
+  const magicBackgroundType = ref('white')
+  const magicSolidBackgroundColor = ref('#F9F6F2')
+  const magicSelectedTheme = ref(null)
+  const magicThemeOptions = ref([])
+  const loadingMagicThemes = ref(false)
+
+  // Use the photo selection composable
+  const {
+    photoSelection_method,
+    photoSelection_dateRange,
+    photoSelection_selectedTags,
+    photoSelection_selectedTagFilter,
+    photoSelection_locationType,
+    photoSelection_selectedLocation,
+    photoSelection_availableCountries,
+    photoSelection_availableStates,
+    photoSelection_availableCities,
+    photoSelection_selectedMemories,
+    photoSelection_availableAssets,
+    photoSelection_loadingAssets,
+    photoSelection_isUploading,
+    photoSelection_showUploadDialog,
+    photoSelection_options,
+    photoSelection_computedAvailableTags,
+    photoSelection_filteredAssets,
+    photoSelection_loadAvailableAssets,
+    photoSelection_loadLocationData,
+    photoSelection_toggleMemorySelection,
+    photoSelection_populatePhotoSelectionPool,
+    photoSelection_resetSelection,
+    photoSelection_getSelectedAssets
+  } = usePhotoSelection()
+
+  // Use the progress dialog composable
+  const {
+    showProgressDialog,
+    currentProgress,
+    currentProgressMessage,
+    currentBookId,
+    isRegenerating,
+    startProgressPolling,
+    stopProgressPolling,
+    pollPdfStatus,
+    generatePDF,
+    viewPDF
+  } = useProgressDialog()
+
+  // Loading states
+  const magicLoading = ref(false)
+
+  // Computed properties - use the photo selection composable's filtered assets
+  const magicFilteredAssets = computed(() => {
+    return photoSelection_filteredAssets.value
+  })
+
+  const isNextButtonDisabled = computed(() => {
+    const currentStep = magicMemoryStep.value
+    const currentTitle = magicMemoryTitle.value
+    const currentMethod = photoSelection_method.value
+    const currentSelectedLocation = photoSelection_selectedLocation.value
+    const currentSelectedMemories = photoSelection_selectedMemories.value
+    const currentSelectedCount = currentSelectedMemories?.length || 0
+    const currentRequiredCount = 4 // Default photo count
+
+    const titleEmpty = currentStep === MAGIC_STEPS.TITLE && !currentTitle
+    const photosNoMethod = currentStep === MAGIC_STEPS.PHOTOS && !currentMethod
+    const photosGeoNoLocation = currentStep === MAGIC_STEPS.PHOTOS && currentMethod === 'geo_code' && !currentSelectedLocation
+    const manualNotEnoughPhotos = currentStep === MAGIC_STEPS.MANUAL && currentMethod === 'photo_library' && (!currentSelectedMemories || currentSelectedCount < currentRequiredCount)
+
+    return titleEmpty || photosNoMethod || photosGeoNoLocation || manualNotEnoughPhotos
+  })
+
+  // Methods - use the photo selection composable's toggle function
+  const toggleMagicMemorySelection = (id) => {
+    photoSelection_toggleMemorySelection(id)
+  }
+
+  const isFirstStep = () => {
+    return currentStepIndex.value === 0
+  }
+
+  const isLastStep = () => {
+    return currentStepIndex.value === currentButtonConfig.value.steps.length - 1
+  }
+
+  const getNextStepName = () => {
+    const nextIndex = currentStepIndex.value + 1
+    if (nextIndex < currentButtonConfig.value.steps.length) {
+      const nextStep = currentButtonConfig.value.steps[nextIndex]
+      return stepDefinitions[nextStep]?.name || 'Next Step'
+    }
+    return 'Complete'
+  }
+
+  const nextMagicMemoryStep = () => {
+    // Validate current step before proceeding
+    if (magicMemoryStep.value === MAGIC_STEPS.TITLE && !magicMemoryTitle.value.trim()) {
+      console.error('Title is required')
+      return
+    }
+
+    if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'geo_code' && !photoSelection_selectedLocation.value) {
+      console.error('Location is required for geo_code method')
+      return
+    }
+
+    // Find next step in the button's sequence
+    const nextIndex = currentStepIndex.value + 1
+    if (nextIndex < currentButtonConfig.value.steps.length) {
+      const nextStepNumber = currentButtonConfig.value.steps[nextIndex]
+      currentStepIndex.value = nextIndex
+      magicMemoryStep.value = nextStepNumber
+    }
+  }
+
+  const previousMagicMemoryStep = () => {
+    const prevIndex = currentStepIndex.value - 1
+    if (prevIndex >= 0) {
+      currentStepIndex.value = prevIndex
+      magicMemoryStep.value = currentButtonConfig.value.steps[prevIndex]
+    }
+  }
+
+  const openMagicMemoryDialog = async (buttonType = 'full') => {
+    console.log('🔍 [openMagicMemoryDialog] Opening dialog with buttonType:', buttonType)
+    
+    // Set up the button configuration
+    const originalConfig = buttonConfigs[buttonType] || buttonConfigs.full
+    currentButtonConfig.value = {
+      ...originalConfig,
+      steps: [...originalConfig.steps]
+    }
+    currentStepIndex.value = 0
+    magicMemoryStep.value = currentButtonConfig.value.steps[0]
+    
+    // Reset form values
+    magicMemoryTitle.value = ''
+    magicMemoryEvent.value = ''
+    magicCustomMemoryEvent.value = ''
+    magicPhotoCount.value = 4
+    magicBackgroundType.value = 'white'
+    magicSolidBackgroundColor.value = '#F9F6F2'
+    magicSelectedTheme.value = null
+    
+    // Reset photo selection using composable
+    photoSelection_resetSelection()
+    
+    // Set default photo selection method based on button configuration
+    photoSelection_method.value = currentButtonConfig.value.steps.includes(MAGIC_STEPS.PHOTOS) ? '' : 'last_100'
+    
+    try {
+      // Load assets and location data using photo selection composable
+      await photoSelection_loadAvailableAssets()
+      await photoSelection_loadLocationData()
+      
+      // Load themes
+      await fetchMagicThemes()
+    } catch (error) {
+      console.error('Error loading assets:', error)
+      // Still try to load themes even if assets fail
+      await fetchMagicThemes()
+    } finally {
+      showMagicMemoryDialog.value = true
+    }
+  }
+
+  const fetchMagicThemes = async () => {
+    loadingMagicThemes.value = true
+    try {
+      const supabase = useNuxtApp().$supabase
+      const { data, error } = await supabase
+        .from('themes')
+        .select('id, name, description, preview_image_url, is_active, background_color, background_opacity, header_font, body_font, signature_font, header_font_color, body_font_color, signature_font_color, layout_config, rounded, size, card_default, card_wizard, created_at, updated_at')
+        .eq('is_active', true)
+        .eq('deleted', false)
+        .eq('card_wizard', true) // Only show themes that are enabled for wizard
+        .order('name')
+      
+      if (error) {
+        console.error('Error fetching themes:', error)
+        magicThemeOptions.value = []
+        return
+      }
+      
+      // Transform themes for dropdown and find default theme
+      let defaultThemeId = null
+      magicThemeOptions.value = data?.map(theme => {
+        let photoCount = 0
+        try {
+          const layoutConfig = typeof theme.layout_config === 'string' 
+            ? JSON.parse(theme.layout_config) 
+            : theme.layout_config
+          
+          if (layoutConfig && layoutConfig.photos && Array.isArray(layoutConfig.photos)) {
+            photoCount = layoutConfig.photos.length
+          }
+        } catch (error) {
+          console.error('Error parsing theme layout config:', error)
+        }
+        
+        // Track the default theme
+        if (theme.card_default) {
+          defaultThemeId = theme.id
+        }
+        
+        return {
+          label: photoCount > 0 ? `${theme.name} (${photoCount} photos)` : theme.name,
+          value: theme.id,
+          photoCount: photoCount,
+          card_default: theme.card_default
+        }
+      }) || []
+      
+      // Set the default theme if no theme is currently selected
+      if (!magicSelectedTheme.value && defaultThemeId) {
+        magicSelectedTheme.value = defaultThemeId
+        console.log('[MAGIC-MEMORY-WIZARD] Auto-selected default theme:', defaultThemeId)
+      } else {
+        console.log('[MAGIC-MEMORY-WIZARD] No default theme selected. Current theme:', magicSelectedTheme.value, 'Default theme ID:', defaultThemeId)
+      }
+      
+      console.log('[MAGIC-MEMORY-WIZARD] Fetched themes:', magicThemeOptions.value)
+      console.log('[MAGIC-MEMORY-WIZARD] Current selected theme:', magicSelectedTheme.value)
+    } catch (error) {
+      console.error('Error loading themes:', error)
+      magicThemeOptions.value = []
+    } finally {
+      loadingMagicThemes.value = false
+    }
+  }
+
+  const closeMagicMemoryDialog = () => {
+    showMagicMemoryDialog.value = false
+    // Reset state
+    currentButtonConfig.value = null
+    currentStepIndex.value = 0
+    magicMemoryStep.value = MAGIC_STEPS.TITLE
+  }
+
+  const generateMagicMemory = async () => {
+    magicLoading.value = true
+    
+    // Start progress dialog IMMEDIATELY when generate button is clicked
+    console.log('🔍 [generateMagicMemory] Starting progress dialog immediately...')
+    showProgressDialog.value = true
+    currentProgressMessage.value = '🎯 Starting magic memory generation...'
+    currentProgress.value = 0
+    
+    // Close the wizard dialog immediately so progress dialog is visible
+    closeMagicMemoryDialog()
+    
+    try {
+      console.log('🔍 [generateMagicMemory] Starting magic memory generation...')
+      
+      // Get the photo selection pool using the composable method
+      const photoSelectionPool = photoSelection_populatePhotoSelectionPool()
+      console.log('🔍 [generateMagicMemory] Photo selection pool:', photoSelectionPool)
+      
+      if (!photoSelectionPool || photoSelectionPool.length === 0) {
+        throw new Error('No photos available for selection. Please upload some photos first.')
+      }
+      
+      // Get effective photo count from theme or default - match original logic exactly
+      let effectivePhotoCount = magicPhotoCount.value
+      console.log('🔍 [generateMagicMemory] Initial photo count:', effectivePhotoCount)
+      console.log('🔍 [generateMagicMemory] Selected theme:', magicSelectedTheme.value)
+      
+      if (magicSelectedTheme.value) {
+        // Try to get photo count from loaded theme options first (like original)
+        const selectedTheme = magicThemeOptions.value.find(theme => theme.value === magicSelectedTheme.value)
+        if (selectedTheme && selectedTheme.photoCount > 0) {
+          effectivePhotoCount = selectedTheme.photoCount
+          console.log('🔍 [generateMagicMemory] Using photo count from loaded theme options:', effectivePhotoCount)
+        } else {
+          // Fallback: fetch theme directly from database to get accurate photo count
+          try {
+            const supabase = useNuxtApp().$supabase
+            const { data: theme, error: themeError } = await supabase
+              .from('themes')
+              .select('layout_config')
+              .eq('id', magicSelectedTheme.value)
+              .single()
+            
+            console.log('🔍 [generateMagicMemory] Theme data:', theme)
+            console.log('🔍 [generateMagicMemory] Theme error:', themeError)
+            
+            if (!themeError && theme?.layout_config) {
+              const layoutConfig = typeof theme.layout_config === 'string' 
+                ? JSON.parse(theme.layout_config) 
+                : theme.layout_config
+              
+              console.log('🔍 [generateMagicMemory] Layout config:', layoutConfig)
+              
+              if (layoutConfig && layoutConfig.photos && Array.isArray(layoutConfig.photos)) {
+                effectivePhotoCount = layoutConfig.photos.length
+                console.log('🔍 [generateMagicMemory] Fetched photo count from database:', effectivePhotoCount)
+              }
+            }
+          } catch (error) {
+            console.error('🔍 [generateMagicMemory] Error fetching theme photo count:', error)
+          }
+        }
+      } else {
+        console.log('🔍 [generateMagicMemory] No theme selected, using default photo count')
+      }
+      
+      console.log('🔍 [generateMagicMemory] Final effective photo count:', effectivePhotoCount)
+      
+      // Get user and session
+      const { useSupabaseUser } = await import('~/composables/useSupabase')
+      const user = useSupabaseUser()
+      if (!user.value) {
+        throw new Error('User not authenticated')
+      }
+      
+      const supabase = useNuxtApp().$supabase
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+      
+      // Create template memory book in database
+      const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
+        method: 'POST',
+        body: {
+          asset_ids: [], // Template - will be populated after AI selection
+          photo_selection_pool: photoSelectionPool,
+          story: '', // Template - will be populated after AI generation
+          title: magicMemoryTitle.value || 'Select Photos That Tell a Story',
+          memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+          background_type: magicBackgroundType.value,
+          background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
+          photo_count: effectivePhotoCount,
+          theme_id: magicSelectedTheme.value,
+          print_size: '8.5x11', // Default print size for magic memories
+          output: 'JPG', // Wizard creates single-page memories, so always use JPG
+          photo_selection_method: photoSelection_method.value
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
+      
+      if (!dbRes.success) {
+        throw new Error('I need to try again to save your magic card.')
+      }
+      
+      console.log('🔍 [generateMagicMemory] Memory book created with ID:', dbRes.book_id)
+      
+      // Update progress and start polling
+      currentProgressMessage.value = '🎯 Selecting best photos...'
+      currentProgress.value = 25
+      startProgressPolling(dbRes.book_id, false)
+      
+      // Call the magic memory AI endpoint
+      const aiRes = await $fetch('/api/ai/magic-memory', {
+        method: 'POST',
+        body: {
+          memoryBookId: dbRes.book_id,
+          userId: user.value.id,
+          photoCount: effectivePhotoCount
+        }
+      })
+      
+      if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1 || aiRes.selected_photo_ids.length > effectivePhotoCount) {
+        throw new Error(`I need a bit more to work with. Let me try again with different photos.`)
+      }
+      
+      console.log('🔍 [generateMagicMemory] AI photo selection completed:', aiRes.selected_photo_ids.length, 'photos selected')
+      
+      // Create book object for PDF generation - match original exactly
+      const book = {
+        id: dbRes.book_id,
+        layout_type: magicSelectedTheme.value ? 'theme' : 'grid',
+        ui: 'wizard',
+        format: 'card',
+        status: 'draft',
+        photo_selection_pool: photoSelectionPool,
+        created_from_assets: aiRes.selected_photo_ids || [],
+        theme_id: magicSelectedTheme.value,
+        background_type: magicBackgroundType.value,
+        ai_supplemental_prompt: magicMemoryTitle.value,
+        output: 'JPG',
+        print_size: '8.5x11',
+        include_captions: true,
+        memory_shape: 'original',
+        grid_layout: '2x2',
+        ai_background: true,
+        background_opacity: 30
+      }
+      
+      // Show success message
+      console.log('✅ [generateMagicMemory] Magic memory generation completed successfully')
+      
+      // Start PDF generation
+      console.log('🔍 [generateMagicMemory] Starting PDF generation...')
+      await generatePDF(book)
+      
+    } catch (error) {
+      console.error('❌ [generateMagicMemory] Error generating magic memory:', error)
+      throw error
+    } finally {
+      magicLoading.value = false
+    }
+  }
+
+  return {
+    // State
+    showMagicMemoryDialog,
+    magicMemoryStep,
+    currentButtonConfig,
+    currentStepIndex,
+    magicMemoryTitle,
+    magicMemoryEvent,
+    magicCustomMemoryEvent,
+    magicPhotoCount,
+    magicBackgroundType,
+    magicSolidBackgroundColor,
+    magicSelectedTheme,
+    magicThemeOptions,
+    loadingMagicThemes,
+    magicLoading,
+    magicFilteredAssets,
+    
+    // Photo selection state (from composable)
+    photoSelection_method,
+    photoSelection_dateRange,
+    photoSelection_selectedTags,
+    photoSelection_selectedTagFilter,
+    photoSelection_locationType,
+    photoSelection_selectedLocation,
+    photoSelection_availableCountries,
+    photoSelection_availableStates,
+    photoSelection_availableCities,
+    photoSelection_selectedMemories,
+    photoSelection_availableAssets,
+    photoSelection_loadingAssets,
+    photoSelection_isUploading,
+    photoSelection_showUploadDialog,
+    photoSelection_options,
+    photoSelection_computedAvailableTags,
+    photoSelection_filteredAssets,
+    
+    // Progress dialog state (from composable)
+    showProgressDialog,
+    currentProgress,
+    currentProgressMessage,
+    currentBookId,
+    isRegenerating,
+    
+    // Constants
+    MAGIC_STEPS,
+    stepDefinitions,
+    buttonConfigs,
+    
+    // Computed
+    isNextButtonDisabled,
+    
+    // Methods
+    toggleMagicMemorySelection,
+    isFirstStep,
+    isLastStep,
+    getNextStepName,
+    nextMagicMemoryStep,
+    previousMagicMemoryStep,
+    openMagicMemoryDialog,
+    closeMagicMemoryDialog,
+    generateMagicMemory,
+    fetchMagicThemes,
+    
+    // Photo selection methods (from composable)
+    photoSelection_loadAvailableAssets,
+    photoSelection_loadLocationData,
+    photoSelection_toggleMemorySelection,
+    photoSelection_populatePhotoSelectionPool,
+    photoSelection_resetSelection,
+    photoSelection_getSelectedAssets,
+    
+    // Progress dialog methods (from composable)
+    startProgressPolling,
+    stopProgressPolling,
+    pollPdfStatus,
+    generatePDF,
+    viewPDF
+  }
+}

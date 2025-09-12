@@ -41,6 +41,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ColorPicker from 'primevue/colorpicker'
 import ProgressSpinner from 'primevue/progressspinner'
+import ProgressBar from 'primevue/progressbar'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // Install PrimeVue with configuration
@@ -87,6 +88,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     Column,
     ColorPicker,
     ProgressSpinner,
+    ProgressBar,
   }
   
   // Register all components
