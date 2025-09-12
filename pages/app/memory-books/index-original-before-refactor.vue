@@ -1212,7 +1212,7 @@
                   <i :class="[getFileTypeIcon(selectedBook), getFileTypeColor(selectedBook), 'text-sm sm:text-base']"></i>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Book {{ getFileTypeDisplay(selectedBook) }}</h3>
+                  <h3 class="text-base sm:text-lg font-bold text-gray-900">Your Memory</h3>
                   <p class="text-xs sm:text-sm text-gray-600">Ready to download and share</p>
                 </div>
               </div>

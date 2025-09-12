@@ -87,19 +87,19 @@ export const useMemoryStudio = () => {
     }
 
     try {
-      // Get all assets for this book
-      const assets = await dbAssets.getAssets({ limit: 1000 }) // Get all assets
+      console.log('🖼️ Loading thumbnails for book:', book.id, 'assets:', book.created_from_assets)
+      // Get assets for this book using the dedicated function
+      const bookAssets = await dbAssets.getAssetsByBook(book.created_from_assets, 12)
+      console.log('🖼️ Retrieved assets:', bookAssets)
       
-      // Filter to only the assets used in this book
-      const bookAssets = assets.filter(asset => 
-        book.created_from_assets.includes(asset.id)
-      )
-      
-      // Store thumbnails for each asset
-      for (const asset of bookAssets) {
-        if (!assetThumbnails.value[asset.id] && asset.thumbnail_url) {
-          assetThumbnails.value[asset.id] = asset.thumbnail_url
-        }
+      // Store thumbnails in reactive data
+      if (bookAssets && Array.isArray(bookAssets)) {
+        bookAssets.forEach(asset => {
+          if (asset && asset.storage_url) {
+            console.log('🖼️ Storing thumbnail for asset:', asset.id, 'URL:', asset.storage_url)
+            assetThumbnails.value[asset.id] = asset.storage_url
+          }
+        })
       }
     } catch (error) {
       console.error('❌ Failed to load asset thumbnails:', error)

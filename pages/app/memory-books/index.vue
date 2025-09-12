@@ -63,7 +63,7 @@
         </div>
 
         <!-- Items Grid -->
-        <div v-else-if="currentItems.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div v-else-if="currentItems.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" data-savta="memory-cards-tile">
           <!-- Memory Cards -->
           <MemoryCard
             v-if="activeView === 'cards'"
@@ -74,7 +74,7 @@
             @approve="approveBook"
             @unapprove="unapproveBook"
             @download="onDownloadClick"
-            @view-details="viewBookDetails"
+            @view-details="handleViewBookDetails"
           />
           
           <!-- Memory Books -->
@@ -168,8 +168,330 @@
         :initialData="{ layoutType: 'grid' }"
         :loading="creatingBook"
         @close="closeCreateModal"
-        @submit="createMemoryBook"
+        @submit="createMemoryBookFromDialog"
       />
+
+      <!-- Book Details Modal -->
+      <Dialog
+        v-model:visible="showDetailsModal"
+        modal
+        class="w-[95vw] max-w-4xl mx-auto mb-15 mt-20"
+      >
+        <div v-if="selectedBook" class="bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen">
+          <!-- Header Section -->
+          <div class="bg-gradient-to-br from-white via-brand-navigation/5 to-brand-accent/10 rounded-t-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                  <i class="pi pi-gift text-white text-lg sm:text-2xl"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1 truncate">{{ selectedBook.ai_supplemental_prompt || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
+                  <div class="flex items-center gap-2">
+                    <div :class="getStatusBadgeClass(selectedBook.status)" class="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold shadow-md backdrop-blur-sm">
+                      <i :class="getStatusIcon(selectedBook.status)" class="text-xs sm:text-sm"></i>
+                      <span class="hidden sm:inline">{{ getStatusText(selectedBook.status) }}</span>
+                      <span class="sm:hidden">{{ getStatusText(selectedBook.status).substring(0, 8) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <button
+                  data-testid="details-unapprove-button"
+                  v-if="selectedBook.status === 'approved'"
+                  class="flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                  @click="unapproveBook(selectedBook.id)"
+                >
+                  <i class="pi pi-undo text-xs sm:text-sm"></i>
+                  <span class="hidden sm:inline">Unapprove</span>
+                  <span class="sm:hidden">Unapprove</span>
+                </button>
+                <button
+                  data-testid="details-close-button"
+                  class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-cancel text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                  @click="showDetailsModal = false"
+                >
+                  <i class="pi pi-times text-xs sm:text-sm"></i>
+                  <span class="hidden sm:inline">Close</span>
+                  <span class="sm:hidden">Close</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-3 mt-4">
+              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-calendar text-brand-primary text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Created</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.created_at) }}</p>
+              </div>
+              <div v-if="selectedBook.generated_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-magic-wand text-brand-primary text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Generated</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.generated_at) }}</p>
+              </div>
+              <div v-if="selectedBook.approved_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-check-circle text-brand-accent text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Approved</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.approved_at) }}</p>
+              </div>
+              <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-images text-brand-accent text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Assets</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">
+                  {{ selectedBook.created_from_assets.length }}
+                  <span v-if="selectedBook.photo_selection_pool && selectedBook.photo_selection_pool.length > 0" class="text-gray-500">
+                    ({{ selectedBook.photo_selection_pool.length }} in pool)
+                  </span>
+                </p>
+              </div>
+              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-th-large text-brand-primary text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Layout</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.layout_type || 'grid' }}</p>
+              </div>
+              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-file text-brand-secondary text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Format</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.format || 'book' }}</p>
+              </div>
+              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-calendar-plus text-brand-highlight text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Event</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_event || 'N/A' }}</p>
+              </div>
+            </div>
+            
+            <!-- Additional Info Cards Row -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-2">
+              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-palette text-brand-primary text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Theme</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme?.name || 'Default' }}</p>
+              </div>
+              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-circle text-brand-accent text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Shape</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_shape || 'original' }}</p>
+              </div>
+              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-table text-brand-highlight text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Grid</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.grid_layout || '2x2' }}</p>
+              </div>
+              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                  <i class="pi pi-file-edit text-brand-primary text-xs sm:text-sm"></i>
+                  <span class="text-xs font-medium text-gray-600">Title</span>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ selectedBook.ai_supplemental_prompt || 'Untitled' }}</p>
+              </div>
+            </div>
+
+            <!-- Review Notes -->
+            <div v-if="selectedBook.review_notes" class="mt-4 bg-gradient-to-br from-brand-highlight/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-highlight/20">
+              <div class="flex items-center gap-2 mb-2">
+                <i class="pi pi-comment text-brand-highlight text-sm"></i>
+                <span class="text-sm font-semibold text-brand-highlight">Review Notes</span>
+              </div>
+              <p class="text-xs sm:text-sm text-brand-highlight italic">{{ selectedBook.review_notes }}</p>
+            </div>
+          </div>
+
+          <!-- Content Section -->
+          <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+            <!-- Story Section (for Story-based Memories) -->
+            <div v-if="selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-highlight/20 to-brand-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-sparkles text-brand-highlight text-sm sm:text-base"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-base sm:text-lg font-bold text-brand-primary">Special Story</h3>
+                  <p class="text-xs sm:text-sm text-gray-600">The AI-generated story for your special memory</p>
+                </div>
+              </div>
+              <div class="overflow-y-auto max-h-48 sm:max-h-64 bg-gradient-to-br from-brand-highlight/10 to-brand-primary/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 text-brand-primary text-sm magic-story" style="word-break: break-word; line-height: 1.5;">
+                {{ selectedBook.magic_story }}
+              </div>
+            </div>
+
+            <!-- AI Photo Selection Reasoning Section -->
+            <div v-if="selectedBook.ai_photo_selection_reasoning" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent/20 to-brand-highlight/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-lightbulb text-brand-accent text-sm sm:text-base"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-base sm:text-lg font-bold text-brand-primary">Photo Selection Reasoning</h3>
+                  <p class="text-xs sm:text-sm text-gray-600">Why these photos were chosen for your memory</p>
+                </div>
+              </div>
+              <div class="overflow-y-auto max-h-48 sm:max-h-64 bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 rounded-xl p-3 sm:p-4 border border-brand-accent/20 text-brand-primary text-sm" style="word-break: break-word; line-height: 1.5;">
+                {{ selectedBook.ai_photo_selection_reasoning }}
+              </div>
+            </div>
+
+            <!-- Memory Assets Section -->
+            <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent/20 to-brand-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-images text-brand-accent text-sm sm:text-base"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Assets</h3>
+                  <p class="text-xs sm:text-sm text-gray-600">
+                    {{ selectedBook.created_from_assets.length }} memories included
+                    <span v-if="selectedBook.photo_selection_pool && selectedBook.photo_selection_pool.length > 0" class="text-gray-500">
+                      (from {{ selectedBook.photo_selection_pool.length }} in pool)
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1 sm:gap-2">
+                <div
+                  v-for="assetId in selectedBook.created_from_assets.slice(0, 24)"
+                  :key="assetId"
+                  class="aspect-square bg-gray-100 rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <img 
+                    v-if="getAssetThumbnail(assetId)"
+                    :src="getAssetThumbnail(assetId)"
+                    :alt="`Asset ${assetId.slice(-4)}`"
+                    class="w-full h-full object-contain"
+                  />
+                  <div v-else class="w-full h-full flex items-center justify-center bg-gray-100">
+                    <i class="pi pi-image text-gray-400 text-xs sm:text-sm"></i>
+                  </div>
+                </div>
+                <div v-if="selectedBook.created_from_assets.length > 24" class="aspect-square bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-xs sm:text-sm text-gray-500 font-medium">
+                  +{{ selectedBook.created_from_assets.length - 24 }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Memory Book Section -->
+            <div v-if="selectedBook.pdf_url" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i :class="[getFileTypeIcon(selectedBook), getFileTypeColor(selectedBook), 'text-sm sm:text-base']"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="text-base sm:text-lg font-bold text-gray-900">Your Memory</h3>
+                    <p class="text-xs sm:text-sm text-gray-600">Ready to download and share</p>
+                  </div>
+                </div>
+                <button
+                  data-testid="download-memory-button"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+                  @click="forceDownloadPDF(selectedBook)"
+                >
+                  <i class="pi pi-download text-xs sm:text-sm"></i>
+                  <span class="hidden sm:inline">Download {{ getFileTypeDisplay(selectedBook) }}</span>
+                  <span class="sm:hidden">Download {{ getFileTypeDisplay(selectedBook) }}</span>
+                </button>
+              </div>
+              <div class="border-0 bg-gradient-to-br from-brand-primary/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 mt-4">
+                <div class="flex items-start gap-2 text-xs sm:text-sm text-brand-primary">
+                  <i class="pi pi-info-circle text-brand-primary text-xs sm:text-sm mt-0.5 flex-shrink-0" title="Ask Savta"></i>
+                  <span>Click download to save your memory book as a {{ getFileTypeDisplay(selectedBook) }} file to your device</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+              <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
+              <div class="flex flex-wrap justify-center gap-3">
+                <button
+                  data-testid="details-create-memory-button"
+                  v-if="selectedBook.status === 'draft'"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  @click="onGenerateClick(selectedBook)"
+                >
+                  <i class="pi pi-magic-wand text-xs sm:text-sm"></i>
+                  <span class="hidden sm:inline">Create Memory</span>
+                  <span class="sm:hidden">Create</span>
+                </button>
+                <button
+                  data-testid="details-recreate-button"
+                  v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  @click="onRegenerateClick(selectedBook)"
+                  :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
+                >
+                  <i class="pi pi-refresh text-xs sm:text-sm"></i>
+                  <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing ...' : 'Recreate' }}</span>
+                  <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
+                </button>
+                <button
+                  data-testid="details-approve-button"
+                  v-if="selectedBook.status === 'ready'"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  @click="approveBook(selectedBook.id)"
+                  v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'"
+                >
+                  <i class="pi pi-check text-xs sm:text-sm"></i>
+                  <span class="hidden sm:inline">Approve</span>
+                  <span class="sm:hidden">Approve</span>
+                </button>
+                <button
+                  data-testid="details-select-assets-button"
+                  v-if="selectedBook"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  @click="openSelectMemoriesDialog"
+                >
+                  <i class="pi pi-images text-xs sm:text-sm"></i>
+                  <span class="hidden sm:inline">Select Assets</span>
+                  <span class="sm:hidden">Assets</span>
+                </button>
+                <button
+                  data-testid="details-edit-settings-button"
+                  v-if="selectedBook"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  @click="openEditSettings(selectedBook)"
+                >
+                  <i class="pi pi-cog text-xs sm:text-sm"></i>
+                  <span class="hidden sm:inline">Edit Settings</span>
+                  <span class="sm:hidden">Edit</span>
+                </button>
+                <button
+                  data-testid="details-trash-button"
+                  v-if="selectedBook"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-delete text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  @click="confirmDeleteBook(selectedBook)"
+                >
+                  <i class="pi pi-trash text-xs sm:text-sm"></i>
+                  <span class="hidden sm:inline">Trash</span>
+                  <span class="sm:hidden">Trash</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Dialog>
 
       <!-- Success Dialog -->
       <Dialog
@@ -199,6 +521,63 @@
           >
             Continue
           </button>
+        </div>
+      </Dialog>
+
+      <!-- Generate Confirmation Dialog -->
+      <Dialog
+        v-model:visible="showGenerateDialog"
+        modal
+        header="Try Another Recipe"
+        class="w-[95vw] max-w-md"
+      >
+        <div class="py-4 pt-3">
+          <p class="text-sm sm:text-base">Compose this special memory? This may take a little time.</p>
+          <div class="flex justify-end gap-2 mt-4">
+            <button
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              @click="cancelDialog"
+            >
+              Cancel
+            </button>
+            <button
+              class="px-4 py-2 text-sm font-medium text-white bg-brand-highlight hover:bg-brand-highlight/80 rounded-lg transition-colors"
+              @click="confirmGenerate"
+            >
+              Compose
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+      <!-- Regenerate Confirmation Dialog -->
+      <Dialog
+        v-model:visible="showRegenerateDialog"
+        modal
+        header="Recreate Memory"
+        class="w-full max-w-xl"
+      >
+        <div class="p-4">
+          <p class="text-brand-header text-sm sm:text-xl font-bold mb-2">
+            Create a fresh version of your memory?
+          </p>
+          <p class="text-gray-600 text-sm mb-4">
+            This will generate a new version with the same photos but potentially different layout and story.
+          </p>
+          <div class="flex justify-end gap-2">
+            <button
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              @click="cancelDialog"
+            >
+              Cancel
+            </button>
+            <button
+              class="px-4 py-2 text-sm font-medium text-white bg-brand-highlight hover:bg-brand-highlight/80 rounded-lg transition-colors"
+              @click="confirmRegenerate"
+            >
+              Recreate
+            </button>
+          </div>
         </div>
       </Dialog>
 
@@ -313,6 +692,32 @@
       <!-- Magic Memory Wizard -->
       <MagicMemoryWizard ref="magicMemoryWizardRef" />
 
+      <!-- Savta Bubble Component -->
+      <SavtaBubble
+        v-model:open="showSavtaBubble"
+        target="[data-savta='memory-cards-tile']"
+        placement="bottom"
+        :offset="15"
+      >
+        <div class="bg-white rounded-lg shadow-lg p-4 max-w-xs">
+          <div class="flex items-start gap-3">
+            <SavtaIcon class="w-8 h-8 text-brand-primary flex-shrink-0" />
+            <div>
+              <h3 class="font-semibold text-gray-900 text-sm mb-1">Create Your First Memory!</h3>
+              <p class="text-gray-600 text-xs mb-2">
+                You have photos ready! Click "Create Memory Card" to get started with your first memory.
+              </p>
+              <button
+                @click="showSavtaBubble = false"
+                class="text-xs text-brand-primary hover:text-brand-primary/80 font-medium"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      </SavtaBubble>
+
       <!-- PDF Modal -->
       <Dialog
         v-model:visible="showPdfModal"
@@ -390,6 +795,7 @@ import { defineAsyncComponent } from 'vue'
 const PdfViewer = defineAsyncComponent(() => import('~/components/PdfViewer.vue'))
 import { useMemoryStudioUI } from '~/composables/useMemoryStudioUI'
 import { useMemoryBookOperations } from '~/composables/useMemoryBookOperations'
+import { useProgressDialog } from '~/composables/useProgressDialog'
 
 // Components
 import ViewToggle from '~/components/ViewToggle.vue'
@@ -400,6 +806,9 @@ import MemoryCard from '~/components/MemoryCard.vue'
 import MemoryBook from '~/components/MemoryBook.vue'
 import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
 import MagicMemoryWizard from '~/components/MagicMemoryWizard.vue'
+import SavtaBubble from '~/components/SavtaBubble.vue'
+import SavtaIcon from '~/components/SavtaIcon.vue'
+import CaptionRenderer from '~/components/CaptionRenderer.vue'
 
 // Composables
 const router = useRouter()
@@ -415,7 +824,19 @@ const {
   cardsPerPage,
   booksPerPage,
   loadingMemoryBooks,
-  loadMemoryBooks
+  loadMemoryBooks,
+  formatDate,
+  getStatusText,
+  getStatusClass,
+  getStatusBadgeClass,
+  getStatusIcon,
+  getFileTypeDisplay,
+  getFileTypeIcon,
+  getFileTypeColor,
+  getAssetThumbnail,
+  getFirstAssetThumbnail,
+  getStatusSeverity,
+  loadAssetThumbnails
 } = useMemoryStudio()
 
 const {
@@ -435,6 +856,9 @@ const {
   resetCreateModal
 } = useMemoryStudioUI()
 
+// Import Supabase for database operations
+const supabase = useNuxtApp().$supabase
+
 // Magic Memory Wizard
 const magicMemoryWizardRef = ref(null)
 
@@ -452,10 +876,26 @@ const {
   sharePdf
 } = useMemoryBookOperations()
 
+// Import progress dialog functions
+const {
+  startProgressPolling,
+  stopProgressPolling,
+  generatePDF
+} = useProgressDialog()
+
 // PDF-related variables
 const isChrome = ref(false)
 const currentPage = ref(1)
 const totalPages = ref(1)
+
+// Dialog state for quick actions
+const showGenerateDialog = ref(false)
+const showRegenerateDialog = ref(false)
+const pendingBook = ref(null)
+
+// New user guidance and auto-generation state
+const newlyCreatedBook = ref(null)
+const showSavtaBubble = ref(false)
 const zoomLevel = ref(1.0)
 const pdfLoaded = ref(false)
 
@@ -553,13 +993,122 @@ const openMagicMemoryDialog = (type) => {
 
 
 const onGenerateClick = (book) => {
-  // TODO: Implement generate logic
-  console.log('Generate clicked for book:', book)
+  pendingBook.value = book
+  showGenerateDialog.value = true
 }
 
-const onDownloadClick = (book) => {
-  // TODO: Implement download logic
-  console.log('Download clicked for book:', book)
+const onDownloadClick = async (book) => {
+  try {
+    if (book.status === 'draft') {
+      // For draft books, we need to generate them first
+      console.log('Draft book clicked - would need to generate first:', book)
+      // TODO: Implement draft generation dialog
+    } else {
+      // For ready books, download/view the PDF
+      await downloadPDF(book)
+    }
+  } catch (error) {
+    console.error('Error handling download click:', error)
+  }
+}
+
+const downloadPDF = async (book) => {
+  try {
+    // Use the viewPDF function from useMemoryBookOperations
+    if (book.pdf_url) {
+      await viewPDF(book.pdf_url, book.id)
+    } else {
+      console.error('No PDF URL available for book:', book.id)
+    }
+  } catch (error) {
+    console.error('Error downloading PDF:', error)
+  }
+}
+
+// Force download PDF (for details modal)
+const forceDownloadPDF = async (book) => {
+  try {
+    if (book.pdf_url) {
+      await viewPDF(book.pdf_url, book.id)
+    } else {
+      console.error('No PDF URL available for book:', book.id)
+    }
+  } catch (error) {
+    console.error('Error force downloading PDF:', error)
+  }
+}
+
+// Regenerate book
+const onRegenerateClick = (book) => {
+  if (book.status === 'background_ready') {
+    console.log('⚠️ Cannot regenerate book that is still being processed')
+    return
+  }
+  pendingBook.value = book
+  showRegenerateDialog.value = true
+}
+
+// Open select memories dialog
+const openSelectMemoriesDialog = async () => {
+  // For now, just show a message - this would open the asset selection dialog
+  console.log('Open select memories dialog - would open asset selection modal')
+  // TODO: Implement the full asset selection dialog
+}
+
+// Open edit settings
+const openEditSettings = async (book) => {
+  // For now, just show a message - this would open the edit settings dialog
+  console.log('Open edit settings for book:', book)
+  // TODO: Implement the full edit settings dialog
+}
+
+// Confirm generate action
+const confirmGenerate = () => {
+  showGenerateDialog.value = false
+  if (pendingBook.value) {
+    // Use the magic memory wizard to generate the book
+    magicMemoryWizardRef.value.openMagicMemoryDialog('quick', pendingBook.value)
+  }
+  pendingBook.value = null
+}
+
+// Confirm regenerate action
+const confirmRegenerate = () => {
+  showRegenerateDialog.value = false
+  if (pendingBook.value) {
+    // Use the magic memory wizard to regenerate the book
+    magicMemoryWizardRef.value.openMagicMemoryDialog('quick', pendingBook.value)
+  }
+  pendingBook.value = null
+}
+
+// Cancel dialogs
+const cancelDialog = () => {
+  showGenerateDialog.value = false
+  showRegenerateDialog.value = false
+  pendingBook.value = null
+}
+
+// Confirm delete book
+const confirmDeleteBook = (book) => {
+  bookToDelete.value = book
+  showDeleteDialog.value = true
+}
+
+// Wrapper for viewBookDetails that also loads asset thumbnails
+const handleViewBookDetails = async (book) => {
+  try {
+    // Call the original viewBookDetails function
+    await viewBookDetails(book)
+    
+    // Load asset thumbnails for this book
+    if (book.created_from_assets && book.created_from_assets.length > 0) {
+      console.log('🖼️ Loading asset thumbnails for book:', book.id, 'assets:', book.created_from_assets)
+      await loadAssetThumbnails(book)
+    }
+  } catch (error) {
+    console.error('❌ Error viewing book details:', error)
+  }
 }
 
 const approveBook = (bookId) => {
@@ -590,8 +1139,8 @@ const unapproveBook = async (bookId) => {
 }
 
 const viewBook = (book) => {
-  // TODO: Implement view book logic
-  console.log('View book clicked:', book)
+  // Use the same logic as view details
+  handleViewBookDetails(book)
 }
 
 const editBook = (book) => {
@@ -616,21 +1165,210 @@ const confirmDelete = async () => {
   }
 }
 
-const createMemoryBook = async (bookData) => {
+// Create memory book from dialog (matches original implementation)
+const createMemoryBookFromDialog = async (data) => {
+  console.log('🔧 [createMemoryBookFromDialog] Starting with data:', data)
+  
+  // Check if assets are selected (matches original validation)
+  if (!data.selectedAssets || data.selectedAssets.length === 0) {
+    // Show dialog explaining the requirement
+    console.warn('No assets selected for memory book creation')
+    // TODO: Add toast notification for missing assets
+    return // Don't proceed with creation
+  }
+  
   try {
     creatingBook.value = true
-    await createBook(bookData)
+    
+    // Map dialog data to the structure expected by createBook (matches original)
+    const mappedData = {
+      ai_supplemental_prompt: data.ai_supplemental_prompt,
+      layoutType: data.layoutType,
+      printSize: data.printSize,
+      quality: data.quality,
+      medium: data.medium,
+      theme_id: data.theme_id,
+      gridLayout: data.gridLayout,
+      memoryShape: data.memoryShape,
+      includeCaptions: data.includeCaptions,
+      aiBackground: data.backgroundType === 'magical',
+      backgroundOpacity: data.backgroundOpacity || 30,
+      memoryEvent: data.memoryEvent,
+      customMemoryEvent: data.customMemoryEvent,
+      // Store selected asset IDs for the photo selection pool
+      selectedAssetIds: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
+    }
+    
+    console.log('🔧 [createMemoryBookFromDialog] Mapped data:', mappedData)
+    
+    // Call the createBook function from useMemoryBookOperations
+    const createdBook = await createBook(mappedData)
+    console.log('🔧 [createMemoryBookFromDialog] createBook completed successfully:', createdBook)
+    
+    // Set the newly created book for auto-generation
+    newlyCreatedBook.value = createdBook
+    
+    // Close the create dialog after successful creation
     showCreateModal.value = false
     showSuccessDialog.value = true
     resetCreateModal()
+    
     // Reload memory books to show new book
     await loadMemoryBooks()
+    
+    // Auto-generate and display the PDF immediately (like original)
+    if (newlyCreatedBook.value) {
+      console.log('🔧 [createMemoryBookFromDialog] Starting auto-generation and display...')
+      await composeNewlyCreatedMemory()
+    }
+    
   } catch (error) {
-    console.error('Failed to create memory book:', error)
+    console.error('❌ [createMemoryBookFromDialog] Error:', error)
+    throw error
   } finally {
     creatingBook.value = false
   }
 }
+
+// Keep the original function name for backward compatibility
+const createMemoryBook = createMemoryBookFromDialog
+
+// Calculate compose time for newly created book
+const calculateComposeTime = () => {
+  if (!newlyCreatedBook.value) return 0
+  
+  let totalTime = 0
+  
+  // Add base time for custom background only if special background was selected
+  if (newlyCreatedBook.value.background_type === 'magical') {
+    totalTime += 20 // 20 seconds for custom background generation
+  }
+  
+  // Add 10 seconds per photo
+  const photoCount = newlyCreatedBook.value.photo_selection_pool?.length || 
+                    newlyCreatedBook.value.created_from_assets?.length || 0
+  totalTime += photoCount * 10
+  
+  return totalTime
+}
+
+// Compose newly created memory
+const composeNewlyCreatedMemory = async () => {
+  if (!newlyCreatedBook.value) {
+    console.error('No newly created book found')
+    return
+  }
+  
+  console.log('🔧 [composeNewlyCreatedMemory] Starting composition for book:', newlyCreatedBook.value.id)
+  
+  // Find the book in the current memory books list
+  const book = memoryBooks.value.find(b => b.id === newlyCreatedBook.value.id)
+  if (!book) {
+    console.error('Could not find newly created book in memory books list')
+    return
+  }
+  
+  try {
+    // Step 1: Photo Selection (if needed)
+    if (!book.created_from_assets || book.created_from_assets.length === 0) {
+      console.log('🔧 [composeNewlyCreatedMemory] Setting up photo selection...')
+      currentProgressMessage.value = '🎯 Setting up your selected photos...'
+      
+      // Use the selected assets from the dialog
+      if (newlyCreatedBook.value.selectedAssetIds && newlyCreatedBook.value.selectedAssetIds.length > 0) {
+        // Update the book with selected assets
+        const { error } = await supabase
+          .from('memory_books')
+          .update({ created_from_assets: newlyCreatedBook.value.selectedAssetIds })
+          .eq('id', book.id)
+        
+        if (error) throw error
+        
+        console.log('🔧 [composeNewlyCreatedMemory] Photo selection completed - using manually selected photos')
+      } else {
+        throw new Error('No photos available for memory book')
+      }
+    }
+    
+    // Step 2: PDF Generation (includes story generation)
+    console.log('🔧 [composeNewlyCreatedMemory] Starting PDF generation...')
+    currentProgressMessage.value = '📝 Generating story and creating your memory...'
+    
+    // Start progress polling
+    startProgressPolling(book.id)
+    
+    // Generate PDF
+    await generatePDF(book)
+    
+    console.log('🔧 [composeNewlyCreatedMemory] PDF generation completed successfully')
+    
+  } catch (error) {
+    console.error('❌ [composeNewlyCreatedMemory] Error:', error)
+    stopProgressPolling()
+    showProgressDialog.value = false
+    throw error
+  } finally {
+    // Clear the reference
+    newlyCreatedBook.value = null
+  }
+}
+
+// Helper function to format date range for display
+const formatDateRange = (dateRange) => {
+  if (!dateRange.start && !dateRange.end) return 'any date'
+  if (dateRange.start && dateRange.end) {
+    return `${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end).toLocaleDateString()}`
+  }
+  if (dateRange.start) {
+    return `from ${new Date(dateRange.start).toLocaleDateString()}`
+  }
+  if (dateRange.end) {
+    return `until ${new Date(dateRange.end).toLocaleDateString()}`
+  }
+  return 'any date'
+}
+
+// Check if user is new (has assets but no memory books)
+const checkIfNewUser = async () => {
+  try {
+    // Check if user has assets
+    const { data: assets } = await supabase
+      .from('assets')
+      .select('id')
+      .limit(1)
+    
+    const hasAssets = assets && assets.length > 0
+    
+    // Check if user has memory books
+    const { data: books } = await supabase
+      .from('memory_books')
+      .select('id')
+      .limit(1)
+    
+    const hasMemoryBooks = books && books.length > 0
+    
+    // Show Savta bubble if user has assets but no memory books
+    if (hasAssets && !hasMemoryBooks) {
+      showSavtaBubble.value = true
+    } else {
+      showSavtaBubble.value = false
+    }
+    
+    console.log('🔍 [checkIfNewUser] hasAssets:', hasAssets, 'hasMemoryBooks:', hasMemoryBooks, 'showSavtaBubble:', showSavtaBubble.value)
+  } catch (error) {
+    console.error('❌ [checkIfNewUser] Error:', error)
+  }
+}
+
+// Watch for conditions to show Savta bubble
+watch([memoryCards, memoryBooksOnly], ([cards, books]) => {
+  // Show bubble when user has assets but no memory books and not in magic memory dialog
+  if (cards.length === 0 && books.length === 0) {
+    checkIfNewUser()
+  } else {
+    showSavtaBubble.value = false
+  }
+}, { immediate: true })
 
 // Watch for view changes to reset pagination
 watch(activeView, () => {
