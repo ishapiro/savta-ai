@@ -54,17 +54,12 @@ export const useMemoryStudio = () => {
   // Methods
   const loadMemoryBooks = async () => {
     if (!user.value?.id) {
-      console.log('⏳ Waiting for user to load...')
       return
     }
 
     try {
       loadingMemoryBooks.value = true
-      console.log('📚 Loading memory books for user:', user.value.id)
-      
       const books = await dbMemoryBooks.getMemoryBooks()
-      
-      console.log('✅ Loaded memory books:', books?.length || 0)
       memoryBooks.value = books || []
       
       // Load thumbnails for all books

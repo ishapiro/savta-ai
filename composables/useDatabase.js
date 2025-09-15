@@ -621,6 +621,7 @@ export const useDatabase = () => {
         return []
       }
       
+      
       // If we have memory books with themes, fetch the theme data
       if (data && data.length > 0) {
         const booksWithThemes = data.filter(book => book.theme_id)
@@ -688,8 +689,21 @@ export const useDatabase = () => {
       return data
     },
 
-    // Permanently delete memory book (from trash)
+    // Soft delete memory book (move to trash)
     deleteMemoryBook: async (bookId) => {
+      if (!user.value) throw new Error('User not authenticated')
+      
+      // Call the API endpoint for soft delete
+      const response = await $fetch(`/api/memory-books/${bookId}`, {
+        method: 'DELETE'
+      })
+      
+      await logActivity('memory_book_deleted', { bookId })
+      return response
+    },
+
+    // Permanently delete memory book (from trash)
+    permanentlyDeleteMemoryBook: async (bookId) => {
       if (!user.value) throw new Error('User not authenticated')
       
       const { error } = await supabase

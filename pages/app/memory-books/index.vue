@@ -175,7 +175,7 @@
       <Dialog
         v-model:visible="showDetailsModal"
         modal
-        class="w-[95vw] max-w-4xl mx-auto mb-15 mt-20"
+        class="w-[95vw] max-w-4xl mx-auto mb-15 -mt-16"
       >
         <div v-if="selectedBook" class="bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen">
           <!-- Header Section -->
@@ -683,7 +683,7 @@
               class="bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg px-6 py-2 transition-colors"
               @click="confirmDelete"
             >
-              Delete
+              Trash
             </button>
           </div>
         </div>
@@ -1091,7 +1091,7 @@ const cancelDialog = () => {
 
 // Confirm delete book
 const confirmDeleteBook = (book) => {
-  bookToDelete.value = book
+  bookToDelete.value = book.id
   showDeleteDialog.value = true
 }
 
@@ -1153,17 +1153,21 @@ const deleteBook = (bookId) => {
   showDeleteDialog.value = true
 }
 
-const confirmDelete = async () => {
-  try {
-    await deleteBookOperation(bookToDelete.value)
-    showDeleteDialog.value = false
-    bookToDelete.value = null
-    // Reload memory books to update list
-    await loadMemoryBooks()
-  } catch (error) {
-    console.error('Failed to delete book:', error)
-  }
-}
+        const confirmDelete = async () => {
+          try {
+            const result = await deleteBookOperation(bookToDelete.value)
+            showDeleteDialog.value = false
+            bookToDelete.value = null
+            // Close the detailed dialog since the book no longer exists
+            showDetailsModal.value = false
+            // Reload memory books to update list
+            await loadMemoryBooks()
+          } catch (error) {
+            console.error('❌ Failed to delete book:', error)
+            showDeleteDialog.value = false
+            bookToDelete.value = null
+          }
+        }
 
 // Create memory book from dialog (matches original implementation)
 const createMemoryBookFromDialog = async (data) => {
