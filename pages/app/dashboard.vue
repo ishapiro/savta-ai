@@ -26,18 +26,18 @@
 
     <!-- How Savta.ai Works - Visual Process Flow -->
     <div class="mb-12 sm:mb-16">
-      <div class="text-center mb-8 sm:mb-12">
-        <h2 class="text-2xl sm:text-h1 text-brand-header mb-3 sm:mb-4">Getting Started</h2>
-        <p class="text-base sm:text-xl text-brand-primary max-w-4xl mx-auto px-4 sm:px-0">
-          Here's how Savta.ai works to create your beautiful memory books and cards
-        </p>
-      </div>
+        <div class="text-center mb-8 sm:mb-12">
+          <h2 class="text-2xl sm:text-h1 text-brand-header mb-3 sm:mb-4 cursor-pointer hover:text-brand-secondary transition-colors duration-200" @click="handleCardClick('ai')">Click to Get Started</h2>
+          <p class="text-base sm:text-xl text-brand-primary max-w-4xl mx-auto px-4 sm:px-0">
+            Here's how Savta.ai works to create your beautiful memory books and cards
+          </p>
+        </div>
       
       <!-- 4-Step Process Flow -->
       <div class="max-w-6xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           <!-- Step 1: Upload Photos -->
-          <div class="text-center group">
+          <div class="text-center group cursor-pointer" @click="handleCardClick('ai')">
             <div class="relative mb-4">
               <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-highlight to-brand-highlight/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <Upload class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
@@ -49,7 +49,7 @@
           </div>
           
           <!-- Step 2: Give Instructions -->
-          <div class="text-center group">
+          <div class="text-center group cursor-pointer" @click="handleCardClick('ai')">
             <div class="relative mb-4">
               <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-accent to-brand-accent/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <MessageCircle class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
@@ -61,7 +61,7 @@
           </div>
           
           <!-- Step 3: Savta Works Magic -->
-          <div class="text-center group">
+          <div class="text-center group cursor-pointer" @click="handleCardClick('ai')">
             <div class="relative mb-4">
               <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-header to-brand-header/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
@@ -73,7 +73,7 @@
           </div>
           
           <!-- Step 4: Get Memory Book -->
-          <div class="text-center group">
+          <div class="text-center group cursor-pointer" @click="handleCardClick('ai')">
             <div class="relative mb-4">
               <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-secondary to-brand-secondary/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <BookOpen class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
@@ -99,70 +99,7 @@
     </div>
     
     <!-- Primary Action: Create Special Memories -->
-    <div class="mb-8 sm:mb-12">
-      
-      <div 
-        data-savta="memory-books-tile"
-        class="bg-gradient-to-br from-brand-highlight/20 via-brand-header/10 to-brand-navigation/20 rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-12 border-2 border-brand-header/30 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500 cursor-pointer group relative overflow-hidden"
-        @click="handleCardClick('ai')"
-      >
-        <!-- Animated background elements -->
-        <div class="absolute inset-0 opacity-10">
-          <div class="absolute top-4 left-4 w-8 h-8 bg-brand-header rounded-full animate-ping"></div>
-          <div class="absolute top-8 right-8 w-6 h-6 bg-brand-navigation rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
-          <div class="absolute bottom-8 left-8 w-4 h-4 bg-brand-highlight rounded-full animate-ping" style="animation-delay: 1s;"></div>
-          <div class="absolute bottom-4 right-4 w-6 h-6 bg-brand-secondary rounded-full animate-ping" style="animation-delay: 1.5s;"></div>
-        </div>
-        
-        <div class="relative z-10">
-          <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
-            <!-- Left Column (2/3 width) -->
-            <div class="lg:w-2/3 text-center lg:text-left">
-              <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-brand-header to-brand-secondary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
-              </div>
-              <h3 class="text-xl sm:text-h1 text-brand-secondary mb-4 tracking-tight leading-tight">Create A Memory</h3>
-              <p class="text-brand-primary text-base sm:text-xl leading-relaxed  max-w-2xl font-medium">
-                Ready to get started? Click here to begin creating your first memory card or book!
-                Savta will guide you through the entire process.
-              </p>
-              <p class="mt-2 text-brand-primary text-base sm:text-xl leading-relaxed mb-6 max-w-2xl font-medium">
-                This is your main starting point for creating beautiful memories with Savta's help.</p>
-            </div>
-            
-            <!-- Right Column (1/3 width) -->
-            <div class="lg:w-1/3 flex items-center justify-center">
-              <div class="space-y-3 sm:space-y-2 w-full max-w-xs ml-0 md:ml-0 -mt-4 lg:mt-0">
-                <div class="flex items-center gap-3 text-brand-secondary">
-                  <div class="w-8 h-8 bg-brand-highlight/30 rounded-lg flex items-center justify-center">
-                    <Image class="w-4 h-4 text-brand-header" />
-                  </div>
-                  <span class="font-semibold text-sm sm:text-base">Beautiful designs</span>
-                </div>
-                <div class="flex items-center gap-3 text-brand-secondary">
-                  <div class="w-8 h-8 bg-brand-highlight/30 rounded-lg flex items-center justify-center">
-                    <Grid class="w-4 h-4 text-brand-header" />
-                  </div>
-                  <span class="font-semibold text-sm sm:text-base">Perfect layouts</span>
-                </div>
-                <div class="flex items-center gap-3 text-brand-secondary">
-                  <div class="w-8 h-8 bg-brand-highlight/30 rounded-lg flex items-center justify-center">
-                    <Sparkles class="w-4 h-4 text-brand-header" />
-                  </div>
-                  <span class="font-semibold text-sm sm:text-base">Heartwarming stories</span>
-                </div>
-                <div class="flex items-center gap-3 text-brand-secondary">
-                  <div class="w-8 h-8 bg-brand-highlight/30 rounded-lg flex items-center justify-center">
-                    <Share2 class="w-4 h-4 text-brand-header" />
-                  </div>
-                  <span class="font-semibold text-sm sm:text-base">Ready to mail or share</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- COMMENTED OUT: Original memory-books-tile section - functionality moved to How Savta.ai works tiles above -->
     
 
     <!-- Authentication Dialog -->
@@ -215,13 +152,13 @@
     <!-- Savta Bubble for New Users -->
     <SavtaBubble
       v-model:open="showSavtaBubble"
-      target="[data-savta='memory-books-tile']"
+      target=".grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4"
       placement="center"
       :offset="0"
       heading="Hi, I'm Savta and I'm here to help you get started!"
       text="As a grandmother myself, I know how precious all those photos on your phone are. 
       I'll help you create very special memory cards and books for your family and friends.
-      Click on 'Create a Memory' and I'll guide you through creating your very first one. 
+      Click on any of the steps above and I'll guide you through creating your very first one. 
       It's easier than you think."
       variant="instruction"
       :dismissible="true"
