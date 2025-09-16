@@ -143,7 +143,7 @@ describe('MemoryBooksIndex', () => {
       history: createWebHistory(),
       routes: [
         { path: '/app/memory-books', component: MemoryBooksIndex },
-        { path: '/app/trash', component: { template: '<div>Trash</div>' } }
+        { path: '/app/memory-books/trash', component: { template: '<div>Trash</div>' } }
       ]
     })
 
@@ -328,7 +328,7 @@ describe('MemoryBooksIndex', () => {
     
     await trashButton.trigger('click')
     
-    expect(pushSpy).toHaveBeenCalledWith('/app/trash')
+    expect(pushSpy).toHaveBeenCalledWith('/app/memory-books/trash')
   })
 
   it('should show info dialog when info button is clicked', async () => {

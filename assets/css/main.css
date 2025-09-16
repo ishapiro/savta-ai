@@ -258,3 +258,49 @@ body {
 .p-toast .p-toast-message {
   animation-duration: 10s !important; /* Double the default duration */
 }
+
+/* Fix Tawk widget sizing - make it smaller and position it properly */
+#tawk-widget,
+.tawk-widget,
+.tawk-widget-container,
+.tawk-widget-button,
+.tawk-widget-iframe {
+  width: 60px !important;
+  height: 60px !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  left: auto !important;
+  top: auto !important;
+  position: fixed !important;
+  z-index: 1000 !important;
+  border-radius: 50% !important;
+  transform: translateZ(0) !important; /* Force hardware acceleration for Safari */
+}
+
+#tawk-widget iframe,
+.tawk-widget iframe,
+.tawk-widget-iframe {
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+}
+
+/* Additional Tawk widget selectors */
+.tawk-widget-button,
+.tawk-widget-button-container,
+.tawk-widget-button-wrapper {
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+}
+
+/* Ensure Tawk widget doesn't interfere with page content */
+.tawk-widget-container,
+.tawk-widget-wrapper {
+  z-index: 1000 !important;
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  pointer-events: auto !important;
+}

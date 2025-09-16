@@ -693,9 +693,20 @@ export const useDatabase = () => {
     deleteMemoryBook: async (bookId) => {
       if (!user.value) throw new Error('User not authenticated')
       
+      // Get the current session token for authentication
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+      
+      if (!accessToken) {
+        throw new Error('No access token available')
+      }
+      
       // Call the API endpoint for soft delete
       const response = await $fetch(`/api/memory-books/${bookId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
       })
       
       await logActivity('memory_book_deleted', { bookId })

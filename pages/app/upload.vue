@@ -257,7 +257,7 @@
                   <i class="pi pi-image text-blue-500"></i>
                   <span class="font-semibold text-gray-800">Photo Memories</span>
                 </div>
-                <p class="text-sm text-gray-600">Add photos from your phone or computer. We’ll store them in your Savta.ai library so you can use them anytime.</p>
+                <p class="text-sm text-gray-600">Add photos from your phone or computer. We’ll store them in your Savta.ai Memory Box so you can use them anytime.</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -464,7 +464,7 @@
               class="bg-brand-dialog-edit text-white border-0 px-4 py-3 rounded-full font-semibold hover:bg-brand-secondary/80 transition-all duration-200 flex items-center justify-center flex-1 sm:flex-initial"
             >
               <i class="pi pi-eye mr-2 flex-shrink-0"></i>
-              <span class="hidden sm:inline whitespace-nowrap">Review Photos in Library</span>
+              <span class="hidden sm:inline whitespace-nowrap">Review Photos in Memory Box</span>
               <span class="sm:hidden">Review</span>
             </Button>
           </div>

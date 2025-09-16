@@ -84,6 +84,15 @@ export default defineNuxtConfig({
       }
     }
   },
+  app: {
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        { rel: 'apple-touch-icon-precomposed', href: '/apple-touch-icon-precomposed.png' }
+      ]
+    }
+  },
   runtimeConfig: {
     // Server-side environment variables
     openaiApiKey: process.env.OPENAI_API_KEY,

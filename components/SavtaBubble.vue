@@ -30,12 +30,13 @@
         v-if="open && coords"
         :style="{ left: coords.left + 'px', top: coords.top + 'px' }"
         class="fixed z-[1200]"
+        data-savta-bubble
         role="dialog"
         aria-live="polite"
       >
         <div
           :class="[
-            'relative bg-gradient-to-r from-brand-navigation via-brand-accent-light to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg',
+            'relative bg-gray-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg',
             html ? 'max-w-[600px] max-h-[80vh]' : 'max-w-[500px]'
           ]"
         >
@@ -51,6 +52,9 @@
                 <!-- Main content - HTML or text with line break support -->
                 <div v-if="html" class="text-sm text-gray-700 leading-relaxed max-h-[60vh] overflow-y-auto pr-2" v-html="html"></div>
                 <p v-else-if="text" class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ cleanedText }}</p>
+                <div v-else class="text-sm text-gray-700 leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
+                  <slot />
+                </div>
 
                 <!-- Actions slot (buttons/links) -->
                 <div v-if="$slots.actions" class="mt-2 flex gap-2">
@@ -170,6 +174,41 @@ const cleanedText = computed(() => {
 
 
 function calcPosition() {
+  // If no target is provided, use center placement
+  if (!props.target) {
+    // Initially position at center with estimated dimensions
+    const estimatedWidth = props.html ? 500 : 400
+    const estimatedHeight = props.html ? 400 : 200
+    
+    const left = window.innerWidth / 2 - estimatedWidth / 2
+    const top = window.innerHeight / 2 - estimatedHeight / 2
+    
+    coords.value = { left, top }
+    
+    // After the bubble is rendered, re-center it with actual dimensions
+    nextTick(() => {
+      const bubbleElement = document.querySelector('[data-savta-bubble]')
+      
+      if (bubbleElement) {
+        const rect = bubbleElement.getBoundingClientRect()
+        const actualWidth = rect.width
+        const actualHeight = rect.height
+        
+        // Recalculate center position with actual dimensions
+        const centeredLeft = window.innerWidth / 2 - actualWidth / 2
+        const centeredTop = window.innerHeight / 2 - actualHeight / 2
+        
+        // Ensure it stays within bounds
+        const pad = 12
+        const finalLeft = Math.max(pad, Math.min(centeredLeft, window.innerWidth - pad - actualWidth))
+        const finalTop = Math.max(pad, Math.min(centeredTop, window.innerHeight - pad - actualHeight))
+        
+        coords.value = { left: finalLeft, top: finalTop }
+      }
+    })
+    return
+  }
+  
   const el = document.querySelector(props.target)
   if (!el) return
   const r = el.getBoundingClientRect()

@@ -109,7 +109,7 @@
                           <i class="pi pi-check-circle text-white text-sm"></i>
                         </div>
                         <div class="flex-1">
-                          <div class="font-medium text-brand-secondary text-sm">Photo Library</div>
+                          <div class="font-medium text-brand-secondary text-sm">Memory Box</div>
                           <div class="text-xs text-brand-primary/70">Review & edit</div>
                         </div>
                       </NuxtLink>
@@ -301,7 +301,7 @@
                 <i class="pi pi-check-circle text-white text-sm"></i>
               </div>
               <div class="flex-1">
-                <div class="font-medium text-brand-secondary text-sm">Photo Library</div>
+                <div class="font-medium text-brand-secondary text-sm">Memory Box</div>
                 <div class="text-xs text-brand-primary/70">Review & edit</div>
               </div>
             </NuxtLink>

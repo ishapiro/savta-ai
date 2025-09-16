@@ -313,7 +313,7 @@ const permanentDeleteConfirmed = async () => {
   if (!bookToDelete.value) return
   
   try {
-    await db.memoryBooks.deleteMemoryBook(bookToDelete.value.id)
+    await db.memoryBooks.permanentlyDeleteMemoryBook(bookToDelete.value.id)
     
     // Remove from local list
     deletedBooks.value = deletedBooks.value.filter(b => b.id !== bookToDelete.value.id)
@@ -348,7 +348,7 @@ const emptyTrashConfirmed = async () => {
   try {
     // Delete all memory books in trash
     const deletePromises = deletedBooks.value.map(book => 
-      db.memoryBooks.deleteMemoryBook(book.id)
+      db.memoryBooks.permanentlyDeleteMemoryBook(book.id)
     )
     await Promise.all(deletePromises)
     

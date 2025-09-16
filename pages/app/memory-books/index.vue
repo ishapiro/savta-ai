@@ -695,25 +695,48 @@
       <!-- Savta Bubble Component -->
       <SavtaBubble
         v-model:open="showSavtaBubble"
-        target="[data-savta='memory-cards-tile']"
-        placement="bottom"
+        placement="center"
         :offset="15"
+        variant="instruction"
+        :dismissible="true"
+        :show-avatar="true"
       >
-        <div class="bg-white rounded-lg shadow-lg p-4 max-w-xs">
-          <div class="flex items-start gap-3">
-            <SavtaIcon class="w-8 h-8 text-brand-primary flex-shrink-0" />
-            <div>
-              <h3 class="font-semibold text-gray-900 text-sm mb-1">Create Your First Memory!</h3>
-              <p class="text-gray-600 text-xs mb-2">
-                You have photos ready! Click "Create Memory Card" to get started with your first memory.
-              </p>
-              <button
-                @click="showSavtaBubble = false"
-                class="text-xs text-brand-primary hover:text-brand-primary/80 font-medium"
-              >
-                Got it!
-              </button>
-            </div>
+        <div class="space-y-4">
+          <div class="text-xl mt-1 font-bold text-brand-header">
+            Savta here: Listen closely.
+          </div>
+
+          <!-- Distinct statement -->
+          <p class="text-base font-semibold text-brand-highlight">
+            This works differently than traditional photo services.
+          </p>
+          <p class="text-sm text-gray-800">
+            You don’t upload photos for a specific card. 
+          </p>
+
+          <p class="mt-4 text-base font-semibold text-brand-highlight">
+              Our way
+          </p>
+
+          <!-- Our approach -->
+
+          <div>
+            <ul class="space-y-2">
+              <li class="flex items-start gap-2">
+                <Images class="w-5 h-5 text-brand-primary mt-0.5" />
+                <span class="text-sm text-gray-800">Upload your best photos into your Memory Box.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <MessageSquare class="w-5 h-5 text-brand-primary mt-0.5" />
+                <span class="text-sm text-gray-800">Tell Savta what you want (for example,
+                  “Trip to Florida with our grandchildren”).</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <CheckCircle class="w-5 h-5 text-brand-primary mt-0.5" />
+                <span class="text-sm text-gray-800">I’ll help select the right photos for each card based on
+                  your instructions.</span>
+              </li>
+            </ul>
           </div>
         </div>
       </SavtaBubble>
@@ -982,7 +1005,7 @@ const onPdfModalHide = () => {
 }
 
 const navigateToTrash = () => {
-  router.push('/app/trash')
+  navigateTo('/app/memory-books/trash')
 }
 
 const openMagicMemoryDialog = (type) => {
@@ -1332,7 +1355,7 @@ const formatDateRange = (dateRange) => {
   return 'any date'
 }
 
-// Check if user is new (has assets but no memory books)
+// Check if user is new (has assets but no memory cards)
 const checkIfNewUser = async () => {
   try {
     // Check if user has assets
@@ -1343,31 +1366,32 @@ const checkIfNewUser = async () => {
     
     const hasAssets = assets && assets.length > 0
     
-    // Check if user has memory books
-    const { data: books } = await supabase
+    // Check if user has memory cards specifically
+    const { data: cards } = await supabase
       .from('memory_books')
       .select('id')
+      .eq('format', 'card')
       .limit(1)
     
-    const hasMemoryBooks = books && books.length > 0
+    const hasMemoryCards = cards && cards.length > 0
     
-    // Show Savta bubble if user has assets but no memory books
-    if (hasAssets && !hasMemoryBooks) {
+    // Show Savta bubble if user has assets but no memory cards
+    if (hasAssets && !hasMemoryCards) {
       showSavtaBubble.value = true
     } else {
       showSavtaBubble.value = false
     }
     
-    console.log('🔍 [checkIfNewUser] hasAssets:', hasAssets, 'hasMemoryBooks:', hasMemoryBooks, 'showSavtaBubble:', showSavtaBubble.value)
+    console.log('🔍 [checkIfNewUser] hasAssets:', hasAssets, 'hasMemoryCards:', hasMemoryCards, 'showSavtaBubble:', showSavtaBubble.value)
   } catch (error) {
     console.error('❌ [checkIfNewUser] Error:', error)
   }
 }
 
 // Watch for conditions to show Savta bubble
-watch([memoryCards, memoryBooksOnly], ([cards, books]) => {
-  // Show bubble when user has assets but no memory books and not in magic memory dialog
-  if (cards.length === 0 && books.length === 0) {
+watch([memoryCards, memoryBooksOnly, activeView], ([cards, books, view]) => {
+  // Show bubble when user has assets but no memory cards (when in cards view)
+  if (view === 'cards' && cards.length === 0) {
     checkIfNewUser()
   } else {
     showSavtaBubble.value = false

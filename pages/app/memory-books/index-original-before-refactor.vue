@@ -1947,8 +1947,8 @@
             <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
           </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
-          <p class="text-xs sm:text-base text-gray-600 mb-2">When you upload photos, they go into your library. Then I'll choose the best ones and write lovely captions for your card or booklet. Choose how you'd like me to pick photos from your library.</p>
-          <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your library</p>
+          <p class="text-xs sm:text-base text-gray-600 mb-2">When you upload photos, they go into your Memory Box. Then I'll choose the best ones and write lovely captions for your card or booklet. Choose how you'd like me to pick photos from your Memory Box.</p>
+          <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your Memory Box</p>
         </div>
         
                             <!-- Photo Selection Interface Component -->
@@ -1985,7 +1985,7 @@
             <i class="pi pi-folder-open text-xl sm:text-2xl text-white"></i>
             </div>
           <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Choose your photos</h3>
-          <p class="text-xs sm:text-base text-gray-600 mb-2">Think of this as creating a "photo collection" for your memory card. Pick all the photos that remind you of this special moment - you can choose as many as you'd like! I'll then look through your collection and pick the perfect number of photos that work best with your chosen theme. It's like having me help you arrange the best photos for your memory card.</p>
+          <p class="text-xs sm:text-base text-gray-600 mb-2">Think of this as creating a "Memory Box collection" for your memory card. Pick all the photos that remind you of this special moment - you can choose as many as you'd like! I'll then look through your collection and pick the perfect number of photos that work best with your chosen theme. It's like having me help you arrange the best photos for your memory card.</p>
           <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your library</p>
             </div>
 

@@ -34,7 +34,7 @@
         </div>
       
       <!-- 4-Step Process Flow -->
-      <div class="max-w-6xl mx-auto">
+      <div class="mt-15 max-w-6xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           <!-- Step 1: Upload Photos -->
           <div class="text-center group cursor-pointer" @click="handleCardClick('ai')">
@@ -45,7 +45,10 @@
               <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
             </div>
             <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Upload Photos</h3>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Add your favorite photos to create a collection</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">You have thousands of photos on your phone, computer, and social media.</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Your satva.ai memory box is the place for your favorites.</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Upload these from your phone or computer.</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Ask your family to text me their favorites and I'll add them to your memory box.</p>
           </div>
           
           <!-- Step 2: Give Instructions -->
@@ -57,7 +60,8 @@
               <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
             </div>
             <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Tell Savta</h3>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Give Savta instructions about what you want to create</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">When your ready to create your first memory card, tell me what you want to create.</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">For example, you might say you want a card for 'Our trip to Florida with our Grandchildren.'</p>
           </div>
           
           <!-- Step 3: Savta Works Magic -->
@@ -69,7 +73,8 @@
               <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
             </div>
             <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Savta Works Magic</h3>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Savta selects the best photos and writes captions</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">I'll select photos to put together a story based on your instructions.</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">I'll even create fun captions to help tell the story.</p>
           </div>
           
           <!-- Step 4: Get Memory Book -->
@@ -81,7 +86,8 @@
               <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
             </div>
             <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Get Your Memory</h3>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Receive your beautiful memory card or book</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Then you can download or share your digital memory card with your family.</p>
+            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">You can also pask me to print and mail to to mom, grandma, or friends.</p>
           </div>
         </div>
         
