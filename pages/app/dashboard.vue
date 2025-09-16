@@ -27,7 +27,7 @@
     <!-- How Savta.ai Works - Visual Process Flow -->
     <div class="mb-12 sm:mb-16">
         <div class="text-center mb-8 sm:mb-12">
-          <h2 class="text-2xl sm:text-h1 text-brand-header mb-3 sm:mb-4 cursor-pointer hover:text-brand-secondary transition-colors duration-200" @click="handleCardClick('ai')">Click to Get Started</h2>
+          <h2 class="text-2xl sm:text-h1 text-brand-header mb-3 sm:mb-4 cursor-pointer hover:text-brand-secondary transition-colors duration-200 font-serif" @click="handleCardClick('ai')">Click to Get Started</h2>
           <p class="text-base sm:text-xl text-brand-primary max-w-4xl mx-auto px-4 sm:px-0">
             Here's how Savta.ai works to create your beautiful memory books and cards
           </p>
@@ -42,13 +42,15 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-highlight to-brand-highlight/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <Upload class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
-              <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+              <div class="absolute -top-2 -left-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
             </div>
-            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Upload Photos</h3>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">You have thousands of photos on your phone, computer, and social media.</p>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Your satva.ai memory box is the place for your favorites.</p>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Upload these from your phone or computer.</p>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Ask your family to text me their favorites and I'll add them to your memory box.</p>
+            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2 font-serif">Upload Photos</h3>
+            <ul class="text-sm sm:text-base text-brand-primary list-disc pl-5 text-left space-y-1 mx-auto max-w-[20rem]">
+              <li>Gather photos from your phone, computer, and social media.</li>
+              <li>Your Savta.ai Memory Box is where favorites live.</li>
+              <li>Upload directly from your phone or computer.</li>
+              <li>Ask family to text favorites—I'll add them to your Memory Box.</li>
+            </ul>
           </div>
           
           <!-- Step 2: Give Instructions -->
@@ -57,11 +59,13 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-accent to-brand-accent/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <MessageCircle class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
-              <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
+              <div class="absolute -top-2 -left-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
             </div>
-            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Tell Savta</h3>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">When your ready to create your first memory card, tell me what you want to create.</p>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">For example, you might say you want a card for 'Our trip to Florida with our Grandchildren.'</p>
+            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2 font-serif">Tell Savta</h3>
+            <ul class="text-sm sm:text-base text-brand-primary list-disc pl-5 text-left space-y-1 mx-auto max-w-[20rem]">
+              <li>When you're ready, tell me what you want to create.</li>
+              <li>Example: “A card for our trip to Florida with our grandchildren.”</li>
+            </ul>
           </div>
           
           <!-- Step 3: Savta Works Magic -->
@@ -70,11 +74,13 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-header to-brand-header/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <Wand2 class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
-              <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
+              <div class="absolute -top-2 -left-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
             </div>
-            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Savta Works Magic</h3>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">I'll select photos to put together a story based on your instructions.</p>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">I'll even create fun captions to help tell the story.</p>
+            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2 font-serif">Savta Works Magic</h3>
+            <ul class="text-sm sm:text-base text-brand-primary list-disc pl-5 text-left space-y-1 mx-auto max-w-[20rem]">
+              <li>I’ll select the best photos based on your instructions.</li>
+              <li>I’ll write warm captions to bring your story to life.</li>
+            </ul>
           </div>
           
           <!-- Step 4: Get Memory Book -->
@@ -83,11 +89,13 @@
               <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-br from-brand-secondary to-brand-secondary/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <BookOpen class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
-              <div class="absolute -top-2 -right-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
+              <div class="absolute -top-2 -left-2 w-6 h-6 bg-brand-header text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
             </div>
-            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2">Get Your Memory</h3>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">Then you can download or share your digital memory card with your family.</p>
-            <p class="text-sm sm:text-base text-brand-primary leading-relaxed">You can also pask me to print and mail to to mom, grandma, or friends.</p>
+            <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2 font-serif">Get Your Memory</h3>
+            <ul class="text-sm sm:text-base text-brand-primary list-disc pl-5 text-left space-y-1 mx-auto max-w-[20rem]">
+              <li>Download or share your digital memory card with family.</li>
+              <li>Or ask me to print and mail it to loved ones.</li>
+            </ul>
           </div>
         </div>
         

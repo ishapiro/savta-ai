@@ -226,7 +226,7 @@ html, body {
 body {
   background-color: #FEFCF8; /* brand.background - Bright warm white */
   color: text-brand-primary;
-  font-family: "Inter", "Nunito", "Helvetica Neue", sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .wide-tooltip {

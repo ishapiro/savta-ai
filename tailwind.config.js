@@ -128,9 +128,11 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['"Inter"', '"Nunito"', 'sans-serif'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+        serif: ['"EB Garamond"', 'Georgia', 'serif'],
       },
       fontSize: {
+        base: ['0.9375rem', { lineHeight: '1.5' }], // 15px (1pt smaller than default 16px)
         h1: ['2.5rem', { lineHeight: '1.2', fontWeight: '700' }], // 40px
         h2: ['2rem', { lineHeight: '1.3', fontWeight: '600' }],    // 32px
         h3: ['1.5rem', { lineHeight: '1.4', fontWeight: '500' }],  // 24px
