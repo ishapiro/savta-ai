@@ -121,8 +121,8 @@
           <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
         </div>
         <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
-        <p class="text-xs sm:text-base text-gray-600 mb-2">When you upload photos, they go into your Memory Box. Then I'll choose the best ones and write lovely captions for your card or booklet. Choose how you'd like me to pick photos from your Memory Box.</p>
-        <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your Memory Box</p>
+        <p class="text-xs sm:text-base text-gray-600 mb-2">When you upload photos, they go into your Photo Box. Then I'll choose the best ones and write lovely captions for your card or booklet. Choose how you'd like me to pick photos from your Photo Box.</p>
+        <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your Photo Box</p>
       </div>
       
       <!-- Photo Selection Interface Component -->

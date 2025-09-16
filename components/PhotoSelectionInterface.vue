@@ -33,8 +33,8 @@
             <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
               <i class="pi pi-folder-open text-xs text-white"></i>
             </div>
-            <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">Memory Box</div>
-            <div class="text-xs text-gray-600 leading-tight">Choose exactly which photos you want from your Memory Box.</div>
+            <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">Photo Box</div>
+            <div class="text-xs text-gray-600 leading-tight">Choose exactly which photos you want from your Photo Box.</div>
                             <div v-if="methodValue === 'photo_library'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
               <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-check text-white text-xs"></i>
@@ -236,7 +236,7 @@
           <button
             @click="closePhotoLibrary"
             class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-flash"
-            aria-label="Close Memory Box"
+            aria-label="Close Photo Box"
           >
             <i class="pi pi-times text-gray-600"></i>
           </button>
@@ -315,7 +315,7 @@
       </button>
       <div class="text-center">
         <i class="pi pi-spin pi-spinner text-3xl text-brand-header mb-3"></i>
-        <p class="text-sm text-gray-600">Loading your Memory Box...</p>
+        <p class="text-sm text-gray-600">Loading your Photo Box...</p>
       </div>
     </div>
 

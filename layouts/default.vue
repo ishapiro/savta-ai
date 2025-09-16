@@ -99,7 +99,7 @@
                         </div>
                         <div class="flex-1">
                           <div class="font-medium text-brand-secondary text-sm">Add Photos</div>
-                          <div class="text-xs text-brand-primary/70">Upload & organize</div>
+                          <div class="text-xs text-brand-primary/70">Upload to Photo Box</div>
                         </div>
                       </NuxtLink>
 
@@ -109,7 +109,7 @@
                           <i class="pi pi-check-circle text-white text-sm"></i>
                         </div>
                         <div class="flex-1">
-                          <div class="font-medium text-brand-secondary text-sm">Memory Box</div>
+                          <div class="font-medium text-brand-secondary text-sm">Photo Box</div>
                           <div class="text-xs text-brand-primary/70">Review & edit</div>
                         </div>
                       </NuxtLink>
@@ -120,7 +120,7 @@
                           <i class="pi pi-book text-white text-sm"></i>
                         </div>
                         <div class="flex-1">
-                          <div class="font-medium text-brand-secondary text-sm">Memories</div>
+                          <div class="font-medium text-brand-secondary text-sm">Create Memories</div>
                           <div class="text-xs text-brand-primary/70">Create & manage</div>
                         </div>
                       </NuxtLink>
@@ -301,7 +301,7 @@
                 <i class="pi pi-check-circle text-white text-sm"></i>
               </div>
               <div class="flex-1">
-                <div class="font-medium text-brand-secondary text-sm">Memory Box</div>
+                <div class="font-medium text-brand-secondary text-sm">Photo Box</div>
                 <div class="text-xs text-brand-primary/70">Review & edit</div>
               </div>
             </NuxtLink>

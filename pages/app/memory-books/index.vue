@@ -724,7 +724,7 @@
             <ul class="space-y-2">
               <li class="flex items-start gap-2">
                 <Images class="w-5 h-5 text-brand-primary mt-0.5" />
-                <span class="text-sm text-gray-800">Upload your best photos into your Memory Box.</span>
+                <span class="text-sm text-gray-800">Upload your best photos into your Photo Box.</span>
               </li>
               <li class="flex items-start gap-2">
                 <MessageSquare class="w-5 h-5 text-brand-primary mt-0.5" />
@@ -737,6 +737,12 @@
                   your instructions.</span>
               </li>
             </ul>
+          </div>
+
+          <div class="mt-4">
+            <p class="text-base font-semibold text-brand-highlight mt-4">
+              Don't worry, just click on the create memory card button and I'll walk you through the process.
+            </p>
           </div>
         </div>
       </SavtaBubble>

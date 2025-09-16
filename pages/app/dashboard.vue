@@ -47,9 +47,9 @@
             <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2 font-serif">Upload Photos</h3>
             <ul class="text-sm sm:text-base text-brand-primary list-disc pl-5 text-left space-y-1 mx-auto max-w-[20rem]">
               <li>Gather photos from your phone, computer, and social media.</li>
-              <li>Your Savta.ai Memory Box is where favorites live.</li>
+              <li>Your Savta.ai Photo Box is where favorites live.</li>
               <li>Upload directly from your phone or computer.</li>
-              <li>Ask family to text favorites—I'll add them to your Memory Box.</li>
+              <li>Ask family to text favorites—I'll add them to your Photo Box.</li>
             </ul>
           </div>
           
