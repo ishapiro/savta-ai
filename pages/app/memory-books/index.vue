@@ -1240,6 +1240,8 @@ const confirmGenerate = () => {
 const confirmRegenerate = () => {
   showRegenerateDialog.value = false
   if (pendingBook.value) {
+    // Close the details modal so progress window is visible
+    showDetailsModal.value = false
     // Use the magic memory wizard to regenerate the book
     magicMemoryWizardRef.value.openMagicMemoryDialog('quick', pendingBook.value)
   }

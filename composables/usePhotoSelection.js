@@ -40,6 +40,14 @@ export const usePhotoSelection = () => {
   // Photo selection options
   const photoSelection_options = [
     {
+      id: 'keep_same',
+      title: "Keep the same photos",
+      description: "Use the same photos from your original memory card and just update the story and layout.",
+      icon: 'pi pi-refresh',
+      color: 'from-brand-accent to-brand-highlight',
+      isRecreateOnly: true
+    },
+    {
       id: 'last_100',
       title: "I'll choose for you",
       description: "I'll search your photos for matches and pick the best photos from your recent uploads (up to 100 photos).",
@@ -320,6 +328,11 @@ export const usePhotoSelection = () => {
           return tagFilteredAssets.slice(0, PHOTO_POOL_SIZE)
         }
         return tagFilteredAssets
+      
+      case 'keep_same':
+        // For keep_same, return the selected memories (which should be preloaded with existing photos)
+        console.log('🔄 [photoSelection_populatePhotoSelectionPool] Keep same selected, returning selected memories:', photoSelection_selectedMemories.value)
+        return photoSelection_selectedMemories.value
       
       default:
         console.log('🔍 [photoSelection_populatePhotoSelectionPool] Default case - returning empty array')

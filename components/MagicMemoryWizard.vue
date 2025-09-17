@@ -120,8 +120,15 @@
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
         </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">How should I pick your photos?</h3>
-        <p class="text-xs sm:text-base text-gray-600 mb-2">When you upload photos, they go into your Photo Box. Then I'll choose the best ones and write lovely captions for your card or booklet. Choose how you'd like me to pick photos from your Photo Box.</p>
+        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">
+          {{ isRecreateMode ? 'How should I pick your new photos?' : 'How should I pick your photos?' }}
+        </h3>
+        <p class="text-xs sm:text-base text-gray-600 mb-2">
+          {{ isRecreateMode 
+            ? 'You can keep the same photos or choose new ones. When you upload photos, they go into your Photo Box. Then I\'ll choose the best ones and write lovely captions for your card or booklet.' 
+            : 'When you upload photos, they go into your Photo Box. Then I\'ll choose the best ones and write lovely captions for your card or booklet. Choose how you\'d like me to pick photos from your Photo Box.' 
+          }}
+        </p>
         <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your Photo Box</p>
       </div>
       
@@ -144,6 +151,7 @@
         :loadingAssets="photoSelection_loadingAssets"
         :isUploading="photoSelection_isUploading"
         :maxPhotoCount="4"
+        :isRecreateMode="isRecreateMode"
         @upload-photos="handleUploadPhotos"
         @photo-library-selected="nextMagicMemoryStep"
         @no-photos-found="handleNoPhotosFound"
@@ -285,6 +293,10 @@ const {
   photoSelection_options,
   photoSelection_computedAvailableTags,
   photoSelection_filteredAssets,
+  
+  // Recreation state
+  existingBookForRecreation,
+  isRecreateMode,
   
   // Progress dialog state
   showProgressDialog,

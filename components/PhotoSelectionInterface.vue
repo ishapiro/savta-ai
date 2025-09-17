@@ -2,6 +2,25 @@
   <div class="photo-selection-interface">
     <!-- Photo Selection Method UI -->
     <div v-if="!showPhotoLibrary" class="space-y-3 w-full max-w-xs mx-auto sm:max-w-md md:max-w-lg lg:max-w-2xl">
+      <!-- Keep Same Photos Option (Recreate Mode Only) -->
+      <div v-if="isRecreateMode" class="relative cursor-pointer group" @click="selectMethod('keep_same')">
+        <div class="mx-1 sm:mx-2 border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
+          :class="methodValue === 'keep_same' 
+            ? 'border-brand-accent bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 shadow-xl scale-105' 
+            : 'border-gray-200 hover:border-brand-accent/50 hover:bg-gradient-to-br hover:from-brand-accent/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+            <i class="pi pi-refresh text-sm sm:text-lg text-white"></i>
+          </div>
+          <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Keep the same photos</div>
+          <div class="text-xs text-gray-600">Use the same photos from your original memory card and just update the story and layout.</div>
+          <div v-if="methodValue === 'keep_same'" class="absolute top-1 right-1">
+            <div class="w-5 h-5 bg-brand-accent rounded-full flex items-center justify-center shadow-lg">
+              <i class="pi pi-check text-white text-xs"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Savta Selects Tile (Wide Button) -->
       <div class="relative cursor-pointer group" @click="selectMethod('last_100')">
         <div class="mx-1 sm:mx-2 border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
@@ -432,6 +451,11 @@ const props = defineProps({
   maxPhotoCount: {
     type: Number,
     default: 12
+  },
+  // Whether we're in recreate mode
+  isRecreateMode: {
+    type: Boolean,
+    default: false
   }
 })
 

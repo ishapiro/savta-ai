@@ -101,6 +101,12 @@ export const useMagicMemoryWizard = () => {
 
   // Loading states
   const magicLoading = ref(false)
+  
+  // Track existing book for recreation
+  const existingBookForRecreation = ref(null)
+  
+  // Track if we're in recreate mode
+  const isRecreateMode = computed(() => !!existingBookForRecreation.value)
 
   // Computed properties - use the photo selection composable's filtered assets
   const magicFilteredAssets = computed(() => {
@@ -158,6 +164,15 @@ export const useMagicMemoryWizard = () => {
       return
     }
 
+    // If "keep_same" is selected, skip to generation
+    if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'keep_same') {
+      console.log('🔄 [MagicMemoryWizard] Keep same photos selected, skipping to generation')
+      // Set the current step to the last step to trigger generation
+      currentStepIndex.value = currentButtonConfig.value.steps.length - 1
+      magicMemoryStep.value = currentButtonConfig.value.steps[currentStepIndex.value]
+      return
+    }
+
     // Find next step in the button's sequence
     const nextIndex = currentStepIndex.value + 1
     if (nextIndex < currentButtonConfig.value.steps.length) {
@@ -192,8 +207,8 @@ export const useMagicMemoryWizard = () => {
     }
   }
 
-  const openMagicMemoryDialog = async (buttonType = 'full') => {
-    console.log('🔍 [openMagicMemoryDialog] Opening dialog with buttonType:', buttonType)
+  const openMagicMemoryDialog = async (buttonType = 'full', existingBook = null) => {
+    console.log('🔍 [openMagicMemoryDialog] Opening dialog with buttonType:', buttonType, 'existingBook:', existingBook)
     
     // Set up the button configuration
     const originalConfig = buttonConfigs[buttonType] || buttonConfigs.full
@@ -204,20 +219,97 @@ export const useMagicMemoryWizard = () => {
     currentStepIndex.value = 0
     magicMemoryStep.value = currentButtonConfig.value.steps[0]
     
-    // Reset form values
-    magicMemoryTitle.value = ''
-    magicMemoryEvent.value = ''
-    magicCustomMemoryEvent.value = ''
-    magicPhotoCount.value = 4
-    magicBackgroundType.value = 'white'
-    magicSolidBackgroundColor.value = '#F9F6F2'
-    magicSelectedTheme.value = null
+    // Store existing book for recreation
+    existingBookForRecreation.value = existingBook
     
-    // Reset photo selection using composable
-    photoSelection_resetSelection()
+    // Reset form values or preload from existing book
+    if (existingBook) {
+      console.log('🔄 [openMagicMemoryDialog] Preloading data from existing book:', existingBook.id)
+      
+      // Preload title from AI supplemental prompt or title
+      magicMemoryTitle.value = existingBook.ai_supplemental_prompt || existingBook.title || ''
+      
+      // Preload theme if available
+      magicSelectedTheme.value = existingBook.theme_id || null
+      
+      // Preload background settings
+      if (existingBook.background_type) {
+        magicBackgroundType.value = existingBook.background_type
+      }
+      if (existingBook.background_color) {
+        magicSolidBackgroundColor.value = existingBook.background_color
+      }
+      
+      // Preload photo selection data
+      if (existingBook.photo_selection_method) {
+        photoSelection_method.value = existingBook.photo_selection_method
+      }
+      if (existingBook.photo_selection_date_range) {
+        try {
+          const dateRange = typeof existingBook.photo_selection_date_range === 'string' 
+            ? JSON.parse(existingBook.photo_selection_date_range) 
+            : existingBook.photo_selection_date_range
+          photoSelection_dateRange.value = dateRange || { start: null, end: null }
+        } catch (error) {
+          console.error('Error parsing date range:', error)
+          photoSelection_dateRange.value = { start: null, end: null }
+        }
+      }
+      if (existingBook.photo_selection_tags) {
+        try {
+          const tags = typeof existingBook.photo_selection_tags === 'string' 
+            ? JSON.parse(existingBook.photo_selection_tags) 
+            : existingBook.photo_selection_tags
+          photoSelection_selectedTags.value = tags || []
+        } catch (error) {
+          console.error('Error parsing tags:', error)
+          photoSelection_selectedTags.value = []
+        }
+      }
+      if (existingBook.photo_selection_location) {
+        try {
+          const location = typeof existingBook.photo_selection_location === 'string' 
+            ? JSON.parse(existingBook.photo_selection_location) 
+            : existingBook.photo_selection_location
+          photoSelection_selectedLocation.value = location || ''
+        } catch (error) {
+          console.error('Error parsing location:', error)
+          photoSelection_selectedLocation.value = ''
+        }
+      }
+      if (existingBook.created_from_assets && existingBook.created_from_assets.length > 0) {
+        photoSelection_selectedMemories.value = existingBook.created_from_assets
+      }
+      
+      console.log('✅ [openMagicMemoryDialog] Preloaded data:', {
+        title: magicMemoryTitle.value,
+        theme: magicSelectedTheme.value,
+        backgroundType: magicBackgroundType.value,
+        backgroundColor: magicSolidBackgroundColor.value,
+        photoMethod: photoSelection_method.value,
+        dateRange: photoSelection_dateRange.value,
+        tags: photoSelection_selectedTags.value,
+        location: photoSelection_selectedLocation.value,
+        selectedMemories: photoSelection_selectedMemories.value.length
+      })
+    } else {
+      // Reset form values for new creation
+      magicMemoryTitle.value = ''
+      magicMemoryEvent.value = ''
+      magicCustomMemoryEvent.value = ''
+      magicPhotoCount.value = 4
+      magicBackgroundType.value = 'white'
+      magicSolidBackgroundColor.value = '#F9F6F2'
+      magicSelectedTheme.value = null
+      
+      // Reset photo selection using composable
+      photoSelection_resetSelection()
+    }
     
-    // Set default photo selection method based on button configuration
-    photoSelection_method.value = currentButtonConfig.value.steps.includes(MAGIC_STEPS.PHOTOS) ? '' : 'last_100'
+    // Set default photo selection method based on button configuration (only if not preloaded)
+    if (!existingBook) {
+      photoSelection_method.value = currentButtonConfig.value.steps.includes(MAGIC_STEPS.PHOTOS) ? '' : 'last_100'
+    }
     
     try {
       // Load assets and location data using photo selection composable
@@ -306,6 +398,7 @@ export const useMagicMemoryWizard = () => {
     currentButtonConfig.value = null
     currentStepIndex.value = 0
     magicMemoryStep.value = MAGIC_STEPS.TITLE
+    existingBookForRecreation.value = null
   }
 
   const generateMagicMemory = async () => {
@@ -388,44 +481,84 @@ export const useMagicMemoryWizard = () => {
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
       
-      // Create template memory book in database
-      const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
-        method: 'POST',
-        body: {
-          asset_ids: [], // Template - will be populated after AI selection
-          photo_selection_pool: photoSelectionPool,
-          story: '', // Template - will be populated after AI generation
-          title: magicMemoryTitle.value || 'Select Photos That Tell a Story',
-          memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
-          background_type: magicBackgroundType.value,
-          background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
-          photo_count: effectivePhotoCount,
-          theme_id: magicSelectedTheme.value,
-          print_size: '8.5x11', // Default print size for magic memories
-          output: 'JPG', // Wizard creates single-page memories, so always use JPG
-          photo_selection_method: photoSelection_method.value
-        },
-        headers: {
-          Authorization: `Bearer ${accessToken}`
+      let bookId
+      
+      if (existingBookForRecreation.value) {
+        // Update existing book for recreation
+        console.log('🔄 [generateMagicMemory] Updating existing book for recreation:', existingBookForRecreation.value.id)
+        
+        const updateRes = await $fetch('/api/memory-books/update-magic-memory', {
+          method: 'POST',
+          body: {
+            book_id: existingBookForRecreation.value.id,
+            asset_ids: [], // Template - will be populated after AI selection
+            photo_selection_pool: photoSelectionPool,
+            story: '', // Template - will be populated after AI generation
+            title: magicMemoryTitle.value || 'Select Photos That Tell a Story',
+            memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+            background_type: magicBackgroundType.value,
+            background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
+            photo_count: effectivePhotoCount,
+            theme_id: magicSelectedTheme.value,
+            print_size: '8.5x11', // Default print size for magic memories
+            output: 'JPG', // Wizard creates single-page memories, so always use JPG
+            photo_selection_method: photoSelection_method.value,
+            photo_selection_date_range: JSON.stringify(photoSelection_dateRange.value),
+            photo_selection_tags: JSON.stringify(photoSelection_selectedTags.value),
+            photo_selection_location: photoSelection_selectedLocation.value
+          },
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        })
+        
+        if (!updateRes.success) {
+          throw new Error('I need to try again to update your magic card.')
         }
-      })
-      
-      if (!dbRes.success) {
-        throw new Error('I need to try again to save your magic card.')
+        
+        bookId = existingBookForRecreation.value.id
+        console.log('🔍 [generateMagicMemory] Memory book updated for recreation with ID:', bookId)
+      } else {
+        // Create new memory book
+        const dbRes = await $fetch('/api/memory-books/create-magic-memory', {
+          method: 'POST',
+          body: {
+            asset_ids: [], // Template - will be populated after AI selection
+            photo_selection_pool: photoSelectionPool,
+            story: '', // Template - will be populated after AI generation
+            title: magicMemoryTitle.value || 'Select Photos That Tell a Story',
+            memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+            background_type: magicBackgroundType.value,
+            background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
+            photo_count: effectivePhotoCount,
+            theme_id: magicSelectedTheme.value,
+            print_size: '8.5x11', // Default print size for magic memories
+            output: 'JPG', // Wizard creates single-page memories, so always use JPG
+            photo_selection_method: photoSelection_method.value
+          },
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        })
+        
+        if (!dbRes.success) {
+          throw new Error('I need to try again to save your magic card.')
+        }
+        
+        bookId = dbRes.book_id
+        console.log('🔍 [generateMagicMemory] Memory book created with ID:', bookId)
       }
-      
-      console.log('🔍 [generateMagicMemory] Memory book created with ID:', dbRes.book_id)
       
       // Update progress and start polling
       currentProgressMessage.value = '🎯 Selecting best photos...'
       currentProgress.value = 25
-      startProgressPolling(dbRes.book_id, false)
+      startProgressPolling(bookId, false)
       
       // Call the magic memory AI endpoint
       const aiRes = await $fetch('/api/ai/magic-memory', {
         method: 'POST',
         body: {
-          memoryBookId: dbRes.book_id,
+          memoryBookId: bookId,
           userId: user.value.id,
           photoCount: effectivePhotoCount
         }
@@ -439,7 +572,7 @@ export const useMagicMemoryWizard = () => {
       
       // Create book object for PDF generation - match original exactly
       const book = {
-        id: dbRes.book_id,
+        id: bookId,
         layout_type: magicSelectedTheme.value ? 'theme' : 'grid',
         ui: 'wizard',
         format: 'card',
@@ -491,6 +624,10 @@ export const useMagicMemoryWizard = () => {
     loadingMagicThemes,
     magicLoading,
     magicFilteredAssets,
+    
+    // Recreation state
+    existingBookForRecreation,
+    isRecreateMode,
     
     // Photo selection state (from composable)
     photoSelection_method,
