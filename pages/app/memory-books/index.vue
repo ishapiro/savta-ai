@@ -729,22 +729,6 @@
                 {{ selectedBook?.ai_supplemental_prompt || 'Memory Book' }}
               </h3>
             </div>
-            <div class="flex items-center gap-2">
-              <button
-                @click="downloadCurrentPdf"
-                class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-accent hover:bg-brand-accent/80 transition-colors"
-                v-tooltip.top="'Download PDF'"
-              >
-                <i class="pi pi-download text-white text-sm"></i>
-              </button>
-              <button
-                @click="sharePdf"
-                class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-highlight hover:bg-brand-highlight/80 transition-colors"
-                v-tooltip.top="'Share PDF'"
-              >
-                <i class="pi pi-share-alt text-white text-sm"></i>
-              </button>
-            </div>
           </div>
         </template>
 

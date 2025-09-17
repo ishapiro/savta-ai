@@ -778,7 +778,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Helper function to perform smart cropping
-    async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null, photoIndex = null, totalPhotos = null, assetId = null) {
+    async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null, photoIndex = null, totalPhotos = null, assetId = null, userId = null) {
       try {
         console.log('🧠 Performing OpenAI person detection crop...')
         if (photoIndex !== null && totalPhotos !== null) {
@@ -873,19 +873,30 @@ export default defineEventHandler(async (event) => {
                 if (rekognitionData.success && rekognitionData.faces && rekognitionData.faces.length > 0) {
                   console.log(`✅ AWS Rekognition: Found ${rekognitionData.faces.length} faces`)
                   
-                  // Convert Rekognition bounding boxes to smartcrop-gm boost format
+                  // Convert Rekognition bounding boxes to smartcrop-gm boost format with padding
                   faceBoosts = rekognitionData.faces.map(face => {
+                    // Add padding around the face bounding box to prevent cutting off heads
+                    const paddingFactor = 0.3 // 30% padding around the face
+                    
+                    // Calculate padded bounding box
+                    const paddedLeft = Math.max(0, face.box.Left - (face.box.Width * paddingFactor))
+                    const paddedTop = Math.max(0, face.box.Top - (face.box.Height * paddingFactor))
+                    const paddedWidth = Math.min(1 - paddedLeft, face.box.Width + (face.box.Width * paddingFactor * 2))
+                    const paddedHeight = Math.min(1 - paddedTop, face.box.Height + (face.box.Height * paddingFactor * 2))
+                    
                     // Convert from [0,1] relative coordinates to pixel coordinates
-                    const pixelX = Math.floor(face.box.Left * processedMetadata.width)
-                    const pixelY = Math.floor(face.box.Top * processedMetadata.height)
-                    const pixelWidth = Math.floor(face.box.Width * processedMetadata.width)
-                    const pixelHeight = Math.floor(face.box.Height * processedMetadata.height)
+                    const pixelX = Math.floor(paddedLeft * processedMetadata.width)
+                    const pixelY = Math.floor(paddedTop * processedMetadata.height)
+                    const pixelWidth = Math.floor(paddedWidth * processedMetadata.width)
+                    const pixelHeight = Math.floor(paddedHeight * processedMetadata.height)
                     
                     // Convert back to smartcrop-gm's expected [0,1] format
                     const boostX = pixelX / processedMetadata.width
                     const boostY = pixelY / processedMetadata.height
                     const boostWidth = pixelWidth / processedMetadata.width
                     const boostHeight = pixelHeight / processedMetadata.height
+                    
+                    console.log(`🎯 Face boost with padding: original=(${face.box.Left.toFixed(3)}, ${face.box.Top.toFixed(3)}, ${face.box.Width.toFixed(3)}, ${face.box.Height.toFixed(3)}) padded=(${boostX.toFixed(3)}, ${boostY.toFixed(3)}, ${boostWidth.toFixed(3)}, ${boostHeight.toFixed(3)}) paddingFactor=${paddingFactor}`)
                     
                     return {
                       x: boostX,
@@ -1848,7 +1859,7 @@ export default defineEventHandler(async (event) => {
                 console.log('🎯 Smart crop will prioritize faces in center area')
                 console.log('🔍 Debug: imageUrl for smartCropImage:', imageUrl)
                 // First apply smart cropping to ensure subject is properly positioned
-                const smartCroppedImage = await smartCropImage(imageBuffer, highResWidth, highResHeight, imageUrl, null, null, null)
+                const smartCroppedImage = await smartCropImage(imageBuffer, highResWidth, highResHeight, imageUrl, null, null, null, user.id)
                 resizedImage = smartCroppedImage
               } else {
                 console.log('📚 Regular memory book - using standard resize for rounded shape')
@@ -2376,7 +2387,7 @@ export default defineEventHandler(async (event) => {
           let finalImageBuffer
           console.log(`🔍 Debug: Asset ${i + 1} storage_url:`, asset.storage_url)
           try {
-            finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight, asset.storage_url, i, matchedAssets.length, asset.id)
+            finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight, asset.storage_url, i, matchedAssets.length, asset.id, user.id)
           } catch (smartCropError) {
             finalImageBuffer = await sharp(imageBuffer)
               .resize(targetWidth, targetHeight, { fit: 'cover' })
