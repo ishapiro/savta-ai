@@ -210,8 +210,8 @@ watchEffect(() => {
       console.log('[SIGNUP] Redirecting to confirm page (Google OAuth)')
       navigateTo('/app/confirm')
     } else {
-      console.log('[SIGNUP] Redirecting to dashboard (Google OAuth)')
-      navigateTo('/app/dashboard')
+      console.log('[SIGNUP] Redirecting to memory books (Google OAuth)')
+      navigateTo('/app/memory-books')
     }
   }
 })
@@ -339,7 +339,7 @@ const onDialogHide = () => {
   if (origin === 'home') {
     navigateTo('/app/confirm')
   } else {
-    navigateTo('/app/dashboard')
+    navigateTo('/app/memory-books')
   }
 }
 

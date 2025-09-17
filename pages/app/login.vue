@@ -172,11 +172,7 @@ console.log('[LOGIN] Origin from localStorage:', origin)
 // Redirect if already logged in
 watchEffect(() => {
   if (user.value) {
-    if (origin === 'home') {
-      navigateTo('/app/memory-books')
-    } else {
-      navigateTo('/app/dashboard')
-    }
+    navigateTo('/app/memory-books')
   }
 })
 
@@ -224,12 +220,8 @@ const handleEmailLogin = async () => {
       if (process.client) {
         sessionStorage.removeItem('guestMode')
       }
-      // Success - redirect based on origin
-      if (origin === 'home') {
-        navigateTo('/app/confirm')
-      } else {
-        navigateTo('/app/dashboard')
-      }
+      // Success - redirect to memory books
+      navigateTo('/app/memory-books')
     }
   } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
@@ -285,7 +277,7 @@ const onDialogHide = () => {
   if (origin === 'home') {
     navigateTo('/app/confirm')
   } else {
-    navigateTo('/app/dashboard')
+    navigateTo('/app/memory-books')
   }
 }
 

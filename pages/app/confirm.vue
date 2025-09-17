@@ -180,9 +180,9 @@ const goToDashboard = () => {
   visible.value = false
   console.log('[CONFIRM] goToDashboard called, origin:', origin)
   
-  // Always go to dashboard for logged-in users
-  console.log('[CONFIRM] Redirecting to dashboard for logged-in user')
-  navigateTo('/app/dashboard')
+  // Always go to memory books for logged-in users
+  console.log('[CONFIRM] Redirecting to memory books for logged-in user')
+  navigateTo('/app/memory-books')
 }
 
 const goToAbout = () => {
@@ -194,9 +194,9 @@ const onDialogHide = () => {
   // When dialog is closed, navigate to dashboard for logged-in users
   console.log('[CONFIRM] onDialogHide called, origin:', origin)
   
-  // Always go to dashboard for logged-in users
-  console.log('[CONFIRM] Dialog hide - redirecting to dashboard for logged-in user')
-  navigateTo('/app/dashboard')
+  // Always go to memory books for logged-in users
+  console.log('[CONFIRM] Dialog hide - redirecting to memory books for logged-in user')
+  navigateTo('/app/memory-books')
 }
 
 const isUserDisabled = ref(false)

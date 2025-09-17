@@ -75,8 +75,8 @@
                       </div>
                     </NuxtLink>
 
-                    <!-- Dashboard -->
-                    <NuxtLink to="/app/dashboard" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
+                    <!-- Getting Started -->
+                    <NuxtLink to="/getting-started" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
                       <div class="w-8 h-8 bg-brand-primary/70 rounded-lg flex items-center justify-center">
                         <i class="pi pi-th-large text-white text-sm"></i>
                       </div>
@@ -267,8 +267,8 @@
             </div>
           </NuxtLink>
 
-          <!-- Dashboard -->
-          <NuxtLink to="/app/dashboard" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
+          <!-- Getting Started -->
+          <NuxtLink to="/getting-started" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
             <div class="w-8 h-8 bg-brand-primary/70 rounded-lg flex items-center justify-center">
               <i class="pi pi-th-large text-white text-sm"></i>
             </div>
@@ -545,14 +545,14 @@ const breadcrumbItems = computed(() => {
     
     // Add Getting Started if not on home page
     if (route.path !== '/app/home') {
-      crumbs.push({ label: 'Getting Started', to: '/app/dashboard' })
+      crumbs.push({ label: 'Getting Started', to: '/getting-started' })
     }
   } else {
     crumbs.push({ label: 'Home', to: '/' })
   }
   
   // Add current page if not home or getting started
-  if (route.path !== '/app/home' && route.path !== '/app/dashboard' && route.name && route.name !== 'index') {
+  if (route.path !== '/app/home' && route.path !== '/getting-started' && route.name && route.name !== 'index') {
     // Convert route name to readable label
     let label = route.name.toString()
     if (label.includes('-')) {
@@ -584,7 +584,7 @@ const handleSignOut = async () => {
       console.warn('Sign out error:', error)
     }
   }
-  // Always clear insiders access and navigate to dashboard (signed-out state)
+  // Always clear insiders access and navigate to memory books (signed-out state)
     const { clearInsidersAccess } = useInsidersAccess()
     clearInsidersAccess()
   // Force clear the user ref
@@ -592,7 +592,7 @@ const handleSignOut = async () => {
     mod.globalUser.value = null
   })
     await new Promise(resolve => setTimeout(resolve, 100))
-    navigateTo('/app/dashboard')
+    navigateTo('/app/memory-books')
 }
 
 const handleSignIn = () => {

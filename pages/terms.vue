@@ -18,7 +18,7 @@
         <Button 
           label="Back to Home" 
           class="bg-brand-secondary hover:bg-brand-secondary/80 text-white px-6 py-2 rounded-lg w-full max-w-xs mx-auto border-0"
-          @click="() => navigateTo('/app/dashboard')"
+          @click="() => navigateTo('/app/memory-books')"
         />
       </div>
     </div>

@@ -104,7 +104,7 @@ const openMagicMemoryDialog = async (buttonType = 'quick') => {
       const books = await db.memoryBooks.getMemoryBooks()
       console.log('books', books)
       if (books && books.length > 0) {
-        await navigateTo('/app/dashboard')
+        await navigateTo('/app/memory-books')
       } else {
         // No memory books, navigate to memory books page (will auto-handle dialog)
         await navigateTo('/app/memory-books')

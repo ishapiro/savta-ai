@@ -9,7 +9,7 @@
     </h3>
     <p class="text-brand-text-muted mb-6">
       {{ activeView === 'cards' 
-        ? 'You have memory books but no memory cards yet. Create your first memory card to print and mail to loved ones!' 
+        ? 'Create your first memory card to print and mail to loved ones!' 
         : 'Create your first memory book to organize your photos into beautiful digital collections!' 
       }}
     </p>

@@ -21,13 +21,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
     
     if (!profile || (profile.role !== 'editor' && profile.role !== 'admin')) {
       console.warn('[MIDDLEWARE] admin.js access denied. Profile:', profile)
-      // Redirect to app dashboard if not editor or admin
-      return navigateTo('/app/dashboard')
+      // Redirect to memory books if not editor or admin
+      return navigateTo('/app/memory-books')
     }
     console.log('[MIDDLEWARE] admin.js access granted. Profile:', profile)
   } catch (error) {
     console.error('[MIDDLEWARE] Error checking admin role:', error)
-    // Redirect to app dashboard on error
-    return navigateTo('/app/dashboard')
+    // Redirect to memory books on error
+    return navigateTo('/app/memory-books')
   }
 }) 

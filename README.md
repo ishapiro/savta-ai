@@ -103,7 +103,7 @@ savta-ai/
 ├── pages/
 │   ├── index.vue           # Public splash page
 │   └── app/                # Protected app pages
-│       ├── dashboard.vue   # Main dashboard
+│       ├── getting-started.vue   # Getting started page
 │       ├── upload.vue      # Asset upload
 │       ├── review.vue      # Asset review
 │       ├── memory-books/   # Memory book management
@@ -860,7 +860,7 @@ The `poppler-utils` package is required for **PDF to JPG conversion** functional
 
 - **Splash Page (`/`)**: Public landing page with newsletter signup
 - **App (`/app/*`)**: Protected authenticated pages
-  - `/app/dashboard` - Main dashboard
+  - `/getting-started` - Getting started page
   - `/app/upload` - Asset upload
   - `/app/review` - Asset review
   - `/app/memory-books` - Memory book management

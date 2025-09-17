@@ -201,8 +201,8 @@ const checkPassword = async () => {
       const { data: { session }, error } = await supabase.auth.getSession()
       
       if (session && session.user) {
-        console.log('🔐 User is logged in, redirecting to dashboard')
-        await navigateTo('/app/dashboard')
+        console.log('🔐 User is logged in, redirecting to memory books')
+        await navigateTo('/app/memory-books')
       } else {
         console.log('🔐 User not logged in, going to home page')
         await navigateTo('/app/home')

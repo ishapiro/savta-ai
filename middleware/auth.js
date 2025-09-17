@@ -21,13 +21,13 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         timestamp: now
       })
       
-      // Check for loop pattern (login -> dashboard -> login -> dashboard)
-      const loginDashboardPattern = recentHistory.filter(entry => 
-        entry.from === '/app/login' && entry.to === '/app/dashboard' ||
-        entry.from === '/app/dashboard' && entry.to === '/app/login'
+      // Check for loop pattern (login -> memory-books -> login -> memory-books)
+      const loginMemoryBooksPattern = recentHistory.filter(entry => 
+        entry.from === '/app/login' && entry.to === '/app/memory-books' ||
+        entry.from === '/app/memory-books' && entry.to === '/app/login'
       )
       
-      if (loginDashboardPattern.length >= 4) {
+      if (loginMemoryBooksPattern.length >= 4) {
         console.warn('Login loop detected, forcing logout')
         
         // Force logout
@@ -43,7 +43,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         // Set guest mode flag
         sessionStorage.setItem('guestMode', 'true')
         
-        // Allow access to dashboard in guest mode
+        // Allow access to memory books in guest mode
         return
       }
       
@@ -88,8 +88,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return
   }
   
-  // Allow access to dashboard for users with insiders access, full authentication, or guest mode
-  if (to.path === '/app/dashboard') {
+  // Allow access to getting started for users with insiders access, full authentication, or guest mode
+  if (to.path === '/getting-started') {
     // Check insiders access directly from sessionStorage for immediate access
     const insidersAccess = process.client ? ((sessionStorage.getItem('insiders-access') || '').toLowerCase() === 'true') : false;
     if (user.value || hasInsidersAccess.value || insidersAccess || (process.client && sessionStorage.getItem('guestMode') === 'true')) {
@@ -104,7 +104,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return navigateTo('/app/login')
   }
   
-  // If user is authenticated and trying to access auth pages, redirect to app dashboard
+  // If user is authenticated and trying to access auth pages, redirect to getting started
   // EXCEPT if they're coming from home page with origin in localStorage
   if (user.value && (to.path === '/app/login' || to.path === '/app/signup' || to.path === '/app/confirm')) {
     // Allow authenticated users to access signup or confirm if they have origin=home in localStorage
@@ -112,10 +112,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         process.client && localStorage.getItem('auth_origin') === 'home') {
       return
     }
-    // For login page, always redirect to dashboard
+    // For login page, always redirect to memory books
     if (to.path === '/app/login') {
-      return navigateTo('/app/dashboard')
+      return navigateTo('/app/memory-books')
     }
-    return navigateTo('/app/dashboard')
+    return navigateTo('/app/memory-books')
   }
 }) 

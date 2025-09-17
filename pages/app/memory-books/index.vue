@@ -35,11 +35,12 @@
       </div>
 
       <!-- Dynamic Hero Section -->
-      <MemoryStudioHero 
+       <!-- not currently used -->
+      <!-- <MemoryStudioHero 
         :active-view="activeView"
         @create-card="openMagicMemoryDialog('quick')"
         @create-book="showCreateModal = true"
-      />
+      /> -->
 
       <!-- Dynamic Listing Section -->
       <div class="mb-12" data-savta="memory-listing-section">
@@ -1158,6 +1159,13 @@ const navigateToTrash = () => {
 }
 
 const openMagicMemoryDialog = (type) => {
+  // Check if user is authenticated
+  if (!user.value) {
+    console.log('🔐 User not authenticated, redirecting to login')
+    navigateTo('/app/login')
+    return
+  }
+  
   if (magicMemoryWizardRef.value) {
     magicMemoryWizardRef.value.openMagicMemoryDialog(type)
   }
@@ -1515,6 +1523,15 @@ watch([memoryCards, memoryBooksOnly, activeView], ([cards, books, view]) => {
   showSavtaBubble.value = totalMemoryBooks === 0
   console.log('🔍 [SavtaBubble] totalMemoryBooks:', totalMemoryBooks, 'showSavtaBubble:', showSavtaBubble.value)
 }, { immediate: true })
+
+// Watch for create modal to check authentication
+watch(showCreateModal, (newValue) => {
+  if (newValue && !user.value) {
+    console.log('🔐 User not authenticated, redirecting to login instead of opening create modal')
+    showCreateModal.value = false // Close the modal
+    navigateTo('/app/login')
+  }
+})
 
 // File selection function
 const selectFiles = () => {

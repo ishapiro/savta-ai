@@ -292,7 +292,7 @@
           </div>
           <h3 class="text-xl font-semibold text-brand-primary mb-3">No memory cards yet</h3>
           <p class="text-brand-text-muted mb-6">
-            You have memory books but no memory cards yet. Create your first memory card to print and mail to loved ones!
+            Create your first memory card to print and mail to loved ones!
           </p>
         </div>
       </div>
