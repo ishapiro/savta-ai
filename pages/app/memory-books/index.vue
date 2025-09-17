@@ -42,7 +42,7 @@
       />
 
       <!-- Dynamic Listing Section -->
-      <div class="mb-12">
+      <div class="mb-12" data-savta="memory-listing-section">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-semibold text-brand-primary">
             {{ activeView === 'cards' ? 'Your Memory Cards' : 'Your Memory Books' }}
@@ -695,29 +695,18 @@
 
       <!-- Savta Bubble Component (disabled here; shown on Getting Started page) -->
       <SavtaBubble
-        v-if="false"
         v-model:open="showSavtaBubble"
         placement="center"
-        :offset="15"
+        :offset="0"
+        heading="Hi, I'm Savta and I'm here to help you get started!"
+        text="Click on Create Memory Card and I will walk yout through creating your first memory.
+        \nI'll start by asking you a couple of questions about how you want your memory card to look.
+        \nThen I'll help you upload just your favorite photos to your Photo Box—not your whole camera roll. The more you share, the better I can help you.📸
+        \nI'll use a little AI magic to pick photos that belong together, arrange them beautifully on each card, and write warm captions. 💛"
         variant="instruction"
         :dismissible="true"
         :show-avatar="true"
-      >
-        <div class="space-y-4 text-center">
-          <p class="text-sm text-gray-800">
-            Start by uploading just your favorite photos to your Photo Box—not your
-            whole camera roll. 📸
-          </p>
-          <p class="text-sm text-gray-800">
-            I’ll use a little AI magic to pick photos that belong together,
-            arrange them beautifully on each card, and write warm captions. ✨
-          </p>
-          <p class="text-sm font-medium text-brand-highlight">
-            Take a quick look at the steps above, and I’ll guide you through your
-            first memory card. 💛
-          </p>
-        </div>
-      </SavtaBubble>
+      />
 
       <!-- PDF Modal -->
       <Dialog
@@ -958,6 +947,7 @@ import { computed, watch, ref, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMemoryStudio } from '~/composables/useMemoryStudio'
 import { useDatabase } from '~/composables/useDatabase'
+import { useSupabaseUser } from '~/composables/useSupabase'
 import { defineAsyncComponent } from 'vue'
 import SavtaIcon from '~/components/SavtaIcon.vue'
 
@@ -981,6 +971,7 @@ import CaptionRenderer from '~/components/CaptionRenderer.vue'
 
 // Composables
 const router = useRouter()
+const user = useSupabaseUser()
 const {
   memoryCards,
   memoryBooksOnly,
@@ -1516,47 +1507,13 @@ const formatDateRange = (dateRange) => {
   return 'any date'
 }
 
-// Check if user is new (has assets but no memory cards)
-const checkIfNewUser = async () => {
-  try {
-    // Check if user has assets
-    const { data: assets } = await supabase
-      .from('assets')
-      .select('id')
-      .limit(1)
-    
-    const hasAssets = assets && assets.length > 0
-    
-    // Check if user has memory cards specifically
-    const { data: cards } = await supabase
-      .from('memory_books')
-      .select('id')
-      .eq('format', 'card')
-      .limit(1)
-    
-    const hasMemoryCards = cards && cards.length > 0
-    
-    // Show Savta bubble if user has assets but no memory cards
-    if (hasAssets && !hasMemoryCards) {
-      showSavtaBubble.value = true
-    } else {
-      showSavtaBubble.value = false
-    }
-    
-    console.log('🔍 [checkIfNewUser] hasAssets:', hasAssets, 'hasMemoryCards:', hasMemoryCards, 'showSavtaBubble:', showSavtaBubble.value)
-  } catch (error) {
-    console.error('❌ [checkIfNewUser] Error:', error)
-  }
-}
 
 // Watch for conditions to show Savta bubble
 watch([memoryCards, memoryBooksOnly, activeView], ([cards, books, view]) => {
-  // Show bubble when user has assets but no memory cards (when in cards view)
-  if (view === 'cards' && cards.length === 0) {
-    checkIfNewUser()
-  } else {
-    showSavtaBubble.value = false
-  }
+  // Show bubble when user has no memory books at all (cards or books)
+  const totalMemoryBooks = cards.length + books.length
+  showSavtaBubble.value = totalMemoryBooks === 0
+  console.log('🔍 [SavtaBubble] totalMemoryBooks:', totalMemoryBooks, 'showSavtaBubble:', showSavtaBubble.value)
 }, { immediate: true })
 
 // File selection function
@@ -1754,6 +1711,22 @@ onMounted(() => {
       }
     })
 
+    // Listen for page visibility changes to refresh when returning from other pages
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔍 [Memory Books] Page became visible, refreshing memory books list')
+        loadMemoryBooks()
+      }
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    // Also listen for focus events (when user returns to tab)
+    window.addEventListener('focus', () => {
+      console.log('🔍 [Memory Books] Window focused, refreshing memory books list')
+      loadMemoryBooks()
+    })
+
     // Note: Upload dialog handling moved to dedicated /upload route
   }
 })
@@ -1761,6 +1734,8 @@ onMounted(() => {
 onUnmounted(() => {
   if (process.client) {
     window.removeEventListener('view-pdf', () => {})
+    document.removeEventListener('visibilitychange', () => {})
+    window.removeEventListener('focus', () => {})
   }
 })
 </script>

@@ -267,7 +267,8 @@ async function checkIfNewUser() {
     console.log('[Dashboard] checkIfNewUser: Checking conditions - memoryBooks.length === 0:', memoryBooks.value.length === 0, '!hasAssets:', !hasAssets.value)
     if (memoryBooks.value.length === 0 && !hasAssets.value) {
       console.log('[Dashboard] New user detected, showing Savta bubble')
-      showSavtaBubble.value = true
+      // Functionality moved to memory-books/index.vue
+      // showSavtaBubble.value = true
       console.log('[Dashboard] showSavtaBubble set to:', showSavtaBubble.value)
     } else {
       console.log('[Dashboard] User is not new, not showing Savta bubble')

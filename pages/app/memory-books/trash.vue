@@ -192,7 +192,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 
 // Set the layout for this page
@@ -377,5 +377,29 @@ const emptyTrashConfirmed = async () => {
 // Load data on mount
 onMounted(() => {
   loadDeletedBooks()
+  
+  // Listen for page visibility changes to refresh when returning from other pages
+  const handleVisibilityChange = () => {
+    if (!document.hidden) {
+      console.log('🔍 [Trash] Page became visible, refreshing deleted books list')
+      loadDeletedBooks()
+    }
+  }
+  
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  
+  // Also listen for focus events (when user returns to tab)
+  window.addEventListener('focus', () => {
+    console.log('🔍 [Trash] Window focused, refreshing deleted books list')
+    loadDeletedBooks()
+  })
+})
+
+// Clean up event listeners
+onUnmounted(() => {
+  if (process.client) {
+    document.removeEventListener('visibilitychange', () => {})
+    window.removeEventListener('focus', () => {})
+  }
 })
 </script>
