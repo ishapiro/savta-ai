@@ -125,7 +125,70 @@ export default defineEventHandler(async (event) => {
     let selectedAssets
     let photoSelectionResult
     
-    if (memoryBook.photo_selection_method === 'photo_library') {
+    // Check if this is a photo replacement scenario
+    const photosToReplace = memoryBook.photos_to_replace ? JSON.parse(memoryBook.photos_to_replace) : []
+    const isPhotoReplacement = memoryBook.photo_selection_method === 'replace_selected' && photosToReplace.length > 0
+    
+    if (isPhotoReplacement) {
+      // Photo replacement logic - keep some photos, replace others
+      console.log('🔄 Photo replacement detected, replacing', photosToReplace.length, 'photos')
+      console.log('🔄 DEBUG - photosToReplace:', photosToReplace)
+      console.log('🔄 DEBUG - memoryBook.created_from_assets:', memoryBook.created_from_assets)
+      
+      // Get the original photos from the book
+      // For recreation, use photo_selection_pool as the original photos since created_from_assets might be null
+      const originalPhotos = memoryBook.created_from_assets || memoryBook.photo_selection_pool || []
+      console.log('🔄 DEBUG - originalPhotos:', originalPhotos)
+      
+      // Keep photos that are NOT marked for replacement
+      const photosToKeep = originalPhotos.filter(photoId => !photosToReplace.includes(photoId))
+      console.log('🔄 DEBUG - photosToKeep:', photosToKeep)
+      
+      // Get new photos for replacement from the selection pool
+      // For photo replacement, we can use any photo from the selection pool EXCEPT the ones marked for replacement
+      console.log('🔄 DEBUG - assets in selection pool:', assets.map(a => a.id))
+      const availableForReplacement = assets.filter(asset => !photosToReplace.includes(asset.id))
+      console.log('🔄 DEBUG - availableForReplacement:', availableForReplacement.map(a => a.id))
+      
+      if (availableForReplacement.length < photosToReplace.length) {
+        console.error('❌ Not enough new photos available for replacement')
+        throw createError({
+          statusCode: 400,
+          statusMessage: `Not enough new photos available for replacement. Need ${photosToReplace.length} new photos, but only ${availableForReplacement.length} are available.`
+        })
+      }
+      
+      // Select new photos for replacement using AI
+      const replacementCount = photosToReplace.length
+      const replacementSelectionResult = await selectPhotosByAttributes(
+        availableForReplacement, 
+        memoryBook.ai_supplemental_prompt, 
+        replacementCount, 
+        []
+      )
+      
+      if (!replacementSelectionResult || !replacementSelectionResult.selected_photo_numbers) {
+        console.error('❌ No replacement photo selection result returned')
+        throw createError({
+          statusCode: 500,
+          statusMessage: 'Photo replacement failed - unable to find suitable replacement photos.'
+        })
+      }
+      
+      const replacementPhotoIndices = replacementSelectionResult.selected_photo_numbers
+      const replacementPhotos = replacementPhotoIndices.map(index => availableForReplacement[index].id)
+      
+      // Combine kept photos with replacement photos
+      selectedAssets = [...photosToKeep, ...replacementPhotos]
+      
+      // Create reasoning for photo replacement
+      photoSelectionResult = {
+        reasoning: `Photo replacement: kept ${photosToKeep.length} original photos and replaced ${replacementPhotos.length} photos with new ones. ${replacementSelectionResult.reasoning || ''}`
+      }
+      
+      await updatePdfStatus(supabase, memoryBookId, userId, `🔄 Replaced ${replacementPhotos.length} photos while keeping ${photosToKeep.length} original photos...`)
+      
+    } else if (memoryBook.photo_selection_method === 'photo_library') {
       // Manual selection - use the photos in the pool directly
       console.log('📸 Manual photo selection detected, using selected photos directly')
       selectedAssets = assets
@@ -187,7 +250,17 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    // Step 4: Update the memory book with selected photos
+    // Step 4: Convert selectedAssets to IDs if they are asset objects
+    let selectedAssetIds
+    if (isPhotoReplacement) {
+      // For photo replacement, selectedAssets is already an array of IDs
+      selectedAssetIds = selectedAssets
+    } else {
+      // For normal selection, selectedAssets is an array of asset objects
+      selectedAssetIds = selectedAssets.map(asset => asset.id)
+    }
+    
+    // Step 5: Update the memory book with selected photos
     console.log('REASONING: Photo selection reasoning:', photoSelectionResult.reasoning)
     
     // Add note about using different photos if this is a recreation
@@ -199,7 +272,7 @@ export default defineEventHandler(async (event) => {
     const { error: updateError } = await supabase
       .from('memory_books')
       .update({
-        created_from_assets: selectedAssets.map(asset => asset.id),
+        created_from_assets: selectedAssetIds,
         ai_photo_selection_reasoning: finalReasoning,
         status: 'draft',
         updated_at: new Date().toISOString()
@@ -215,10 +288,10 @@ export default defineEventHandler(async (event) => {
       })
     }
     
-    // Step 5: Return the results
+    // Step 6: Return the results
     return {
       success: true,
-      selected_photo_ids: selectedAssets.map(asset => asset.id),
+      selected_photo_ids: selectedAssetIds,
       reasoning: finalReasoning
     }
     

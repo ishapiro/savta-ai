@@ -2,28 +2,50 @@
   <div class="photo-selection-interface">
     <!-- Photo Selection Method UI -->
     <div v-if="!showPhotoLibrary" class="space-y-3 w-full max-w-xs mx-auto sm:max-w-md md:max-w-lg lg:max-w-2xl">
-      <!-- Keep Same Photos Option (Recreate Mode Only) -->
-      <div v-if="isRecreateMode" class="relative cursor-pointer group" @click="selectMethod('keep_same')">
-        <div class="mx-1 sm:mx-2 border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
-          :class="methodValue === 'keep_same' 
-            ? 'border-brand-accent bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 shadow-xl scale-105' 
-            : 'border-gray-200 hover:border-brand-accent/50 hover:bg-gradient-to-br hover:from-brand-accent/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-            <i class="pi pi-refresh text-sm sm:text-lg text-white"></i>
+      <!-- Recreate Mode Options (Half Width) -->
+      <div v-if="isRecreateMode" class="grid grid-cols-2 gap-1 sm:gap-2 mb-3">
+        <!-- Keep Same Photos Option -->
+        <div class="relative cursor-pointer group" @click="selectMethod('keep_same')">
+          <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
+            :class="methodValue === 'keep_same' 
+              ? 'border-brand-accent bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 shadow-xl scale-105' 
+              : 'border-gray-200 hover:border-brand-accent/50 hover:bg-gradient-to-br hover:from-brand-accent/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+              <i class="pi pi-refresh text-sm sm:text-lg text-white"></i>
+            </div>
+            <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Keep the same photos</div>
+            <div class="text-xs text-gray-600">Use all the same photos from your original memory card.</div>
+            <div v-if="methodValue === 'keep_same'" class="absolute top-1 right-1">
+              <div class="w-5 h-5 bg-brand-accent rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-check text-white text-xs"></i>
+              </div>
+            </div>
           </div>
-          <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Keep the same photos</div>
-          <div class="text-xs text-gray-600">Use the same photos from your original memory card and just update the story and layout.</div>
-          <div v-if="methodValue === 'keep_same'" class="absolute top-1 right-1">
-            <div class="w-5 h-5 bg-brand-accent rounded-full flex items-center justify-center shadow-lg">
-              <i class="pi pi-check text-white text-xs"></i>
+        </div>
+
+        <!-- Select Photos to Replace Option -->
+        <div class="relative cursor-pointer group" @click="selectMethod('replace_selected')">
+          <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
+            :class="methodValue === 'replace_selected' 
+              ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+              : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+              <i class="pi pi-images text-sm sm:text-lg text-white"></i>
+            </div>
+            <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Select photos to replace</div>
+            <div class="text-xs text-gray-600">Choose which photos to replace with new ones.</div>
+            <div v-if="methodValue === 'replace_selected'" class="absolute top-1 right-1">
+              <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-check text-white text-xs"></i>
+              </div>
             </div>
           </div>
         </div>
       </div>
       
-      <!-- Savta Selects Tile (Wide Button) -->
+      <!-- Savta Selects Tile (Full Width) -->
       <div class="relative cursor-pointer group" @click="selectMethod('last_100')">
-        <div class="mx-1 sm:mx-2 border-2 rounded-xl p-3 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
+        <div class="border-2 rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
           :class="methodValue === 'last_100' 
             ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
             : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
@@ -45,17 +67,17 @@
       <div class="grid grid-cols-2 gap-1 sm:gap-2">
         <!-- Photo Library Selection Tile -->
         <div class="relative cursor-pointer group" @click="selectPhotoLibrary">
-                      <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
+                      <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
               :class="methodValue === 'photo_library' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-            <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-              <i class="pi pi-folder-open text-xs text-white"></i>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+              <i class="pi pi-folder-open text-sm sm:text-lg text-white"></i>
             </div>
-            <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">Photo Box</div>
-            <div class="text-xs text-gray-600 leading-tight">Choose exactly which photos you want from your Photo Box.</div>
-                            <div v-if="methodValue === 'photo_library'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
-              <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+            <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Photo Box</div>
+            <div class="text-xs text-gray-600">Choose exactly which photos you want from your Photo Box.</div>
+                            <div v-if="methodValue === 'photo_library'" class="absolute top-1 right-1">
+              <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-check text-white text-xs"></i>
               </div>
             </div>
@@ -64,18 +86,18 @@
 
         <!-- By Location Tile -->
         <div class="relative cursor-pointer group" @click="selectMethod('geo_code')">
-                      <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
+                      <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
               :class="methodValue === 'geo_code' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-            <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-              <i class="pi pi-map-marker text-xs text-white"></i>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+              <i class="pi pi-map-marker text-sm sm:text-lg text-white"></i>
             </div>
-            <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By location</div>
-            <div class="text-xs text-gray-600 leading-tight">Choose a country, city, or state. 
+            <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">By location</div>
+            <div class="text-xs text-gray-600">Choose a country, city, or state. 
               I'll pick the best photos from this location (up to 100 most recent).</div>
-                            <div v-if="methodValue === 'geo_code'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
-              <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                            <div v-if="methodValue === 'geo_code'" class="absolute top-1 right-1">
+              <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-check text-white text-xs"></i>
               </div>
             </div>
@@ -84,18 +106,18 @@
 
         <!-- By Date Tile -->
         <div class="relative cursor-pointer group" @click="selectMethod('date_range')">
-                      <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
+                      <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
               :class="methodValue === 'date_range' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-            <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-              <i class="pi pi-calendar-plus text-xs text-white"></i>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+              <i class="pi pi-calendar-plus text-sm sm:text-lg text-white"></i>
             </div>
-            <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By date</div>
-            <div class="text-xs text-gray-600 leading-tight">Choose a specific time period. 
+            <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">By date</div>
+            <div class="text-xs text-gray-600">Choose a specific time period. 
               I'll pick the best photos from this date range (up to 100 most recent).</div>
-                            <div v-if="methodValue === 'date_range'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
-              <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                            <div v-if="methodValue === 'date_range'" class="absolute top-1 right-1">
+              <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-check text-white text-xs"></i>
               </div>
             </div>
@@ -104,18 +126,18 @@
 
         <!-- By Tags Tile -->
         <div class="relative cursor-pointer group" @click="selectMethod('tags')">
-                      <div class="border-2 rounded-lg sm:rounded-xl p-1 sm:p-2 text-center transition-all duration-300 h-full min-h-[35px] sm:min-h-[45px] lg:min-h-[50px] flex flex-col items-center justify-center"
+                      <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
               :class="methodValue === 'tags' 
                 ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
-            <div class="w-3 h-3 sm:w-5 sm:h-5 lg:w-8 lg:h-8 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-0.5 sm:mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-              <i class="pi pi-tags text-xs text-white"></i>
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+              <i class="pi pi-tags text-sm sm:text-lg text-white"></i>
             </div>
-            <div class="text-xs font-bold text-gray-900 mb-0.5 sm:mb-1">By tags</div>
-            <div class="text-xs text-gray-600 leading-tight">Choose a tag or person. 
+            <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">By tags</div>
+            <div class="text-xs text-gray-600">Choose a tag or person. 
               I'll pick the best photos with these tags (up to 100 most recent).</div>
-                            <div v-if="methodValue === 'tags'" class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
-              <div class="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                            <div v-if="methodValue === 'tags'" class="absolute top-1 right-1">
+              <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-check text-white text-xs"></i>
               </div>
             </div>

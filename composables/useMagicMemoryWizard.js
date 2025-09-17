@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { usePhotoSelection } from '~/composables/usePhotoSelection'
 import { useProgressDialog } from '~/composables/useProgressDialog'
+import { useMemoryStudio } from '~/composables/useMemoryStudio'
 
 export const useMagicMemoryWizard = () => {
   // Dialog visibility
@@ -14,6 +15,7 @@ export const useMagicMemoryWizard = () => {
     BACKGROUND: 'background',
     THEME: 'theme',
     PHOTOS: 'photos',
+    PHOTO_REPLACEMENT: 'photo_replacement',
     MANUAL: 'manual'
   }
 
@@ -23,6 +25,7 @@ export const useMagicMemoryWizard = () => {
     [MAGIC_STEPS.THEME]: { name: "Theme Selection", required: false },
     [MAGIC_STEPS.BACKGROUND]: { name: "Background Selection", required: true },
     [MAGIC_STEPS.PHOTOS]: { name: "Photo Selection Method", required: true },
+    [MAGIC_STEPS.PHOTO_REPLACEMENT]: { name: "Photo Replacement", required: true },
     [MAGIC_STEPS.MANUAL]: { name: "Photo Selection", required: true }
   }
 
@@ -107,6 +110,9 @@ export const useMagicMemoryWizard = () => {
   
   // Track if we're in recreate mode
   const isRecreateMode = computed(() => !!existingBookForRecreation.value)
+  
+  // Track which photos are marked for replacement
+  const photosToReplace = ref([])
 
   // Computed properties - use the photo selection composable's filtered assets
   const magicFilteredAssets = computed(() => {
@@ -126,13 +132,35 @@ export const useMagicMemoryWizard = () => {
     const photosNoMethod = currentStep === MAGIC_STEPS.PHOTOS && !currentMethod
     const photosGeoNoLocation = currentStep === MAGIC_STEPS.PHOTOS && currentMethod === 'geo_code' && !currentSelectedLocation
     const manualNotEnoughPhotos = currentStep === MAGIC_STEPS.MANUAL && currentMethod === 'photo_library' && (!currentSelectedMemories || currentSelectedCount < currentRequiredCount)
+    // Photo replacement step doesn't require any photos to be marked for replacement
+    // If no photos are marked, it's equivalent to "keep_same"
+    const photoReplacementNoSelection = false
 
-    return titleEmpty || photosNoMethod || photosGeoNoLocation || manualNotEnoughPhotos
+    return titleEmpty || photosNoMethod || photosGeoNoLocation || manualNotEnoughPhotos || photoReplacementNoSelection
   })
 
   // Methods - use the photo selection composable's toggle function
   const toggleMagicMemorySelection = (id) => {
     photoSelection_toggleMemorySelection(id)
+  }
+  
+  // Toggle photo replacement
+  const togglePhotoReplacement = (photoId) => {
+    console.error('🔄 [togglePhotoReplacement] TERMINAL LOG - Function called with photoId:', photoId)
+    console.error('🔄 [togglePhotoReplacement] TERMINAL LOG - Current photosToReplace before:', photosToReplace.value)
+    
+    const index = photosToReplace.value.indexOf(photoId)
+    if (index > -1) {
+      photosToReplace.value.splice(index, 1)
+      console.log('🔄 [togglePhotoReplacement] Removed photo from replacement list:', photoId, 'Current list:', photosToReplace.value)
+      console.error('🔄 [togglePhotoReplacement] TERMINAL LOG - Removed photo:', photoId, 'Current list:', photosToReplace.value)
+    } else {
+      photosToReplace.value.push(photoId)
+      console.log('🔄 [togglePhotoReplacement] Added photo to replacement list:', photoId, 'Current list:', photosToReplace.value)
+      console.error('🔄 [togglePhotoReplacement] TERMINAL LOG - Added photo:', photoId, 'Current list:', photosToReplace.value)
+    }
+    
+    console.error('🔄 [togglePhotoReplacement] TERMINAL LOG - Current photosToReplace after:', photosToReplace.value)
   }
 
   const isFirstStep = () => {
@@ -173,10 +201,35 @@ export const useMagicMemoryWizard = () => {
       return
     }
 
+    // If "replace_selected" is selected, go to photo replacement step
+    if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'replace_selected') {
+      console.log('🔄 [MagicMemoryWizard] Replace selected photos, going to photo replacement step')
+      console.log('🔄 [MagicMemoryWizard] Current steps:', currentButtonConfig.value.steps)
+      console.log('🔄 [MagicMemoryWizard] Looking for step:', MAGIC_STEPS.PHOTO_REPLACEMENT)
+      console.error('🔄 [MagicMemoryWizard] TERMINAL LOG - Replace selected photos, going to photo replacement step')
+      // Find the photo replacement step index
+      const replacementIndex = currentButtonConfig.value.steps.indexOf(MAGIC_STEPS.PHOTO_REPLACEMENT)
+      console.log('🔄 [MagicMemoryWizard] Replacement step index:', replacementIndex)
+      console.error('🔄 [MagicMemoryWizard] TERMINAL LOG - Replacement step index:', replacementIndex)
+      if (replacementIndex !== -1) {
+        currentStepIndex.value = replacementIndex
+        magicMemoryStep.value = MAGIC_STEPS.PHOTO_REPLACEMENT
+        console.log('🔄 [MagicMemoryWizard] Navigated to photo replacement step')
+        console.error('🔄 [MagicMemoryWizard] TERMINAL LOG - Navigated to photo replacement step')
+        return
+      } else {
+        console.error('🔄 [MagicMemoryWizard] Photo replacement step not found in steps array')
+        console.error('🔄 [MagicMemoryWizard] TERMINAL LOG - Photo replacement step not found in steps array')
+      }
+    }
+
     // Find next step in the button's sequence
     const nextIndex = currentStepIndex.value + 1
     if (nextIndex < currentButtonConfig.value.steps.length) {
       const nextStepNumber = currentButtonConfig.value.steps[nextIndex]
+      
+      console.log('🔄 [nextMagicMemoryStep] Moving to next step:', nextStepNumber, 'from current step:', magicMemoryStep.value)
+      console.log('🔄 [nextMagicMemoryStep] Current photosToReplace:', photosToReplace.value)
       
       // Check if the next step is PHOTOS and there are no approved assets
       if (nextStepNumber === MAGIC_STEPS.PHOTOS && 
@@ -187,7 +240,7 @@ export const useMagicMemoryWizard = () => {
         console.log('🚀 [MagicMemoryWizard] No approved assets found, redirecting to upload dialog')
         
         // Close the wizard dialog
-        closeMagicMemoryDialog()
+        closeMagicMemoryDialog(true)
         
         // Navigate to the dedicated upload route with return parameter
         await navigateTo('/app/memory-books/upload?from=wizard&return=wizard')
@@ -212,9 +265,24 @@ export const useMagicMemoryWizard = () => {
     
     // Set up the button configuration
     const originalConfig = buttonConfigs[buttonType] || buttonConfigs.full
+    let steps = [...originalConfig.steps]
+    
+    // If we're in recreate mode, add the photo replacement step after photos step
+    if (existingBook) {
+      const photosIndex = steps.indexOf(MAGIC_STEPS.PHOTOS)
+      console.log('🔄 [openMagicMemoryDialog] Adding photo replacement step for recreate mode')
+      console.log('🔄 [openMagicMemoryDialog] Photos step index:', photosIndex)
+      console.error('🔄 [openMagicMemoryDialog] TERMINAL LOG - Adding photo replacement step for recreate mode')
+      if (photosIndex !== -1) {
+        steps.splice(photosIndex + 1, 0, MAGIC_STEPS.PHOTO_REPLACEMENT)
+        console.log('🔄 [openMagicMemoryDialog] Photo replacement step added at index:', photosIndex + 1)
+        console.error('🔄 [openMagicMemoryDialog] TERMINAL LOG - Photo replacement step added at index:', photosIndex + 1)
+      }
+    }
+    
     currentButtonConfig.value = {
       ...originalConfig,
-      steps: [...originalConfig.steps]
+      steps: steps
     }
     currentStepIndex.value = 0
     magicMemoryStep.value = currentButtonConfig.value.steps[0]
@@ -279,6 +347,10 @@ export const useMagicMemoryWizard = () => {
       }
       if (existingBook.created_from_assets && existingBook.created_from_assets.length > 0) {
         photoSelection_selectedMemories.value = existingBook.created_from_assets
+        
+        // Load thumbnails for the existing photos
+        const { loadAssetThumbnails } = useMemoryStudio()
+        await loadAssetThumbnails(existingBook)
       }
       
       console.log('✅ [openMagicMemoryDialog] Preloaded data:', {
@@ -392,13 +464,18 @@ export const useMagicMemoryWizard = () => {
     }
   }
 
-  const closeMagicMemoryDialog = () => {
+  const closeMagicMemoryDialog = (resetPhotosToReplace = true, resetExistingBook = true) => {
     showMagicMemoryDialog.value = false
     // Reset state
     currentButtonConfig.value = null
     currentStepIndex.value = 0
     magicMemoryStep.value = MAGIC_STEPS.TITLE
-    existingBookForRecreation.value = null
+    if (resetExistingBook) {
+      existingBookForRecreation.value = null
+    }
+    if (resetPhotosToReplace) {
+      photosToReplace.value = []
+    }
   }
 
   const generateMagicMemory = async () => {
@@ -411,14 +488,51 @@ export const useMagicMemoryWizard = () => {
     currentProgress.value = 0
     
     // Close the wizard dialog immediately so progress dialog is visible
-    closeMagicMemoryDialog()
+    // Don't reset photosToReplace or existingBookForRecreation as we need them for the generation logic
+    closeMagicMemoryDialog(false, false)
     
     try {
       console.log('🔍 [generateMagicMemory] Starting magic memory generation...')
+      console.log('🔍 [generateMagicMemory] photosToReplace.value:', photosToReplace.value)
+      console.log('🔍 [generateMagicMemory] photoSelection_method.value:', photoSelection_method.value)
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - photosToReplace.value:', photosToReplace.value)
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - photoSelection_method.value:', photoSelection_method.value)
       
-      // Get the photo selection pool using the composable method
-      const photoSelectionPool = photoSelection_populatePhotoSelectionPool()
-      console.log('🔍 [generateMagicMemory] Photo selection pool:', photoSelectionPool)
+      // Get the photo selection pool using the composable method or handle photo replacement
+      let photoSelectionPool
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - Checking photo replacement logic')
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - photoSelection_method.value:', photoSelection_method.value)
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - existingBookForRecreation.value:', !!existingBookForRecreation.value)
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - photosToReplace.value.length:', photosToReplace.value.length)
+      
+      if (photoSelection_method.value === 'replace_selected' && existingBookForRecreation.value) {
+        const originalPhotos = existingBookForRecreation.value.created_from_assets || []
+        console.error('🔍 [generateMagicMemory] TERMINAL LOG - Entering replace_selected logic')
+        console.error('🔍 [generateMagicMemory] TERMINAL LOG - originalPhotos:', originalPhotos)
+        
+        // If no photos are marked for replacement, keep all original photos (like "keep_same")
+        if (photosToReplace.value.length === 0) {
+          photoSelectionPool = originalPhotos
+          console.log('🔄 [generateMagicMemory] No photos marked for replacement, keeping all original photos:', photoSelectionPool)
+          console.error('🔄 [generateMagicMemory] TERMINAL LOG - No photos marked for replacement, keeping all original photos')
+        } else {
+          // Create a mixed pool: keep some photos, replace others
+          const photosToKeep = originalPhotos.filter(photoId => !photosToReplace.value.includes(photoId))
+          
+          // Get new photos for replacement
+          const replacementPhotos = photoSelection_populatePhotoSelectionPool()
+          
+          // Combine kept photos with replacement photos
+          photoSelectionPool = [...photosToKeep, ...replacementPhotos]
+          console.log('🔄 [generateMagicMemory] Photo replacement - kept:', photosToKeep, 'replacement:', replacementPhotos, 'final pool:', photoSelectionPool)
+          console.error('🔄 [generateMagicMemory] TERMINAL LOG - Photo replacement - kept:', photosToKeep, 'replacement:', replacementPhotos, 'final pool:', photoSelectionPool)
+        }
+      } else {
+        // Use the normal photo selection logic
+        photoSelectionPool = photoSelection_populatePhotoSelectionPool()
+        console.log('🔍 [generateMagicMemory] Photo selection pool:', photoSelectionPool)
+        console.error('🔍 [generateMagicMemory] TERMINAL LOG - Using normal photo selection logic')
+      }
       
       if (!photoSelectionPool || photoSelectionPool.length === 0) {
         throw new Error('No photos available for selection. Please upload some photos first.')
@@ -487,26 +601,32 @@ export const useMagicMemoryWizard = () => {
         // Update existing book for recreation
         console.log('🔄 [generateMagicMemory] Updating existing book for recreation:', existingBookForRecreation.value.id)
         
+        const requestBody = {
+          book_id: existingBookForRecreation.value.id,
+          asset_ids: [], // Template - will be populated after AI selection
+          photo_selection_pool: photoSelectionPool,
+          story: '', // Template - will be populated after AI generation
+          title: magicMemoryTitle.value || 'Select Photos That Tell a Story',
+          memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
+          background_type: magicBackgroundType.value,
+          background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
+          photo_count: effectivePhotoCount,
+          theme_id: magicSelectedTheme.value,
+          print_size: '8.5x11', // Default print size for magic memories
+          output: 'JPG', // Wizard creates single-page memories, so always use JPG
+          photo_selection_method: photoSelection_method.value,
+          photo_selection_date_range: JSON.stringify(photoSelection_dateRange.value),
+          photo_selection_tags: JSON.stringify(photoSelection_selectedTags.value),
+          photo_selection_location: photoSelection_selectedLocation.value,
+          photos_to_replace: photosToReplace.value
+        }
+        
+        console.log('🔍 [generateMagicMemory] API request body photos_to_replace:', requestBody.photos_to_replace)
+        console.error('🔍 [generateMagicMemory] TERMINAL LOG - API request body photos_to_replace:', requestBody.photos_to_replace)
+        
         const updateRes = await $fetch('/api/memory-books/update-magic-memory', {
           method: 'POST',
-          body: {
-            book_id: existingBookForRecreation.value.id,
-            asset_ids: [], // Template - will be populated after AI selection
-            photo_selection_pool: photoSelectionPool,
-            story: '', // Template - will be populated after AI generation
-            title: magicMemoryTitle.value || 'Select Photos That Tell a Story',
-            memory_event: magicMemoryEvent.value === 'custom' ? magicCustomMemoryEvent.value.trim() : magicMemoryEvent.value,
-            background_type: magicBackgroundType.value,
-            background_color: magicBackgroundType.value === 'solid' ? magicSolidBackgroundColor.value : null,
-            photo_count: effectivePhotoCount,
-            theme_id: magicSelectedTheme.value,
-            print_size: '8.5x11', // Default print size for magic memories
-            output: 'JPG', // Wizard creates single-page memories, so always use JPG
-            photo_selection_method: photoSelection_method.value,
-            photo_selection_date_range: JSON.stringify(photoSelection_dateRange.value),
-            photo_selection_tags: JSON.stringify(photoSelection_selectedTags.value),
-            photo_selection_location: photoSelection_selectedLocation.value
-          },
+          body: requestBody,
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
@@ -628,6 +748,7 @@ export const useMagicMemoryWizard = () => {
     // Recreation state
     existingBookForRecreation,
     isRecreateMode,
+    photosToReplace,
     
     // Photo selection state (from composable)
     photoSelection_method,
@@ -665,6 +786,7 @@ export const useMagicMemoryWizard = () => {
     
     // Methods
     toggleMagicMemorySelection,
+    togglePhotoReplacement,
     isFirstStep,
     isLastStep,
     getNextStepName,

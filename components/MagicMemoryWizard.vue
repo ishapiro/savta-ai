@@ -159,7 +159,90 @@
       />
     </div>
 
-    <!-- Step 5: Photo Library Selection (MANUAL step for photo_library method) -->
+    <!-- Step 5: Photo Replacement Selection (for replace_selected method) -->
+    <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTO_REPLACEMENT && photoSelection_method === 'replace_selected'"
+      class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      <!-- Debug info -->
+      <div class="fixed top-0 left-0 bg-red-500 text-white p-2 text-xs z-50">
+        DEBUG: Photo Replacement Step Active<br>
+        magicMemoryStep: {{ magicMemoryStep }}<br>
+        photoSelection_method: {{ photoSelection_method }}<br>
+        photosToReplace: {{ photosToReplace }}<br>
+        existingBookForRecreation: {{ !!existingBookForRecreation }}
+      </div>
+      <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+          <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
+        </div>
+        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Choose which photos to replace</h3>
+        <p class="text-xs sm:text-base text-gray-600 mb-2">
+          Tap on photos you want to replace with new ones. I'll keep the ones you don't select and find new photos for the ones you mark.
+        </p>
+        <p class="text-xs text-brand-flash font-medium">📸 Current photos from your memory card</p>
+      </div>
+
+      <!-- Current Photos Grid -->
+      <div class="w-full max-w-lg mx-auto">
+        <div class="grid grid-cols-3 gap-2 sm:gap-3">
+          <div 
+            v-for="photo in existingBookForRecreation?.created_from_assets || []" 
+            :key="photo"
+            class="relative cursor-pointer group"
+            @click="togglePhotoReplacement(photo)"
+          >
+            <div class="aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300"
+              :class="photosToReplace.includes(photo) 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-lg scale-105' 
+                : 'border-gray-200 hover:border-brand-flash/50 hover:shadow-md'">
+              <!-- Actual photo thumbnail -->
+              <img 
+                :src="getAssetThumbnail(photo)" 
+                :alt="`Photo ${photo}`"
+                class="w-full h-full object-contain"
+                @error="handleImageError"
+              />
+              
+              <!-- Fallback placeholder (hidden by default) -->
+              <div class="image-placeholder w-full h-full bg-gray-100 flex items-center justify-center" style="display: none;">
+                <i class="pi pi-image text-xl text-gray-400"></i>
+              </div>
+              
+              <!-- Replace indicator -->
+              <div v-if="photosToReplace.includes(photo)" class="absolute top-1 right-1">
+                <div class="w-4 h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-refresh text-white text-xs"></i>
+                </div>
+              </div>
+              
+              <!-- Keep indicator -->
+              <div v-else class="absolute top-1 right-1">
+                <div class="w-4 h-4 bg-brand-accent rounded-full flex items-center justify-center shadow-lg">
+                  <i class="pi pi-check text-white text-xs"></i>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Photo status text -->
+            <div class="text-center mt-1">
+              <span class="text-xs font-medium"
+                :class="photosToReplace.includes(photo) ? 'text-brand-flash' : 'text-brand-accent'">
+                {{ photosToReplace.includes(photo) ? 'Replace' : 'Keep' }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Summary -->
+        <div class="mt-4 text-center">
+          <p class="text-sm text-gray-600">
+            <span class="font-medium text-brand-accent">{{ (existingBookForRecreation?.created_from_assets?.length || 0) - photosToReplace.length }}</span> photos to keep, 
+            <span class="font-medium text-brand-flash">{{ photosToReplace.length }}</span> photos to replace
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6: Photo Library Selection (MANUAL step for photo_library method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library'"
       class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
@@ -204,7 +287,7 @@
         <Button
           label="Cancel"
           icon="pi pi-times"
-          @click="closeMagicMemoryDialog"
+          @click="() => closeMagicMemoryDialog(true, true)"
           class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
         />
         
@@ -253,6 +336,7 @@
 
 <script setup>
 import { useMagicMemoryWizard } from '~/composables/useMagicMemoryWizard'
+import { useMemoryStudio } from '~/composables/useMemoryStudio'
 import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
 import ProgressDialog from '~/components/ProgressDialog.vue'
 import { useToast } from 'primevue/usetoast'
@@ -297,6 +381,7 @@ const {
   // Recreation state
   existingBookForRecreation,
   isRecreateMode,
+  photosToReplace,
   
   // Progress dialog state
   showProgressDialog,
@@ -315,6 +400,7 @@ const {
   
   // Methods
   toggleMagicMemorySelection,
+  togglePhotoReplacement,
   isFirstStep,
   isLastStep,
   getNextStepName,
@@ -334,12 +420,31 @@ const {
   photoSelection_getSelectedAssets
 } = useMagicMemoryWizard()
 
+// Memory studio functionality
+const { getAssetThumbnail } = useMemoryStudio()
+
 // Toast functionality
 const toast = useToast()
+
+// Image error handler
+const handleImageError = (event) => {
+  // Replace with placeholder if image fails to load
+  event.target.style.display = 'none'
+  const placeholder = event.target.parentElement.querySelector('.image-placeholder')
+  if (placeholder) {
+    placeholder.style.display = 'flex'
+  }
+}
 
 // Wrapper function for generateMagicMemory with toast notifications
 const handleGenerateMagicMemory = async () => {
   try {
+    console.log('🔍 [handleGenerateMagicMemory] Current step:', magicMemoryStep.value)
+    console.log('🔍 [handleGenerateMagicMemory] Photo selection method:', photoSelection_method.value)
+    console.log('🔍 [handleGenerateMagicMemory] Photos to replace:', photosToReplace.value)
+    console.error('🔍 [handleGenerateMagicMemory] TERMINAL LOG - Current step:', magicMemoryStep.value)
+    console.error('🔍 [handleGenerateMagicMemory] TERMINAL LOG - Photo selection method:', photoSelection_method.value)
+    console.error('🔍 [handleGenerateMagicMemory] TERMINAL LOG - Photos to replace:', photosToReplace.value)
     await generateMagicMemory()
     
     // Show success toast
@@ -381,7 +486,7 @@ const getContrastTextClass = (backgroundColor) => {
 // Event handlers for PhotoSelectionInterface
 const handleUploadPhotos = () => {
   // Close the wizard dialog and navigate to dedicated upload route
-  closeMagicMemoryDialog()
+  closeMagicMemoryDialog(true, true)
   navigateTo('/app/memory-books/upload?from=wizard&return=wizard')
 }
 

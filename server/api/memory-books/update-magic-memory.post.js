@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
+    console.log('🔍 [update-magic-memory] Request body photos_to_replace:', body.photos_to_replace)
     const { 
       book_id, 
       asset_ids, 
@@ -37,7 +38,8 @@ export default defineEventHandler(async (event) => {
       photo_selection_method,
       photo_selection_date_range,
       photo_selection_tags,
-      photo_selection_location
+      photo_selection_location,
+      photos_to_replace
     } = body
     
     if (!book_id) {
@@ -93,9 +95,7 @@ export default defineEventHandler(async (event) => {
         memory_shape: 'original',
         output: output,
         photo_selection_method: photo_selection_method || null,
-        photo_selection_date_range: photo_selection_date_range || null,
-        photo_selection_tags: photo_selection_tags || null,
-        photo_selection_location: photo_selection_location || null,
+        photos_to_replace: photos_to_replace ? JSON.stringify(photos_to_replace) : null,
         updated_at: new Date().toISOString()
       })
       .eq('id', book_id)
@@ -110,6 +110,8 @@ export default defineEventHandler(async (event) => {
     if (!data) {
       throw createError({ statusCode: 404, statusMessage: 'Memory book not found or access denied' })
     }
+
+    console.log('🔍 [update-magic-memory] Database update successful, stored photos_to_replace:', data.photos_to_replace)
 
     return {
       success: true,

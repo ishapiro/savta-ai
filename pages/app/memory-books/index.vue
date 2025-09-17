@@ -564,7 +564,8 @@
             Create a fresh version of your memory?
           </p>
           <p class="text-gray-600 text-sm mb-4">
-            This will generate a new version with the same photos but potentially different layout and story.
+            This will allow you to modify any of the settings you previously chose. 
+            You can keep all the same photos or selectively replace some photos with new ones.
           </p>
           <div class="flex justify-end gap-2">
             <button

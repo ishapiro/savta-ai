@@ -749,6 +749,16 @@ BEGIN
     ALTER TABLE memory_books ADD COLUMN photo_selection_method text;
   END IF;
   
+  -- Add photos_to_replace column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'photos_to_replace'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN photos_to_replace jsonb;
+  END IF;
+  
   -- Update status check constraint to include 'template' status
   IF EXISTS (
     SELECT 1 FROM information_schema.table_constraints 

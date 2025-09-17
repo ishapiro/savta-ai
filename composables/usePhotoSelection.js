@@ -48,6 +48,14 @@ export const usePhotoSelection = () => {
       isRecreateOnly: true
     },
     {
+      id: 'replace_selected',
+      title: "Select photos to replace",
+      description: "Choose which photos to replace with new ones from your photo library.",
+      icon: 'pi pi-images',
+      color: 'from-brand-flash to-brand-highlight',
+      isRecreateOnly: true
+    },
+    {
       id: 'last_100',
       title: "I'll choose for you",
       description: "I'll search your photos for matches and pick the best photos from your recent uploads (up to 100 photos).",
@@ -332,6 +340,11 @@ export const usePhotoSelection = () => {
       case 'keep_same':
         // For keep_same, return the selected memories (which should be preloaded with existing photos)
         console.log('🔄 [photoSelection_populatePhotoSelectionPool] Keep same selected, returning selected memories:', photoSelection_selectedMemories.value)
+        return photoSelection_selectedMemories.value
+      
+      case 'replace_selected':
+        // For replace_selected, return the selected memories (which will be a mix of kept and replaced photos)
+        console.log('🔄 [photoSelection_populatePhotoSelectionPool] Replace selected, returning selected memories:', photoSelection_selectedMemories.value)
         return photoSelection_selectedMemories.value
       
       default:
