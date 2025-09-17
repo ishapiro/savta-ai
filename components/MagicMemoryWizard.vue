@@ -240,6 +240,7 @@
     :current-progress-message="currentProgressMessage"
     :is-regenerating="isRegenerating"
   />
+
 </template>
 
 <script setup>
@@ -367,18 +368,62 @@ const getContrastTextClass = (backgroundColor) => {
 
 // Event handlers for PhotoSelectionInterface
 const handleUploadPhotos = () => {
-  // TODO: Implement photo upload functionality
-  console.log('Upload photos requested')
+  // Close the wizard dialog and navigate to dedicated upload route
+  closeMagicMemoryDialog()
+  navigateTo('/app/memory-books/upload?from=wizard&return=wizard')
 }
 
-const handleNoPhotosFound = () => {
-  // TODO: Handle case when no photos are found
-  console.log('No photos found for selection')
+const handleNoPhotosFound = (data) => {
+  // Mirror original behavior from index-original-before-refactor.vue
+  console.log('🔍 [handleNoPhotosFound] No photos found for method:', data?.method)
+
+  let title = 'No Photos Found'
+  let message = data?.message
+
+  // Provide friendly defaults if message not provided
+  if (!message) {
+    switch (data?.method) {
+      case 'smart_selection':
+        message = "I couldn't find matching photos. Try a different date, tags, or location."
+        break
+      case 'date_range':
+        message = 'No photos in that date range. Try widening the range.'
+        break
+      case 'tags':
+        message = 'No photos with those tags. Try different or fewer tags.'
+        break
+      case 'location':
+        message = 'No photos for that location. Try a nearby place or city.'
+        break
+      case 'photo_library':
+        message = 'Your Photo Box is empty. Upload photos to continue.'
+        break
+      default:
+        message = 'No matching photos found. Try adjusting your selections.'
+    }
+  }
+
+  console.log('🔍 [handleNoPhotosFound] Showing toast with:', { title, message })
+
+  toast.add({
+    severity: 'warn',
+    summary: title,
+    detail: message,
+    life: 4000
+  })
 }
 
 const handleClosePhotoLibrary = () => {
-  // TODO: Handle closing photo library
-  console.log('Close photo library requested')
+  // Mirror original behavior from index-original-before-refactor.vue
+  console.log('🔍 [handleClosePhotoLibrary] Photo library closed, returning to PHOTOS step')
+
+  // Reset the step back to PHOTOS
+  magicMemoryStep.value = MAGIC_STEPS.PHOTOS
+
+  // Clear any selected memories
+  photoSelection_selectedMemories.value = []
+
+  console.log('🔍 [handleClosePhotoLibrary] Step reset to:', magicMemoryStep.value)
 }
 
 // Expose methods for parent component

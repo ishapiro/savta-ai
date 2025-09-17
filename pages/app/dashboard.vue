@@ -170,10 +170,12 @@
       placement="center"
       :offset="0"
       heading="Hi, I'm Savta and I'm here to help you get started!"
-      text="As a grandmother myself, I know how precious all those photos on your phone are. 
-      I'll help you create very special memory cards and books for your family and friends.
-      Click on any of the steps above and I'll guide you through creating your very first one. 
-      It's easier than you think."
+      text="Start by uploading just your favorite photos to your Photo Box—not your whole
+      camera roll. 📸
+      \n\nI’ll use a little AI magic to pick photos that belong together, arrange them
+      beautifully on each card, and write warm captions. ✨
+      \n\nTake a quick look at the steps above, and I’ll guide you through your first
+      memory card. 💛"
       variant="instruction"
       :dismissible="true"
       :show-avatar="true"

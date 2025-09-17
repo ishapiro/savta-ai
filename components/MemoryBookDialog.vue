@@ -517,6 +517,7 @@
 import { ref, watch, computed, onMounted } from 'vue'
 import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
 import SavtaBubble from '~/components/SavtaBubble.vue'
+import { useDatabase } from '~/composables/useDatabase'
 
 // Import database composable
 const db = useDatabase()
@@ -809,9 +810,25 @@ watch(() => form.value.gridLayout, (newGridLayout) => {
   }
 })
 
-watch(() => props.initialSelectedAssets, (val) => {
+watch(() => props.initialSelectedAssets, async (val) => {
   if (val && Array.isArray(val)) {
-    selectedAssets.value = [...val]
+    // If val contains asset objects, use them directly
+    if (val.length > 0 && typeof val[0] === 'object' && val[0].id) {
+      selectedAssets.value = [...val]
+    } else if (val.length > 0 && typeof val[0] === 'string') {
+      // If val contains asset IDs, fetch the full asset objects
+      try {
+        const { useDatabase } = await import('~/composables/useDatabase')
+        const db = useDatabase()
+        const assets = await db.assets.getAssets({ approved: true })
+        const selectedAssetObjects = assets.filter(asset => val.includes(asset.id))
+        selectedAssets.value = selectedAssetObjects
+        console.log('🔍 [MemoryBookDialog] Loaded selected assets from IDs:', selectedAssetObjects.length)
+      } catch (error) {
+        console.error('Error loading selected assets:', error)
+        selectedAssets.value = []
+      }
+    }
   }
 }, { immediate: true })
 
@@ -860,20 +877,14 @@ watch(() => props.visible, (isVisible) => {
 
 // Photo selection methods
 const openPhotoSelector = async () => {
-  console.log('🔍 Opening photo selector')
+  console.log('🔍 Opening photo selector - navigating to dedicated route')
   
-  // Reset photo selection state first
-  photoSelection_resetSelection()
+  // Close the dialog temporarily
+  const currentVisible = showDialog.value
+  showDialog.value = false
   
-  showPhotoSelector.value = true
-  await photoSelection_loadAvailableAssets()
-  await photoSelection_loadLocationData()
-  
-  // Set current selection after loading assets
-  if (selectedAssets.value.length > 0) {
-    photoSelection_selectedMemories.value = selectedAssets.value.map(asset => asset.id)
-    console.log('🔍 Restored current selection:', photoSelection_selectedMemories.value.length, 'photos')
-  }
+  // Navigate to dedicated photo selection route
+  await navigateTo('/app/memory-books/photo-selection?return=memory-book&selectedPhotos=' + selectedAssets.value.map(a => a.id).join(','))
 }
 
 const closePhotoSelector = () => {

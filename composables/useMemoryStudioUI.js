@@ -98,6 +98,9 @@ export const useMemoryStudioUI = () => {
     memoryEvent: 'vacation'
   })
 
+  // Selected photos for memory book (from photo selection route)
+  const selectedPhotosForMemoryBook = ref([])
+
   const createStep = ref(1)
   const selectedAssets = ref([])
   const newDescription = ref('')
@@ -277,6 +280,7 @@ export const useMemoryStudioUI = () => {
     newBook,
     createStep,
     selectedAssets,
+    selectedPhotosForMemoryBook,
     newDescription,
     useNewPhotos,
     selectedMemories,

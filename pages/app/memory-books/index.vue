@@ -166,6 +166,7 @@
         :visible="showCreateModal"
         :isEditing="false"
         :initialData="{ layoutType: 'grid' }"
+        :initialSelectedAssets="selectedPhotosForMemoryBook"
         :loading="creatingBook"
         @close="closeCreateModal"
         @submit="createMemoryBookFromDialog"
@@ -692,8 +693,9 @@
       <!-- Magic Memory Wizard -->
       <MagicMemoryWizard ref="magicMemoryWizardRef" />
 
-      <!-- Savta Bubble Component -->
+      <!-- Savta Bubble Component (disabled here; shown on Getting Started page) -->
       <SavtaBubble
+        v-if="false"
         v-model:open="showSavtaBubble"
         placement="center"
         :offset="15"
@@ -701,49 +703,19 @@
         :dismissible="true"
         :show-avatar="true"
       >
-        <div class="space-y-4">
-          <div class="text-xl mt-1 font-bold text-brand-header">
-            Savta here: Listen closely.
-          </div>
-
-          <!-- Distinct statement -->
-          <p class="text-base font-semibold text-brand-highlight">
-            This works differently than traditional photo services.
+        <div class="space-y-4 text-center">
+          <p class="text-sm text-gray-800">
+            Start by uploading just your favorite photos to your Photo Box—not your
+            whole camera roll. 📸
           </p>
           <p class="text-sm text-gray-800">
-            You don’t upload photos for a specific card. 
+            I’ll use a little AI magic to pick photos that belong together,
+            arrange them beautifully on each card, and write warm captions. ✨
           </p>
-
-          <p class="mt-4 text-base font-semibold text-brand-highlight">
-              Our way
+          <p class="text-sm font-medium text-brand-highlight">
+            Take a quick look at the steps above, and I’ll guide you through your
+            first memory card. 💛
           </p>
-
-          <!-- Our approach -->
-
-          <div>
-            <ul class="space-y-2">
-              <li class="flex items-start gap-2">
-                <Images class="w-5 h-5 text-brand-primary mt-0.5" />
-                <span class="text-sm text-gray-800">Upload your best photos into your Photo Box.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <MessageSquare class="w-5 h-5 text-brand-primary mt-0.5" />
-                <span class="text-sm text-gray-800">Tell Savta what you want (for example,
-                  “Trip to Florida with our grandchildren”).</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <CheckCircle class="w-5 h-5 text-brand-primary mt-0.5" />
-                <span class="text-sm text-gray-800">I’ll help select the right photos for each card based on
-                  your instructions.</span>
-              </li>
-            </ul>
-          </div>
-
-          <div class="mt-4">
-            <p class="text-base font-semibold text-brand-highlight mt-4">
-              Don't worry, just click on the create memory card button and I'll walk you through the process.
-            </p>
-          </div>
         </div>
       </SavtaBubble>
 
@@ -810,15 +782,184 @@
           </div>
         </div>
       </Dialog>
+
+    <!-- Upload Photos Dialog -->
+    <Dialog
+      v-model:visible="showUploadDialog"
+      modal
+      :closable="!isUploading"
+      :dismissableMask="!isUploading"
+      class="w-full h-full sm:w-[95vw] sm:max-w-2xl sm:h-auto sm:mx-auto magic-upload-dialog"
+      :style="{ 
+        width: '100vw', 
+        height: '100vh', 
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        margin: '0',
+        borderRadius: '0',
+        overflow: 'hidden'
+              }"
+      @hide="resetUploadDialog"
+    >
+      <template #header>
+        <div class="text-center">I Need Some Photos to Work My Magic</div>
+      </template>
+      <div class="space-y-6 max-w-xs w-full mx-auto sm:max-w-2xl sm:mx-auto">
+        <!-- Upload Instructions -->
+        <div v-if="!isUploading && uploadedFiles.length === 0" class="bg-gradient-to-r from-brand-navigation via-brand-accent-light to-blue-50 rounded-xl p-6 border-2 border-brand-highlight relative overflow-hidden">
+          
+          <div class="flex items-start gap-3">
+            <div class="shrink-0">
+              <SavtaIcon class="w-12 h-12" />
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-lg font-bold text-brand-header mb-1 font-architects-daughter">Let me help you share your photos.</h3>
+            </div>
+          </div>
+          <div class="bg-white/80 rounded-lg p-4">
+            <div class="text-sm text-gray-700 leading-relaxed">
+              <ul class="list-disc pl-4 text-xs md:text-sm">
+                <li>Just share your photos with me - I'll take good care of them</li>
+                <li>The more photos you share, the better I can help you</li>
+                <li>Your photos stay safe and private, just for you</li>
+                <li>I'll remember the people and places in your photos</li>
+                <li>I'll pick the best photos and write sweet stories about them</li>
+              </ul>
+              
+              <!-- Special recommendation for new users -->
+              <div v-if="showSpecialUploadMessaging" class="mt-4 p-3 bg-brand-highlight/10 rounded-lg border border-brand-highlight/20">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-lightbulb text-brand-highlight text-lg"></i>
+                  <span class="font-semibold text-brand-highlight font-architects-daughter">💡 A little tip from Savta</span>
+                </div>
+                <p class="text-sm text-brand-primary">
+                  Try sharing 6 or more photos to start with. That way I can make you the most beautiful memory cards!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <div v-if="isUploading" class="bg-gradient-to-r from-brand-navigation via-brand-accent-light to-blue-50 rounded-xl p-6 border-2 border-brand-highlight shadow-lg">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="shrink-0">
+              <SavtaIcon class="w-12 h-12" />
+            </div>
+            <div class="min-w-0">
+              <h3 class="font-bold mb-0.5 font-architects-daughter text-brand-header text-lg">I'm reviewing your photos.</h3>
+              <p class="text-sm text-gray-700 leading-relaxed">
+                I'm looking through each photo, remembering the people and places, and writing sweet captions. 
+                This helps me create the most beautiful memory cards and books for you.
+              </p>
+              <p class="text-sm text-gray-700 leading-relaxed">This may take a few minutes, but I'll let you know when I'm done.</p>
+            </div>
+          </div>
+          
+          <!-- Progress Bar -->
+          <div class="w-full bg-white/60 rounded-full h-4 border border-brand-highlight mb-3">
+            <div 
+              class="bg-brand-card h-4 rounded-full transition-all duration-500 shadow-lg"
+              :style="{ width: uploadProgress + '%' }"
+            ></div>
+          </div>
+          <p class="text-sm text-gray-600 text-center">{{ uploadStatus }}</p>
+        </div>
+
+        <!-- Upload Results -->
+        <div v-if="uploadedFiles.length > 0 || failedFiles.length > 0" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200 shadow-lg">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="shrink-0">
+              <SavtaIcon class="w-12 h-12" />
+            </div>
+            <div class="min-w-0">
+              <h3 class="font-bold mb-0.5 font-architects-daughter text-green-800 text-lg">I've reviewed these photos.</h3>
+              <p class="text-sm text-green-700 leading-relaxed">
+                I've reviewed and organized these photos. They're ready for creating beautiful memory cards and books!
+              </p>
+            </div>
+          </div>
+          
+          <div v-if="uploadedFiles.length > 0" class="bg-white/80 rounded-lg p-4 border border-green-200">
+            <p class="text-sm text-green-700 mb-2">Successfully prepared {{ uploadedFiles.length }} photo{{ uploadedFiles.length !== 1 ? 's' : '' }}</p>
+          </div>
+        </div>
+
+          <!-- Failed Results -->
+          <div v-if="failedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border-2 border-red-200 shadow-lg">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-red-100 to-orange-100 rounded-full flex items-center justify-center shadow-lg">
+                <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-xl font-bold text-red-800">😔 Preparation Failed</h4>
+                <p class="text-sm text-red-600">Some preparations didn't work as expected</p>
+              </div>
+            </div>
+            <div class="bg-white/80 rounded-lg p-4 border border-red-200">
+              <div class="space-y-2">
+                <div 
+                  v-for="file in failedFiles" 
+                  :key="file.name"
+                  class="flex items-center gap-2 text-sm text-red-700"
+                >
+                  <i class="pi pi-times text-red-600"></i>
+                  <span class="font-medium">{{ file.name }}</span>
+                  <span class="text-xs text-red-500">({{ file.error }})</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <template #footer>
+        <div class="flex flex-col sm:flex-row justify-between items-center w-full gap-2 sm:gap-4 px-2">
+          <div class="text-xs text-gray-500 w-full sm:w-auto text-center sm:text-left">
+            {{ uploadedFiles.length }} uploaded, {{ failedFiles.length }} failed
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <button
+              data-testid="upload-dialog-close-button"
+              v-if="!isUploading"
+              class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto"
+              @click="showUploadDialog = false"
+            >
+              Close
+            </button>
+            <button
+              data-testid="start-upload-button"
+              v-if="!isUploading && uploadedFiles.length === 0"
+              class="bg-brand-dialog-edit text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+              @click="selectFiles"
+            >
+              <i class="pi pi-sparkles mr-2"></i>
+              🌸 Choose Photos 🌸
+            </button>
+            <button
+              data-testid="finish-upload-button"
+              v-if="!isUploading && uploadedFiles.length > 0"
+              class="bg-brand-secondary text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+              @click="finishUpload"
+            >
+              <i class="pi pi-check mr-2"></i>
+              <span v-if="shouldOpenWizardAfterUpload">Continue to Magic Memory</span>
+              <span v-else>Continue</span>
+            </button>
+          </div>
+        </div>
+      </template>
+    </Dialog>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed, watch, ref, nextTick, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useMemoryStudio } from '~/composables/useMemoryStudio'
+import { useDatabase } from '~/composables/useDatabase'
 import { defineAsyncComponent } from 'vue'
+import SavtaIcon from '~/components/SavtaIcon.vue'
 
 // Import PdfViewer component
 const PdfViewer = defineAsyncComponent(() => import('~/components/PdfViewer.vue'))
@@ -836,7 +977,6 @@ import MemoryBook from '~/components/MemoryBook.vue'
 import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
 import MagicMemoryWizard from '~/components/MagicMemoryWizard.vue'
 import SavtaBubble from '~/components/SavtaBubble.vue'
-import SavtaIcon from '~/components/SavtaIcon.vue'
 import CaptionRenderer from '~/components/CaptionRenderer.vue'
 
 // Composables
@@ -871,6 +1011,7 @@ const {
 const {
   activeView,
   showCreateModal,
+  selectedPhotosForMemoryBook,
   showSuccessDialog,
   showProgressDialog,
   showApprovalDialog,
@@ -890,6 +1031,17 @@ const supabase = useNuxtApp().$supabase
 
 // Magic Memory Wizard
 const magicMemoryWizardRef = ref(null)
+
+// Upload dialog state
+const showUploadDialog = ref(false)
+const shouldOpenWizardAfterUpload = ref(false)
+const showSpecialUploadMessaging = ref(false)
+const uploadProgress = ref(0)
+const uploadStatus = ref('')
+const uploadingFiles = ref([])
+const uploadedFiles = ref([])
+const failedFiles = ref([])
+const isUploading = ref(false)
 
 const {
   createMemoryBook: createBook,
@@ -1246,6 +1398,9 @@ const createMemoryBookFromDialog = async (data) => {
     showSuccessDialog.value = true
     resetCreateModal()
     
+    // Clear selected photos for memory book
+    selectedPhotosForMemoryBook.value = []
+    
     // Reload memory books to show new book
     await loadMemoryBooks()
     
@@ -1404,11 +1559,185 @@ watch([memoryCards, memoryBooksOnly, activeView], ([cards, books, view]) => {
   }
 }, { immediate: true })
 
+// File selection function
+const selectFiles = () => {
+  const fileInput = document.createElement('input')
+  fileInput.type = 'file'
+  fileInput.multiple = true
+  fileInput.accept = 'image/jpeg,image/jpg,image/png,image/gif'
+  
+  fileInput.onchange = async (event) => {
+    const files = Array.from(event.target.files)
+    if (files.length === 0) return
+
+    // Validate files
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        console.error('Only JPG, PNG, or GIF images are allowed.')
+        return
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        console.error(`The file "${file.name}" is too large. Please select images smaller than 10MB.`)
+        return
+      }
+    }
+    await startUpload(files)
+  }
+  
+  fileInput.click()
+}
+
+// Start upload process
+const startUpload = async (files) => {
+  isUploading.value = true
+  uploadProgress.value = 0
+  uploadStatus.value = '✨ Preparing special upload... ✨'
+  uploadedFiles.value = []
+  failedFiles.value = []
+  
+  // Initialize file tracking
+  uploadingFiles.value = files.map(file => ({
+    name: file.name,
+    file: file,
+    status: 'pending'
+  }))
+  
+  const db = useDatabase()
+  const totalFiles = files.length
+  let completedFiles = 0
+  
+  for (let i = 0; i < files.length; i++) {
+    const fileData = uploadingFiles.value[i]
+    const file = fileData.file
+    
+    // Update progress
+    uploadProgress.value = Math.round(((i + 1) / totalFiles) * 100)
+    uploadStatus.value = `📸 Processing "${file.name}"...`
+    
+    try {
+      // Update status to uploading
+      fileData.status = 'uploading'
+      
+      // Upload asset with approved status
+      const asset = await db.assets.uploadAsset({
+        type: 'photo',
+        title: file.name,
+        user_caption: '',
+        approved: true
+      }, file)
+      
+      // Update status to processing
+      fileData.status = 'processing'
+      
+      // Process with AI
+      const aiResult = await $fetch('/api/ai/process-asset', {
+        method: 'POST',
+        body: {
+          assetId: asset.id,
+          assetType: 'photo',
+          storageUrl: asset.storage_url
+        }
+      })
+      
+      // Mark as completed
+      fileData.status = 'completed'
+      uploadedFiles.value.push({
+        name: file.name,
+        id: asset.id
+      })
+      completedFiles++
+      
+    } catch (error) {
+      console.error(`❌ Failed to upload ${file.name}:`, error)
+      fileData.status = 'failed'
+      failedFiles.value.push({
+        name: file.name,
+        error: error.message || 'Upload failed'
+      })
+      completedFiles++
+    }
+  }
+  
+  // Update final status
+  uploadStatus.value = completedFiles > 0 ? '✨ Upload complete! ✨' : '❌ Upload failed'
+  isUploading.value = false
+  
+  if (completedFiles > 0) {
+    console.log(`✨ Successfully uploaded ${uploadedFiles.value.length} photos!`)
+  }
+}
+
+// Finish upload and close dialog
+const finishUpload = async () => {
+  showUploadDialog.value = false
+  // Reset state
+  uploadingFiles.value = []
+  uploadedFiles.value = []
+  failedFiles.value = []
+  uploadProgress.value = 0
+  uploadStatus.value = ''
+  showSpecialUploadMessaging.value = false
+  
+  // Check if we should open wizard after upload
+  if (shouldOpenWizardAfterUpload.value) {
+    shouldOpenWizardAfterUpload.value = false
+    // Small delay to ensure assets are updated
+    setTimeout(() => {
+      magicMemoryWizardRef.value?.openMagicMemoryDialog('quick')
+    }, 1000)
+  }
+}
+
+// Reset upload dialog state
+const resetUploadDialog = () => {
+  if (!isUploading.value) {
+    uploadingFiles.value = []
+    uploadedFiles.value = []
+    failedFiles.value = []
+    uploadProgress.value = 0
+    uploadStatus.value = ''
+    showSpecialUploadMessaging.value = false
+  }
+}
+
 // Watch for view changes to reset pagination
 watch(activeView, () => {
   currentCardsPage.value = 1
   currentBooksPage.value = 1
 })
+
+// Access route at top-level so we can react to query param changes even when the page doesn't remount
+const route = useRoute()
+
+// Handle return from photo selection routes
+watch(() => route.query, (newQuery) => {
+  // Handle return from wizard photo selection
+  if (newQuery.wizardStep === 'photos' && newQuery.selectedPhotos) {
+    console.log('🔍 [Memory Books] Returning from photo selection to wizard')
+    // Reopen wizard at photos step with selected photos
+    const selectedPhotoIds = newQuery.selectedPhotos.split(',')
+    // TODO: Pass selected photos to wizard
+    openMagicMemoryDialog('quick')
+    // Clear query params
+    router.replace({ query: {} })
+  }
+  
+  // Handle return from memory book photo selection
+  if (newQuery.createBook === 'true' && newQuery.selectedPhotos) {
+    console.log('🔍 [Memory Books] Returning from photo selection to create memory book')
+    const selectedPhotoIds = newQuery.selectedPhotos.split(',')
+    
+    // Store selected photos for the memory book dialog
+    selectedPhotosForMemoryBook.value = selectedPhotoIds
+    
+    // Open the memory book dialog
+    showCreateModal.value = true
+    
+    // Clear query params
+    router.replace({ query: {} })
+  }
+}, { deep: true })
 
 // Listen for PDF viewing events from progress dialog
 onMounted(() => {
@@ -1424,6 +1753,8 @@ onMounted(() => {
         console.error('❌ [Memory Books] Error viewing PDF:', error)
       }
     })
+
+    // Note: Upload dialog handling moved to dedicated /upload route
   }
 })
 
@@ -1433,3 +1764,12 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+/* Magic upload dialog styling */
+.magic-upload-dialog {
+  box-shadow: 0 0 32px 12px #fbbf24, 0 0 48px 24px #a78bfa;
+  border: 2px solid #a78bfa;
+  background: linear-gradient(135deg, #fef9c3 0%, #f3e8ff 100%);
+}
+</style>

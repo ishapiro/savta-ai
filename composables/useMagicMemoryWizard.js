@@ -146,7 +146,7 @@ export const useMagicMemoryWizard = () => {
     return 'Complete'
   }
 
-  const nextMagicMemoryStep = () => {
+  const nextMagicMemoryStep = async () => {
     // Validate current step before proceeding
     if (magicMemoryStep.value === MAGIC_STEPS.TITLE && !magicMemoryTitle.value.trim()) {
       console.error('Title is required')
@@ -162,6 +162,23 @@ export const useMagicMemoryWizard = () => {
     const nextIndex = currentStepIndex.value + 1
     if (nextIndex < currentButtonConfig.value.steps.length) {
       const nextStepNumber = currentButtonConfig.value.steps[nextIndex]
+      
+      // Check if the next step is PHOTOS and there are no approved assets
+      if (nextStepNumber === MAGIC_STEPS.PHOTOS && 
+          Array.isArray(photoSelection_availableAssets.value) && 
+          photoSelection_availableAssets.value.length === 0 &&
+          !photoSelection_loadingAssets.value) {
+        
+        console.log('🚀 [MagicMemoryWizard] No approved assets found, redirecting to upload dialog')
+        
+        // Close the wizard dialog
+        closeMagicMemoryDialog()
+        
+        // Navigate to the dedicated upload route with return parameter
+        await navigateTo('/app/memory-books/upload?from=wizard&return=wizard')
+        return
+      }
+      
       currentStepIndex.value = nextIndex
       magicMemoryStep.value = nextStepNumber
     }
@@ -455,6 +472,7 @@ export const useMagicMemoryWizard = () => {
       magicLoading.value = false
     }
   }
+
 
   return {
     // State
