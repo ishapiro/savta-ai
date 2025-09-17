@@ -239,7 +239,10 @@ export const usePhotoSelection = () => {
         const dateFilteredAssets = photoSelection_availableAssets.value
           .filter(asset => {
             // If no date range is selected, return all assets
-            if (!photoSelection_dateRange.value.start && !photoSelection_dateRange.value.end) return true
+            if (!photoSelection_dateRange.value.start && !photoSelection_dateRange.value.end) {
+              console.log('🔍 [photoSelection_populatePhotoSelectionPool] No date range selected, including all assets')
+              return true
+            }
             
             // If asset has no asset_date, use created_at as fallback
             let assetDate
@@ -252,6 +255,8 @@ export const usePhotoSelection = () => {
               console.log('🔍 [photoSelection_populatePhotoSelectionPool] Asset has no date fields:', asset.id)
               return false
             }
+            
+            // Only create Date objects if the values are not null/undefined
             const start = photoSelection_dateRange.value.start ? new Date(photoSelection_dateRange.value.start) : null
             const end = photoSelection_dateRange.value.end ? new Date(photoSelection_dateRange.value.end) : null
             
@@ -285,7 +290,7 @@ export const usePhotoSelection = () => {
               return result
             }
             
-            console.log('🔍 [photoSelection_populatePhotoSelectionPool] No date range selected, including asset:', asset.id)
+            console.log('🔍 [photoSelection_populatePhotoSelectionPool] No valid date range selected, including asset:', asset.id)
             return true
           })
           .map(asset => asset.id)

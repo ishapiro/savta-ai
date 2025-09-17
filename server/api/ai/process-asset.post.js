@@ -189,6 +189,20 @@ export default defineEventHandler(async (event) => {
       updated_at: new Date().toISOString()
     }
     
+    // Add asset_date from EXIF data if available
+    if (analysisResult.exif_data && analysisResult.exif_data.date_taken) {
+      try {
+        // Parse the date_taken string and convert to ISO format
+        const dateTaken = new Date(analysisResult.exif_data.date_taken)
+        if (!isNaN(dateTaken.getTime())) {
+          updateData.asset_date = dateTaken.toISOString()
+          console.log('📅 Setting asset_date from EXIF data:', updateData.asset_date)
+        }
+      } catch (dateError) {
+        console.warn('⚠️ Error parsing date_taken from EXIF:', dateError.message)
+      }
+    }
+    
     // Add enhanced location data if available
     if (enhancedLocationData) {
       if (enhancedLocationData.location) {
