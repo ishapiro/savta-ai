@@ -445,7 +445,8 @@
           <!-- Fun Message -->
           <div class="bg-gradient-to-r from-blue-50 to-brand-navigation rounded-lg p-4 mb-6">
             <p class="text-sm text-gray-600">
-              <span v-if="successfulUploads > 0">✨ Your memories are now ready for review and approval!</span>
+              <span v-if="successfulUploads > 0 && !isFromWizard">✨ Your memories are now ready for review and approval!</span>
+              <span v-else-if="successfulUploads > 0 && isFromWizard">✨ Great! Your new photos are ready. Now you can go back and try editing your memory again!</span>
             </p>
           </div>
 
@@ -459,13 +460,22 @@
               <span class="pr-2">Got it!</span>
             </Button>
             <Button
-              v-if="successfulUploads > 0"
+              v-if="successfulUploads > 0 && !isFromWizard"
               @click="navigateTo('/app/review')"
               class="bg-brand-dialog-edit text-white border-0 px-4 py-3 rounded-full font-semibold hover:bg-brand-secondary/80 transition-all duration-200 flex items-center justify-center flex-1 sm:flex-initial"
             >
               <i class="pi pi-eye mr-2 flex-shrink-0"></i>
               <span class="hidden sm:inline whitespace-nowrap">Review Photos in Photo Box</span>
               <span class="sm:hidden">Review</span>
+            </Button>
+            <Button
+              v-if="successfulUploads > 0 && isFromWizard"
+              @click="navigateTo('/app/memory-books')"
+              class="bg-brand-dialog-edit text-white border-0 px-4 py-3 rounded-full font-semibold hover:bg-brand-secondary/80 transition-all duration-200 flex items-center justify-center flex-1 sm:flex-initial"
+            >
+              <i class="pi pi-arrow-left mr-2 flex-shrink-0"></i>
+              <span class="hidden sm:inline whitespace-nowrap">Back to Memory Books</span>
+              <span class="sm:hidden">Back</span>
             </Button>
           </div>
         </div>
@@ -566,6 +576,12 @@ const overallProgress = computed(() => {
 
 const completedUploads = computed(() => {
   return successfulUploads.value + failedUploads.value
+})
+
+// Check if user came from wizard
+const isFromWizard = computed(() => {
+  const route = useRoute()
+  return route.query.from === 'wizard'
 })
 
 const remainingUploads = computed(() => {

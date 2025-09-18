@@ -150,14 +150,16 @@ export default defineEventHandler(async (event) => {
       // Photos we keep from the used set (not marked for replacement)
       const photosToKeep = usedOriginals.filter(id => !photosToReplace.includes(id))
       
-      // Candidate pool = original pool minus all used originals (ensures we choose from the remaining 6)
-      const candidateAssets = assets.filter(a => originalPool.includes(a.id) && !usedOriginals.includes(a.id))
-      console.log('🔄 DEBUG - originalPool size:', originalPool.length, 'usedOriginals:', usedOriginals, 'candidate count:', candidateAssets.length, 'candidateIds:', candidateAssets.map(a => a.id))
+      // Candidate pool = all available assets minus the photos we're keeping (not replacing)
+      // AND minus the photos we're replacing (to avoid selecting the same photo)
+      // This allows us to choose from the full available pool, not just the original pool
+      const candidateAssets = assets.filter(a => !photosToKeep.includes(a.id) && !photosToReplace.includes(a.id))
+      console.log('🔄 DEBUG - originalPool size:', originalPool.length, 'usedOriginals:', usedOriginals, 'photosToKeep:', photosToKeep, 'candidate count:', candidateAssets.length, 'candidateIds:', candidateAssets.map(a => a.id))
       
       if (candidateAssets.length < photosToReplace.length) {
-        console.error('❌ Not enough candidates in original pool minus used')
+        console.error('❌ Not enough candidates in available pool for replacement')
         throw createError({
-          statusCode: 400,
+          statusCode: 500,
           statusMessage: `Not enough photos available for replacement. Need ${photosToReplace.length}, have ${candidateAssets.length}.`
         })
       }
@@ -179,13 +181,23 @@ export default defineEventHandler(async (event) => {
 
       // Build new created_from_assets by replacing marked IDs positionally
       const replacementQueue = [...replacementIds]
+      console.log('🔄 DEBUG - replacementIds:', replacementIds)
+      console.log('🔄 DEBUG - replacementQueue:', replacementQueue)
+      console.log('🔄 DEBUG - usedOriginals before replacement:', usedOriginals)
+      console.log('🔄 DEBUG - photosToReplace:', photosToReplace)
+      
       const newUsed = usedOriginals.map(id => {
         if (photosToReplace.includes(id)) {
           // Take next replacement
-          return replacementQueue.shift() || id
+          const replacement = replacementQueue.shift() || id
+          console.log('🔄 DEBUG - Replacing', id, 'with', replacement)
+          return replacement
         }
         return id
       })
+      
+      console.log('🔄 DEBUG - newUsed after replacement:', newUsed)
+      console.log('🔄 DEBUG - replacementQueue after replacement:', replacementQueue)
 
       // Safety: ensure no duplicates; if duplicates arise, replace dup positions with remaining unique candidates
       const seen = new Set()

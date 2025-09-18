@@ -230,7 +230,7 @@ Return a detailed analysis including:
         ]
       }
     ],
-    max_output_tokens: 10000
+    max_output_tokens: 50000
   };
 
   const response = await makeOpenAIRequest(payload);
@@ -370,7 +370,7 @@ async function selectPhotos(photoUrls, photoCount = null) {
         ]
       }
     ],
-    max_output_tokens: 10000
+    max_output_tokens: 50000
   };
 
   const response = await makeOpenAIRequest(payload);
@@ -502,7 +502,7 @@ Return ONLY JSON with the story.`
         ]
       }
     ],
-    max_output_tokens: 2500
+    max_output_tokens: 50000
   };
 
   console.log('📝 STEP 2: STORY GENERATION - Making OpenAI request')
@@ -594,7 +594,7 @@ async function generateStory(selectedPhotoUrls) {
         ]
       }
     ],
-    max_output_tokens: 10000
+    max_output_tokens: 50000
   };
 
   const response = await makeOpenAIRequest(payload);
@@ -692,7 +692,7 @@ async function analyzePhotoShape(imageUrl) {
         ]
       }
     ],
-    max_output_tokens: 10000
+    max_output_tokens: 50000
   };
 
   const response = await makeOpenAIRequest(payload);
@@ -907,7 +907,7 @@ async function analyzeImage(imageUrl) {
         ]
       }
     ],
-    max_output_tokens: 10000
+    max_output_tokens: 50000
   };
 
   const response = await makeOpenAIRequest(payload);
@@ -956,7 +956,7 @@ async function analyzeText(text) {
         ]
       }
     ],
-    max_output_tokens: 10000
+    max_output_tokens: 50000
   };
 
   const response = await makeOpenAIRequest(payload);
@@ -982,7 +982,7 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
   }
 
   // Validate input size - Response API max_output_tokens covers both input and output combined
-  const MAX_COMBINED_TOKENS = 30000; // Set to match max_output_tokens
+  const MAX_COMBINED_TOKENS = 50000; // Set to match max_output_tokens
   const ESTIMATED_TOKENS_PER_PHOTO = 250; // Conservative estimate
   const ESTIMATED_OUTPUT_TOKENS = 500; // Estimated tokens for JSON response
   const PROMPT_OVERHEAD_TOKENS = 1000; // Base prompt instructions
@@ -1148,7 +1148,7 @@ Return ONLY JSON with the selected photo numbers and your reasoning.`
         ]
       }
     ],
-    max_output_tokens: 30000
+    max_output_tokens: 50000
   };
 
   const response = await makeOpenAIRequest(payload);

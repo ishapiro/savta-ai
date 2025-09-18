@@ -35,12 +35,11 @@
       </div>
 
       <!-- Dynamic Hero Section -->
-       <!-- not currently used -->
-      <!-- <MemoryStudioHero 
+      <MemoryStudioHero 
         :active-view="activeView"
         @create-card="openMagicMemoryDialog('quick')"
         @create-book="showCreateModal = true"
-      /> -->
+      />
 
       <!-- Dynamic Listing Section -->
       <div class="mb-12" data-savta="memory-listing-section">

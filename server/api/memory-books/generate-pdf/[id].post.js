@@ -996,7 +996,7 @@ export default defineEventHandler(async (event) => {
               
               if (smartcropArea.y > maxAllowedY) {
                 const originalY = smartcropArea.y
-                smartcropArea.y = Math.max(0, maxAllowedY)
+                smartcropArea.y = Math.floor(Math.max(0, maxAllowedY))
                 console.log(`🔄 Face-preserving adjustment: Y position changed from ${originalY} to ${smartcropArea.y} to preserve faces`)
               } else {
                 console.log(`🔄 Face-preserving adjustment: Y position ${smartcropArea.y} is acceptable (below max allowed ${maxAllowedY})`)
@@ -1247,7 +1247,7 @@ export default defineEventHandler(async (event) => {
                 
                 if (smartcropArea.y > smallSquareMaxAllowedY) {
                   const originalY = smartcropArea.y
-                  smartcropArea.y = Math.max(0, smallSquareMaxAllowedY)
+                  smartcropArea.y = Math.floor(Math.max(0, smallSquareMaxAllowedY))
                   console.log(`🔄 Small square face-preserving adjustment: Y position changed from ${originalY} to ${smartcropArea.y}`)
                 }
               } else if (isPortrait && smartcropArea.y > processedMetadata.height * 0.25) {

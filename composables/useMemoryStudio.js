@@ -126,7 +126,12 @@ export const useMemoryStudio = () => {
   }
 
   const getAssetThumbnail = (assetId) => {
-    return assetThumbnails.value[assetId] || null
+    const thumbnail = assetThumbnails.value[assetId] || null
+    if (!thumbnail) {
+      console.log('🔍 [getAssetThumbnail] No thumbnail found for asset:', assetId)
+      console.log('🔍 [getAssetThumbnail] Available thumbnails:', Object.keys(assetThumbnails.value))
+    }
+    return thumbnail
   }
 
   const getFirstAssetThumbnail = (book) => {

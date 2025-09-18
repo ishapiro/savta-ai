@@ -162,14 +162,6 @@
     <!-- Step 5: Photo Replacement Selection (for replace_selected method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTO_REPLACEMENT && photoSelection_method === 'replace_selected'"
       class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
-      <!-- Debug info -->
-      <div class="fixed top-0 left-0 bg-red-500 text-white p-2 text-xs z-50">
-        DEBUG: Photo Replacement Step Active<br>
-        magicMemoryStep: {{ magicMemoryStep }}<br>
-        photoSelection_method: {{ photoSelection_method }}<br>
-        photosToReplace: {{ photosToReplace }}<br>
-        existingBookForRecreation: {{ !!existingBookForRecreation }}
-      </div>
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
@@ -200,7 +192,13 @@
                 :alt="`Photo ${photo}`"
                 class="w-full h-full object-contain"
                 @error="handleImageError"
+                @load="console.log('Image loaded for photo:', photo, 'src:', getAssetThumbnail(photo))"
               />
+              <!-- Debug info for each photo -->
+              <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-xs p-1">
+                ID: {{ photo }}<br>
+                Thumbnail: {{ getAssetThumbnail(photo) ? 'Found' : 'Missing' }}
+              </div>
               
               <!-- Fallback placeholder (hidden by default) -->
               <div class="image-placeholder w-full h-full bg-gray-100 flex items-center justify-center" style="display: none;">
@@ -332,6 +330,39 @@
     :is-regenerating="isRegenerating"
   />
 
+  <!-- Insufficient Photos Dialog -->
+  <Dialog 
+    v-model:visible="showInsufficientPhotosDialog" 
+    modal 
+    header="Not Enough Photos Available" 
+    :style="{ width: '400px' }"
+    :closable="false"
+  >
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center gap-3">
+        <i class="pi pi-exclamation-triangle text-orange-500 text-xl"></i>
+        <p class="text-gray-700">
+          I don't have enough new photos to replace the ones you selected. What would you like to do?
+        </p>
+      </div>
+      
+      <div class="flex flex-col gap-2">
+        <Button 
+          label="Keep the Same Photos" 
+          icon="pi pi-check" 
+          @click="handleKeepSamePhotos"
+          class="bg-brand-dialog-edit text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow transition-all duration-200 flex items-center justify-center w-full"
+        />
+        <Button 
+          label="Upload More Photos" 
+          icon="pi pi-upload" 
+          @click="handleUploadMorePhotos"
+          class="bg-brand-dialog-save text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow-lg transition-all duration-200 flex items-center justify-center w-full"
+        />
+      </div>
+    </div>
+  </Dialog>
+
 </template>
 
 <script setup>
@@ -440,12 +471,6 @@ const handleImageError = (event) => {
 // Wrapper function for generateMagicMemory with toast notifications
 const handleGenerateMagicMemory = async () => {
   try {
-    console.log('🔍 [handleGenerateMagicMemory] Current step:', magicMemoryStep.value)
-    console.log('🔍 [handleGenerateMagicMemory] Photo selection method:', photoSelection_method.value)
-    console.log('🔍 [handleGenerateMagicMemory] Photos to replace:', photosToReplace.value)
-    console.error('🔍 [handleGenerateMagicMemory] TERMINAL LOG - Current step:', magicMemoryStep.value)
-    console.error('🔍 [handleGenerateMagicMemory] TERMINAL LOG - Photo selection method:', photoSelection_method.value)
-    console.error('🔍 [handleGenerateMagicMemory] TERMINAL LOG - Photos to replace:', photosToReplace.value)
     await generateMagicMemory()
     
     // Show success toast
@@ -458,11 +483,75 @@ const handleGenerateMagicMemory = async () => {
   } catch (error) {
     console.error('Error in handleGenerateMagicMemory:', error)
     
-    // Show error toast
+    // Check if it's the insufficient photos error
+    if (error.message && error.message.includes('Not enough photos available for replacement')) {
+      // Show insufficient photos dialog
+      showInsufficientPhotosDialog.value = true
+    } else {
+      // Show generic error toast for other errors
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: error.message || 'Failed to create magic memory card. Please try again.',
+        life: 5000
+      })
+    }
+  }
+}
+
+// Dialog state for insufficient photos
+const showInsufficientPhotosDialog = ref(false)
+
+// Handle insufficient photos dialog actions
+const handleKeepSamePhotos = async () => {
+  showInsufficientPhotosDialog.value = false
+  closeMagicMemoryDialog(false, false)
+  
+  // Switch to keep_same mode and restart the wizard
+  photoSelection_method.value = 'keep_same'
+  setTimeout(() => {
+    openMagicMemoryDialog('recreation', existingBookForRecreation.value)
+  }, 500)
+}
+
+const handleUploadMorePhotos = () => {
+  showInsufficientPhotosDialog.value = false
+  closeMagicMemoryDialog(false, false)
+  navigateTo('/app/upload?from=wizard&return=wizard')
+}
+
+// Restart the wizard with "keep_same" option
+const restartWizardWithKeepSame = async () => {
+  try {
+    // Get the existing book data
+    const existingBook = existingBookForRecreation.value
+    if (!existingBook) {
+      console.error('No existing book found for recreation')
+      return
+    }
+    
+    // Reset the wizard state
+    photosToReplace.value = []
+    
+    // Open the wizard again with the same book
+    await openMagicMemoryDialog('quick', existingBook)
+    
+    // Automatically set to "keep_same" mode
+    photoSelection_method.value = 'keep_same'
+    
+    // Show a helpful message
+    toast.add({
+      severity: 'info',
+      summary: 'Switched to Keep Same Photos',
+      detail: 'I\'ll keep your original photos and create a new memory card with the same photos.',
+      life: 4000
+    })
+  } catch (error) {
+    console.error('Error restarting wizard:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: error.message || 'Failed to create magic memory card. Please try again.',
+      detail: 'Failed to restart the wizard. Please try again.',
       life: 5000
     })
   }
