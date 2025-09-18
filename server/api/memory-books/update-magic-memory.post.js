@@ -59,11 +59,16 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // For recreation mode (when photos_to_replace is provided), we need to preserve the original created_from_assets
-    // in the previously_used_assets field before clearing it
+    // For recreation mode, we need to fetch the current book to get the original data
     let previouslyUsedAssets = null
     let originalPhotoSelectionPool = null
-    if (photos_to_replace && Array.isArray(photos_to_replace) && photos_to_replace.length > 0) {
+    let originalCreatedFromAssets = null
+    
+    // Check if this is a recreation (either photo replacement or keep same photos)
+    const isRecreation = (photos_to_replace && Array.isArray(photos_to_replace) && photos_to_replace.length > 0) || 
+                        (photo_selection_method === 'keep_same')
+    
+    if (isRecreation) {
       // This is a recreation - fetch the current book to get the original data
       const { data: currentBook, error: fetchError } = await supabase
         .from('memory_books')
@@ -77,10 +82,23 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 500, statusMessage: 'Failed to fetch current book for recreation' })
       }
       
-      // Store the original created_from_assets as previously_used_assets
-      if (currentBook.created_from_assets && Array.isArray(currentBook.created_from_assets) && currentBook.created_from_assets.length > 0) {
-        previouslyUsedAssets = currentBook.created_from_assets
-        console.log('🔄 [update-magic-memory] Storing original assets for recreation:', previouslyUsedAssets)
+      // Store the original created_from_assets as previously_used_assets (for photo replacement)
+      if (photos_to_replace && Array.isArray(photos_to_replace) && photos_to_replace.length > 0) {
+        if (currentBook.created_from_assets && Array.isArray(currentBook.created_from_assets) && currentBook.created_from_assets.length > 0) {
+          previouslyUsedAssets = currentBook.created_from_assets
+          console.log('🔄 [update-magic-memory] Storing original assets for photo replacement:', previouslyUsedAssets)
+        }
+      }
+      
+      // For "keep same photos" OR "replace selected" with no photos selected, preserve the original created_from_assets
+      const shouldKeepSamePhotos = photo_selection_method === 'keep_same' || 
+                                   (photo_selection_method === 'replace_selected' && (!photos_to_replace || !Array.isArray(photos_to_replace) || photos_to_replace.length === 0))
+      
+      if (shouldKeepSamePhotos) {
+        if (currentBook.created_from_assets && Array.isArray(currentBook.created_from_assets) && currentBook.created_from_assets.length > 0) {
+          originalCreatedFromAssets = currentBook.created_from_assets
+          console.log('🔄 [update-magic-memory] Keeping same photos - preserving original created_from_assets:', originalCreatedFromAssets)
+        }
       }
       
       // Preserve the original photo_selection_pool (the larger pool of available photos)
@@ -113,7 +131,7 @@ export default defineEventHandler(async (event) => {
       layout_type: layoutType,
       ui: 'wizard',
       format: 'card',
-      created_from_assets: isTemplate ? null : asset_ids,
+      created_from_assets: isTemplate ? null : (originalCreatedFromAssets || asset_ids),
       photo_selection_pool: photo_selection_pool || (isTemplate ? null : asset_ids),
       magic_story: isTemplate ? null : story,
       background_type: background_type,
@@ -131,11 +149,14 @@ export default defineEventHandler(async (event) => {
       updated_at: new Date().toISOString()
     }
 
-    // For photo replacement, clear the old PDF and background URLs to force regeneration
-    if (isPhotoReplacement) {
+    // For photo replacement, keep same photos, or replace selected with no photos, clear the old PDF and background URLs to force regeneration
+    const shouldClearPdfUrls = isPhotoReplacement || photo_selection_method === 'keep_same' || 
+                               (photo_selection_method === 'replace_selected' && (!photos_to_replace || !Array.isArray(photos_to_replace) || photos_to_replace.length === 0))
+    
+    if (shouldClearPdfUrls) {
       updateData.pdf_url = null
       updateData.background_url = null
-      console.log('🔄 [update-magic-memory] Clearing old PDF and background URLs for photo replacement')
+      console.log('🔄 [update-magic-memory] Clearing old PDF and background URLs for regeneration')
     }
 
     // If this is a recreation, preserve the original data

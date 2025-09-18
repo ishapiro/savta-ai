@@ -970,9 +970,26 @@ export default defineEventHandler(async (event) => {
               const highestFacePixelY = Math.floor(highestFace.y * processedMetadata.height)
               const faceHeight = Math.floor(highestFace.height * processedMetadata.height)
               
+              // Check if all faces are in the top half of the image
+              const imageMidpoint = processedMetadata.height / 2
+              const allFacesInTopHalf = faceBoosts.every(face => {
+                const faceCenterY = face.y + (face.height / 2)
+                const faceCenterPixelY = Math.floor(faceCenterY * processedMetadata.height)
+                return faceCenterPixelY < imageMidpoint
+              })
+              
+              console.log(`🔄 Face position analysis: Image midpoint=${imageMidpoint}px, all faces in top half=${allFacesInTopHalf}`)
+              
               // CRITICAL: Prioritize keeping tops of heads - be extremely conservative
               // Always prefer keeping the top of faces over the bottom
-              const topBuffer = Math.max(faceHeight * 0.5, 100) // 50% of face height or 100px, whichever is larger
+              let topBuffer = Math.max(faceHeight * 0.5, 100) // 50% of face height or 100px, whichever is larger
+              
+              // If all faces are in the top half, increase top padding significantly
+              if (allFacesInTopHalf) {
+                topBuffer = Math.max(topBuffer * 1.5, 150) // Increase buffer by 50% or minimum 150px
+                console.log(`🔄 All faces in top half detected - increasing top buffer from ${Math.max(faceHeight * 0.5, 100)} to ${topBuffer}px`)
+              }
+              
               const maxAllowedY = Math.max(0, highestFacePixelY - topBuffer)
               
               console.log(`🔄 Face analysis: Highest face at Y=${highestFacePixelY}px, face height=${faceHeight}px, top buffer=${topBuffer}px, max allowed Y=${maxAllowedY}px`)
