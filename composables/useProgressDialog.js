@@ -91,21 +91,23 @@ export const useProgressDialog = () => {
         return
       }
       
-      // Check if pdf_url is available but still wait for completion status
-      if (status.pdf_url && status.pdf_url.startsWith('https://')) {
-        console.log('✅ PDF URL found, waiting for book status to be ready...')
-        console.log('🔍 Debug - Current status:', {
-          pdf_url: status.pdf_url,
-          book_status: status.book_status,
-          pdf_status: status.pdf_status
-        })
-        currentProgress.value = 95
-        currentProgressMessage.value = 'Finalizing magic memory status...'
-        return
-      }
-      
-      // Add fallback: if we have a PDF URL but status is not ready, close after a reasonable timeout
+      // If we have a PDF URL but status is not ready, close after a reasonable timeout
+      // BUT: For regeneration, we should wait for the new PDF to be generated
       if (status.pdf_url && status.pdf_url.startsWith('https://') && status.book_status !== 'ready') {
+        // For regeneration, check if this is an old PDF URL by looking at the timestamp
+        // If the PDF URL is from a previous generation, don't close the dialog yet
+        if (isRegenerating.value) {
+          console.log('🔄 Regeneration in progress - waiting for new PDF to be generated')
+          console.log('🔍 Debug - Status details:', {
+            pdf_url: status.pdf_url,
+            book_status: status.book_status,
+            pdf_status: status.pdf_status,
+            isRegenerating: isRegenerating.value
+          })
+          // Don't close the dialog yet, continue polling
+          return
+        }
+        
         console.log('⚠️ PDF URL found but book status is not ready, closing dialog anyway')
         console.log('🔍 Debug - Status details:', {
           pdf_url: status.pdf_url,

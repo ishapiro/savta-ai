@@ -148,6 +148,7 @@ export const useMagicMemoryWizard = () => {
   const togglePhotoReplacement = (photoId) => {
     console.error('🔄 [togglePhotoReplacement] TERMINAL LOG - Function called with photoId:', photoId)
     console.error('🔄 [togglePhotoReplacement] TERMINAL LOG - Current photosToReplace before:', photosToReplace.value)
+    console.error('🔄 [togglePhotoReplacement] TERMINAL LOG - Available photos:', existingBookForRecreation.value?.created_from_assets)
     
     const index = photosToReplace.value.indexOf(photoId)
     if (index > -1) {
@@ -656,7 +657,8 @@ export const useMagicMemoryWizard = () => {
       // Update progress and start polling
       currentProgressMessage.value = '🎯 Selecting best photos...'
       currentProgress.value = 25
-      startProgressPolling(bookId, false)
+      const isRegenerating = existingBookForRecreation.value && photosToReplace.value.length > 0
+      startProgressPolling(bookId, isRegenerating)
       
       // Call the magic memory AI endpoint
       const aiRes = await $fetch('/api/ai/magic-memory', {
@@ -673,6 +675,9 @@ export const useMagicMemoryWizard = () => {
       }
       
       console.log('🔍 [generateMagicMemory] AI photo selection completed:', aiRes.selected_photo_ids.length, 'photos selected')
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - AI photo selection completed:', aiRes.selected_photo_ids.length, 'photos selected')
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - Photo replacement mode:', photoSelection_method.value === 'replace_selected')
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - Existing book for recreation:', !!existingBookForRecreation.value)
       
       // Create book object for PDF generation - match original exactly
       const book = {
@@ -700,7 +705,10 @@ export const useMagicMemoryWizard = () => {
       
       // Start PDF generation
       console.log('🔍 [generateMagicMemory] Starting PDF generation...')
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - Starting PDF generation for book:', book.id)
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - Book has assets:', book.created_from_assets?.length || 0)
       await generatePDF(book)
+      console.error('🔍 [generateMagicMemory] TERMINAL LOG - PDF generation completed')
       
     } catch (error) {
       console.error('❌ [generateMagicMemory] Error generating magic memory:', error)

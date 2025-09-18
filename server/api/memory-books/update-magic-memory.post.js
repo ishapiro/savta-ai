@@ -49,10 +49,44 @@ export default defineEventHandler(async (event) => {
     // Check if this is a template creation (no story or assets yet)
     const isTemplate = !story || story.trim() === '' || !asset_ids || !Array.isArray(asset_ids) || asset_ids.length === 0
     
+    // For photo replacement, we want to continue with generation, so set status to draft
+    const isPhotoReplacement = photos_to_replace && Array.isArray(photos_to_replace) && photos_to_replace.length > 0
+    
     // For non-template creation, validate required fields
     if (!isTemplate) {
       if (!asset_ids || !Array.isArray(asset_ids) || asset_ids.length < 1 || asset_ids.length > 6 || !story) {
         throw createError({ statusCode: 400, statusMessage: '1-6 asset_ids and story are required' })
+      }
+    }
+
+    // For recreation mode (when photos_to_replace is provided), we need to preserve the original created_from_assets
+    // in the previously_used_assets field before clearing it
+    let previouslyUsedAssets = null
+    let originalPhotoSelectionPool = null
+    if (photos_to_replace && Array.isArray(photos_to_replace) && photos_to_replace.length > 0) {
+      // This is a recreation - fetch the current book to get the original data
+      const { data: currentBook, error: fetchError } = await supabase
+        .from('memory_books')
+        .select('created_from_assets, photo_selection_pool')
+        .eq('id', book_id)
+        .eq('user_id', user.id)
+        .single()
+      
+      if (fetchError) {
+        console.error('❌ Error fetching current book for recreation:', fetchError)
+        throw createError({ statusCode: 500, statusMessage: 'Failed to fetch current book for recreation' })
+      }
+      
+      // Store the original created_from_assets as previously_used_assets
+      if (currentBook.created_from_assets && Array.isArray(currentBook.created_from_assets) && currentBook.created_from_assets.length > 0) {
+        previouslyUsedAssets = currentBook.created_from_assets
+        console.log('🔄 [update-magic-memory] Storing original assets for recreation:', previouslyUsedAssets)
+      }
+      
+      // Preserve the original photo_selection_pool (the larger pool of available photos)
+      if (currentBook.photo_selection_pool && Array.isArray(currentBook.photo_selection_pool) && currentBook.photo_selection_pool.length > 0) {
+        originalPhotoSelectionPool = currentBook.photo_selection_pool
+        console.log('🔄 [update-magic-memory] Preserving original photo selection pool:', originalPhotoSelectionPool)
       }
     }
 
@@ -73,31 +107,53 @@ export default defineEventHandler(async (event) => {
     // Determine layout type based on whether a theme is selected
     const layoutType = theme_id ? 'theme' : 'grid'
     
+    // Prepare update data
+    const updateData = {
+      ai_supplemental_prompt: title || 'Select Photos That Tell a Story',
+      layout_type: layoutType,
+      ui: 'wizard',
+      format: 'card',
+      created_from_assets: isTemplate ? null : asset_ids,
+      photo_selection_pool: photo_selection_pool || (isTemplate ? null : asset_ids),
+      magic_story: isTemplate ? null : story,
+      background_type: background_type,
+      background_color: background_color,
+      theme_id: theme_id || null,
+      status: (isTemplate && !isPhotoReplacement) ? 'template' : 'draft',
+      grid_layout: gridLayout,
+      print_size: print_size,
+      include_captions: true,
+      include_tags: true,
+      memory_shape: 'original',
+      output: output,
+      photo_selection_method: photo_selection_method || null,
+      photos_to_replace: photos_to_replace ? JSON.stringify(photos_to_replace) : null,
+      updated_at: new Date().toISOString()
+    }
+
+    // For photo replacement, clear the old PDF and background URLs to force regeneration
+    if (isPhotoReplacement) {
+      updateData.pdf_url = null
+      updateData.background_url = null
+      console.log('🔄 [update-magic-memory] Clearing old PDF and background URLs for photo replacement')
+    }
+
+    // If this is a recreation, preserve the original data
+    if (previouslyUsedAssets) {
+      updateData.previously_used_assets = previouslyUsedAssets
+      console.log('🔄 [update-magic-memory] Adding previously_used_assets to update:', previouslyUsedAssets)
+    }
+    
+    // For recreation, use the original photo selection pool instead of the new one
+    if (originalPhotoSelectionPool) {
+      updateData.photo_selection_pool = originalPhotoSelectionPool
+      console.log('🔄 [update-magic-memory] Using original photo selection pool for recreation:', originalPhotoSelectionPool)
+    }
+
     // Update existing memory book
     const { data, error } = await supabase
       .from('memory_books')
-      .update({
-        ai_supplemental_prompt: title || 'Select Photos That Tell a Story',
-        layout_type: layoutType,
-        ui: 'wizard',
-        format: 'card',
-        created_from_assets: isTemplate ? null : asset_ids,
-        photo_selection_pool: photo_selection_pool || (isTemplate ? null : asset_ids),
-        magic_story: isTemplate ? null : story,
-        background_type: background_type,
-        background_color: background_color,
-        theme_id: theme_id || null,
-        status: isTemplate ? 'template' : 'draft',
-        grid_layout: gridLayout,
-        print_size: print_size,
-        include_captions: true,
-        include_tags: true,
-        memory_shape: 'original',
-        output: output,
-        photo_selection_method: photo_selection_method || null,
-        photos_to_replace: photos_to_replace ? JSON.stringify(photos_to_replace) : null,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', book_id)
       .eq('user_id', user.id) // Ensure user owns the book
       .select()

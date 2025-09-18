@@ -15,7 +15,9 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:recreation": "node test-recreation-db.js",
+    "test:recreation:shell": "bash test-recreation.sh"
   },
   "dependencies": {
     "@aws-sdk/client-rekognition": "^3.872.0",

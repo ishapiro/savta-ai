@@ -695,20 +695,47 @@
       <!-- Magic Memory Wizard -->
       <MagicMemoryWizard ref="magicMemoryWizardRef" />
 
-      <!-- Savta Bubble Component (disabled here; shown on Getting Started page) -->
+      <!-- Savta Bubble Component (now uses HTML + actions) -->
       <SavtaBubble
         v-model:open="showSavtaBubble"
         placement="center"
         :offset="0"
         heading="Hi, I'm Savta and I'm here to help you get started!"
-        text="Click on Create Memory Card and I will walk yout through creating your first memory.
-        \nI'll start by asking you a couple of questions about how you want your memory card to look.
-        \nThen I'll help you upload just your favorite photos to your Photo Box—not your whole camera roll. The more you share, the better I can help you.📸
-        \nI'll use a little AI magic to pick photos that belong together, arrange them beautifully on each card, and write warm captions. 💛"
         variant="instruction"
         :dismissible="true"
         :show-avatar="true"
-      />
+      >
+        <div class="space-y-3 text-gray-700">
+          <p class="text-base">
+            Let’s create your first memory card.
+          </p>
+
+          <p class="text-base text-brand-highlight font-semibold">
+            This isn’t another photo printing service. Savta’s little bit of AI magic selects and layouts your 
+            photos into gorgeous multi‑photo cards—zero fuss. No more dragging photos into layouts.
+          </p>
+
+          <ol class="list-decimal pl-5 space-y-1">
+            <li>Answer a couple of quick questions about the look.</li>
+            <li>Upload just your favorite photos to your Photo Box.</li>
+            <li>I’ll pick photos that belong together, arrange them beautifully, and write warm captions.</li>
+          </ol>
+
+          <p class="text-sm text-gray-600">
+            Tip: Share more favorites for better results. 📸
+          </p>
+        </div>
+
+        <template #actions>
+          <button
+            class="mt-3 inline-flex items-center justify-center gap-2 bg-brand-dialog-edit hover:bg-brand-primary/90 text-white font-medium rounded-lg px-5 py-2 transition-colors"
+            @click="openMagicMemoryDialog('quick'); showSavtaBubble = false"
+            type="button"
+          >
+            ✨ Start Creating
+          </button>
+        </template>
+      </SavtaBubble>
 
       <!-- PDF Modal -->
       <Dialog
