@@ -71,8 +71,27 @@ export const useProgressDialog = () => {
           // Reload memory books to show updated status
           try {
             const { useMemoryStudio } = await import('~/composables/useMemoryStudio')
-            const { loadMemoryBooks } = useMemoryStudio()
+            const { loadMemoryBooks, reloadAssetThumbnails } = useMemoryStudio()
             await loadMemoryBooks()
+            
+            // For regeneration, also reload thumbnails for the specific book
+            if (isRegenerating.value && currentBookId.value) {
+              const updatedBook = memoryBooks.value.find(book => book.id === currentBookId.value)
+              if (updatedBook) {
+                await reloadAssetThumbnails(updatedBook)
+              }
+            }
+            
+            // Emit event to notify other components that memory books have been updated
+            if (process.client) {
+              window.dispatchEvent(new CustomEvent('memory-book-updated', {
+                detail: { 
+                  bookId: currentBookId.value, 
+                  isRegenerating: isRegenerating.value,
+                  action: isRegenerating.value ? 'regenerated' : 'created'
+                }
+              }))
+            }
           } catch (error) {
             console.error('Error reloading memory books:', error)
           }
@@ -125,8 +144,27 @@ export const useProgressDialog = () => {
           // Reload memory books to show updated status
           try {
             const { useMemoryStudio } = await import('~/composables/useMemoryStudio')
-            const { loadMemoryBooks } = useMemoryStudio()
+            const { loadMemoryBooks, reloadAssetThumbnails } = useMemoryStudio()
             await loadMemoryBooks()
+            
+            // For regeneration, also reload thumbnails for the specific book
+            if (isRegenerating.value && currentBookId.value) {
+              const updatedBook = memoryBooks.value.find(book => book.id === currentBookId.value)
+              if (updatedBook) {
+                await reloadAssetThumbnails(updatedBook)
+              }
+            }
+            
+            // Emit event to notify other components that memory books have been updated
+            if (process.client) {
+              window.dispatchEvent(new CustomEvent('memory-book-updated', {
+                detail: { 
+                  bookId: currentBookId.value, 
+                  isRegenerating: isRegenerating.value,
+                  action: isRegenerating.value ? 'regenerated' : 'created'
+                }
+              }))
+            }
           } catch (error) {
             console.error('Error reloading memory books:', error)
           }

@@ -445,8 +445,8 @@
                   :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
                 >
                   <i class="pi pi-refresh text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing ...' : 'Recreate' }}</span>
-                  <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Recreate' }}</span>
+                  <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing ...' : 'Edit/Revise' }}</span>
+                  <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Edit/Revise' }}</span>
                 </button>
                 <button
                   data-testid="details-approve-button"
@@ -460,18 +460,8 @@
                   <span class="sm:hidden">Approve</span>
                 </button>
                 <button
-                  data-testid="details-select-assets-button"
-                  v-if="selectedBook"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
-                  @click="openSelectMemoriesDialog"
-                >
-                  <i class="pi pi-images text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">Select Assets</span>
-                  <span class="sm:hidden">Assets</span>
-                </button>
-                <button
                   data-testid="details-edit-settings-button"
-                  v-if="selectedBook"
+                  v-if="selectedBook && selectedBook.format !== 'card'"
                   class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
                   @click="openEditSettings(selectedBook)"
                 >
@@ -1164,10 +1154,23 @@ const onPdfModalHide = () => {
     totalPages.value = 1
     zoomLevel.value = 1.0
   }
+  
+  // Reload memory books to show any new items that may have been created
+  console.log('🔍 [Memory Books] PDF modal closed, reloading memory books')
+  loadMemoryBooks()
 }
 
 const navigateToTrash = () => {
   navigateTo('/app/memory-books/trash')
+}
+
+// Helper function to emit memory book update events
+const emitMemoryBookUpdate = (bookId = null, action = 'updated') => {
+  if (process.client) {
+    window.dispatchEvent(new CustomEvent('memory-book-updated', {
+      detail: { bookId, action }
+    }))
+  }
 }
 
 const openMagicMemoryDialog = (type) => {
@@ -1240,12 +1243,6 @@ const onRegenerateClick = (book) => {
   showRegenerateDialog.value = true
 }
 
-// Open select memories dialog
-const openSelectMemoriesDialog = async () => {
-  // For now, just show a message - this would open the asset selection dialog
-  console.log('Open select memories dialog - would open asset selection modal')
-  // TODO: Implement the full asset selection dialog
-}
 
 // Open edit settings
 const openEditSettings = async (book) => {
@@ -1292,13 +1289,18 @@ const confirmDeleteBook = (book) => {
 // Wrapper for viewBookDetails that also loads asset thumbnails
 const handleViewBookDetails = async (book) => {
   try {
-    // Call the original viewBookDetails function
+    console.log('🔍 [Memory Books] Opening book details for:', book.id)
+    
+    // Call the original viewBookDetails function first
     await viewBookDetails(book)
     
-    // Load asset thumbnails for this book
+    // Load asset thumbnails for this book in the background
     if (book.created_from_assets && book.created_from_assets.length > 0) {
       console.log('🖼️ Loading asset thumbnails for book:', book.id, 'assets:', book.created_from_assets)
-      await loadAssetThumbnails(book)
+      // Don't await this - let it load in the background to avoid blocking the modal
+      loadAssetThumbnails(book).catch(error => {
+        console.error('❌ Error loading asset thumbnails:', error)
+      })
     }
   } catch (error) {
     console.error('❌ Error viewing book details:', error)
@@ -1314,9 +1316,10 @@ const confirmApproval = async () => {
   try {
     await approveBookOperation(pendingApprovalBookId.value)
     showApprovalDialog.value = false
+    const bookId = pendingApprovalBookId.value
     pendingApprovalBookId.value = null
-    // Reload memory books to update status
-    await loadMemoryBooks()
+    // Emit event to update memory books
+    emitMemoryBookUpdate(bookId, 'approved')
   } catch (error) {
     console.error('Failed to approve book:', error)
   }
@@ -1325,8 +1328,8 @@ const confirmApproval = async () => {
 const unapproveBook = async (bookId) => {
   try {
     await unapproveBookOperation(bookId)
-    // Reload memory books to update status
-    await loadMemoryBooks()
+    // Emit event to update memory books
+    emitMemoryBookUpdate(bookId, 'unapproved')
   } catch (error) {
     console.error('Failed to unapprove book:', error)
   }
@@ -1349,13 +1352,14 @@ const deleteBook = (bookId) => {
 
         const confirmDelete = async () => {
           try {
-            const result = await deleteBookOperation(bookToDelete.value)
+            const bookId = bookToDelete.value
+            const result = await deleteBookOperation(bookId)
             showDeleteDialog.value = false
             bookToDelete.value = null
             // Close the detailed dialog since the book no longer exists
             showDetailsModal.value = false
-            // Reload memory books to update list
-            await loadMemoryBooks()
+            // Emit event to update memory books
+            emitMemoryBookUpdate(bookId, 'deleted')
           } catch (error) {
             console.error('❌ Failed to delete book:', error)
             showDeleteDialog.value = false
@@ -1742,7 +1746,14 @@ onMounted(() => {
       }
     })
 
+    // Listen for memory book updates (when new books are created)
+    window.addEventListener('memory-book-updated', async (event) => {
+      console.log('🔍 [Memory Books] Received memory-book-updated event, reloading books')
+      await loadMemoryBooks()
+    })
+
     // Listen for page visibility changes to refresh when returning from other pages
+    // Note: This is kept as a fallback for cases where event-driven updates might be missed
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         console.log('🔍 [Memory Books] Page became visible, refreshing memory books list')
@@ -1751,12 +1762,6 @@ onMounted(() => {
     }
     
     document.addEventListener('visibilitychange', handleVisibilityChange)
-    
-    // Also listen for focus events (when user returns to tab)
-    window.addEventListener('focus', () => {
-      console.log('🔍 [Memory Books] Window focused, refreshing memory books list')
-      loadMemoryBooks()
-    })
 
     // Note: Upload dialog handling moved to dedicated /upload route
   }
@@ -1765,8 +1770,8 @@ onMounted(() => {
 onUnmounted(() => {
   if (process.client) {
     window.removeEventListener('view-pdf', () => {})
+    window.removeEventListener('memory-book-updated', () => {})
     document.removeEventListener('visibilitychange', () => {})
-    window.removeEventListener('focus', () => {})
   }
 })
 </script>

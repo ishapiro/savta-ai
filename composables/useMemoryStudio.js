@@ -59,6 +59,10 @@ export const useMemoryStudio = () => {
 
     try {
       loadingMemoryBooks.value = true
+      
+      // Clear existing thumbnails cache to ensure fresh URLs are loaded
+      assetThumbnails.value = {}
+      
       const books = await dbMemoryBooks.getMemoryBooks()
       memoryBooks.value = books || []
       
@@ -98,6 +102,26 @@ export const useMemoryStudio = () => {
       }
     } catch (error) {
       console.error('❌ Failed to load asset thumbnails:', error)
+    }
+  }
+
+  const reloadAssetThumbnails = async (book) => {
+    if (!book || !book.created_from_assets || book.created_from_assets.length === 0) {
+      return
+    }
+
+    try {
+      console.log('🔄 Reloading thumbnails for book:', book.id, 'assets:', book.created_from_assets)
+      
+      // Clear existing thumbnails for this book's assets
+      book.created_from_assets.forEach(assetId => {
+        delete assetThumbnails.value[assetId]
+      })
+      
+      // Reload thumbnails for this book
+      await loadAssetThumbnails(book)
+    } catch (error) {
+      console.error('❌ Failed to reload asset thumbnails:', error)
     }
   }
 
@@ -231,6 +255,7 @@ export const useMemoryStudio = () => {
     // Methods
     loadMemoryBooks,
     loadAssetThumbnails,
+    reloadAssetThumbnails,
     getAssetThumbnail,
     getFirstAssetThumbnail,
     formatDate,
