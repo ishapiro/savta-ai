@@ -130,38 +130,26 @@ export default defineEventHandler(async (event) => {
     const isPhotoReplacement = memoryBook.photo_selection_method === 'replace_selected' && photosToReplace.length > 0
     
     if (isPhotoReplacement) {
-      // Photo replacement logic - keep some photos, replace others
+      // SIMPLE PHOTO REPLACEMENT: Just select replacement photos from the pool
       console.log('🔄 Photo replacement detected, replacing', photosToReplace.length, 'photos')
       console.log('🔄 DEBUG - photosToReplace:', photosToReplace)
-      console.log('🔄 DEBUG - memoryBook.created_from_assets:', memoryBook.created_from_assets)
       
-      // Get the original photos from the book
-      // For recreation, use photo_selection_pool as the original photos since created_from_assets might be null
-      const originalPhotos = memoryBook.created_from_assets || memoryBook.photo_selection_pool || []
-      console.log('🔄 DEBUG - originalPhotos:', originalPhotos)
+      // Simply select from the available pool, avoiding the marked photos
+      const availableForSelection = assets.filter(asset => !photosToReplace.includes(asset.id))
+      console.log('🔄 DEBUG - availableForSelection:', availableForSelection.map(a => a.id))
       
-      // Keep photos that are NOT marked for replacement
-      const photosToKeep = originalPhotos.filter(photoId => !photosToReplace.includes(photoId))
-      console.log('🔄 DEBUG - photosToKeep:', photosToKeep)
-      
-      // Get new photos for replacement from the selection pool
-      // For photo replacement, we can use any photo from the selection pool EXCEPT the ones marked for replacement
-      console.log('🔄 DEBUG - assets in selection pool:', assets.map(a => a.id))
-      const availableForReplacement = assets.filter(asset => !photosToReplace.includes(asset.id))
-      console.log('🔄 DEBUG - availableForReplacement:', availableForReplacement.map(a => a.id))
-      
-      if (availableForReplacement.length < photosToReplace.length) {
-        console.error('❌ Not enough new photos available for replacement')
+      if (availableForSelection.length < photosToReplace.length) {
+        console.error('❌ Not enough photos available for replacement')
         throw createError({
           statusCode: 400,
-          statusMessage: `Not enough new photos available for replacement. Need ${photosToReplace.length} new photos, but only ${availableForReplacement.length} are available.`
+          statusMessage: `Not enough photos available for replacement. Need ${photosToReplace.length} photos, but only ${availableForSelection.length} are available.`
         })
       }
       
-      // Select new photos for replacement using AI
+      // Select replacement photos using AI
       const replacementCount = photosToReplace.length
       const replacementSelectionResult = await selectPhotosByAttributes(
-        availableForReplacement, 
+        availableForSelection, 
         memoryBook.ai_supplemental_prompt, 
         replacementCount, 
         []
@@ -176,17 +164,27 @@ export default defineEventHandler(async (event) => {
       }
       
       const replacementPhotoIndices = replacementSelectionResult.selected_photo_numbers
-      const replacementPhotos = replacementPhotoIndices.map(index => availableForReplacement[index].id)
+      const replacementPhotos = replacementPhotoIndices.map(index => availableForSelection[index].id)
+      
+      // For photo replacement, we need to combine kept photos with replacement photos
+      // Get the original photos from the book
+      const originalPhotos = memoryBook.created_from_assets || memoryBook.photo_selection_pool || []
+      console.log('🔄 DEBUG - originalPhotos for combination:', originalPhotos)
+      
+      // Keep photos that are NOT marked for replacement
+      const photosToKeep = originalPhotos.filter(photoId => !photosToReplace.includes(photoId))
+      console.log('🔄 DEBUG - photosToKeep for combination:', photosToKeep)
       
       // Combine kept photos with replacement photos
       selectedAssets = [...photosToKeep, ...replacementPhotos]
+      console.log('🔄 DEBUG - final selectedAssets:', selectedAssets)
       
       // Create reasoning for photo replacement
       photoSelectionResult = {
-        reasoning: `Photo replacement: kept ${photosToKeep.length} original photos and replaced ${replacementPhotos.length} photos with new ones. ${replacementSelectionResult.reasoning || ''}`
+        reasoning: `Photo replacement: selected ${replacementPhotos.length} replacement photos. ${replacementSelectionResult.reasoning || ''}`
       }
       
-      await updatePdfStatus(supabase, memoryBookId, userId, `🔄 Replaced ${replacementPhotos.length} photos while keeping ${photosToKeep.length} original photos...`)
+      await updatePdfStatus(supabase, memoryBookId, userId, `🔄 Selected ${replacementPhotos.length} replacement photos...`)
       
     } else if (memoryBook.photo_selection_method === 'photo_library') {
       // Manual selection - use the photos in the pool directly

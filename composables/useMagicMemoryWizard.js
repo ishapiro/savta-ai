@@ -506,27 +506,11 @@ export const useMagicMemoryWizard = () => {
       console.error('🔍 [generateMagicMemory] TERMINAL LOG - photosToReplace.value.length:', photosToReplace.value.length)
       
       if (photoSelection_method.value === 'replace_selected' && existingBookForRecreation.value) {
-        const originalPhotos = existingBookForRecreation.value.created_from_assets || []
-        console.error('🔍 [generateMagicMemory] TERMINAL LOG - Entering replace_selected logic')
-        console.error('🔍 [generateMagicMemory] TERMINAL LOG - originalPhotos:', originalPhotos)
-        
-        // If no photos are marked for replacement, keep all original photos (like "keep_same")
-        if (photosToReplace.value.length === 0) {
-          photoSelectionPool = originalPhotos
-          console.log('🔄 [generateMagicMemory] No photos marked for replacement, keeping all original photos:', photoSelectionPool)
-          console.error('🔄 [generateMagicMemory] TERMINAL LOG - No photos marked for replacement, keeping all original photos')
-        } else {
-          // Create a mixed pool: keep some photos, replace others
-          const photosToKeep = originalPhotos.filter(photoId => !photosToReplace.value.includes(photoId))
-          
-          // Get new photos for replacement
-          const replacementPhotos = photoSelection_populatePhotoSelectionPool()
-          
-          // Combine kept photos with replacement photos
-          photoSelectionPool = [...photosToKeep, ...replacementPhotos]
-          console.log('🔄 [generateMagicMemory] Photo replacement - kept:', photosToKeep, 'replacement:', replacementPhotos, 'final pool:', photoSelectionPool)
-          console.error('🔄 [generateMagicMemory] TERMINAL LOG - Photo replacement - kept:', photosToKeep, 'replacement:', replacementPhotos, 'final pool:', photoSelectionPool)
-        }
+        // SIMPLIFIED: For photo replacement, just use the normal photo selection pool
+        // The backend will handle the replacement logic and return the final photo set
+        photoSelectionPool = photoSelection_populatePhotoSelectionPool()
+        console.log('🔄 [generateMagicMemory] Photo replacement mode: using normal photo selection pool')
+        console.error('🔄 [generateMagicMemory] TERMINAL LOG - Photo replacement mode: using normal photo selection pool')
       } else {
         // Use the normal photo selection logic
         photoSelectionPool = photoSelection_populatePhotoSelectionPool()
