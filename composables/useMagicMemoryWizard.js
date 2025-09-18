@@ -181,6 +181,21 @@ export const useMagicMemoryWizard = () => {
     return 'Complete'
   }
 
+  const getNextButtonLabel = () => {
+    // Special logic for photo selection step
+    if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS) {
+      // If "replace_selected" is selected, show "Next: Photo Replacement"
+      if (photoSelection_method.value === 'replace_selected') {
+        return 'Next: Photo Replacement'
+      }
+      // For all other cases (including "keep_same"), show "Let's create something beautiful"
+      return "Let's create something beautiful"
+    }
+    
+    // For all other steps, use the normal next step name
+    return `Next: ${getNextStepName()}`
+  }
+
   const nextMagicMemoryStep = async () => {
     // Validate current step before proceeding
     if (magicMemoryStep.value === MAGIC_STEPS.TITLE && !magicMemoryTitle.value.trim()) {
@@ -512,6 +527,14 @@ export const useMagicMemoryWizard = () => {
         photoSelectionPool = photoSelection_populatePhotoSelectionPool()
         console.log('🔄 [generateMagicMemory] Photo replacement mode: using normal photo selection pool')
         console.error('🔄 [generateMagicMemory] TERMINAL LOG - Photo replacement mode: using normal photo selection pool')
+      } else if (photoSelection_method.value === 'keep_same' && existingBookForRecreation.value) {
+        // For "keep_same", use the existing photos from the original book
+        // This preserves the original photos without going through photo replacement
+        photoSelectionPool = existingBookForRecreation.value.created_from_assets || []
+        console.log('🔄 [generateMagicMemory] Keep same mode: using existing photos from original book')
+        console.log('🔄 [generateMagicMemory] Keep same mode: photoSelectionPool:', photoSelectionPool)
+        console.error('🔄 [generateMagicMemory] TERMINAL LOG - Keep same mode: using existing photos from original book')
+        console.error('🔄 [generateMagicMemory] TERMINAL LOG - Keep same mode: photoSelectionPool:', photoSelectionPool)
       } else {
         // Use the normal photo selection logic
         photoSelectionPool = photoSelection_populatePhotoSelectionPool()
@@ -520,6 +543,10 @@ export const useMagicMemoryWizard = () => {
       }
       
       if (!photoSelectionPool || photoSelectionPool.length === 0) {
+        console.error('❌ [generateMagicMemory] No photos available for selection')
+        console.error('❌ [generateMagicMemory] photoSelectionPool:', photoSelectionPool)
+        console.error('❌ [generateMagicMemory] photoSelection_method:', photoSelection_method.value)
+        console.error('❌ [generateMagicMemory] existingBookForRecreation:', !!existingBookForRecreation.value)
         throw new Error('No photos available for selection. Please upload some photos first.')
       }
       
@@ -603,7 +630,7 @@ export const useMagicMemoryWizard = () => {
           photo_selection_date_range: JSON.stringify(photoSelection_dateRange.value),
           photo_selection_tags: JSON.stringify(photoSelection_selectedTags.value),
           photo_selection_location: photoSelection_selectedLocation.value,
-          photos_to_replace: photosToReplace.value
+          photos_to_replace: photoSelection_method.value === 'keep_same' ? [] : photosToReplace.value
         }
         
         console.log('🔍 [generateMagicMemory] API request body photos_to_replace:', requestBody.photos_to_replace)
@@ -782,6 +809,7 @@ export const useMagicMemoryWizard = () => {
     isFirstStep,
     isLastStep,
     getNextStepName,
+    getNextButtonLabel,
     nextMagicMemoryStep,
     previousMagicMemoryStep,
     openMagicMemoryDialog,

@@ -303,7 +303,7 @@
         <!-- Next Button (not on last step) -->
         <Button
           v-if="!isLastStep()"
-          :label="`Next: ${getNextStepName()}`"
+          :label="getNextButtonLabel()"
           icon="pi pi-arrow-right"
           :disabled="isNextButtonDisabled"
           @click="nextMagicMemoryStep"
@@ -404,6 +404,7 @@ const {
   isFirstStep,
   isLastStep,
   getNextStepName,
+  getNextButtonLabel,
   nextMagicMemoryStep,
   previousMagicMemoryStep,
   openMagicMemoryDialog,
