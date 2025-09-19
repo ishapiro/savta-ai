@@ -302,7 +302,7 @@
             v-tooltip.top="'Clear filter'"
           />
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 max-h-64 sm:max-h-80 overflow-y-auto">
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 max-h-80 sm:max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                       <div
               v-for="asset in filteredAssets"
               :key="asset.id"
@@ -717,5 +717,25 @@ const toggleMemorySelection = (assetId) => {
 <style scoped>
 .photo-selection-interface {
   /* Component-specific styles can be added here */
+}
+
+/* Mobile-specific improvements for photo selection */
+@media (max-width: 640px) {
+  .photo-selection-interface {
+    /* Ensure proper scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Improve touch targets for mobile */
+  .magic-photo-card {
+    min-height: 120px;
+    touch-action: manipulation;
+  }
+  
+  /* Better spacing for mobile photo grid */
+  .grid {
+    gap: 0.75rem;
+  }
 }
 </style>

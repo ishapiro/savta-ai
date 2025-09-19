@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-brand-background p-4 no-zoom">
+  <div class="min-h-screen bg-brand-background p-4 no-zoom mobile-no-pan">
     <div class="max-w-7xl mx-auto">
       <!-- Clean Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -176,152 +176,198 @@
       <Dialog
         v-model:visible="showDetailsModal"
         modal
-        class="w-[95vw] max-w-4xl mx-auto mb-15 -mt-16"
+        :closable="false"
+        :dismissable-mask="true"
+        :class="['w-full', 'h-full', 'max-w-none', 'max-h-screen', 'sm:w-[95vw]', 'sm:max-w-4xl', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl', 'mobile-app-dialog']"
       >
-        <div v-if="selectedBook" class="bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen">
-          <!-- Header Section -->
-          <div class="bg-gradient-to-br from-white via-brand-navigation/5 to-brand-accent/10 rounded-t-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
-                  <i class="pi pi-gift text-white text-lg sm:text-2xl"></i>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1 truncate">{{ selectedBook.ai_supplemental_prompt || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
-                  <div class="flex items-center gap-2">
-                    <div :class="getStatusBadgeClass(selectedBook.status)" class="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold shadow-md backdrop-blur-sm">
-                      <i :class="getStatusIcon(selectedBook.status)" class="text-xs sm:text-sm"></i>
-                      <span class="hidden sm:inline">{{ getStatusText(selectedBook.status) }}</span>
-                      <span class="sm:hidden">{{ getStatusText(selectedBook.status).substring(0, 8) }}</span>
+        <div v-if="selectedBook" class="bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen flex flex-col sm:h-auto sm:max-h-[90vh] sm:overflow-y-auto">
+          <!-- Header Section - Compact on mobile -->
+          <div class="bg-gradient-to-br from-white via-brand-navigation/5 to-brand-accent/10 rounded-t-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
+            <!-- Mobile: Compact header -->
+            <div class="sm:hidden">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center">
+                    <i class="pi pi-gift text-white text-sm"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h2 class="text-base font-bold text-gray-900 truncate">{{ selectedBook.ai_supplemental_prompt || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
+                    <div :class="getStatusBadgeClass(selectedBook.status)" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold">
+                      <i :class="getStatusIcon(selectedBook.status)" class="text-xs"></i>
+                      <span>{{ getStatusText(selectedBook.status).substring(0, 8) }}</span>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <button
-                  data-testid="details-unapprove-button"
-                  v-if="selectedBook.status === 'approved'"
-                  class="flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
-                  @click="unapproveBook(selectedBook.id)"
-                >
-                  <i class="pi pi-undo text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">Unapprove</span>
-                  <span class="sm:hidden">Unapprove</span>
-                </button>
                 <button
                   data-testid="details-close-button"
-                  class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-cancel text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                  class="border-0 flex items-center justify-center gap-1 bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200"
                   @click="showDetailsModal = false"
                 >
-                  <i class="pi pi-times text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">Close</span>
-                  <span class="sm:hidden">Close</span>
+                  <i class="pi pi-times text-xs"></i>
+                  <span>Close</span>
                 </button>
               </div>
-            </div>
-
-            <!-- Info Cards -->
-            <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-3 mt-4">
-              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-calendar text-brand-primary text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Created</span>
+              <!-- Mobile: Essential info only -->
+              <div class="grid grid-cols-3 gap-2 text-xs">
+                <div class="bg-white/80 rounded-lg p-2 border border-gray-200 text-center">
+                  <div class="text-gray-600 mb-1">Assets</div>
+                  <div class="font-semibold text-gray-900">{{ selectedBook.created_from_assets?.length || 0 }}</div>
                 </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.created_at) }}</p>
-              </div>
-              <div v-if="selectedBook.generated_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-magic-wand text-brand-primary text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Generated</span>
+                <div class="bg-white/80 rounded-lg p-2 border border-gray-200 text-center">
+                  <div class="text-gray-600 mb-1">Format</div>
+                  <div class="font-semibold text-gray-900">{{ selectedBook.format || 'book' }}</div>
                 </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.generated_at) }}</p>
-              </div>
-              <div v-if="selectedBook.approved_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-check-circle text-brand-accent text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Approved</span>
+                <div class="bg-white/80 rounded-lg p-2 border border-gray-200 text-center">
+                  <div class="text-gray-600 mb-1">Created</div>
+                  <div class="font-semibold text-gray-900">{{ formatDate(selectedBook.created_at).split(' ')[0] }}</div>
                 </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.approved_at) }}</p>
-              </div>
-              <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-images text-brand-accent text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Assets</span>
-                </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">
-                  {{ selectedBook.created_from_assets.length }}
-                  <span v-if="selectedBook.photo_selection_pool && selectedBook.photo_selection_pool.length > 0" class="text-gray-500">
-                    ({{ selectedBook.photo_selection_pool.length }} in pool)
-                  </span>
-                </p>
-              </div>
-              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-th-large text-brand-primary text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Layout</span>
-                </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.layout_type || 'grid' }}</p>
-              </div>
-              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-file text-brand-secondary text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Format</span>
-                </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.format || 'book' }}</p>
-              </div>
-              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-calendar-plus text-brand-highlight text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Event</span>
-                </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_event || 'N/A' }}</p>
-              </div>
-            </div>
-            
-            <!-- Additional Info Cards Row -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-2">
-              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-palette text-brand-primary text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Theme</span>
-                </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme?.name || 'Default' }}</p>
-              </div>
-              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-circle text-brand-accent text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Shape</span>
-                </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_shape || 'original' }}</p>
-              </div>
-              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-table text-brand-highlight text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Grid</span>
-                </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.grid_layout || '2x2' }}</p>
-              </div>
-              <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
-                <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                  <i class="pi pi-file-edit text-brand-primary text-xs sm:text-sm"></i>
-                  <span class="text-xs font-medium text-gray-600">Title</span>
-                </div>
-                <p class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ selectedBook.ai_supplemental_prompt || 'Untitled' }}</p>
               </div>
             </div>
 
-            <!-- Review Notes -->
-            <div v-if="selectedBook.review_notes" class="mt-4 bg-gradient-to-br from-brand-highlight/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-highlight/20">
-              <div class="flex items-center gap-2 mb-2">
-                <i class="pi pi-comment text-brand-highlight text-sm"></i>
-                <span class="text-sm font-semibold text-brand-highlight">Review Notes</span>
+            <!-- Desktop: Full header -->
+            <div class="hidden sm:block">
+              <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                    <i class="pi pi-gift text-white text-lg sm:text-2xl"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1 truncate">{{ selectedBook.ai_supplemental_prompt || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
+                    <div class="flex items-center gap-2">
+                      <div :class="getStatusBadgeClass(selectedBook.status)" class="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold shadow-md backdrop-blur-sm">
+                        <i :class="getStatusIcon(selectedBook.status)" class="text-xs sm:text-sm"></i>
+                        <span class="hidden sm:inline">{{ getStatusText(selectedBook.status) }}</span>
+                        <span class="sm:hidden">{{ getStatusText(selectedBook.status).substring(0, 8) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button
+                    data-testid="details-unapprove-button"
+                    v-if="selectedBook.status === 'approved'"
+                    class="flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                    @click="unapproveBook(selectedBook.id)"
+                  >
+                    <i class="pi pi-undo text-xs sm:text-sm"></i>
+                    <span class="hidden sm:inline">Unapprove</span>
+                    <span class="sm:hidden">Unapprove</span>
+                  </button>
+                  <button
+                    data-testid="details-close-button"
+                    class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-cancel text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                    @click="showDetailsModal = false"
+                  >
+                    <i class="pi pi-times text-xs sm:text-sm"></i>
+                    <span class="hidden sm:inline">Close</span>
+                    <span class="sm:hidden">Close</span>
+                  </button>
+                </div>
               </div>
-              <p class="text-xs sm:text-sm text-brand-highlight italic">{{ selectedBook.review_notes }}</p>
+
+              <!-- Desktop: Full info cards -->
+              <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-3 mt-4">
+                <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-calendar text-brand-primary text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Created</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.created_at) }}</p>
+                </div>
+                <div v-if="selectedBook.generated_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-magic-wand text-brand-primary text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Generated</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.generated_at) }}</p>
+                </div>
+                <div v-if="selectedBook.approved_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-check-circle text-brand-accent text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Approved</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.approved_at) }}</p>
+                </div>
+                <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-images text-brand-accent text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Assets</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">
+                    {{ selectedBook.created_from_assets.length }}
+                    <span v-if="selectedBook.photo_selection_pool && selectedBook.photo_selection_pool.length > 0" class="text-gray-500">
+                      ({{ selectedBook.photo_selection_pool.length }} in pool)
+                    </span>
+                  </p>
+                </div>
+                <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-th-large text-brand-primary text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Layout</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.layout_type || 'grid' }}</p>
+                </div>
+                <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-file text-brand-secondary text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Format</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.format || 'book' }}</p>
+                </div>
+                <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-calendar-plus text-brand-highlight text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Event</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_event || 'N/A' }}</p>
+                </div>
+              </div>
+              
+              <!-- Desktop: Additional info cards -->
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-2">
+                <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-palette text-brand-primary text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Theme</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme?.name || 'Default' }}</p>
+                </div>
+                <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-circle text-brand-accent text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Shape</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_shape || 'original' }}</p>
+                </div>
+                <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-table text-brand-highlight text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Grid</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.grid_layout || '2x2' }}</p>
+                </div>
+                <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
+                  <div class="flex items-center gap-1 sm:gap-2 mb-1">
+                    <i class="pi pi-file-edit text-brand-primary text-xs sm:text-sm"></i>
+                    <span class="text-xs font-medium text-gray-600">Title</span>
+                  </div>
+                  <p class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ selectedBook.ai_supplemental_prompt || 'Untitled' }}</p>
+                </div>
+              </div>
+
+              <!-- Desktop: Review notes -->
+              <div v-if="selectedBook.review_notes" class="mt-4 bg-gradient-to-br from-brand-highlight/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-highlight/20">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="pi pi-comment text-brand-highlight text-sm"></i>
+                  <span class="text-sm font-semibold text-brand-highlight">Review Notes</span>
+                </div>
+                <p class="text-xs sm:text-sm text-brand-highlight italic">{{ selectedBook.review_notes }}</p>
+              </div>
             </div>
           </div>
 
           <!-- Content Section -->
-          <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <div class="flex-1 p-4 sm:p-6 space-y-4 sm:space-y-6 pb-20 sm:pb-6 sm:overflow-y-auto">
             <!-- Story Section (for Story-based Memories) -->
             <div v-if="selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
               <div class="flex items-center gap-3 mb-4">
@@ -422,61 +468,111 @@
               </div>
             </div>
 
-            <!-- Actions Section -->
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
-              <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
-              <div class="flex flex-wrap justify-center gap-3">
+          </div>
+
+          <!-- Actions Section - Fixed at bottom on mobile, normal flow on desktop -->
+          <div class="bg-white rounded-b-2xl shadow-lg border border-gray-100 p-2 sm:p-4 fixed bottom-0 left-0 right-0 sm:relative sm:bottom-auto sm:left-auto sm:right-auto sm:rounded-b-2xl sm:shadow-2xl sm:border-t-2 sm:border-gray-200">
+            <!-- Mobile: Compact icon buttons in one row -->
+            <div class="sm:hidden">
+              <div class="flex justify-center gap-1">
                 <button
                   data-testid="details-create-memory-button"
                   v-if="selectedBook.status === 'draft'"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-save text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
                   @click="onGenerateClick(selectedBook)"
                 >
-                  <i class="pi pi-magic-wand text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">Create Memory</span>
-                  <span class="sm:hidden">Create</span>
+                  <i class="pi pi-magic-wand text-sm mb-1"></i>
+                  <span>Create</span>
                 </button>
                 <button
                   data-testid="details-recreate-button"
                   v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-edit text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
                   @click="onRegenerateClick(selectedBook)"
                   :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
                 >
-                  <i class="pi pi-refresh text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">{{ selectedBook.status === 'background_ready' ? 'Processing ...' : 'Edit/Revise' }}</span>
-                  <span class="sm:hidden">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Edit/Revise' }}</span>
+                  <i class="pi pi-refresh text-sm mb-1"></i>
+                  <span>{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Edit' }}</span>
                 </button>
                 <button
                   data-testid="details-approve-button"
                   v-if="selectedBook.status === 'ready'"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-save text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
                   @click="approveBook(selectedBook.id)"
-                  v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'"
                 >
-                  <i class="pi pi-check text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">Approve</span>
-                  <span class="sm:hidden">Approve</span>
+                  <i class="pi pi-check text-sm mb-1"></i>
+                  <span>Approve</span>
                 </button>
                 <button
                   data-testid="details-edit-settings-button"
                   v-if="selectedBook && selectedBook.format !== 'card'"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-edit text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
                   @click="openEditSettings(selectedBook)"
                 >
-                  <i class="pi pi-cog text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">Edit Settings</span>
-                  <span class="sm:hidden">Edit</span>
+                  <i class="pi pi-cog text-sm mb-1"></i>
+                  <span>Settings</span>
                 </button>
                 <button
                   data-testid="details-trash-button"
                   v-if="selectedBook"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-delete text-white font-bold rounded-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-delete text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
+                  @click="confirmDeleteBook(selectedBook)"
+                >
+                  <i class="pi pi-trash text-sm mb-1"></i>
+                  <span>Trash</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Desktop: Full buttons -->
+            <div class="hidden sm:block">
+              <div class="flex flex-row flex-wrap justify-center gap-2 sm:gap-3">
+                <button
+                  data-testid="details-create-memory-button"
+                  v-if="selectedBook.status === 'draft'"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
+                  @click="onGenerateClick(selectedBook)"
+                >
+                  <i class="pi pi-magic-wand text-xs sm:text-sm"></i>
+                  <span>Create Memory</span>
+                </button>
+                <button
+                  data-testid="details-recreate-button"
+                  v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
+                  @click="onRegenerateClick(selectedBook)"
+                  :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
+                >
+                  <i class="pi pi-refresh text-xs sm:text-sm"></i>
+                  <span>{{ selectedBook.status === 'background_ready' ? 'Processing ...' : 'Edit/Revise' }}</span>
+                </button>
+                <button
+                  data-testid="details-approve-button"
+                  v-if="selectedBook.status === 'ready'"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
+                  @click="approveBook(selectedBook.id)"
+                  v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'"
+                >
+                  <i class="pi pi-check text-xs sm:text-sm"></i>
+                  <span>Approve</span>
+                </button>
+                <button
+                  data-testid="details-edit-settings-button"
+                  v-if="selectedBook && selectedBook.format !== 'card'"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
+                  @click="openEditSettings(selectedBook)"
+                >
+                  <i class="pi pi-cog text-xs sm:text-sm"></i>
+                  <span>Edit Settings</span>
+                </button>
+                <button
+                  data-testid="details-trash-button"
+                  v-if="selectedBook"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-delete text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
                   @click="confirmDeleteBook(selectedBook)"
                 >
                   <i class="pi pi-trash text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">Trash</span>
-                  <span class="sm:hidden">Trash</span>
+                  <span>Trash</span>
                 </button>
               </div>
             </div>
@@ -1781,5 +1877,89 @@ onUnmounted(() => {
   box-shadow: 0 0 32px 12px #fbbf24, 0 0 48px 24px #a78bfa;
   border: 2px solid #a78bfa;
   background: linear-gradient(135deg, #fef9c3 0%, #f3e8ff 100%);
+}
+
+/* Mobile-specific styles to disable side-by-side panning */
+@media (max-width: 640px) {
+  .mobile-no-pan {
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+  }
+  
+  .mobile-no-pan * {
+    touch-action: pan-y !important;
+  }
+  
+  /* Ensure modals and dialogs are not affected by panning */
+  .mobile-no-pan .p-dialog,
+  .mobile-no-pan .p-dialog-mask,
+  .mobile-no-pan .p-dialog-content {
+    touch-action: auto !important;
+    overscroll-behavior: auto !important;
+  }
+  
+  /* Prevent horizontal scrolling on the main container */
+  .mobile-no-pan {
+    overflow-x: hidden !important;
+  }
+  
+  /* Allow vertical scrolling in specific areas only */
+  .mobile-no-pan .overflow-y-auto {
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* Mobile app-like styling for details dialog */
+@media (max-width: 640px) {
+  .mobile-app-dialog {
+    /* Remove any default dialog styling that might interfere */
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  
+  .mobile-app-dialog .p-dialog-content {
+    /* Ensure content takes full space */
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+  }
+  
+  .mobile-app-dialog .p-dialog-mask {
+    /* Remove backdrop blur for native app feel */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: transparent !important;
+  }
+  
+  /* Add subtle status bar area */
+  .mobile-app-dialog::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0px);
+    background: #FEFCF8;
+    z-index: 1000;
+  }
+  
+  /* Make Tawk widget smaller on mobile */
+  .tawk-widget {
+    transform: scale(0.7) !important;
+    transform-origin: bottom right !important;
+    bottom: 10px !important;
+    right: 10px !important;
+  }
+  
+  /* Ensure action buttons are visible above Tawk widget */
+  .fixed.bottom-0 {
+    z-index: 1001 !important;
+    padding-bottom: 60px !important;
+  }
 }
 </style>

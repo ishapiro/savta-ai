@@ -4,12 +4,11 @@
     modal
     :closable="false"
     :dismissable-mask="false"
-    :style="{ maxWidth: '700px', maxHeight: '100vh' }"
-    :class="['w-full', 'sm:w-[700px]', 'sm:max-w-[700px]', 'h-full', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl']"
+    :class="['w-full', 'h-full', 'max-w-none', 'max-h-screen', 'sm:w-[700px]', 'sm:max-w-[700px]', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl', 'mobile-app-dialog']"
   >
     <!-- Step 1: Title Input -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
-      class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <div class="text-center mb-6 sm:mb-8 max-w-md w-full mx-auto sm:max-w-full">
         <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
           <i class="pi pi-gift text-white text-2xl sm:text-3xl"></i>
@@ -42,7 +41,7 @@
 
     <!-- Step 2: Theme Selection -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.THEME && currentButtonConfig?.steps.includes(MAGIC_STEPS.THEME)"
-      class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
           <i class="pi pi-palette text-lg sm:text-2xl text-white"></i>
@@ -72,7 +71,7 @@
 
     <!-- Step 3: Background Selection -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.BACKGROUND && currentButtonConfig?.steps.includes(MAGIC_STEPS.BACKGROUND)"
-      class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-palette text-xl sm:text-2xl text-white"></i>
@@ -115,7 +114,7 @@
 
     <!-- Step 4: Photo Selection Method -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTOS && currentButtonConfig?.steps.includes(MAGIC_STEPS.PHOTOS)"
-      class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
@@ -161,7 +160,7 @@
 
     <!-- Step 5: Photo Replacement Selection (for replace_selected method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTO_REPLACEMENT && photoSelection_method === 'replace_selected'"
-      class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
@@ -242,7 +241,7 @@
 
     <!-- Step 6: Photo Library Selection (MANUAL step for photo_library method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library'"
-      class="h-screen min-h-screen m-0 rounded-none flex flex-col justify-start items-center pt-1 px-4 py-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-folder-open text-xl sm:text-2xl text-white"></i>
@@ -280,35 +279,37 @@
 
     <!-- Navigation Footer -->
     <template #footer>
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 bg-gray-50 rounded-b-2xl">
-        <!-- Cancel Button -->
-        <Button
-          label="Cancel"
-          icon="pi pi-times"
-          @click="() => closeMagicMemoryDialog(true, true)"
-          class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
-        />
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 rounded-b-2xl fixed bottom-0 left-0 right-0 sm:relative sm:bottom-auto sm:left-auto sm:right-auto sm:rounded-b-2xl">
+        <!-- Mobile: Stack buttons vertically with smaller spacing -->
+        <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-3">
+          <!-- Cancel Button -->
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            @click="() => closeMagicMemoryDialog(true, true)"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+          />
+          
+          <!-- Back Button (not on first step) -->
+          <Button
+            v-if="!isFirstStep()"
+            label="Back"
+            icon="pi pi-arrow-left"
+            @click="previousMagicMemoryStep()"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+          />
+        </div>
         
-        <!-- Back Button (not on first step) -->
-        <Button
-          v-if="!isFirstStep()"
-          label="Back"
-          icon="pi pi-arrow-left"
-          @click="previousMagicMemoryStep()"
-          class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
-        />
-        
-        <!-- Next Button (not on last step) -->
+        <!-- Next/Generate Button - Full width on mobile, auto on desktop -->
         <Button
           v-if="!isLastStep()"
           :label="getNextButtonLabel()"
           icon="pi pi-arrow-right"
           :disabled="isNextButtonDisabled"
           @click="nextMagicMemoryStep"
-          class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
+          class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
         />
         
-        <!-- Generate Button (only on last step) -->
         <Button
           v-if="isLastStep()"
           label="Let's create something beautiful together"
@@ -316,7 +317,7 @@
           :disabled="isNextButtonDisabled || magicLoading"
           :loading="magicLoading"
           @click="handleGenerateMagicMemory"
-          class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
+          class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
         />
       </div>
     </template>
@@ -639,3 +640,43 @@ defineExpose({
   closeMagicMemoryDialog
 })
 </script>
+
+<style scoped>
+/* Mobile app-like styling */
+@media (max-width: 640px) {
+  .mobile-app-dialog {
+    /* Remove any default dialog styling that might interfere */
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  
+  .mobile-app-dialog .p-dialog-content {
+    /* Ensure content takes full space */
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+  }
+  
+  .mobile-app-dialog .p-dialog-mask {
+    /* Remove backdrop blur for native app feel */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: transparent !important;
+  }
+  
+  /* Add subtle status bar area */
+  .mobile-app-dialog::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0px);
+    background: #FEFCF8;
+    z-index: 1000;
+  }
+}
+</style>

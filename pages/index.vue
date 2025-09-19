@@ -79,35 +79,35 @@
         </div>
         <!-- Password Dialog -->
         <div v-if="showPasswordDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div class="bg-brand-background rounded-lg p-6 sm:p-6 w-full max-w-sm sm:max-w-md mx-2 sm:mx-4">
-            <h3 class="text-lg font-semibold text-brand-secondary mb-3 sm:mb-1">Insiders Access</h3>
-            <p class="text-brand-primary mb-4 sm:mb-1">Enter the password to access the insider area:</p>
+          <div class="bg-brand-background rounded-lg p-4 sm:p-6 w-full max-w-sm sm:max-w-md mx-2 sm:mx-4">
+            <h3 class="text-lg font-semibold text-brand-secondary mb-2">Insiders Access</h3>
+            <p class="text-brand-primary mb-3 text-sm">Enter insider password:</p>
             <form @submit.prevent="checkPassword" role="form" aria-label="Password verification form">
               <!-- Hidden username field for accessibility -->
               <input type="text" name="username" autocomplete="username" style="display: none;" />
               <InputText
                 v-model="password"
                 type="password"
-                placeholder="Enter password"
-                class="w-full mb-4 sm:mb-1 py-3 sm:py-2"
+                placeholder="Password"
+                class="w-full mb-3 py-2.5 sm:py-2"
                 autocomplete="current-password"
                 aria-label="Password"
                 @keyup.enter="checkPassword"
               />
-              <div class="flex flex-col sm:flex-row gap-3 sm:gap-2 sm:space-x-3">
+              <div class="flex flex-col sm:flex-row gap-2 sm:gap-2">
                 <Button
                   type="button"
                   label="Cancel"
-                  class="flex-1 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary border-0 py-3 sm:py-2 min-h-[44px] sm:min-h-0"
+                  class="flex-1 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary border-0 py-2.5 sm:py-2 min-h-[40px] sm:min-h-0"
                   @click="cancelPassword"
                 />
                 <Button
                   type="submit"
                   label="Enter"
-                  class="flex-1 bg-brand-header hover:bg-brand-secondary text-white border-0 py-3 sm:py-2 min-h-[44px] sm:min-h-0"
+                  class="flex-1 bg-brand-header hover:bg-brand-secondary text-white border-0 py-2.5 sm:py-2 min-h-[40px] sm:min-h-0"
                 />
               </div>
-              <div v-if="passwordError" class="text-red-500 text-sm mt-3 sm:mt-1">
+              <div v-if="passwordError" class="text-red-500 text-sm mt-2">
                 {{ passwordError }}
               </div>
             </form>

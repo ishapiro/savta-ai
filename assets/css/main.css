@@ -223,6 +223,24 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Mobile touch handling - prevent side-by-side panning on mobile */
+@media (max-width: 640px) {
+  body {
+    touch-action: pan-y !important;
+    /* Prevent horizontal scrolling and overscroll effects */
+    overflow-x: hidden !important;
+    position: relative !important;
+  }
+  
+  /* Allow modals and dialogs to handle their own touch events */
+  .p-dialog,
+  .p-dialog-mask,
+  .p-dialog-content {
+    touch-action: auto !important;
+    overflow-x: auto !important;
+  }
+}
+
 body {
   background-color: #FEFCF8; /* brand.background - Bright warm white */
   color: text-brand-primary;
