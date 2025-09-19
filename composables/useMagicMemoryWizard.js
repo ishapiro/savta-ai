@@ -194,6 +194,7 @@ export const useMagicMemoryWizard = () => {
   const nextMagicMemoryStep = async () => {
     
     // Validate current step before proceeding
+    // The title field is the AI Prompt, it is not longer used as title
     if (magicMemoryStep.value === MAGIC_STEPS.TITLE && !magicMemoryTitle.value.trim()) {
       console.error('Title is required')
       return
@@ -220,13 +221,24 @@ export const useMagicMemoryWizard = () => {
           }
         }
       } else {
+        // For all other methods (including 'keep_same', 'last_100', 'photo_library', etc.)
         // Skip photo replacement step and go directly to generation
-        const lastIndex = currentButtonConfig.value.steps.length - 1
-        currentStepIndex.value = lastIndex
-        magicMemoryStep.value = currentButtonConfig.value.steps[lastIndex]
-        console.log('🔄 [MagicMemoryWizard] Skipping photo replacement, going to generation')
-        console.error('🔄 [MagicMemoryWizard] TERMINAL LOG - Skipping photo replacement, going to generation')
-        return
+        // For recreation mode, we need to trigger generation directly since there's no generation step in the steps array
+        if (currentButtonConfig.value.name === "Recreate Memory") {
+          console.log('🔄 [MagicMemoryWizard] Recreation mode - triggering generation directly for method:', photoSelection_method.value)
+          console.error('🔄 [MagicMemoryWizard] TERMINAL LOG - Recreation mode - triggering generation directly for method:', photoSelection_method.value)
+          // Trigger generation directly
+          await generateMagicMemory()
+          return
+        } else {
+          // For other modes, go to the last step (which should be generation)
+          const lastIndex = currentButtonConfig.value.steps.length - 1
+          currentStepIndex.value = lastIndex
+          magicMemoryStep.value = currentButtonConfig.value.steps[lastIndex]
+          console.log('🔄 [MagicMemoryWizard] Skipping photo replacement, going to generation for method:', photoSelection_method.value)
+          console.error('🔄 [MagicMemoryWizard] TERMINAL LOG - Skipping photo replacement, going to generation for method:', photoSelection_method.value)
+          return
+        }
       }
     }
 

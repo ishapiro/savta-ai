@@ -9,6 +9,16 @@
     <!-- Step 1: Title Input -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
       class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      <!-- Edit Mode Button -->
+      <div v-if="isRecreateMode" class="flex justify-center mb-4">
+        <Button
+          :label="'Edit Mode'"
+          icon="pi pi-pencil"
+          class="bg-brand-dialog-save text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow transition-all duration-200 flex items-center justify-center"
+        />
+      </div>
+      
+      
       <div class="text-center mb-6 sm:mb-8 max-w-md w-full mx-auto sm:max-w-full">
         <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
           <i class="pi pi-gift text-white text-2xl sm:text-3xl"></i>
@@ -42,6 +52,15 @@
     <!-- Step 2: Theme Selection -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.THEME && currentButtonConfig?.steps.includes(MAGIC_STEPS.THEME)"
       class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      <!-- Edit Mode Button -->
+      <div v-if="isRecreateMode" class="flex justify-center mb-4">
+        <Button
+          :label="'Edit Mode'"
+          icon="pi pi-pencil"
+          class="bg-brand-dialog-save text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow transition-all duration-200 flex items-center justify-center"
+        />
+      </div>
+      
       <div class="text-center mb-2 sm:mb-6 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
           <i class="pi pi-palette text-lg sm:text-2xl text-white"></i>
@@ -72,6 +91,15 @@
     <!-- Step 3: Background Selection -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.BACKGROUND && currentButtonConfig?.steps.includes(MAGIC_STEPS.BACKGROUND)"
       class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      <!-- Edit Mode Button -->
+      <div v-if="isRecreateMode" class="flex justify-center mb-4">
+        <Button
+          :label="'Edit Mode'"
+          icon="pi pi-pencil"
+          class="bg-brand-dialog-save text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow transition-all duration-200 flex items-center justify-center"
+        />
+      </div>
+      
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-palette text-xl sm:text-2xl text-white"></i>
@@ -115,6 +143,15 @@
     <!-- Step 4: Photo Selection Method -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTOS && currentButtonConfig?.steps.includes(MAGIC_STEPS.PHOTOS)"
       class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      <!-- Edit Mode Button -->
+      <div v-if="isRecreateMode" class="flex justify-center mb-4">
+        <Button
+          :label="'Edit Mode'"
+          icon="pi pi-pencil"
+          class="bg-brand-dialog-save text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow transition-all duration-200 flex items-center justify-center"
+        />
+      </div>
+      
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
@@ -161,6 +198,15 @@
     <!-- Step 5: Photo Replacement Selection (for replace_selected method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTO_REPLACEMENT && photoSelection_method === 'replace_selected'"
       class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      <!-- Edit Mode Button -->
+      <div v-if="isRecreateMode" class="flex justify-center mb-4">
+        <Button
+          :label="'Edit Mode'"
+          icon="pi pi-pencil"
+          class="bg-brand-dialog-save text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow transition-all duration-200 flex items-center justify-center"
+        />
+      </div>
+      
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
@@ -242,6 +288,15 @@
     <!-- Step 6: Photo Library Selection (MANUAL step for photo_library method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library'"
       class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      <!-- Edit Mode Button -->
+      <div v-if="isRecreateMode" class="flex justify-center mb-4">
+        <Button
+          :label="'Edit Mode'"
+          icon="pi pi-pencil"
+          class="bg-brand-dialog-save text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow transition-all duration-200 flex items-center justify-center"
+        />
+      </div>
+      
       <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
         <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
           <i class="pi pi-folder-open text-xl sm:text-2xl text-white"></i>
@@ -679,4 +734,6 @@ defineExpose({
     z-index: 1000;
   }
 }
+
+/* Edit Mode Indicator Styling */
 </style>
