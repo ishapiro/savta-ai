@@ -41,12 +41,8 @@ export default defineNuxtConfig({
     externals: {
       external: ['@supabase/ssr', 'cookie']
     },
-    minify: {
-      css: {
-        // Disable CSS minification to avoid issues with CSS custom properties
-        enabled: false
-      }
-    }
+    // Disable minification to avoid issues with CSS custom properties
+    minify: false
   },
   ssr: true,
   experimental: {

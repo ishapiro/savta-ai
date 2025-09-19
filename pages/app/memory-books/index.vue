@@ -369,7 +369,7 @@
             </div>
             
             <!-- Content Section -->
-            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-4">
+            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-4 mb-5 sm:mb-0">
             <!-- Story Section (for Story-based Memories) -->
             <div v-if="selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
               <div class="flex items-center gap-3 mb-4">
@@ -441,7 +441,7 @@
             </div>
 
             <!-- Memory Book Section -->
-            <div v-if="selectedBook.pdf_url" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div v-if="selectedBook.pdf_url" class="mb-10 sm:mb-5 bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -465,7 +465,7 @@
               <div class="border-0 bg-gradient-to-br from-brand-primary/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 mt-4">
                 <div class="flex items-start gap-2 text-xs sm:text-sm text-brand-primary">
                   <i class="pi pi-info-circle text-brand-primary text-xs sm:text-sm mt-0.5 flex-shrink-0" title="Ask Savta"></i>
-                  <span>Click download to save your memory book as a {{ getFileTypeDisplay(selectedBook) }} file to your device</span>
+                  <span>Click download to save your memory as a {{ getFileTypeDisplay(selectedBook) }} file to your device</span>
                 </div>
               </div>
             </div>
@@ -473,55 +473,55 @@
           </div>
 
           <!-- Actions Section - Fixed at bottom on both mobile and desktop -->
-          <div class="bg-white rounded-b-2xl shadow-lg border border-gray-100 p-2 sm:p-3 fixed bottom-0 left-0 right-0 sm:fixed sm:bottom-0 sm:left-0 sm:right-0 sm:rounded-b-2xl sm:shadow-2xl sm:border-t-2 sm:border-gray-200">
+          <div class="bg-white rounded-b-2xl shadow-lg border border-gray-100 py-0.5 px-1 sm:p-3 fixed bottom-0 left-0 right-0 sm:fixed sm:bottom-0 sm:left-0 sm:right-0 sm:rounded-b-2xl sm:shadow-2xl sm:border-t-2 sm:border-gray-200">
             <!-- Mobile: Compact icon buttons in one row -->
-            <div class="sm:hidden">
-              <div class="flex justify-center gap-1">
+            <div class="sm:hidden mr-20 mt-3 -mb-4">
+              <div class="flex justify-start gap-0.5 px-1">
                 <button
                   data-testid="details-create-memory-button"
                   v-if="selectedBook.status === 'draft'"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-save text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-save text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
                   @click="onGenerateClick(selectedBook)"
                 >
-                  <i class="pi pi-magic-wand text-sm mb-1"></i>
-                  <span>Create</span>
+                  <i class="pi pi-magic-wand text-xs mb-0.5"></i>
+                  <span class="text-xs">Create</span>
                 </button>
                 <button
                   data-testid="details-recreate-button"
                   v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-edit text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-edit text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
                   @click="onRegenerateClick(selectedBook)"
                   :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
                 >
-                  <i class="pi pi-refresh text-sm mb-1"></i>
-                  <span>{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Edit' }}</span>
+                  <i class="pi pi-refresh text-xs mb-0.5"></i>
+                  <span class="text-xs">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Edit' }}</span>
                 </button>
                 <button
                   data-testid="details-approve-button"
                   v-if="selectedBook.status === 'ready'"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-save text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-save text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
                   @click="approveBook(selectedBook.id)"
                 >
-                  <i class="pi pi-check text-sm mb-1"></i>
-                  <span>Approve</span>
+                  <i class="pi pi-check text-xs mb-0.5"></i>
+                  <span class="text-xs">Approve</span>
                 </button>
                 <button
                   data-testid="details-edit-settings-button"
                   v-if="selectedBook && selectedBook.format !== 'card'"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-edit text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-edit text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
                   @click="openEditSettings(selectedBook)"
                 >
-                  <i class="pi pi-cog text-sm mb-1"></i>
-                  <span>Settings</span>
+                  <i class="pi pi-cog text-xs mb-0.5"></i>
+                  <span class="text-xs">Settings</span>
                 </button>
                 <button
                   data-testid="details-trash-button"
                   v-if="selectedBook"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-delete text-white font-bold rounded-lg px-2 py-2 text-xs shadow-lg transition-all duration-200 flex-1"
+                  class="flex flex-col items-center justify-center bg-brand-dialog-delete text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
                   @click="confirmDeleteBook(selectedBook)"
                 >
-                  <i class="pi pi-trash text-sm mb-1"></i>
-                  <span>Trash</span>
+                  <i class="pi pi-trash text-xs mb-0.5"></i>
+                  <span class="text-xs">Trash</span>
                 </button>
               </div>
             </div>
@@ -1828,6 +1828,89 @@ watch(() => route.query, (newQuery) => {
   }
 }, { deep: true })
 
+// Function to scale Tawk widget on mobile using JavaScript
+const scaleTawkWidgetMobile = () => {
+  if (process.client && window.innerWidth <= 640) {
+    // Use multiple approaches to catch the Tawk widget
+    const scaleTawkWidget = () => {
+      // Target the iframe
+      const tawkIframe = document.querySelector('iframe[title="chat widget"]') || 
+                        document.querySelector('iframe[id*="tawk"]') ||
+                        document.querySelector('iframe[src*="tawk"]')
+      
+      if (tawkIframe) {
+        // Override inline styles with JavaScript
+        tawkIframe.style.setProperty('transform', 'scale(0.5)', 'important')
+        tawkIframe.style.setProperty('transform-origin', 'bottom right', 'important')
+        tawkIframe.style.setProperty('width', '64px', 'important')
+        tawkIframe.style.setProperty('height', '60px', 'important')
+        tawkIframe.style.setProperty('min-width', '64px', 'important')
+        tawkIframe.style.setProperty('min-height', '60px', 'important')
+        tawkIframe.style.setProperty('max-width', '64px', 'important')
+        tawkIframe.style.setProperty('max-height', '60px', 'important')
+        tawkIframe.style.setProperty('bottom', '10px', 'important')
+        tawkIframe.style.setProperty('right', '10px', 'important')
+        tawkIframe.style.setProperty('position', 'fixed', 'important')
+        console.log('✅ Tawk widget scaled to 50% and repositioned')
+      }
+      
+      // Also target the button inside the iframe
+      const tawkButton = document.querySelector('button[aria-label="Chat widget"]') ||
+                        document.querySelector('.tawk-button') ||
+                        document.querySelector('.tawk-button-circle')
+      
+      if (tawkButton) {
+        tawkButton.style.setProperty('transform', 'scale(0.5)', 'important')
+        tawkButton.style.setProperty('transform-origin', 'bottom right', 'important')
+        console.log('✅ Tawk button scaled to 50%')
+      }
+    }
+    
+    // Try immediately
+    scaleTawkWidget()
+    
+    // Use MutationObserver to watch for Tawk widget loading
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) { // Element node
+              if (node.tagName === 'IFRAME' && 
+                  (node.title === 'chat widget' || 
+                   node.id?.includes('tawk') || 
+                   node.src?.includes('tawk'))) {
+                console.log('🔍 Tawk iframe detected, scaling...')
+                setTimeout(scaleTawkWidget, 100)
+              }
+            }
+          })
+        }
+      })
+    })
+    
+    // Start observing
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    })
+    
+    // Also try periodically in case it loads later
+    const interval = setInterval(() => {
+      const tawkIframe = document.querySelector('iframe[title="chat widget"]')
+      if (tawkIframe) {
+        scaleTawkWidget()
+        clearInterval(interval)
+      }
+    }, 1000)
+    
+    // Stop trying after 10 seconds
+    setTimeout(() => {
+      clearInterval(interval)
+      observer.disconnect()
+    }, 10000)
+  }
+}
+
 // Listen for PDF viewing events from progress dialog
 onMounted(() => {
   if (process.client) {
@@ -1861,6 +1944,9 @@ onMounted(() => {
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     // Note: Upload dialog handling moved to dedicated /upload route
+    
+    // Scale Tawk widget on mobile using JavaScript
+    scaleTawkWidgetMobile()
   }
 })
 
@@ -1950,18 +2036,10 @@ onUnmounted(() => {
     z-index: 1000;
   }
   
-  /* Make Tawk widget smaller on mobile */
-  .tawk-widget {
-    transform: scale(0.7) !important;
-    transform-origin: bottom right !important;
-    bottom: 10px !important;
-    right: 10px !important;
-  }
-  
   /* Ensure action buttons are visible above Tawk widget */
   .fixed.bottom-0 {
     z-index: 1001 !important;
-    padding-bottom: 60px !important;
+    padding-bottom: 50px !important;
   }
 }
 
