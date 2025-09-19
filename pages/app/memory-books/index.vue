@@ -178,12 +178,14 @@
         modal
         :closable="false"
         :dismissable-mask="true"
-        :class="['w-full', 'h-full', 'max-w-none', 'max-h-screen', 'sm:w-[95vw]', 'sm:max-w-4xl', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl', 'mobile-app-dialog']"
+        :class="['w-full', 'h-full', 'max-w-none', 'max-h-screen', 'sm:max-h-[95%]', 'sm:w-[95vw]', 'sm:max-w-4xl', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl', 'mobile-app-dialog']"
       >
-        <div v-if="selectedBook" class="bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen flex flex-col sm:h-auto sm:max-h-[90vh] sm:overflow-y-auto">
-          <!-- Header Section - Compact on mobile -->
-          <div class="bg-gradient-to-br from-white via-brand-navigation/5 to-brand-accent/10 rounded-t-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
-            <!-- Mobile: Compact header -->
+        <div v-if="selectedBook" class="sm:mb-5 bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen sm:min-h-[90%] flex flex-col sm:h-auto sm:overflow-hidden">
+          <!-- Header + Content Area -->
+          <div class="flex-1 sm:max-h-[calc(85vh-80px)] sm:overflow-y-auto">
+            <!-- Header Section - Compact on mobile -->
+            <div class="bg-gradient-to-br from-white via-brand-navigation/5 to-brand-accent/10 rounded-t-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
+              <!-- Mobile: Compact header -->
             <div class="sm:hidden">
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
@@ -364,10 +366,10 @@
                 <p class="text-xs sm:text-sm text-brand-highlight italic">{{ selectedBook.review_notes }}</p>
               </div>
             </div>
-          </div>
-
-          <!-- Content Section -->
-          <div class="flex-1 p-4 sm:p-6 space-y-4 sm:space-y-6 pb-20 sm:pb-6 sm:overflow-y-auto">
+            </div>
+            
+            <!-- Content Section -->
+            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-4">
             <!-- Story Section (for Story-based Memories) -->
             <div v-if="selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
               <div class="flex items-center gap-3 mb-4">
@@ -379,7 +381,7 @@
                   <p class="text-xs sm:text-sm text-gray-600">The AI-generated story for your special memory</p>
                 </div>
               </div>
-              <div class="overflow-y-auto max-h-48 sm:max-h-64 bg-gradient-to-br from-brand-highlight/10 to-brand-primary/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 text-brand-primary text-sm magic-story" style="word-break: break-word; line-height: 1.5;">
+              <div class="bg-gradient-to-br from-brand-highlight/10 to-brand-primary/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 text-brand-primary text-sm magic-story" style="word-break: break-word; line-height: 1.5;">
                 {{ selectedBook.magic_story }}
               </div>
             </div>
@@ -395,7 +397,7 @@
                   <p class="text-xs sm:text-sm text-gray-600">Why these photos were chosen for your memory</p>
                 </div>
               </div>
-              <div class="overflow-y-auto max-h-48 sm:max-h-64 bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 rounded-xl p-3 sm:p-4 border border-brand-accent/20 text-brand-primary text-sm" style="word-break: break-word; line-height: 1.5;">
+              <div class="bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 rounded-xl p-3 sm:p-4 border border-brand-accent/20 text-brand-primary text-sm" style="word-break: break-word; line-height: 1.5;">
                 {{ selectedBook.ai_photo_selection_reasoning }}
               </div>
             </div>
@@ -467,11 +469,11 @@
                 </div>
               </div>
             </div>
-
+            </div>
           </div>
 
-          <!-- Actions Section - Fixed at bottom on mobile, normal flow on desktop -->
-          <div class="bg-white rounded-b-2xl shadow-lg border border-gray-100 p-2 sm:p-4 fixed bottom-0 left-0 right-0 sm:relative sm:bottom-auto sm:left-auto sm:right-auto sm:rounded-b-2xl sm:shadow-2xl sm:border-t-2 sm:border-gray-200">
+          <!-- Actions Section - Fixed at bottom on both mobile and desktop -->
+          <div class="bg-white rounded-b-2xl shadow-lg border border-gray-100 p-2 sm:p-3 fixed bottom-0 left-0 right-0 sm:fixed sm:bottom-0 sm:left-0 sm:right-0 sm:rounded-b-2xl sm:shadow-2xl sm:border-t-2 sm:border-gray-200">
             <!-- Mobile: Compact icon buttons in one row -->
             <div class="sm:hidden">
               <div class="flex justify-center gap-1">
@@ -526,7 +528,7 @@
 
             <!-- Desktop: Full buttons -->
             <div class="hidden sm:block">
-              <div class="flex flex-row flex-wrap justify-center gap-2 sm:gap-3">
+              <div class="flex flex-row flex-wrap justify-center gap-2 sm:gap-2">
                 <button
                   data-testid="details-create-memory-button"
                   v-if="selectedBook.status === 'draft'"
@@ -1962,4 +1964,5 @@ onUnmounted(() => {
     padding-bottom: 60px !important;
   }
 }
+
 </style>
