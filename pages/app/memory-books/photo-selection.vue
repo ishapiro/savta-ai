@@ -53,11 +53,16 @@
         </button>
         <div class="flex items-center gap-4">
           <span class="text-sm text-brand-text-muted">
-            {{ selectedAssets.length }} photo{{ selectedAssets.length !== 1 ? 's' : '' }} selected
+            <span v-if="photoSelectionMethod === 'photo_library'">
+              {{ selectedAssets.length }} photo{{ selectedAssets.length !== 1 ? 's' : '' }} selected
+            </span>
+            <span v-else>
+              AI will choose from your photos
+            </span>
           </span>
           <button
             @click="continueWithSelection"
-            :disabled="selectedAssets.length === 0"
+            :disabled="!canContinue"
             class="bg-brand-highlight hover:bg-brand-highlight/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-semibold transition-colors"
           >
             {{ isWizardFlow ? 'Continue to Wizard' : 'Continue to Memory Book' }}
@@ -121,6 +126,52 @@ const availableCountries = computed(() => photoSelection_availableCountries.valu
 const availableStates = computed(() => photoSelection_availableStates.value)
 const availableCities = computed(() => photoSelection_availableCities.value)
 const dateRange = computed(() => photoSelection_dateRange.value)
+
+// Determine if user can continue based on selection method
+const canContinue = computed(() => {
+  const method = photoSelectionMethod.value
+  const hasSelectedPhotos = selectedAssets.value.length > 0
+  
+  console.log('🔍 [Photo Selection] canContinue check:', {
+    method,
+    hasSelectedPhotos,
+    selectedAssets: selectedAssets.value.length,
+    selectedLocation: selectedLocation.value,
+    dateRange: dateRange.value,
+    selectedTags: selectedTags.value.length
+  })
+  
+  // For AI-driven methods, user doesn't need to manually select photos
+  const aiDrivenMethods = ['last_100', 'geo_code', 'date_range', 'tags']
+  
+  if (aiDrivenMethods.includes(method)) {
+    // For AI-driven methods, check if we have the required parameters
+    let canProceed = false
+    switch (method) {
+      case 'geo_code':
+        canProceed = !!selectedLocation.value
+        break
+      case 'date_range':
+        canProceed = !!(dateRange.value.start || dateRange.value.end)
+        break
+      case 'tags':
+        canProceed = selectedTags.value.length > 0
+        break
+      case 'last_100':
+        canProceed = true // No additional parameters needed
+        break
+      default:
+        canProceed = true
+    }
+    console.log('🔍 [Photo Selection] AI-driven method result:', canProceed)
+    return canProceed
+  }
+  
+  // For manual selection (photo_library), require selected photos
+  const result = hasSelectedPhotos
+  console.log('🔍 [Photo Selection] Manual selection result:', result)
+  return result
+})
 
 // Methods for template
 const updatePhotoSelectionMethod = (method) => {
@@ -218,12 +269,24 @@ onMounted(async () => {
 
 // Continue with selection
 const continueWithSelection = () => {
+  console.log('🔍 [Photo Selection] continueWithSelection called')
+  console.log('🔍 [Photo Selection] isWizardFlow:', isWizardFlow.value)
+  console.log('🔍 [Photo Selection] selectedAssets:', selectedAssets.value)
+  console.log('🔍 [Photo Selection] photoSelectionMethod:', photoSelectionMethod.value)
+  
   if (isWizardFlow.value) {
     // Return to wizard with selected photos
-    router.push('/app/memory-books?wizardStep=photos&selectedPhotos=' + selectedAssets.value.join(','))
+    const selectedPhotoIds = selectedAssets.value.map(asset => asset.id).join(',')
+    console.log('🔍 [Photo Selection] Navigating to wizard with photos:', selectedPhotoIds)
+    router.push('/app/memory-books?wizardStep=photos&selectedPhotos=' + selectedPhotoIds)
   } else {
-    // Continue to memory book creation with selected photos
-    router.push('/app/memory-books?createBook=true&selectedPhotos=' + selectedAssets.value.join(','))
+    // Continue to memory book creation with selected photos and method
+    const method = photoSelectionMethod.value
+    const selectedPhotoIds = selectedAssets.value.map(asset => asset.id).join(',')
+    const url = '/app/memory-books?return=memory-book&selectedPhotos=' + selectedPhotoIds + '&method=' + method
+    console.log('🔍 [Photo Selection] Navigating to memory book with photos:', selectedPhotoIds, 'method:', method)
+    console.log('🔍 [Photo Selection] Full URL:', url)
+    router.push(url)
   }
 }
 

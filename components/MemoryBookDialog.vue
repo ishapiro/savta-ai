@@ -343,7 +343,12 @@
                 </div>
                 <div>
                   <p class="text-sm font-medium text-brand-primary">
-                    {{ selectedAssets.length }} photos selected
+                    <span v-if="isAiDrivenMethod">
+                      Savta is selecting the photos for you
+                    </span>
+                    <span v-else>
+                      {{ selectedAssets.length }} photos selected
+                    </span>
                   </p>
                   <p class="text-xs text-brand-primary/70">
                     <span v-if="form.layoutType === 'theme' && selectedThemePhotoCount">
@@ -351,6 +356,23 @@
                     </span>
                     <span v-else-if="form.layoutType === 'theme' && !selectedThemePhotoCount">
                       Please select a theme to see photo count.
+                    </span>
+                    <span v-else-if="isAiDrivenMethod">
+                      <span v-if="photoSelection_method === 'last_100'">
+                        Savta will choose from your most recent photos
+                      </span>
+                      <span v-else-if="photoSelection_method === 'geo_code'">
+                        Savta will find photos from {{ photoSelection_selectedLocation?.city || 'your selected location' }}
+                      </span>
+                      <span v-else-if="photoSelection_method === 'date_range'">
+                        Savta will find photos from your selected date range
+                      </span>
+                      <span v-else-if="photoSelection_method === 'tags'">
+                        Savta will find photos with your selected tags
+                      </span>
+                      <span v-else>
+                        Savta will choose the perfect photos for your memory book
+                      </span>
                     </span>
                     <span v-else-if="form.layoutType === 'grid' && selectedAssets.length === 0">
                       Need {{ totalPhotosNeeded }} photos for {{ form.page_count }} page{{ form.page_count > 1 ? 's' : '' }}
@@ -367,13 +389,40 @@
                   </p>
                 </div>
               </div>
-              <Button
-                label="Select Photos"
-                icon="pi pi-images"
-                size="small"
-                @click="openPhotoSelector"
-                class="bg-brand-dialog-save border-0 text-white font-semibold rounded-full px-4 py-2 shadow-lg transition-all duration-200 hover:scale-105"
-              />
+            </div>
+          </div>
+          
+          <!-- Photo Selection Interface (like wizard) -->
+          <div v-if="!photoSelection_loadingAssets" class="bg-white rounded-lg p-4 border border-brand-primary/20">
+            <PhotoSelectionInterface
+              ref="photoSelectionInterfaceRef"
+              v-model:method="photoSelection_method"
+              v-model:dateRange="photoSelection_dateRange"
+              v-model:selectedTags="photoSelection_selectedTags"
+              v-model:locationType="photoSelection_locationType"
+              v-model:selectedLocation="photoSelection_selectedLocation"
+              v-model:selectedMemories="photoSelection_selectedMemories"
+              v-model:selectedTagFilter="photoSelection_selectedTagFilter"
+              :title="form.ai_supplemental_prompt || 'your memory book'"
+              :computedAvailableTags="photoSelection_computedAvailableTags"
+              :availableCountries="photoSelection_availableCountries"
+              :availableStates="photoSelection_availableStates"
+              :availableCities="photoSelection_availableCities"
+              :filteredAssets="photoSelection_filteredAssets"
+              :loadingAssets="photoSelection_loadingAssets"
+              :isUploading="photoSelection_isUploading"
+              :maxPhotoCount="selectedThemePhotoCount || totalPhotosNeeded"
+              @upload-photos="handleUploadPhotos"
+              @no-photos-found="handleNoPhotosFound"
+              @close-photo-library="handleClosePhotoLibrary"
+            />
+          </div>
+          
+          <!-- Loading State for Photo Selection -->
+          <div v-else class="bg-white rounded-lg p-4 border border-brand-primary/20">
+            <div class="flex items-center justify-center py-4">
+              <i class="pi pi-spin pi-spinner text-xl mb-2 text-brand-secondary"></i>
+              <p class="text-sm text-brand-primary/70 ml-2">Loading your photos...</p>
             </div>
           </div>
           
@@ -424,82 +473,12 @@
           :label="isEditing ? 'Update' : 'Compose Memory Book'"
           icon="pi pi-check"
           :loading="loading"
-          :disabled="loading || selectedAssets.length === 0"
+          :disabled="loading || !canSubmit"
           class="bg-brand-dialog-save border-0 w-auto rounded-full px-6 py-2"
         />
       </div>
     </form>
 
-    <!-- Photo Selection Modal -->
-    <Dialog
-      v-model:visible="showPhotoSelector"
-      modal
-      header="Select Your Photos"
-      class="w-full max-w-sm sm:max-w-lg md:max-w-3xl lg:max-w-5xl h-[75vh] max-h-[75vh] flex flex-col mt-4 sm:mt-8"
-      :closable="false"
-    >
-      <div v-if="!photoSelection_loadingAssets" class="flex-1 space-y-2 sm:space-y-4 overflow-y-auto px-1 sm:px-0 py-2 sm:py-4">
-        <!-- Photo Selection Interface Component -->
-        <PhotoSelectionInterface
-          ref="photoSelectionInterfaceRef"
-          v-model:method="photoSelection_method"
-          v-model:dateRange="photoSelection_dateRange"
-          v-model:selectedTags="photoSelection_selectedTags"
-          v-model:locationType="photoSelection_locationType"
-          v-model:selectedLocation="photoSelection_selectedLocation"
-          v-model:selectedMemories="photoSelection_selectedMemories"
-          v-model:selectedTagFilter="photoSelection_selectedTagFilter"
-          :title="form.ai_supplemental_prompt || 'your memory book'"
-          :computedAvailableTags="photoSelection_computedAvailableTags"
-          :availableCountries="photoSelection_availableCountries"
-          :availableStates="photoSelection_availableStates"
-          :availableCities="photoSelection_availableCities"
-          :filteredAssets="photoSelection_filteredAssets"
-          :loadingAssets="photoSelection_loadingAssets"
-          :isUploading="photoSelection_isUploading"
-          :maxPhotoCount="selectedThemePhotoCount || totalPhotosNeeded"
-          @upload-photos="handleUploadPhotos"
-          @no-photos-found="handleNoPhotosFound"
-          @close-photo-library="handleClosePhotoLibrary"
-        />
-      </div>
-      
-      <!-- Loading State -->
-      <div v-else class="flex-1 flex items-center justify-center py-4 sm:py-8">
-        <div class="text-center">
-          <i class="pi pi-spin pi-spinner text-2xl sm:text-3xl mb-2 sm:mb-3 text-brand-secondary"></i>
-          <p class="text-xs sm:text-sm text-brand-primary/70">Loading your photos...</p>
-        </div>
-      </div>
-      
-      <template #footer>
-        <div class="flex-shrink-0 border-t border-gray-200 pt-3 sm:pt-4">
-          <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-3">
-            <div class="flex gap-2 w-full sm:w-auto">
-              <Button
-                label="Cancel"
-                icon="pi pi-times"
-                @click="closePhotoSelector"
-                class="bg-brand-dialog-cancel border-0 rounded-full px-3 sm:px-4 text-xs sm:text-sm font-bold shadow w-full sm:w-auto"
-              />
-            </div>
-            <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 w-full sm:w-auto">
-              <span class="text-xs sm:text-sm text-brand-primary/70 text-center sm:text-left">
-                <span v-if="photoSelection_method === 'last_100'">AI will select photos</span>
-                <span v-else>{{ photoSelection_selectedMemories.length }} selected</span>
-              </span>
-              <Button
-                label="Save Selection"
-                icon="pi pi-check"
-                :disabled="photoSelection_method !== 'last_100' && photoSelection_selectedMemories.length === 0"
-                @click="savePhotoSelection"
-                class="bg-brand-dialog-save rounded-full border-0 w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-4 py-2"
-              />
-            </div>
-          </div>
-        </div>
-      </template>
-    </Dialog>
   </Dialog>
 
   <!-- Info Bubble for Pages Explanation -->
@@ -527,6 +506,7 @@ const props = defineProps({
   initialData: { type: Object, default: () => ({}) },
   loading: Boolean,
   initialSelectedAssets: { type: Array, default: () => [] },
+  initialPhotoSelectionMethod: { type: String, default: 'last_100' },
   visible: { type: Boolean, default: false }
 })
 
@@ -552,7 +532,6 @@ const form = ref({
 })
 
 // Photo selection state
-const showPhotoSelector = ref(false)
 const selectedAssets = ref([])
 
 // Info bubble state
@@ -648,7 +627,6 @@ const showDialog = computed({
     if (!value) {
       // Clean up state when dialog is closed
       console.log('🔄 Dialog closing - cleaning up state')
-      showPhotoSelector.value = false
       photoSelection_resetSelection()
       emit('close')
     }
@@ -685,6 +663,44 @@ const totalPhotosNeeded = computed(() => {
   const totalPhotos = memoriesPerPage * pageCount
   
   return totalPhotos
+})
+
+// Determine if user can submit based on photo selection method
+const canSubmit = computed(() => {
+  // If we have manually selected assets, use them
+  if (selectedAssets.value.length > 0) {
+    return true
+  }
+  
+  // For AI-driven methods, allow submission without manual selection
+  const aiDrivenMethods = ['last_100', 'geo_code', 'date_range', 'tags']
+  const method = photoSelection_method.value
+  
+  if (aiDrivenMethods.includes(method)) {
+    // For AI-driven methods, check if we have the required parameters
+    switch (method) {
+      case 'geo_code':
+        return !!photoSelection_selectedLocation.value
+      case 'date_range':
+        return !!(photoSelection_dateRange.value.start || photoSelection_dateRange.value.end)
+      case 'tags':
+        return photoSelection_selectedTags.value.length > 0
+      case 'last_100':
+        return true // No additional parameters needed
+      default:
+        return true
+    }
+  }
+  
+  // For manual selection (photo_library), require selected photos
+  return false
+})
+
+// Check if we're using an AI-driven method
+const isAiDrivenMethod = computed(() => {
+  const aiDrivenMethods = ['last_100', 'geo_code', 'date_range', 'tags']
+  const method = photoSelection_method.value
+  return aiDrivenMethods.includes(method) && selectedAssets.value.length === 0
 })
 
 // Calculate page count based on grid layout and number of selected assets (for display purposes)
@@ -811,11 +827,15 @@ watch(() => form.value.gridLayout, (newGridLayout) => {
 })
 
 watch(() => props.initialSelectedAssets, async (val) => {
+  console.log('🔍 [MemoryBookDialog] initialSelectedAssets changed:', val)
   if (val && Array.isArray(val)) {
+    console.log('🔍 [MemoryBookDialog] Processing initial assets, length:', val.length)
     // If val contains asset objects, use them directly
     if (val.length > 0 && typeof val[0] === 'object' && val[0].id) {
+      console.log('🔍 [MemoryBookDialog] Using asset objects directly')
       selectedAssets.value = [...val]
     } else if (val.length > 0 && typeof val[0] === 'string') {
+      console.log('🔍 [MemoryBookDialog] Fetching asset objects from IDs:', val)
       // If val contains asset IDs, fetch the full asset objects
       try {
         const { useDatabase } = await import('~/composables/useDatabase')
@@ -829,10 +849,28 @@ watch(() => props.initialSelectedAssets, async (val) => {
         selectedAssets.value = []
       }
     }
+  } else {
+    console.log('🔍 [MemoryBookDialog] No initial assets provided')
+  }
+}, { immediate: true })
+
+// Watch for initial photo selection method
+watch(() => props.initialPhotoSelectionMethod, (method) => {
+  console.log('🔍 [MemoryBookDialog] initialPhotoSelectionMethod changed:', method)
+  if (method) {
+    photoSelection_method.value = method
+    console.log('🔍 [MemoryBookDialog] Set photo selection method:', method)
   }
 }, { immediate: true })
 
 watch(() => props.visible, (isVisible) => {
+  console.log('🔍 [MemoryBookDialog] Dialog visibility changed:', isVisible)
+  console.log('🔍 [MemoryBookDialog] Props:', { 
+    isEditing: props.isEditing, 
+    initialSelectedAssets: props.initialSelectedAssets, 
+    initialPhotoSelectionMethod: props.initialPhotoSelectionMethod 
+  })
+  
   if (isVisible) {
     if (!props.isEditing) {
       // Reset all state for new memory book creation
@@ -857,43 +895,32 @@ watch(() => props.visible, (isVisible) => {
         page_count: 1
       }
       
-      // Reset selected assets
-      selectedAssets.value = []
-      
-      // Reset photo selection state
-      photoSelection_resetSelection()
+      // Reset selected assets only if no initial assets are provided
+      if (!props.initialSelectedAssets || props.initialSelectedAssets.length === 0) {
+        console.log('🔍 [MemoryBookDialog] No initial assets, resetting selection')
+        selectedAssets.value = []
+        // Reset photo selection state
+        photoSelection_resetSelection()
+      } else {
+        console.log('🔍 [MemoryBookDialog] Preserving photo selection state with initial assets:', props.initialSelectedAssets)
+        // Set the photo selection method from props
+        if (props.initialPhotoSelectionMethod) {
+          photoSelection_method.value = props.initialPhotoSelectionMethod
+          console.log('🔍 [MemoryBookDialog] Set photo selection method from props:', props.initialPhotoSelectionMethod)
+        }
+      }
       
       // Close any open modals
-      showPhotoSelector.value = false
       
       console.log('✅ All state reset for new memory book')
     } else {
-      // For editing, just ensure photo selector is closed
-      showPhotoSelector.value = false
-      console.log('🔄 Editing mode - closed photo selector')
+      // For editing, just ensure state is clean
+      console.log('🔄 Editing mode - state cleaned')
     }
   }
 })
 
 // Photo selection methods
-const openPhotoSelector = async () => {
-  console.log('🔍 Opening photo selector - navigating to dedicated route')
-  
-  // Close the dialog temporarily
-  const currentVisible = showDialog.value
-  showDialog.value = false
-  
-  // Navigate to dedicated photo selection route
-  await navigateTo('/app/memory-books/photo-selection?return=memory-book&selectedPhotos=' + selectedAssets.value.map(a => a.id).join(','))
-}
-
-const closePhotoSelector = () => {
-  console.log('🔍 Closing photo selector')
-  showPhotoSelector.value = false
-  
-  // Reset photo selection state completely
-  photoSelection_resetSelection()
-}
 
 const savePhotoSelection = () => {
   console.log('💾 Saving photo selection')
@@ -919,8 +946,7 @@ const savePhotoSelection = () => {
     console.log('⚠️ Warning: Selected', selectedAssets.value.length, 'photos but need', totalPhotosNeeded.value, 'for', form.value.page_count, 'pages')
   }
   
-  // Close photo selector and reset its state
-  showPhotoSelector.value = false
+  // Reset photo selection state
   photoSelection_resetSelection()
 }
 
@@ -944,17 +970,41 @@ onMounted(() => {
   fetchThemes()
 })
 
-function handleSubmit() {
-  // Generate photo selection pool from selected assets
-  const photoSelectionPool = selectedAssets.value.map(asset => asset.id)
+async function handleSubmit() {
+  console.log('🔍 [MemoryBookDialog] handleSubmit called')
+  console.log('🔍 [MemoryBookDialog] Form data:', form.value)
+  console.log('🔍 [MemoryBookDialog] Selected assets:', selectedAssets.value.length)
+  console.log('🔍 [MemoryBookDialog] Photo selection method:', photoSelection_method.value)
   
-  emit('submit', {
+  // Use the same photo selection pool logic as the wizard
+  let photoSelectionPool = []
+  
+  // If we have manually selected assets (from Photo Box), use them directly
+  if (selectedAssets.value.length > 0) {
+    photoSelectionPool = selectedAssets.value.map(asset => asset.id)
+    console.log('🔍 [MemoryBookDialog] Using manually selected assets:', photoSelectionPool.length)
+  } else {
+    // For AI-driven methods, we need to load assets first
+    console.log('🔍 [MemoryBookDialog] Loading assets for AI-driven method...')
+    await photoSelection_loadAvailableAssets()
+    console.log('🔍 [MemoryBookDialog] Assets loaded, available count:', photoSelection_availableAssets.value.length)
+    
+    // Use the photo selection composable to create a pool like the wizard
+    // This handles cases where user selected "I'll choose for you" or other methods
+    photoSelectionPool = photoSelection_populatePhotoSelectionPool()
+    console.log('🔍 [MemoryBookDialog] Using photo selection pool:', photoSelectionPool.length)
+  }
+  
+  const submitData = {
     ...form.value,
     memoryEvent: form.value.memoryEvent === 'custom' ? form.value.customMemoryEvent : form.value.memoryEvent,
     backgroundType: form.value.backgroundType,
     backgroundOpacity: form.value.backgroundOpacity,
     selectedAssets: selectedAssets.value,
     photo_selection_pool: photoSelectionPool
-  })
+  }
+  
+  console.log('🔍 [MemoryBookDialog] Emitting submit event with data:', submitData)
+  emit('submit', submitData)
 }
 </script> 

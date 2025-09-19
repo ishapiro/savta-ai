@@ -6,7 +6,6 @@ export const useMemoryStudioUI = () => {
 
   // Modal states
   const showCreateModal = ref(false)
-  const showSuccessDialog = ref(false)
   const showDetailsModal = ref(false)
   const showProgressDialog = ref(false)
   const showApprovalDialog = ref(false)
@@ -198,7 +197,6 @@ export const useMemoryStudioUI = () => {
 
     // Modal states
     showCreateModal,
-    showSuccessDialog,
     showDetailsModal,
     showProgressDialog,
     showApprovalDialog,

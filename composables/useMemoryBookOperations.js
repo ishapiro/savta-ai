@@ -17,36 +17,59 @@ export const useMemoryBookOperations = () => {
   const createMemoryBook = async (newBook) => {
     console.log('🔧 [createMemoryBook] Called. newBook:', JSON.parse(JSON.stringify(newBook)))
     
-    // Make ai_supplemental_prompt optional - use default if not provided
-    if (!newBook.ai_supplemental_prompt || newBook.ai_supplemental_prompt.trim() === '') {
-      newBook.ai_supplemental_prompt = 'Create a beautiful memory book'
-    }
-
     try {
-      const { data, error } = await dbMemoryBooks.createMemoryBook({
-        ai_supplemental_prompt: newBook.ai_supplemental_prompt,
+      // Get user and session like the wizard does
+      const { useSupabaseUser } = await import('~/composables/useSupabase')
+      const user = useSupabaseUser()
+      if (!user.value) {
+        throw new Error('User not authenticated')
+      }
+      
+      const supabase = useNuxtApp().$supabase
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+      
+      // Use the same API call as the magic card wizard
+      console.log('🔍 [createMemoryBook] Photo selection pool:', newBook.photo_selection_pool)
+      console.log('🔍 [createMemoryBook] Photo selection pool length:', newBook.photo_selection_pool?.length)
+      
+      const response = await $fetch('/api/memory-books/create-magic-memory', {
+        method: 'POST',
+        body: {
+          asset_ids: newBook.selectedAssetIds || [],
+          photo_selection_pool: newBook.photo_selection_pool || [],
+          story: '', // Template - will be populated after AI generation
+          title: newBook.ai_supplemental_prompt || 'Create a beautiful memory book',
+          background_type: newBook.backgroundType || 'white',
+          background_color: newBook.backgroundColor || null,
+          photo_count: newBook.photoCount || 4,
+          theme_id: newBook.themeId || null,
+          output: newBook.output || 'PDF',
+          print_size: newBook.printSize || '8.5x11',
+          photo_selection_method: newBook.photoSelectionMethod || 'last_100'
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
+
+      console.log('✅ Memory book created successfully:', response)
+      
+      // Get the created book data
+      const bookData = {
+        id: response.book_id,
         layout_type: newBook.layoutType,
         print_size: newBook.printSize,
         quality: newBook.quality,
         medium: newBook.medium,
-        output: newBook.output,
-        grid_layout: newBook.gridLayout,
-        memory_shape: newBook.memoryShape,
-        memory_event: newBook.memoryEvent,
-        format: 'book'
-      })
-
-      if (error) {
-        console.error('❌ Error creating memory book:', error)
-        throw error
+        output: newBook.output
       }
-
-      console.log('✅ Memory book created successfully:', data)
-      newlyCreatedBook.value = data
+      
+      newlyCreatedBook.value = bookData
       
       // Track creation
       trackEvent('memory_book_created', {
-        book_id: data.id,
+        book_id: response.book_id,
         layout_type: newBook.layoutType,
         print_size: newBook.printSize,
         quality: newBook.quality,
@@ -54,7 +77,7 @@ export const useMemoryBookOperations = () => {
         output: newBook.output
       })
 
-      return data
+      return bookData
     } catch (error) {
       console.error('❌ Failed to create memory book:', error)
       throw error

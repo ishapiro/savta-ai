@@ -167,6 +167,7 @@
         :isEditing="false"
         :initialData="{ layoutType: 'grid' }"
         :initialSelectedAssets="selectedPhotosForMemoryBook"
+        :initialPhotoSelectionMethod="photoSelectionMethodForMemoryBook"
         :loading="creatingBook"
         @close="closeCreateModal"
         @submit="createMemoryBookFromDialog"
@@ -582,36 +583,6 @@
         </div>
       </Dialog>
 
-      <!-- Success Dialog -->
-      <Dialog
-        v-model:visible="showSuccessDialog"
-        modal
-        :closable="true"
-        :dismissable-mask="true"
-        class="w-full max-w-md mx-auto"
-        :style="{ width: '90vw' }"
-      >
-        <template #header>
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <i class="pi pi-check text-white text-sm"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-brand-primary">Success!</h3>
-          </div>
-        </template>
-        
-        <div class="text-center py-4">
-          <p class="text-brand-text-muted mb-4">
-            Your memory book has been created successfully!
-          </p>
-          <button
-            class="bg-brand-highlight hover:bg-brand-highlight/80 text-white font-medium rounded-lg px-6 py-2 transition-colors"
-            @click="showSuccessDialog = false"
-          >
-            Continue
-          </button>
-        </div>
-      </Dialog>
 
       <!-- Generate Confirmation Dialog -->
       <Dialog
@@ -1073,6 +1044,7 @@ import CaptionRenderer from '~/components/CaptionRenderer.vue'
 const router = useRouter()
 const user = useSupabaseUser()
 const {
+  memoryBooks,
   memoryCards,
   memoryBooksOnly,
   totalCardsPages,
@@ -1103,7 +1075,6 @@ const {
   activeView,
   showCreateModal,
   selectedPhotosForMemoryBook,
-  showSuccessDialog,
   showProgressDialog,
   showApprovalDialog,
   showDeleteDialog,
@@ -1116,6 +1087,9 @@ const {
   closeCreateModal,
   resetCreateModal
 } = useMemoryStudioUI()
+
+// Photo selection method for memory book
+const photoSelectionMethodForMemoryBook = ref('last_100')
 
 // Import Supabase for database operations
 const supabase = useNuxtApp().$supabase
@@ -1468,13 +1442,18 @@ const deleteBook = (bookId) => {
 const createMemoryBookFromDialog = async (data) => {
   console.log('🔧 [createMemoryBookFromDialog] Starting with data:', data)
   
-  // Check if assets are selected (matches original validation)
-  if (!data.selectedAssets || data.selectedAssets.length === 0) {
+  // Check if we have either manually selected assets or a photo selection pool
+  const hasManualAssets = data.selectedAssets && data.selectedAssets.length > 0
+  const hasPhotoSelectionPool = data.photo_selection_pool && data.photo_selection_pool.length > 0
+  
+  if (!hasManualAssets && !hasPhotoSelectionPool) {
     // Show dialog explaining the requirement
-    console.warn('No assets selected for memory book creation')
+    console.warn('No assets selected and no photo selection pool for memory book creation')
     // TODO: Add toast notification for missing assets
     return // Don't proceed with creation
   }
+  
+  console.log('🔧 [createMemoryBookFromDialog] Validation passed - hasManualAssets:', hasManualAssets, 'hasPhotoSelectionPool:', hasPhotoSelectionPool)
   
   try {
     creatingBook.value = true
@@ -1494,22 +1473,43 @@ const createMemoryBookFromDialog = async (data) => {
       backgroundOpacity: data.backgroundOpacity || 30,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
-      // Store selected asset IDs for the photo selection pool
-      selectedAssetIds: Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []
+      // Use photo selection pool (up to 100 photos for AI selection)
+      selectedAssetIds: data.photo_selection_pool || (Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []),
+      photo_selection_pool: data.photo_selection_pool || []
     }
     
     console.log('🔧 [createMemoryBookFromDialog] Mapped data:', mappedData)
+    console.log('🔧 [createMemoryBookFromDialog] Photo selection pool in mapped data:', mappedData.photo_selection_pool)
+    console.log('🔧 [createMemoryBookFromDialog] Photo selection pool length:', mappedData.photo_selection_pool?.length)
     
     // Call the createBook function from useMemoryBookOperations
     const createdBook = await createBook(mappedData)
     console.log('🔧 [createMemoryBookFromDialog] createBook completed successfully:', createdBook)
     
-    // Set the newly created book for auto-generation
-    newlyCreatedBook.value = createdBook
+    // Set the newly created book for auto-generation with all necessary fields
+    newlyCreatedBook.value = {
+      ...createdBook,
+      layout_type: mappedData.layoutType,
+      theme_id: mappedData.themeId,
+      background_type: mappedData.backgroundType,
+      ai_supplemental_prompt: mappedData.ai_supplemental_prompt,
+      output: mappedData.output,
+      print_size: mappedData.printSize,
+      background_color: mappedData.backgroundColor,
+      background_opacity: mappedData.backgroundOpacity,
+      memory_event: mappedData.memoryEvent,
+      custom_memory_event: mappedData.customMemoryEvent,
+      include_captions: mappedData.includeCaptions,
+      include_tags: mappedData.includeTags,
+      ai_background: mappedData.aiBackground,
+      memory_shape: mappedData.memoryShape,
+      grid_layout: mappedData.gridLayout,
+      auto_enhance: mappedData.autoEnhance,
+      photo_selection_method: mappedData.photoSelectionMethod || 'last_100'
+    }
     
     // Close the create dialog after successful creation
     showCreateModal.value = false
-    showSuccessDialog.value = true
     resetCreateModal()
     
     // Clear selected photos for memory book
@@ -1518,10 +1518,15 @@ const createMemoryBookFromDialog = async (data) => {
     // Reload memory books to show new book
     await loadMemoryBooks()
     
-    // Auto-generate and display the PDF immediately (like original)
+    // Start progress dialog and generation immediately (like wizard)
     if (newlyCreatedBook.value) {
-      console.log('🔧 [createMemoryBookFromDialog] Starting auto-generation and display...')
-      await composeNewlyCreatedMemory()
+      console.log('🔧 [createMemoryBookFromDialog] Starting progress dialog and generation...')
+      showProgressDialog.value = true
+      currentProgressMessage.value = '🎯 Starting memory book generation...'
+      currentProgress.value = 0
+      
+      // Start the generation process immediately (like wizard)
+      await generateMemoryBookPDF(newlyCreatedBook.value.id)
     }
     
   } catch (error) {
@@ -1534,6 +1539,81 @@ const createMemoryBookFromDialog = async (data) => {
 
 // Keep the original function name for backward compatibility
 const createMemoryBook = createMemoryBookFromDialog
+
+// Generate memory book PDF (like wizard's generateMagicMemory)
+const generateMemoryBookPDF = async (bookId) => {
+  try {
+    console.log('🔍 [generateMemoryBookPDF] Starting memory book generation for:', bookId)
+    
+    // Update progress
+    currentProgressMessage.value = '🎯 Selecting best photos...'
+    currentProgress.value = 25
+    
+    // Start progress polling
+    startProgressPolling(bookId, false)
+    
+    // Add a small delay to ensure database is updated
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Call the AI endpoint to select photos and generate content
+    const aiRes = await $fetch('/api/ai/magic-memory', {
+      method: 'POST',
+      body: {
+        memoryBookId: bookId,
+        userId: user.value.id,
+        photoCount: 4 // Default for memory books
+      }
+    })
+    
+    if (!aiRes.selected_photo_ids || !Array.isArray(aiRes.selected_photo_ids) || aiRes.selected_photo_ids.length < 1) {
+      throw new Error(`I need a bit more to work with. Let me try again with different photos.`)
+    }
+    
+    console.log('🔍 [generateMemoryBookPDF] AI photo selection completed:', aiRes.selected_photo_ids.length, 'photos selected')
+    
+    // Update progress
+    currentProgressMessage.value = '🎨 Generating your memory book...'
+    currentProgress.value = 50
+    
+    // Generate PDF - construct book object like the wizard does
+    const book = {
+      id: bookId,
+      layout_type: newlyCreatedBook.value.layout_type || 'theme',
+      ui: 'dialog',
+      format: 'card',
+      status: 'draft',
+      photo_selection_pool: aiRes.photo_selection_pool || [],
+      created_from_assets: aiRes.selected_photo_ids || [],
+      theme_id: newlyCreatedBook.value.theme_id,
+      background_type: newlyCreatedBook.value.background_type || 'white',
+      ai_supplemental_prompt: newlyCreatedBook.value.ai_supplemental_prompt,
+      output: newlyCreatedBook.value.output || 'JPG',
+      print_size: newlyCreatedBook.value.print_size || '8.5x11',
+      background_color: newlyCreatedBook.value.background_color,
+      background_opacity: newlyCreatedBook.value.background_opacity || 30,
+      memory_event: newlyCreatedBook.value.memory_event,
+      custom_memory_event: newlyCreatedBook.value.custom_memory_event,
+      include_captions: newlyCreatedBook.value.include_captions,
+      include_tags: newlyCreatedBook.value.include_tags,
+      ai_background: newlyCreatedBook.value.ai_background,
+      memory_shape: newlyCreatedBook.value.memory_shape,
+      grid_layout: newlyCreatedBook.value.grid_layout,
+      auto_enhance: newlyCreatedBook.value.auto_enhance,
+      photo_selection_method: newlyCreatedBook.value.photo_selection_method || 'last_100'
+    }
+    
+    console.log('🔍 [generateMemoryBookPDF] Constructed book object:', book)
+    await generatePDF(book)
+    
+    console.log('✅ [generateMemoryBookPDF] Memory book generation completed successfully')
+    
+  } catch (error) {
+    console.error('❌ [generateMemoryBookPDF] Error:', error)
+    currentProgressMessage.value = '❌ Generation failed. Please try again.'
+    currentProgress.value = 0
+    throw error
+  }
+}
 
 // Calculate compose time for newly created book
 const calculateComposeTime = () => {
@@ -1554,66 +1634,6 @@ const calculateComposeTime = () => {
   return totalTime
 }
 
-// Compose newly created memory
-const composeNewlyCreatedMemory = async () => {
-  if (!newlyCreatedBook.value) {
-    console.error('No newly created book found')
-    return
-  }
-  
-  console.log('🔧 [composeNewlyCreatedMemory] Starting composition for book:', newlyCreatedBook.value.id)
-  
-  // Find the book in the current memory books list
-  const book = memoryBooks.value.find(b => b.id === newlyCreatedBook.value.id)
-  if (!book) {
-    console.error('Could not find newly created book in memory books list')
-    return
-  }
-  
-  try {
-    // Step 1: Photo Selection (if needed)
-    if (!book.created_from_assets || book.created_from_assets.length === 0) {
-      console.log('🔧 [composeNewlyCreatedMemory] Setting up photo selection...')
-      currentProgressMessage.value = '🎯 Setting up your selected photos...'
-      
-      // Use the selected assets from the dialog
-      if (newlyCreatedBook.value.selectedAssetIds && newlyCreatedBook.value.selectedAssetIds.length > 0) {
-        // Update the book with selected assets
-        const { error } = await supabase
-          .from('memory_books')
-          .update({ created_from_assets: newlyCreatedBook.value.selectedAssetIds })
-          .eq('id', book.id)
-        
-        if (error) throw error
-        
-        console.log('🔧 [composeNewlyCreatedMemory] Photo selection completed - using manually selected photos')
-      } else {
-        throw new Error('No photos available for memory book')
-      }
-    }
-    
-    // Step 2: PDF Generation (includes story generation)
-    console.log('🔧 [composeNewlyCreatedMemory] Starting PDF generation...')
-    currentProgressMessage.value = '📝 Generating story and creating your memory...'
-    
-    // Start progress polling
-    startProgressPolling(book.id)
-    
-    // Generate PDF
-    await generatePDF(book)
-    
-    console.log('🔧 [composeNewlyCreatedMemory] PDF generation completed successfully')
-    
-  } catch (error) {
-    console.error('❌ [composeNewlyCreatedMemory] Error:', error)
-    stopProgressPolling()
-    showProgressDialog.value = false
-    throw error
-  } finally {
-    // Clear the reference
-    newlyCreatedBook.value = null
-  }
-}
 
 // Helper function to format date range for display
 const formatDateRange = (dateRange) => {
@@ -1799,8 +1819,50 @@ watch(activeView, () => {
 // Access route at top-level so we can react to query param changes even when the page doesn't remount
 const route = useRoute()
 
+// Debug initial route state
+console.log('🔍 [Memory Books] Initial route state:', route.path, route.query)
+
+// Check for return parameters on initial load
+if (route.query.return === 'memory-book') {
+  console.log('🔍 [Memory Books] Found return=memory-book on initial load')
+  console.log('🔍 [Memory Books] Selected photos:', route.query.selectedPhotos)
+  console.log('🔍 [Memory Books] Method:', route.query.method)
+  
+  // Handle return from memory book photo selection (new format)
+  console.log('🔍 [Memory Books] Processing return from photo selection to create memory book (new format)')
+  const selectedPhotoIds = route.query.selectedPhotos ? route.query.selectedPhotos.split(',') : []
+  const method = route.query.method || 'last_100'
+  
+  console.log('🔍 [Memory Books] Selected photo IDs:', selectedPhotoIds)
+  console.log('🔍 [Memory Books] Method:', method)
+  
+  // Store selected photos for the memory book dialog
+  selectedPhotosForMemoryBook.value = selectedPhotoIds
+  console.log('🔍 [Memory Books] Set selectedPhotosForMemoryBook:', selectedPhotosForMemoryBook.value)
+  
+  // Store the photo selection method for the dialog
+  photoSelectionMethodForMemoryBook.value = method
+  console.log('🔍 [Memory Books] Photo selection method:', method)
+  
+  // Open the memory book dialog
+  showCreateModal.value = true
+  console.log('🔍 [Memory Books] Opening memory book dialog')
+  
+  // Clear query params
+  router.replace({ query: {} })
+  console.log('🔍 [Memory Books] Cleared query params')
+}
+
+// Debug route changes
+watch(() => route, (newRoute) => {
+  console.log('🔍 [Memory Books] Route changed:', newRoute.path, newRoute.query)
+}, { deep: true })
+
 // Handle return from photo selection routes
 watch(() => route.query, (newQuery) => {
+  console.log('🔍 [Memory Books] Route query changed:', newQuery)
+  console.log('🔍 [Memory Books] Current route:', route.path)
+  console.log('🔍 [Memory Books] Full route object:', route)
   // Handle return from wizard photo selection
   if (newQuery.wizardStep === 'photos' && newQuery.selectedPhotos) {
     console.log('🔍 [Memory Books] Returning from photo selection to wizard')
@@ -1825,6 +1887,34 @@ watch(() => route.query, (newQuery) => {
     
     // Clear query params
     router.replace({ query: {} })
+  }
+  
+  // Handle return from memory book photo selection (new format)
+  if (newQuery.return === 'memory-book') {
+    console.log('🔍 [Memory Books] Returning from photo selection to create memory book (new format)')
+    console.log('🔍 [Memory Books] Full query params:', newQuery)
+    const selectedPhotoIds = newQuery.selectedPhotos ? newQuery.selectedPhotos.split(',') : []
+    const method = newQuery.method || 'last_100'
+    
+    console.log('🔍 [Memory Books] Selected photo IDs:', selectedPhotoIds)
+    console.log('🔍 [Memory Books] Method:', method)
+    
+    // Store selected photos for the memory book dialog (can be empty for AI-driven methods)
+    selectedPhotosForMemoryBook.value = selectedPhotoIds
+    console.log('🔍 [Memory Books] Set selectedPhotosForMemoryBook:', selectedPhotosForMemoryBook.value)
+    
+    // Store the photo selection method for the dialog
+    photoSelectionMethodForMemoryBook.value = method
+    console.log('🔍 [Memory Books] Set photoSelectionMethodForMemoryBook:', photoSelectionMethodForMemoryBook.value)
+    
+    // Open the memory book dialog
+    console.log('🔍 [Memory Books] Opening memory book dialog')
+    showCreateModal.value = true
+    console.log('🔍 [Memory Books] showCreateModal set to:', showCreateModal.value)
+    
+    // Clear query params
+    router.replace({ query: {} })
+    console.log('🔍 [Memory Books] Cleared query params')
   }
 }, { deep: true })
 
