@@ -401,11 +401,11 @@
                 <div class="grid grid-cols-2 gap-3 mb-4">
                   <!-- Keep Same Photos Option -->
                   <div class="relative cursor-pointer group" @click="selectMethod('keep_same')">
-                    <div class="bg-white rounded-lg p-4 border-2 transition-all duration-300 hover:border-brand-flash/50 hover:shadow-md"
+                    <div class="bg-white rounded-lg p-4 border-2 transition-all duration-300 hover:border-brand-flash/50 hover:shadow-md h-full flex flex-col"
                       :class="photoSelection_method === 'keep_same' 
                         ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-lg' 
                         : 'border-gray-200'">
-                      <div class="text-center">
+                      <div class="text-center flex flex-col h-full justify-center">
                         <div class="w-12 h-12 bg-brand-accent rounded-full flex items-center justify-center mx-auto mb-3">
                           <i class="pi pi-refresh text-white text-xl"></i>
                         </div>
@@ -417,11 +417,11 @@
                   
                   <!-- Select Photos to Replace Option -->
                   <div class="relative cursor-pointer group" @click="selectMethod('replace_selected')">
-                    <div class="bg-white rounded-lg p-4 border-2 transition-all duration-300 hover:border-brand-flash/50 hover:shadow-md"
+                    <div class="bg-white rounded-lg p-4 border-2 transition-all duration-300 hover:border-brand-flash/50 hover:shadow-md h-full flex flex-col"
                       :class="photoSelection_method === 'replace_selected' 
                         ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-lg' 
                         : 'border-gray-200'">
-                      <div class="text-center">
+                      <div class="text-center flex flex-col h-full justify-center">
                         <div class="w-12 h-12 bg-brand-flash rounded-full flex items-center justify-center mx-auto mb-3">
                           <i class="pi pi-images text-white text-xl"></i>
                         </div>
@@ -437,18 +437,18 @@
                   <div class="flex items-center justify-between">
                     <div>
                       <h4 class="font-semibold text-brand-primary mb-1">Photo Replacement</h4>
-                      <p class="text-sm text-gray-600">
-                        <span v-if="photosToReplace.length === 0" class="text-gray-500">
-                          No photos selected for replacement
-                        </span>
-                        <span v-else class="text-brand-flash font-medium">
-                          {{ photosToReplace.length }} photo{{ photosToReplace.length === 1 ? '' : 's' }} selected for replacement
-                        </span>
-                      </p>
+                    <p class="text-sm text-gray-600">
+                      <span v-if="photosToReplaceCount === 0" class="text-gray-500">
+                        No photos selected for replacement
+                      </span>
+                      <span v-else class="text-brand-flash font-medium">
+                        {{ photosToReplaceCount }} photo{{ photosToReplaceCount === 1 ? '' : 's' }} selected for replacement
+                      </span>
+                    </p>
                     </div>
                     <Button
-                      :label="photosToReplace.length === 0 ? 'Select Photos' : 'Change selection'"
-                      :icon="photosToReplace.length === 0 ? 'pi pi-images' : 'pi pi-pencil'"
+                      :label="photosToReplaceCount === 0 ? 'Select Photos' : 'Change selection'"
+                      :icon="photosToReplaceCount === 0 ? 'pi pi-images' : 'pi pi-pencil'"
                       severity="secondary"
                       @click="openPhotoReplacementModal"
                       class="px-4 py-2"
@@ -602,6 +602,7 @@ import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
 import PhotoReplacementModal from '~/components/PhotoReplacementModal.vue'
 import SavtaBubble from '~/components/SavtaBubble.vue'
 import { useDatabase } from '~/composables/useDatabase'
+import { usePhotoReplacement } from '~/composables/usePhotoReplacement'
 
 // Import database composable
 const db = useDatabase()
@@ -671,10 +672,20 @@ const {
   photoSelection_getSelectedAssets
 } = usePhotoSelection()
 
-
-// Recreation state (matching wizard)
-const photosToReplace = ref([])
-const existingBookForRecreation = computed(() => props.existingBookData)
+// Use the shared photo replacement composable
+const {
+  photosToReplace,
+  existingBookForRecreation,
+  isRecreateMode,
+  initializePhotoReplacement,
+  resetPhotoReplacement,
+  togglePhotoReplacement,
+  getPhotoSelectionPool,
+  getPhotosToReplace,
+  hasPhotoReplacements,
+  photosToKeepCount,
+  photosToReplaceCount
+} = usePhotoReplacement()
 
 // Photo replacement modal state
 const showPhotoReplacementModal = ref(false)
@@ -1080,44 +1091,16 @@ async function handleSubmit() {
   console.log('🔍 [MemoryBookDialog] Selected assets:', selectedAssets.value.length)
   console.log('🔍 [MemoryBookDialog] Photo selection method:', photoSelection_method.value)
   
-  // Use the same photo selection pool logic as the wizard
-  let photoSelectionPool = []
-  
-  // Handle recreation mode like the wizard
+  // Initialize photo replacement if in recreate mode
   if (props.isRecreateMode && props.existingBookData) {
-    console.log('🔍 [MemoryBookDialog] Recreation mode detected')
-    console.log('🔍 [MemoryBookDialog] Photo selection method:', photoSelection_method.value)
-    console.log('🔍 [MemoryBookDialog] Photos to replace:', photosToReplace.value)
-    
-    if (photoSelection_method.value === 'keep_same') {
-      // For "keep_same", use the existing photos from the original book
-      photoSelectionPool = props.existingBookData.created_from_assets || []
-      console.log('🔍 [MemoryBookDialog] Keep same mode: using existing photos from original book')
-      console.log('🔍 [MemoryBookDialog] Keep same mode: photoSelectionPool:', photoSelectionPool)
-    } else if (photoSelection_method.value === 'replace_selected') {
-      // For photo replacement, use the normal photo selection pool like the wizard
-      // The backend will handle the replacement logic
-      console.log('🔍 [MemoryBookDialog] Photo replacement mode: loading assets and creating selection pool')
-      await photoSelection_loadAvailableAssets()
-      photoSelectionPool = photoSelection_populatePhotoSelectionPool()
-      console.log('🔍 [MemoryBookDialog] Photo replacement mode: using photo selection pool:', photoSelectionPool.length)
-    } else {
-      // For other methods in recreation mode, use normal logic
-      console.log('🔍 [MemoryBookDialog] Recreation mode: loading assets and creating selection pool')
-      await photoSelection_loadAvailableAssets()
-      photoSelectionPool = photoSelection_populatePhotoSelectionPool()
-      console.log('🔍 [MemoryBookDialog] Recreation mode: using photo selection pool:', photoSelectionPool.length)
-    }
-  } else {
-    // Normal mode (not recreation) - match wizard logic exactly
-    console.log('🔍 [MemoryBookDialog] Normal mode: loading assets and creating selection pool')
-    await photoSelection_loadAvailableAssets()
-    console.log('🔍 [MemoryBookDialog] Assets loaded, available count:', photoSelection_availableAssets.value.length)
-    
-    // Use the photo selection composable to create a pool like the wizard
-    photoSelectionPool = photoSelection_populatePhotoSelectionPool()
-    console.log('🔍 [MemoryBookDialog] Using photo selection pool:', photoSelectionPool.length)
+    initializePhotoReplacement(props.existingBookData, props.existingBookData.created_from_assets || [])
   }
+  
+  // Load available assets for photo selection
+  await photoSelection_loadAvailableAssets()
+  
+  // Use the shared photo replacement logic (same as wizard)
+  const photoSelectionPool = getPhotoSelectionPool(photoSelection_method.value, photoSelection_populatePhotoSelectionPool)
   
   const submitData = {
     ...form.value,
@@ -1127,13 +1110,15 @@ async function handleSubmit() {
     selectedAssets: selectedAssets.value,
     photo_selection_pool: photoSelectionPool,
     photoSelectionMethod: photoSelection_method.value,
-    photosToReplace: props.isRecreateMode && photoSelection_method.value === 'replace_selected' ? 
-      photosToReplace.value : [],
+    photosToReplace: getPhotosToReplace(photoSelection_method.value),
     // Match wizard logic exactly for photos_to_replace
-    photos_to_replace: photoSelection_method.value === 'keep_same' ? [] : photosToReplace.value
+    photos_to_replace: getPhotosToReplace(photoSelection_method.value)
   }
   
   console.log('🔍 [MemoryBookDialog] Emitting submit event with data:', submitData)
+  console.log('🔍 [MemoryBookDialog] Photo selection pool length:', photoSelectionPool.length)
+  console.log('🔍 [MemoryBookDialog] Photo selection pool:', photoSelectionPool)
+  console.log('🔍 [MemoryBookDialog] Photos to replace:', photosToReplace.value)
   emit('submit', submitData)
 }
 

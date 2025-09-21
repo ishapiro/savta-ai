@@ -1444,6 +1444,12 @@ const createMemoryBookFromDialog = async (data) => {
       }
       
       // Update the book with the new photo selection method and data
+      console.log('🔧 [createMemoryBookFromDialog] Updating book with data:', {
+        photo_selection_method: data.photoSelectionMethod,
+        photo_selection_pool: data.photo_selection_pool,
+        photos_to_replace: data.photosToReplace
+      })
+      
       const supabase = useNuxtApp().$supabase
       const { error: updateError } = await supabase
         .from('memory_books')
@@ -1609,9 +1615,11 @@ const generateMemoryBookPDF = async (bookId) => {
     const supabase = useNuxtApp().$supabase
     const { data: bookData, error: bookError } = await supabase
       .from('memory_books')
-      .select('grid_layout, page_count, layout_type')
+      .select('grid_layout, page_count, layout_type, photo_selection_pool, photo_selection_method, photos_to_replace')
       .eq('id', bookId)
       .single()
+    
+    console.log('🔍 [generateMemoryBookPDF] Book data from database:', bookData)
     
     if (bookError) {
       console.error('❌ Error fetching book data:', bookError)
