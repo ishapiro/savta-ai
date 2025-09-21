@@ -1100,7 +1100,11 @@ async function handleSubmit() {
   await photoSelection_loadAvailableAssets()
   
   // Use the shared photo replacement logic (same as wizard)
-  const photoSelectionPool = getPhotoSelectionPool(photoSelection_method.value, photoSelection_populatePhotoSelectionPool)
+  const photoSelectionPool = getPhotoSelectionPool(
+    photoSelection_method.value, 
+    photoSelection_populatePhotoSelectionPool,
+    (memories) => { photoSelection_selectedMemories.value = memories }
+  )
   
   const submitData = {
     ...form.value,

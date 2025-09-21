@@ -65,18 +65,26 @@ export const usePhotoReplacement = () => {
    * This is the complex logic that handles different photo selection methods
    * @param {string} photoSelectionMethod - The current photo selection method
    * @param {Function} populatePhotoSelectionPool - Function to populate normal photo selection pool
+   * @param {Function} setSelectedMemories - Function to set selected memories for replace_selected
    * @returns {Array} The photo selection pool
    */
-  const getPhotoSelectionPool = (photoSelectionMethod, populatePhotoSelectionPool) => {
+  const getPhotoSelectionPool = (photoSelectionMethod, populatePhotoSelectionPool, setSelectedMemories = null) => {
     console.log('🔄 [usePhotoReplacement] Getting photo selection pool for method:', photoSelectionMethod)
     console.log('🔄 [usePhotoReplacement] Is recreate mode:', isRecreateMode.value)
     console.log('🔄 [usePhotoReplacement] Has existing book:', !!existingBookForRecreation.value)
     
     if (photoSelectionMethod === 'replace_selected' && existingBookForRecreation.value) {
-      // For photo replacement, use the normal photo selection pool
-      // The backend will handle the replacement logic and return the final photo set
+      // For photo replacement, we need to populate the selected memories with existing photos
+      // so that photoSelection_populatePhotoSelectionPool can return them
+      const existingPhotos = existingBookForRecreation.value.created_from_assets || []
+      console.log('🔄 [usePhotoReplacement] Photo replacement mode: setting selected memories to existing photos:', existingPhotos.length)
+      
+      if (setSelectedMemories) {
+        setSelectedMemories(existingPhotos)
+      }
+      
       const photoSelectionPool = populatePhotoSelectionPool()
-      console.log('🔄 [usePhotoReplacement] Photo replacement mode: using normal photo selection pool')
+      console.log('🔄 [usePhotoReplacement] Photo replacement mode: using populated photo selection pool')
       console.log('🔄 [usePhotoReplacement] Photo selection pool length:', photoSelectionPool.length)
       return photoSelectionPool
     } else if (photoSelectionMethod === 'keep_same' && existingBookForRecreation.value) {
