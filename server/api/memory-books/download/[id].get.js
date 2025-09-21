@@ -97,11 +97,28 @@ export default defineEventHandler(async (event) => {
       }
     }
     
-    // Step 0: Always run photo selection first (for both creates and recreates)
-      
+    // Step 0: Run photo selection only if no photos are already selected
+    if (!book.created_from_assets || book.created_from_assets.length === 0) {
       try {
         // Update status to indicate photo selection
         await updatePdfStatus(supabase, book.id, user.id, '🎯 Selecting the best photos for your memory...')
+        
+        // Calculate photo count based on grid layout
+        let photoCount = 3 // Default fallback
+        if (book.layout_type === 'grid' && book.grid_layout) {
+          const [rows, cols] = book.grid_layout.split('x').map(Number)
+          const memoriesPerPage = rows * cols
+          const pageCount = book.page_count || 1
+          photoCount = memoriesPerPage * pageCount
+          console.log('🔍 Calculated photo count from grid layout:', {
+            gridLayout: book.grid_layout,
+            rows,
+            cols,
+            memoriesPerPage,
+            pageCount,
+            photoCount
+          })
+        }
         
         // Call the magic memory endpoint to run photo selection
         const magicMemoryResponse = await $fetch('/api/ai/magic-memory', {
@@ -109,7 +126,7 @@ export default defineEventHandler(async (event) => {
           body: {
             memoryBookId: book.id,
             userId: user.id,
-            photoCount: 3 // Default to 3 photos for theme layouts
+            photoCount: photoCount
           }
         })
         
@@ -129,14 +146,14 @@ export default defineEventHandler(async (event) => {
         }
         
         book = updatedBook
-        
-      } catch (photoSelectionError) {
-        console.error('❌ Photo selection failed:', photoSelectionError)
-        throw createError({
-          statusCode: 500,
-          statusMessage: `Photo selection failed: ${photoSelectionError.message}`
-        })
+      } catch (error) {
+        console.error('❌ Photo selection failed:', error)
+        throw new Error(`Photo selection failed: ${error.message}`)
       }
+    } else {
+      console.log('✅ Photos already selected, skipping photo selection step')
+      console.log('🔍 Using existing photos:', book.created_from_assets)
+    }
     
     // For regeneration, clear existing files from storage
     if (book.status === 'ready' && (book.background_url || book.pdf_url)) {

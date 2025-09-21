@@ -642,35 +642,13 @@
         </div>
       </Dialog>
 
-      <!-- Progress Dialog -->
-      <Dialog
-        v-model:visible="showProgressDialog"
-        modal
-        :closable="false"
-        :dismissable-mask="false"
-        class="w-full max-w-md mx-auto"
-        :style="{ width: '90vw' }"
-      >
-        <template #header>
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-brand-highlight rounded-full flex items-center justify-center">
-              <i class="pi pi-spin pi-spinner text-white text-sm"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-brand-primary">Generating Your Memory Book</h3>
-          </div>
-        </template>
-        
-        <div class="text-center py-4">
-          <ProgressBar 
-            :value="currentProgress" 
-            class="mb-4"
-            :showValue="false"
-          />
-          <p class="text-brand-text-muted">
-            {{ currentProgressMessage }}
-          </p>
-        </div>
-      </Dialog>
+      <!-- Progress Dialog - Using shared component like magic wizard -->
+      <ProgressDialog
+        :show-progress-dialog="showProgressDialog"
+        :current-progress="currentProgress"
+        :current-progress-message="currentProgressMessage"
+        :is-regenerating="isRegenerating"
+      />
 
       <!-- Approval Dialog -->
       <Dialog
@@ -1034,6 +1012,7 @@ import MemoryStudioHero from '~/components/MemoryStudioHero.vue'
 import MemoryStudioPagination from '~/components/MemoryStudioPagination.vue'
 import MemoryStudioEmptyState from '~/components/MemoryStudioEmptyState.vue'
 import MemoryCard from '~/components/MemoryCard.vue'
+import ProgressDialog from '~/components/ProgressDialog.vue'
 import MemoryBook from '~/components/MemoryBook.vue'
 import MemoryBookDialog from '~/components/MemoryBookDialog.vue'
 import MagicMemoryWizard from '~/components/MagicMemoryWizard.vue'
@@ -1075,13 +1054,10 @@ const {
   activeView,
   showCreateModal,
   selectedPhotosForMemoryBook,
-  showProgressDialog,
   showApprovalDialog,
   showDeleteDialog,
   showMemoryBooksInfoBubble,
   creatingBook,
-  currentProgress,
-  currentProgressMessage,
   pendingApprovalBookId,
   bookToDelete,
   closeCreateModal,
@@ -1124,6 +1100,10 @@ const {
 
 // Import progress dialog functions
 const {
+  showProgressDialog,
+  currentProgress,
+  currentProgressMessage,
+  isRegenerating,
   startProgressPolling,
   stopProgressPolling,
   generatePDF
@@ -1467,6 +1447,7 @@ const createMemoryBookFromDialog = async (data) => {
       medium: data.medium,
       theme_id: data.theme_id,
       gridLayout: data.gridLayout,
+      pageCount: data.page_count || 1,
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,
       aiBackground: data.backgroundType === 'magical',
@@ -1504,6 +1485,7 @@ const createMemoryBookFromDialog = async (data) => {
       ai_background: mappedData.aiBackground,
       memory_shape: mappedData.memoryShape,
       grid_layout: mappedData.gridLayout,
+      page_count: mappedData.pageCount,
       auto_enhance: mappedData.autoEnhance,
       photo_selection_method: mappedData.photoSelectionMethod || 'last_100'
     }
@@ -1521,6 +1503,7 @@ const createMemoryBookFromDialog = async (data) => {
     // Start progress dialog and generation immediately (like wizard)
     if (newlyCreatedBook.value) {
       console.log('🔧 [createMemoryBookFromDialog] Starting progress dialog and generation...')
+      // Show dialog immediately for user feedback (like wizard)
       showProgressDialog.value = true
       currentProgressMessage.value = '🎯 Starting memory book generation...'
       currentProgress.value = 0
@@ -1545,15 +1528,37 @@ const generateMemoryBookPDF = async (bookId) => {
   try {
     console.log('🔍 [generateMemoryBookPDF] Starting memory book generation for:', bookId)
     
-    // Update progress
+    // Update progress (like wizard)
     currentProgressMessage.value = '🎯 Selecting best photos...'
     currentProgress.value = 25
     
-    // Start progress polling
+    // Start progress polling (like wizard)
     startProgressPolling(bookId, false)
     
     // Add a small delay to ensure database is updated
     await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Calculate photo count from grid layout
+    const calculatedPhotoCount = newlyCreatedBook.value.grid_layout ? 
+      (() => {
+        // Calculate photo count from grid layout like the dialog does
+        const gridLayout = newlyCreatedBook.value.grid_layout || '2x2'
+        const [rows, cols] = gridLayout.split('x').map(Number)
+        const memoriesPerPage = rows * cols
+        const pageCount = newlyCreatedBook.value.page_count || 1
+        const totalPhotos = memoriesPerPage * pageCount
+        console.log('🔍 Photo count calculation:', {
+          gridLayout,
+          rows,
+          cols,
+          memoriesPerPage,
+          pageCount,
+          totalPhotos
+        })
+        return totalPhotos
+      })() : 4 // Fallback to 4 if no grid layout
+
+    console.log('🔍 Sending photoCount to AI:', calculatedPhotoCount)
     
     // Call the AI endpoint to select photos and generate content
     const aiRes = await $fetch('/api/ai/magic-memory', {
@@ -1561,7 +1566,7 @@ const generateMemoryBookPDF = async (bookId) => {
       body: {
         memoryBookId: bookId,
         userId: user.value.id,
-        photoCount: 4 // Default for memory books
+        photoCount: calculatedPhotoCount
       }
     })
     

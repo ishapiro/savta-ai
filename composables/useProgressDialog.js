@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 
 export const useProgressDialog = () => {
   // Progress dialog state
@@ -8,6 +8,7 @@ export const useProgressDialog = () => {
   const currentBookId = ref(null)
   const progressInterval = ref(null)
   const isRegenerating = ref(false)
+  const progressTimeout = ref(null)
 
   // Poll PDF status
   const pollPdfStatus = async () => {
@@ -57,16 +58,23 @@ export const useProgressDialog = () => {
         }
       }
       
-      // Only close the dialog when the PDF generation is truly completed
+      // PDF is ready - close dialog and display PDF
       if (status.pdf_url && status.book_status === 'ready') {
         console.log('✅ PDF URL found and book status is ready, closing dialog and displaying PDF')
         currentProgress.value = 100
         currentProgressMessage.value = isRegenerating.value 
           ? 'Your special memory is ready!' 
           : 'Your memory book is ready!'
+        
+        // Stop polling
+        stopProgressPolling()
+        
+        // Close dialog IMMEDIATELY - no setTimeout
+        console.log('🔍 [PDF Ready] DEBUG: Setting showProgressDialog to false immediately')
+        showProgressDialog.value = false
+        console.log('🔍 [PDF Ready] DEBUG: showProgressDialog.value =', showProgressDialog.value)
+        
         setTimeout(async () => {
-          stopProgressPolling()
-          showProgressDialog.value = false
           
           // Reload memory books to show updated status
           try {
@@ -110,36 +118,23 @@ export const useProgressDialog = () => {
         return
       }
       
-      // If we have a PDF URL but status is not ready, close after a reasonable timeout
-      // BUT: For regeneration, we should wait for the new PDF to be generated
+      // PDF is ready but status not updated yet - close dialog and display PDF
       if (status.pdf_url && status.pdf_url.startsWith('https://') && status.book_status !== 'ready') {
-        // For regeneration, check if this is an old PDF URL by looking at the timestamp
-        // If the PDF URL is from a previous generation, don't close the dialog yet
-        if (isRegenerating.value) {
-          console.log('🔄 Regeneration in progress - waiting for new PDF to be generated')
-          console.log('🔍 Debug - Status details:', {
-            pdf_url: status.pdf_url,
-            book_status: status.book_status,
-            pdf_status: status.pdf_status,
-            isRegenerating: isRegenerating.value
-          })
-          // Don't close the dialog yet, continue polling
-          return
-        }
-        
-        console.log('⚠️ PDF URL found but book status is not ready, closing dialog anyway')
-        console.log('🔍 Debug - Status details:', {
-          pdf_url: status.pdf_url,
-          book_status: status.book_status,
-          pdf_status: status.pdf_status
-        })
+        console.log('⚠️ PDF URL found but book status not ready, closing dialog anyway')
         currentProgress.value = 100
         currentProgressMessage.value = isRegenerating.value 
           ? 'Your memory is ready!' 
           : 'Your memory is ready!'
+        
+        // Stop polling
+        stopProgressPolling()
+        
+        // Close dialog IMMEDIATELY - no setTimeout
+        console.log('🔍 [PDF Fallback] DEBUG: Setting showProgressDialog to false immediately')
+        showProgressDialog.value = false
+        console.log('🔍 [PDF Fallback] DEBUG: showProgressDialog.value =', showProgressDialog.value)
+        
         setTimeout(async () => {
-          stopProgressPolling()
-          showProgressDialog.value = false
           
           // Reload memory books to show updated status
           try {
@@ -168,6 +163,11 @@ export const useProgressDialog = () => {
           } catch (error) {
             console.error('Error reloading memory books:', error)
           }
+          
+          // Clear the progress dialog before displaying PDF
+          console.log('🔍 [viewPDF] DEBUG: Setting showProgressDialog to false before PDF display')
+          showProgressDialog.value = false
+          console.log('🔍 [viewPDF] DEBUG: showProgressDialog.value =', showProgressDialog.value)
           
           // Display the PDF in the viewer
           try {
@@ -201,8 +201,9 @@ export const useProgressDialog = () => {
         currentProgressMessage.value = 'Your memory is ready!'
       } else if (status.pdf_status === 'error') {
         currentProgressMessage.value = status.pdf_error || 'PDF generation failed'
+        // Stop polling immediately on error
+        stopProgressPolling()
         setTimeout(() => {
-          stopProgressPolling()
           showProgressDialog.value = false
         }, 4000)
       } else if (status.pdf_status === 'not_started') {
@@ -272,6 +273,7 @@ export const useProgressDialog = () => {
       : 'Starting memory creation...'
     showProgressDialog.value = true
     console.log('🔍 [startProgressPolling] showProgressDialog set to:', showProgressDialog.value)
+    console.log('🔍 [startProgressPolling] DEBUG: showProgressDialog.value =', showProgressDialog.value)
     
     // Poll every 3 seconds
     progressInterval.value = setInterval(pollPdfStatus, 3000)
@@ -280,7 +282,7 @@ export const useProgressDialog = () => {
     pollPdfStatus()
     
     // Set a timeout to stop polling after 5 minutes (300 seconds)
-    const timeout = setTimeout(() => {
+    progressTimeout.value = setTimeout(() => {
       console.log('PDF generation timeout, closing dialog')
       stopProgressPolling()
       showProgressDialog.value = false
@@ -289,12 +291,18 @@ export const useProgressDialog = () => {
 
   // Stop progress polling
   const stopProgressPolling = () => {
+    console.log('🔍 [stopProgressPolling] DEBUG: Called, showProgressDialog.value =', showProgressDialog.value)
     if (progressInterval.value) {
       clearInterval(progressInterval.value)
       progressInterval.value = null
     }
+    if (progressTimeout.value) {
+      clearTimeout(progressTimeout.value)
+      progressTimeout.value = null
+    }
     // Only now set currentBookId.value to null
     currentBookId.value = null
+    console.log('🔍 [stopProgressPolling] DEBUG: After clearing intervals, showProgressDialog.value =', showProgressDialog.value)
   }
 
   // Generate PDF function

@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
         ai_supplemental_prompt: title || 'Select Photos That Tell a Story',
         layout_type: layoutType,
         ui: 'wizard',
-        format: 'card',
+        format: 'book',
         created_from_assets: isTemplate ? null : asset_ids,
         photo_selection_pool: photo_selection_pool || (isTemplate ? null : asset_ids),
         magic_story: isTemplate ? null : story,

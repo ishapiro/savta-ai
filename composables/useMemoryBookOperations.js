@@ -29,6 +29,21 @@ export const useMemoryBookOperations = () => {
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
       
+      console.log('🔍 [createMemoryBook] DEBUG: Session data:', sessionData)
+      console.log('🔍 [createMemoryBook] DEBUG: Access token exists:', !!accessToken)
+      console.log('🔍 [createMemoryBook] DEBUG: Access token length:', accessToken?.length || 0)
+      
+      if (!accessToken) {
+        console.log('🔍 [createMemoryBook] DEBUG: No access token, trying to refresh session...')
+        const { data: refreshData } = await supabase.auth.refreshSession()
+        const refreshedToken = refreshData.session?.access_token
+        console.log('🔍 [createMemoryBook] DEBUG: Refreshed token exists:', !!refreshedToken)
+        if (!refreshedToken) {
+          throw new Error('Unable to get valid authentication token')
+        }
+        accessToken = refreshedToken
+      }
+      
       // Use the same API call as the magic card wizard
       console.log('🔍 [createMemoryBook] Photo selection pool:', newBook.photo_selection_pool)
       console.log('🔍 [createMemoryBook] Photo selection pool length:', newBook.photo_selection_pool?.length)

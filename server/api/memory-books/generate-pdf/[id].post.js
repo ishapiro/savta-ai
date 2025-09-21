@@ -268,6 +268,21 @@ export default defineEventHandler(async (event) => {
           photoCount = layoutConfig.photos.length
         }
       }
+    } else if (book.layout_type === 'grid' && book.grid_layout) {
+      // Calculate photo count from grid layout
+      const [rows, cols] = book.grid_layout.split('x').map(Number)
+      const memoriesPerPage = rows * cols
+      const pageCount = book.page_count || 1
+      photoCount = memoriesPerPage * pageCount
+      
+      logger.step('🔍 Calculated photo count from grid layout:', {
+        gridLayout: book.grid_layout,
+        rows,
+        cols,
+        memoriesPerPage,
+        pageCount,
+        photoCount
+      })
     }
     
     // Check if we need to select photos (missing selected assets or wrong number for theme)
@@ -2181,14 +2196,15 @@ export default defineEventHandler(async (event) => {
       const userIntendedPhotoCount = book.created_from_assets?.length || themePhotoCount
       console.log(`📸 Theme layout supports ${themePhotoCount} photos, user intended ${userIntendedPhotoCount} photos`)
       
-      // Check if this is a card format - if so, respect the format and limit photos to theme support
+      // Check if this is a card or book format - if so, respect the format and limit photos to theme support
       const isCardFormat = book.format === 'card'
-      if (isCardFormat) {
-        console.log(`🎴 Card format detected - respecting format and limiting to ${themePhotoCount} photos`)
-        // For card format, always use theme layout and limit photos to what the theme supports
+      const isBookFormat = book.format === 'book'
+      if (isCardFormat || isBookFormat) {
+        console.log(`${isCardFormat ? '🎴 Card' : '📚 Book'} format detected - respecting format and limiting to ${themePhotoCount} photos`)
+        // For card/book format, always use theme layout and limit photos to what the theme supports
         const limitedAssets = book.created_from_assets?.slice(0, themePhotoCount) || []
         book.created_from_assets = limitedAssets
-        console.log(`📸 Limited assets for card format: ${limitedAssets.length} photos`)
+        console.log(`📸 Limited assets for ${isCardFormat ? 'card' : 'book'} format: ${limitedAssets.length} photos`)
       } else if (userIntendedPhotoCount > themePhotoCount) {
         // Only switch to grid layout for non-card formats
         console.log(`⚠️ User selected ${userIntendedPhotoCount} photos but theme only supports ${themePhotoCount}. Switching to grid layout.`)
@@ -3315,6 +3331,8 @@ export default defineEventHandler(async (event) => {
     
     try {
       // Now update the book status to ready immediately
+      console.log('🔧 CRITICAL: Starting final status update for book:', book.id)
+      console.log('🔧 Book format:', book.format)
       
       // Ensure the book has the required fields before updating status to ready
       const updateData = { status: 'ready' }
@@ -3324,10 +3342,17 @@ export default defineEventHandler(async (event) => {
         updateData.magic_story = 'A beautiful memory created with love'
       }
       
+      // For book format, ensure magic_story is set if missing
+      if (book.format === 'book' && (!book.magic_story || book.magic_story === '')) {
+        updateData.magic_story = 'A beautiful memory book created with love'
+      }
+      
       // Ensure created_from_assets is set
       if (!book.created_from_assets || book.created_from_assets.length === 0) {
         updateData.created_from_assets = selectedAssets.map(asset => asset.id)
       }
+      
+      console.log('🔧 CRITICAL: About to update book status with data:', updateData)
       
       const { data: finalUpdateData, error: finalUpdateError } = await supabase
         .from('memory_books')

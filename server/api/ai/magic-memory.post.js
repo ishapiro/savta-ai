@@ -51,6 +51,8 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const { memoryBookId, userId, photoCount = 3 } = body
     
+    console.log('🔍 AI API received photoCount:', photoCount, 'from body:', body)
+    
     if (!memoryBookId) {
       throw createError({
         statusCode: 400,

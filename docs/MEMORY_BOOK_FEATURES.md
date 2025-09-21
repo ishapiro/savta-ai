@@ -61,16 +61,29 @@ The application uses a comprehensive database schema with the following key tabl
 
 **Features**:
 - **Book Creation**: Configure layout, page count, print size, quality, medium
-- **PDF Generation**: Generate PDFs from approved assets
+- **AI Photo Selection**: Intelligent photo selection based on themes and prompts
+- **PDF Generation**: Generate PDFs with progress tracking and status updates
 - **Book Status Tracking**: Draft, Ready, Approved, Distributed
 - **Download System**: Download generated PDFs
 - **Book Details**: View comprehensive book information and metadata
+- **Progress Dialog**: Real-time progress tracking with shared component
+- **Grid/List Views**: Toggle between different viewing modes
 
 **Book Configuration Options**:
-- Layout Types: Standard, Modern, Vintage, Minimal
-- Print Sizes: A4, A5, Letter, Square
+- Layout Types: Grid (2x2, 3x3, 4x4), Theme-based layouts
+- Print Sizes: 8.5x11, A4, A5, Letter, Square
 - Quality Levels: Standard, Premium, Ultra
 - Medium: Digital, Print, Both
+- Photo Selection: Manual selection or AI-driven selection
+
+**Technical Implementation**:
+- **Complex State Management**: Multiple composables managing reactive state
+- **Progress Dialog Integration**: Shared component with magic wizard
+- **Event-Driven Architecture**: Custom events for cross-component communication
+- **Mobile-First Design**: Responsive layout with touch-friendly interactions
+- **Performance Optimizations**: Lazy loading, debounced search, memoized computations
+
+> **📋 For detailed technical implementation**: See `MEMORY_BOOKS_PAGE_FLOW.md` for comprehensive documentation of the complex component interactions, reactive state management, and event flows.
 
 ### 4. Admin Interface
 
