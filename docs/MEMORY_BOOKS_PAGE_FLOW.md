@@ -135,7 +135,29 @@ graph TD
     H --> D
 ```
 
-### 3. Photo Selection Flow
+### 3. Card/Book Button Event Flow
+
+The memory-books page now provides unified button behavior between memory cards and memory books, with smart routing based on the item type:
+
+```mermaid
+graph TD
+    A[User clicks button on card/book] --> B{Button Type?}
+    B -->|Compose/Generate| C{Card or Book?}
+    C -->|Card| D[Open Magic Memory Wizard]
+    C -->|Book| E[Open MemoryBookDialog]
+    B -->|View| F[Open PDF Viewer]
+    B -->|Details| G[Open Detail Dialog]
+    B -->|Approve/Unapprove| H[Update Status]
+```
+
+**Key Differences:**
+- **Memory Cards**: Edit/revise operations open the Magic Memory Wizard
+- **Memory Books**: Edit/revise operations open the MemoryBookDialog
+- **All Other Operations**: View, Details, Approve/Unapprove work identically
+- **Same Progress Dialog**: Both use the shared ProgressDialog component
+- **Same Status Logic**: Both use identical polling and status update logic
+
+### 4. Photo Selection Flow
 
 ```mermaid
 graph TD

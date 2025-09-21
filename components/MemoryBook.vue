@@ -92,71 +92,53 @@
             data-testid="approve-button"
             class="w-full bg-brand-flash hover:bg-brand-flash/80 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
             @click="$emit('approve', book.id)"
-            v-tooltip.top="'Approve this Book'"
+            v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'"
           >
             <i class="pi pi-check mr-2"></i>
-            Approve
+            Print and Mail
           </button>
         </div>
         
         <div v-else-if="book.status === 'approved'" class="flex-1">
           <button
-            data-testid="view-button"
+            data-testid="unapprove-button"
             class="w-full bg-brand-accent hover:bg-brand-accent/80 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
-            @click="$emit('view', book)"
+            @click="$emit('unapprove', book.id)"
           >
-            <i class="pi pi-eye mr-2"></i>
-            View
+            <i class="pi pi-undo mr-2"></i>
+            Unapprove
           </button>
         </div>
         
-        <div v-else-if="book.status === 'generating'" class="flex-1">
+        <div v-else-if="book.status === 'background_ready'" class="flex-1">
           <button
+            data-testid="recreate-button"
+            class="w-full bg-brand-accent/50 text-brand-accent text-sm font-medium py-2 px-3 rounded-lg cursor-not-allowed opacity-50"
             disabled
-            class="w-full bg-gray-400 text-white text-sm font-medium py-2 px-3 rounded-lg cursor-not-allowed"
           >
-            <i class="pi pi-spin pi-spinner mr-2"></i>
-            Generating...
-          </button>
-        </div>
-        
-        <div v-else class="flex-1">
-          <button
-            data-testid="view-button"
-            class="w-full bg-brand-accent hover:bg-brand-accent/80 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
-            @click="$emit('view', book)"
-          >
-            <i class="pi pi-eye mr-2"></i>
-            View
+            <i class="pi pi-refresh mr-2"></i>
+            Processing
           </button>
         </div>
         
         <!-- Secondary Actions -->
-        <div class="flex items-center gap-1">
+        <div class="flex gap-2">
           <button
-            v-if="book.status === 'approved'"
-            data-testid="unapprove-button"
-            class="p-2 text-brand-text-muted hover:text-brand-accent hover:bg-brand-surface-hover rounded-lg transition-colors"
-            @click="$emit('unapprove', book.id)"
-            v-tooltip.top="'Unapprove'"
+            data-testid="view-button"
+            class="p-2 text-brand-highlight hover:bg-brand-highlight/10 rounded-lg transition-colors"
+            @click="$emit('download', book)"
+            title="View"
           >
-            <i class="pi pi-undo text-sm"></i>
+            <i class="pi pi-external-link text-lg"></i>
           </button>
+          
           <button
-            data-testid="edit-button"
-            class="p-2 text-brand-text-muted hover:text-brand-highlight hover:bg-brand-surface-hover rounded-lg transition-colors"
-            @click="$emit('edit', book)"
-            v-tooltip.top="'Edit'"
+            data-testid="details-button"
+            class="p-2 text-brand-text-muted hover:bg-brand-surface-hover rounded-lg transition-colors"
+            @click="$emit('view-details', book)"
+            title="Details"
           >
-            <i class="pi pi-pencil text-sm"></i>
-          </button>
-          <button
-            data-testid="delete-button"
-            class="p-2 text-brand-text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-            @click="$emit('delete', book.id)"
-            v-tooltip.top="'Delete'"
-          >
-            <i class="pi pi-trash text-sm"></i>
+            <i class="pi pi-list text-lg"></i>
           </button>
         </div>
       </div>
@@ -177,7 +159,7 @@ defineProps({
 })
 
 // Emits
-defineEmits(['generate', 'approve', 'unapprove', 'view', 'edit', 'delete'])
+defineEmits(['generate', 'approve', 'unapprove', 'download', 'view-details'])
 
 // Composables
 const memoryStudio = useMemoryStudio()

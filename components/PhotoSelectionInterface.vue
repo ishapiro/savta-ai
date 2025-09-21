@@ -8,7 +8,7 @@
         <div class="relative cursor-pointer group" @click="selectMethod('keep_same')">
           <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
             :class="methodValue === 'keep_same' 
-              ? 'border-brand-accent bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 shadow-xl scale-105' 
+              ? 'border-brand-accent bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 shadow-xl' 
               : 'border-gray-200 hover:border-brand-accent/50 hover:bg-gradient-to-br hover:from-brand-accent/5 hover:to-brand-highlight/5 hover:shadow-lg'">
             <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
               <i class="pi pi-refresh text-sm sm:text-lg text-white"></i>
@@ -27,7 +27,7 @@
         <div class="relative cursor-pointer group" @click="selectMethod('replace_selected')">
           <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[60px] flex flex-col items-center justify-center"
             :class="methodValue === 'replace_selected' 
-              ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+              ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl' 
               : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
             <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
               <i class="pi pi-images text-sm sm:text-lg text-white"></i>
@@ -47,7 +47,7 @@
       <div class="relative cursor-pointer group" @click="selectMethod('last_100')">
         <div class="border-2 rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
           :class="methodValue === 'last_100' 
-            ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+            ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl' 
             : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
           <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
             <i class="pi pi-images text-sm sm:text-lg text-white"></i>
@@ -69,7 +69,7 @@
         <div class="relative cursor-pointer group" @click="selectPhotoLibrary">
                       <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
               :class="methodValue === 'photo_library' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
             <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
               <i class="pi pi-folder-open text-sm sm:text-lg text-white"></i>
@@ -88,7 +88,7 @@
         <div class="relative cursor-pointer group" @click="selectMethod('geo_code')">
                       <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
               :class="methodValue === 'geo_code' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
             <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
               <i class="pi pi-map-marker text-sm sm:text-lg text-white"></i>
@@ -108,7 +108,7 @@
         <div class="relative cursor-pointer group" @click="selectMethod('date_range')">
                       <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
               :class="methodValue === 'date_range' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
             <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-highlight to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
               <i class="pi pi-calendar-plus text-sm sm:text-lg text-white"></i>
@@ -128,7 +128,7 @@
         <div class="relative cursor-pointer group" @click="selectMethod('tags')">
                       <div class="border-2 rounded-lg sm:rounded-xl p-2 text-center transition-all duration-300 h-full min-h-[50px] flex flex-col items-center justify-center"
               :class="methodValue === 'tags' 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl scale-105' 
+                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-xl' 
                 : 'border-gray-200 hover:border-brand-flash/50 hover:bg-gradient-to-br hover:from-brand-flash/5 hover:to-brand-highlight/5 hover:shadow-lg'">
             <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-header to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
               <i class="pi pi-tags text-sm sm:text-lg text-white"></i>

@@ -207,82 +207,12 @@
         />
       </div>
       
-      <div class="text-center mb-2 sm:mb-3 max-w-xs w-full mx-auto sm:max-w-full">
-        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
-          <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
-        </div>
-        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Choose which photos to replace</h3>
-        <p class="text-xs sm:text-base text-gray-600 mb-2">
-          Tap on photos you want to replace with new ones. I'll keep the ones you don't select and find new photos for the ones you mark.
-        </p>
-        <p class="text-xs text-brand-flash font-medium">📸 Current photos from your memory card</p>
-      </div>
-
-      <!-- Current Photos Grid -->
-      <div class="w-full max-w-lg mx-auto">
-        <div class="grid grid-cols-3 gap-2 sm:gap-3">
-          <div 
-            v-for="photo in existingBookForRecreation?.created_from_assets || []" 
-            :key="photo"
-            class="relative cursor-pointer group"
-            @click="togglePhotoReplacement(photo)"
-          >
-            <div class="aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300"
-              :class="photosToReplace.includes(photo) 
-                ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-brand-flash/50 hover:shadow-md'">
-              <!-- Actual photo thumbnail -->
-              <img 
-                :src="getAssetThumbnail(photo)" 
-                :alt="`Photo ${photo}`"
-                class="w-full h-full object-contain"
-                @error="handleImageError"
-                @load="console.log('Image loaded for photo:', photo, 'src:', getAssetThumbnail(photo))"
-              />
-              <!-- Debug info for each photo -->
-              <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-xs p-1">
-                ID: {{ photo }}<br>
-                Thumbnail: {{ getAssetThumbnail(photo) ? 'Found' : 'Missing' }}
-              </div>
-              
-              <!-- Fallback placeholder (hidden by default) -->
-              <div class="image-placeholder w-full h-full bg-gray-100 flex items-center justify-center" style="display: none;">
-                <i class="pi pi-image text-xl text-gray-400"></i>
-              </div>
-              
-              <!-- Replace indicator -->
-              <div v-if="photosToReplace.includes(photo)" class="absolute top-1 right-1">
-                <div class="w-4 h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-refresh text-white text-xs"></i>
-                </div>
-              </div>
-              
-              <!-- Keep indicator -->
-              <div v-else class="absolute top-1 right-1">
-                <div class="w-4 h-4 bg-brand-accent rounded-full flex items-center justify-center shadow-lg">
-                  <i class="pi pi-check text-white text-xs"></i>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Photo status text -->
-            <div class="text-center mt-1">
-              <span class="text-xs font-medium"
-                :class="photosToReplace.includes(photo) ? 'text-brand-flash' : 'text-brand-accent'">
-                {{ photosToReplace.includes(photo) ? 'Replace' : 'Keep' }}
-              </span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Summary -->
-        <div class="mt-4 text-center">
-          <p class="text-sm text-gray-600">
-            <span class="font-medium text-brand-accent">{{ (existingBookForRecreation?.created_from_assets?.length || 0) - photosToReplace.length }}</span> photos to keep, 
-            <span class="font-medium text-brand-flash">{{ photosToReplace.length }}</span> photos to replace
-          </p>
-        </div>
-      </div>
+      <!-- Shared Photo Replacement Selector -->
+      <PhotoReplacementSelector
+        :existing-assets="existingBookForRecreation?.created_from_assets || []"
+        item-type="memory card"
+        v-model="photosToReplace"
+      />
     </div>
 
     <!-- Step 6: Photo Library Selection (MANUAL step for photo_library method) -->
@@ -514,15 +444,6 @@ const { getAssetThumbnail } = useMemoryStudio()
 // Toast functionality
 const toast = useToast()
 
-// Image error handler
-const handleImageError = (event) => {
-  // Replace with placeholder if image fails to load
-  event.target.style.display = 'none'
-  const placeholder = event.target.parentElement.querySelector('.image-placeholder')
-  if (placeholder) {
-    placeholder.style.display = 'flex'
-  }
-}
 
 // Wrapper function for generateMagicMemory with toast notifications
 const handleGenerateMagicMemory = async () => {

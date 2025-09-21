@@ -394,28 +394,123 @@
           
           <!-- Photo Selection Interface (like wizard) -->
           <div v-if="!photoSelection_loadingAssets" class="bg-white rounded-lg p-4 border border-brand-primary/20">
-            <PhotoSelectionInterface
-              ref="photoSelectionInterfaceRef"
-              v-model:method="photoSelection_method"
-              v-model:dateRange="photoSelection_dateRange"
-              v-model:selectedTags="photoSelection_selectedTags"
-              v-model:locationType="photoSelection_locationType"
-              v-model:selectedLocation="photoSelection_selectedLocation"
-              v-model:selectedMemories="photoSelection_selectedMemories"
-              v-model:selectedTagFilter="photoSelection_selectedTagFilter"
-              :title="form.ai_supplemental_prompt || 'your memory book'"
-              :computedAvailableTags="photoSelection_computedAvailableTags"
-              :availableCountries="photoSelection_availableCountries"
-              :availableStates="photoSelection_availableStates"
-              :availableCities="photoSelection_availableCities"
-              :filteredAssets="photoSelection_filteredAssets"
-              :loadingAssets="photoSelection_loadingAssets"
-              :isUploading="photoSelection_isUploading"
-              :maxPhotoCount="selectedThemePhotoCount || totalPhotosNeeded"
-              @upload-photos="handleUploadPhotos"
-              @no-photos-found="handleNoPhotosFound"
-              @close-photo-library="handleClosePhotoLibrary"
-            />
+            <!-- Photo Selection Interface (always show for recreate mode) -->
+            <div v-if="props.isRecreateMode">
+              <!-- Recreation Mode Options - Match PhotoSelectionInterface width -->
+              <div class="w-full max-w-xs mx-auto sm:max-w-md md:max-w-lg lg:max-w-2xl">
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                  <!-- Keep Same Photos Option -->
+                  <div class="relative cursor-pointer group" @click="selectMethod('keep_same')">
+                    <div class="bg-white rounded-lg p-4 border-2 transition-all duration-300 hover:border-brand-flash/50 hover:shadow-md"
+                      :class="photoSelection_method === 'keep_same' 
+                        ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-lg' 
+                        : 'border-gray-200'">
+                      <div class="text-center">
+                        <div class="w-12 h-12 bg-brand-accent rounded-full flex items-center justify-center mx-auto mb-3">
+                          <i class="pi pi-refresh text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-1">Keep the same photos</h4>
+                        <p class="text-xs text-gray-600">Use all the same photos from your original memory book.</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Select Photos to Replace Option -->
+                  <div class="relative cursor-pointer group" @click="selectMethod('replace_selected')">
+                    <div class="bg-white rounded-lg p-4 border-2 transition-all duration-300 hover:border-brand-flash/50 hover:shadow-md"
+                      :class="photoSelection_method === 'replace_selected' 
+                        ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-lg' 
+                        : 'border-gray-200'">
+                      <div class="text-center">
+                        <div class="w-12 h-12 bg-brand-flash rounded-full flex items-center justify-center mx-auto mb-3">
+                          <i class="pi pi-images text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-1">Select photos to replace</h4>
+                        <p class="text-xs text-gray-600">Choose which photos to replace with new ones.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Photo Replacement Status (when replace_selected is chosen) -->
+                <div v-if="photoSelection_method === 'replace_selected'" class="bg-brand-surface-hover/50 rounded-lg p-4 border border-brand-primary/20 mb-4">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-semibold text-brand-primary mb-1">Photo Replacement</h4>
+                      <p class="text-sm text-gray-600">
+                        <span v-if="photosToReplace.length === 0" class="text-gray-500">
+                          No photos selected for replacement
+                        </span>
+                        <span v-else class="text-brand-flash font-medium">
+                          {{ photosToReplace.length }} photo{{ photosToReplace.length === 1 ? '' : 's' }} selected for replacement
+                        </span>
+                      </p>
+                    </div>
+                    <Button
+                      :label="photosToReplace.length === 0 ? 'Select Photos' : 'Change selection'"
+                      :icon="photosToReplace.length === 0 ? 'pi pi-images' : 'pi pi-pencil'"
+                      severity="secondary"
+                      @click="openPhotoReplacementModal"
+                      class="px-4 py-2"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Other Photo Selection Options (always visible) -->
+              <PhotoSelectionInterface
+                ref="photoSelectionInterfaceRef"
+                v-model:method="photoSelection_method"
+                v-model:dateRange="photoSelection_dateRange"
+                v-model:selectedTags="photoSelection_selectedTags"
+                v-model:locationType="photoSelection_locationType"
+                v-model:selectedLocation="photoSelection_selectedLocation"
+                v-model:selectedMemories="photoSelection_selectedMemories"
+                v-model:selectedTagFilter="photoSelection_selectedTagFilter"
+                :title="form.ai_supplemental_prompt || 'your memory book'"
+                :computedAvailableTags="photoSelection_computedAvailableTags"
+                :isRecreateMode="false"
+                :availableCountries="photoSelection_availableCountries"
+                :availableStates="photoSelection_availableStates"
+                :availableCities="photoSelection_availableCities"
+                :filteredAssets="photoSelection_filteredAssets"
+                :loadingAssets="photoSelection_loadingAssets"
+                :isUploading="photoSelection_isUploading"
+                :maxPhotoCount="selectedThemePhotoCount || totalPhotosNeeded"
+                @upload-photos="handleUploadPhotos"
+                @photo-library-selected="handlePhotoLibrarySelected"
+                @no-photos-found="handleNoPhotosFound"
+                @close-photo-library="handleClosePhotoLibrary"
+              />
+            </div>
+            
+            <!-- Normal Photo Selection Interface (for non-recreate modes) -->
+            <div v-else>
+              <PhotoSelectionInterface
+                ref="photoSelectionInterfaceRef"
+                v-model:method="photoSelection_method"
+                v-model:dateRange="photoSelection_dateRange"
+                v-model:selectedTags="photoSelection_selectedTags"
+                v-model:locationType="photoSelection_locationType"
+                v-model:selectedLocation="photoSelection_selectedLocation"
+                v-model:selectedMemories="photoSelection_selectedMemories"
+                v-model:selectedTagFilter="photoSelection_selectedTagFilter"
+                :title="form.ai_supplemental_prompt || 'your memory book'"
+                :computedAvailableTags="photoSelection_computedAvailableTags"
+                :isRecreateMode="props.isRecreateMode"
+                :availableCountries="photoSelection_availableCountries"
+                :availableStates="photoSelection_availableStates"
+                :availableCities="photoSelection_availableCities"
+                :filteredAssets="photoSelection_filteredAssets"
+                :loadingAssets="photoSelection_loadingAssets"
+                :isUploading="photoSelection_isUploading"
+                :maxPhotoCount="selectedThemePhotoCount || totalPhotosNeeded"
+                @upload-photos="handleUploadPhotos"
+                @photo-library-selected="handlePhotoLibrarySelected"
+                @no-photos-found="handleNoPhotosFound"
+                @close-photo-library="handleClosePhotoLibrary"
+              />
+            </div>
           </div>
           
           <!-- Loading State for Photo Selection -->
@@ -470,7 +565,7 @@
         />
         <Button
           type="submit"
-          :label="isEditing ? 'Update' : 'Compose Memory Book'"
+          :label="isEditing ? 'Recreate' : 'Compose Memory Book'"
           icon="pi pi-check"
           :loading="loading"
           :disabled="loading || !canSubmit"
@@ -490,11 +585,21 @@
     heading="Grid Layouts & Pages"
     text="Grid layouts: Each page contains your selected grid (e.g., 2x2 = 4 photos per page).\n\nTotal photos needed: Grid size × Number of pages\n\nExample: 2x2 grid × 3 pages = 12 photos needed\n\nTheme layouts: Always single page with a fixed number of photos determined by the theme"
   />
+
+  <!-- Photo Replacement Modal -->
+  <PhotoReplacementModal
+    v-model:visible="showPhotoReplacementModal"
+    :existing-assets="props.existingBookData?.created_from_assets || []"
+    item-type="memory book"
+    v-model="photosToReplace"
+    @save="handlePhotoReplacementSave"
+  />
 </template>
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
+import PhotoReplacementModal from '~/components/PhotoReplacementModal.vue'
 import SavtaBubble from '~/components/SavtaBubble.vue'
 import { useDatabase } from '~/composables/useDatabase'
 
@@ -507,7 +612,9 @@ const props = defineProps({
   loading: Boolean,
   initialSelectedAssets: { type: Array, default: () => [] },
   initialPhotoSelectionMethod: { type: String, default: 'last_100' },
-  visible: { type: Boolean, default: false }
+  visible: { type: Boolean, default: false },
+  isRecreateMode: { type: Boolean, default: false },
+  existingBookData: { type: Object, default: () => ({}) }
 })
 
 const emit = defineEmits(['submit', 'close', 'cleanup'])
@@ -563,6 +670,15 @@ const {
   photoSelection_resetSelection,
   photoSelection_getSelectedAssets
 } = usePhotoSelection()
+
+
+// Recreation state (matching wizard)
+const photosToReplace = ref([])
+const existingBookForRecreation = computed(() => props.existingBookData)
+
+// Photo replacement modal state
+const showPhotoReplacementModal = ref(false)
+
 
 // Theme state
 const themeOptions = ref([])
@@ -950,20 +1066,8 @@ const savePhotoSelection = () => {
   photoSelection_resetSelection()
 }
 
-const handleUploadPhotos = () => {
-  // Handle photo upload - this would integrate with your upload system
-  console.log('Upload photos requested')
-}
 
-const handleNoPhotosFound = () => {
-  // Handle no photos found scenario
-  console.log('No photos found for selected criteria')
-}
 
-const handleClosePhotoLibrary = () => {
-  // Handle closing photo library
-  console.log('Photo library closed')
-}
 
 // Fetch themes when component mounts
 onMounted(() => {
@@ -979,18 +1083,38 @@ async function handleSubmit() {
   // Use the same photo selection pool logic as the wizard
   let photoSelectionPool = []
   
-  // If we have manually selected assets (from Photo Box), use them directly
-  if (selectedAssets.value.length > 0) {
-    photoSelectionPool = selectedAssets.value.map(asset => asset.id)
-    console.log('🔍 [MemoryBookDialog] Using manually selected assets:', photoSelectionPool.length)
+  // Handle recreation mode like the wizard
+  if (props.isRecreateMode && props.existingBookData) {
+    console.log('🔍 [MemoryBookDialog] Recreation mode detected')
+    console.log('🔍 [MemoryBookDialog] Photo selection method:', photoSelection_method.value)
+    console.log('🔍 [MemoryBookDialog] Photos to replace:', photosToReplace.value)
+    
+    if (photoSelection_method.value === 'keep_same') {
+      // For "keep_same", use the existing photos from the original book
+      photoSelectionPool = props.existingBookData.created_from_assets || []
+      console.log('🔍 [MemoryBookDialog] Keep same mode: using existing photos from original book')
+      console.log('🔍 [MemoryBookDialog] Keep same mode: photoSelectionPool:', photoSelectionPool)
+    } else if (photoSelection_method.value === 'replace_selected') {
+      // For photo replacement, use the normal photo selection pool like the wizard
+      // The backend will handle the replacement logic
+      console.log('🔍 [MemoryBookDialog] Photo replacement mode: loading assets and creating selection pool')
+      await photoSelection_loadAvailableAssets()
+      photoSelectionPool = photoSelection_populatePhotoSelectionPool()
+      console.log('🔍 [MemoryBookDialog] Photo replacement mode: using photo selection pool:', photoSelectionPool.length)
+    } else {
+      // For other methods in recreation mode, use normal logic
+      console.log('🔍 [MemoryBookDialog] Recreation mode: loading assets and creating selection pool')
+      await photoSelection_loadAvailableAssets()
+      photoSelectionPool = photoSelection_populatePhotoSelectionPool()
+      console.log('🔍 [MemoryBookDialog] Recreation mode: using photo selection pool:', photoSelectionPool.length)
+    }
   } else {
-    // For AI-driven methods, we need to load assets first
-    console.log('🔍 [MemoryBookDialog] Loading assets for AI-driven method...')
+    // Normal mode (not recreation) - match wizard logic exactly
+    console.log('🔍 [MemoryBookDialog] Normal mode: loading assets and creating selection pool')
     await photoSelection_loadAvailableAssets()
     console.log('🔍 [MemoryBookDialog] Assets loaded, available count:', photoSelection_availableAssets.value.length)
     
     // Use the photo selection composable to create a pool like the wizard
-    // This handles cases where user selected "I'll choose for you" or other methods
     photoSelectionPool = photoSelection_populatePhotoSelectionPool()
     console.log('🔍 [MemoryBookDialog] Using photo selection pool:', photoSelectionPool.length)
   }
@@ -1001,10 +1125,93 @@ async function handleSubmit() {
     backgroundType: form.value.backgroundType,
     backgroundOpacity: form.value.backgroundOpacity,
     selectedAssets: selectedAssets.value,
-    photo_selection_pool: photoSelectionPool
+    photo_selection_pool: photoSelectionPool,
+    photoSelectionMethod: photoSelection_method.value,
+    photosToReplace: props.isRecreateMode && photoSelection_method.value === 'replace_selected' ? 
+      photosToReplace.value : [],
+    // Match wizard logic exactly for photos_to_replace
+    photos_to_replace: photoSelection_method.value === 'keep_same' ? [] : photosToReplace.value
   }
   
   console.log('🔍 [MemoryBookDialog] Emitting submit event with data:', submitData)
   emit('submit', submitData)
 }
+
+// Event handlers for PhotoSelectionInterface (matching wizard)
+const handleUploadPhotos = () => {
+  console.log('🔍 [MemoryBookDialog] handleUploadPhotos called')
+  // Close the dialog and navigate to upload route
+  emit('close')
+  navigateTo('/app/memory-books/upload?from=dialog&return=dialog')
+}
+
+const handleNoPhotosFound = (data) => {
+  console.log('🔍 [MemoryBookDialog] handleNoPhotosFound called with data:', data)
+  
+  let title = 'No Photos Found'
+  let message = data?.message
+
+  // Provide friendly defaults if message not provided
+  if (!message) {
+    switch (data?.method) {
+      case 'last_100':
+        message = 'No recent photos found. Try uploading some photos first.'
+        break
+      case 'geo_code':
+        message = 'No photos found for this location. Try a different location or upload photos.'
+        break
+      case 'date_range':
+        message = 'No photos found for this date range. Try a different date range or upload photos.'
+        break
+      case 'photo_library':
+        message = 'Your Photo Box is empty. Upload photos to continue.'
+        break
+      default:
+        message = 'No matching photos found. Try adjusting your selections.'
+    }
+  }
+
+  console.log('🔍 [MemoryBookDialog] Showing toast with:', { title, message })
+  
+  // Show toast notification (you may need to import useToast if not already imported)
+  // For now, just log the message
+  console.warn(`⚠️ ${title}: ${message}`)
+}
+
+const handlePhotoLibrarySelected = () => {
+  console.log('🔍 [MemoryBookDialog] handlePhotoLibrarySelected called')
+  // Handle photo library selection - this is called when user selects photos from Photo Box
+  // The PhotoSelectionInterface component handles the selection internally
+}
+
+const handleClosePhotoLibrary = () => {
+  console.log('🔍 [MemoryBookDialog] handleClosePhotoLibrary called')
+  // Reset any photo library state if needed
+  // The PhotoSelectionInterface component handles this internally
+}
+
+// Photo replacement modal handlers
+const handlePhotoReplacementSave = (selectedPhotos) => {
+  console.log('🔍 [MemoryBookDialog] Photo replacement saved:', selectedPhotos)
+  photosToReplace.value = selectedPhotos
+  showPhotoReplacementModal.value = false
+}
+
+// Method selection handler
+const selectMethod = (method) => {
+  console.log('🔍 [MemoryBookDialog] Method selected:', method)
+  photoSelection_method.value = method
+  
+  if (method === 'keep_same') {
+    // Clear any photo replacements when keeping same photos
+    photosToReplace.value = []
+  }
+}
+
+// Open photo replacement modal
+const openPhotoReplacementModal = () => {
+  console.log('🔍 [MemoryBookDialog] Opening photo replacement modal')
+  showPhotoReplacementModal.value = true
+}
+
 </script> 

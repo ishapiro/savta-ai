@@ -86,9 +86,8 @@
             @generate="onGenerateClick"
             @approve="approveBook"
             @unapprove="unapproveBook"
-            @view="viewBook"
-            @edit="editBook"
-            @delete="deleteBook"
+            @download="onDownloadClick"
+            @view-details="handleViewBookDetails"
           />
         </div>
 
@@ -164,8 +163,18 @@
       <!-- Create Memory Book Modal -->
       <MemoryBookDialog
         :visible="showCreateModal"
-        :isEditing="false"
-        :initialData="{ layoutType: 'grid' }"
+        :isEditing="!!bookToEdit"
+        :isRecreateMode="!!bookToEdit"
+        :existingBookData="bookToEdit || {}"
+        :initialData="bookToEdit ? { 
+          layoutType: bookToEdit.layout_type || 'grid',
+          pageCount: bookToEdit.page_count || 1,
+          printSize: bookToEdit.print_size || '8.5x11',
+          backgroundType: bookToEdit.background_type || 'white',
+          backgroundColor: bookToEdit.background_color,
+          themeId: bookToEdit.theme_id,
+          title: bookToEdit.ai_supplemental_prompt || ''
+        } : { layoutType: 'grid' }"
         :initialSelectedAssets="selectedPhotosForMemoryBook"
         :initialPhotoSelectionMethod="photoSelectionMethodForMemoryBook"
         :loading="creatingBook"
@@ -507,15 +516,6 @@
                   <span class="text-xs">Approve</span>
                 </button>
                 <button
-                  data-testid="details-edit-settings-button"
-                  v-if="selectedBook && selectedBook.format !== 'card'"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-edit text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
-                  @click="openEditSettings(selectedBook)"
-                >
-                  <i class="pi pi-cog text-xs mb-0.5"></i>
-                  <span class="text-xs">Settings</span>
-                </button>
-                <button
                   data-testid="details-trash-button"
                   v-if="selectedBook"
                   class="flex flex-col items-center justify-center bg-brand-dialog-delete text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
@@ -558,15 +558,6 @@
                 >
                   <i class="pi pi-check text-xs sm:text-sm"></i>
                   <span>Approve</span>
-                </button>
-                <button
-                  data-testid="details-edit-settings-button"
-                  v-if="selectedBook && selectedBook.format !== 'card'"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
-                  @click="openEditSettings(selectedBook)"
-                >
-                  <i class="pi pi-cog text-xs sm:text-sm"></i>
-                  <span>Edit Settings</span>
                 </button>
                 <button
                   data-testid="details-trash-button"
@@ -1118,6 +1109,7 @@ const totalPages = ref(1)
 const showGenerateDialog = ref(false)
 const showRegenerateDialog = ref(false)
 const pendingBook = ref(null)
+const bookToEdit = ref(null)
 
 // New user guidance and auto-generation state
 const newlyCreatedBook = ref(null)
@@ -1238,9 +1230,20 @@ const openMagicMemoryDialog = (type) => {
 }
 
 
-const onGenerateClick = (book) => {
-  pendingBook.value = book
-  showGenerateDialog.value = true
+const onGenerateClick = (item) => {
+  console.log('🔧 [onGenerateClick] Called with item:', item)
+  console.log('🔧 [onGenerateClick] item.format:', item.format)
+  
+  // Use the item's format to determine the type instead of activeView
+  if (item.format === 'card') {
+    // For memory cards, open the magic memory wizard
+    console.log('🔧 [onGenerateClick] Opening magic memory wizard for card:', item.id)
+    openMagicMemoryDialog('quick', item)
+  } else {
+    // For memory books, open the memory book dialog for editing
+    console.log('🔧 [onGenerateClick] Opening memory book dialog for book:', item.id)
+    editBook(item)
+  }
 }
 
 const onDownloadClick = async (book) => {
@@ -1295,12 +1298,6 @@ const onRegenerateClick = (book) => {
 }
 
 
-// Open edit settings
-const openEditSettings = async (book) => {
-  // For now, just show a message - this would open the edit settings dialog
-  console.log('Open edit settings for book:', book)
-  // TODO: Implement the full edit settings dialog
-}
 
 // Confirm generate action
 const confirmGenerate = () => {
@@ -1318,8 +1315,15 @@ const confirmRegenerate = () => {
   if (pendingBook.value) {
     // Close the details modal so progress window is visible
     showDetailsModal.value = false
-    // Use the magic memory wizard to regenerate the book
-    magicMemoryWizardRef.value.openMagicMemoryDialog('quick', pendingBook.value)
+    
+    // Use the item's format to determine the type
+    if (pendingBook.value.format === 'card') {
+      // For memory cards, use the magic memory wizard
+      magicMemoryWizardRef.value.openMagicMemoryDialog('quick', pendingBook.value)
+    } else {
+      // For memory books, use the memory book dialog for editing
+      editBook(pendingBook.value)
+    }
   }
   pendingBook.value = null
 }
@@ -1386,19 +1390,17 @@ const unapproveBook = async (bookId) => {
   }
 }
 
-const viewBook = (book) => {
-  // Use the same logic as view details
-  handleViewBookDetails(book)
-}
-
 const editBook = (book) => {
-  // TODO: Implement edit book logic
-  console.log('Edit book clicked:', book)
-}
-
-const deleteBook = (bookId) => {
-  bookToDelete.value = bookId
-  showDeleteDialog.value = true
+  console.log('🔧 [editBook] Opening memory book dialog for editing:', book.id)
+  
+  // Set the book data for editing
+  selectedPhotosForMemoryBook.value = book.created_from_assets || []
+  
+  // Set the book being edited for the dialog
+  bookToEdit.value = book
+  
+  // Open the memory book dialog in edit mode
+  showCreateModal.value = true
 }
 
         const confirmDelete = async () => {
@@ -1421,6 +1423,68 @@ const deleteBook = (bookId) => {
 // Create memory book from dialog (matches original implementation)
 const createMemoryBookFromDialog = async (data) => {
   console.log('🔧 [createMemoryBookFromDialog] Starting with data:', data)
+  
+  // Check if we're editing an existing book (regenerate flow)
+  if (bookToEdit.value) {
+    console.log('🔧 [createMemoryBookFromDialog] Regenerating existing book:', bookToEdit.value.id)
+    console.log('🔧 [createMemoryBookFromDialog] Photo selection method:', data.photoSelectionMethod)
+    
+    try {
+      creatingBook.value = true
+      
+      // Handle different photo selection methods for regeneration
+      if (data.photoSelectionMethod === 'keep_same') {
+        console.log('🔧 [createMemoryBookFromDialog] Keeping same photos - using existing assets')
+        // For keep_same, we don't need to update the book with new photo selection
+        // Just regenerate with existing assets
+      } else if (data.photoSelectionMethod === 'replace_selected') {
+        console.log('🔧 [createMemoryBookFromDialog] Replacing selected photos')
+        // For replace_selected, we need to update the book with the new photo selection
+        // This will be handled by the AI endpoint based on the photo_selection_method
+      }
+      
+      // Update the book with the new photo selection method and data
+      const supabase = useNuxtApp().$supabase
+      const { error: updateError } = await supabase
+        .from('memory_books')
+        .update({
+          photo_selection_method: data.photoSelectionMethod,
+          photo_selection_pool: data.photo_selection_pool || [],
+          photos_to_replace: data.photosToReplace ? JSON.stringify(data.photosToReplace) : null
+        })
+        .eq('id', bookToEdit.value.id)
+      
+      if (updateError) {
+        console.error('❌ Error updating book photo selection:', updateError)
+        throw new Error(`Failed to update photo selection: ${updateError.message}`)
+      }
+      
+      // Show progress dialog immediately for user feedback (like wizard)
+      showProgressDialog.value = true
+      currentProgressMessage.value = '🎯 Starting memory book regeneration...'
+      currentProgress.value = 0
+      
+      // Start the regeneration process immediately (like wizard)
+      await generateMemoryBookPDF(bookToEdit.value.id)
+      
+      // Close the create dialog
+      showCreateModal.value = false
+      resetCreateModal()
+      
+      // Clear the book being edited
+      bookToEdit.value = null
+      
+      // Clear selected photos for memory book
+      selectedPhotosForMemoryBook.value = []
+      
+      return
+    } catch (error) {
+      console.error('Error regenerating memory book:', error)
+      showProgressDialog.value = false
+      creatingBook.value = false
+      return
+    }
+  }
   
   // Check if we have either manually selected assets or a photo selection pool
   const hasManualAssets = data.selectedAssets && data.selectedAssets.length > 0
@@ -1497,6 +1561,9 @@ const createMemoryBookFromDialog = async (data) => {
     // Clear selected photos for memory book
     selectedPhotosForMemoryBook.value = []
     
+    // Clear the book being edited (if any)
+    bookToEdit.value = null
+    
     // Reload memory books to show new book
     await loadMemoryBooks()
     
@@ -1538,14 +1605,27 @@ const generateMemoryBookPDF = async (bookId) => {
     // Add a small delay to ensure database is updated
     await new Promise(resolve => setTimeout(resolve, 1000))
     
+    // Fetch book data from database to get grid layout and page count
+    const supabase = useNuxtApp().$supabase
+    const { data: bookData, error: bookError } = await supabase
+      .from('memory_books')
+      .select('grid_layout, page_count, layout_type')
+      .eq('id', bookId)
+      .single()
+    
+    if (bookError) {
+      console.error('❌ Error fetching book data:', bookError)
+      throw new Error(`Failed to fetch book data: ${bookError.message}`)
+    }
+    
     // Calculate photo count from grid layout
-    const calculatedPhotoCount = newlyCreatedBook.value.grid_layout ? 
+    const calculatedPhotoCount = bookData.grid_layout ? 
       (() => {
         // Calculate photo count from grid layout like the dialog does
-        const gridLayout = newlyCreatedBook.value.grid_layout || '2x2'
+        const gridLayout = bookData.grid_layout || '2x2'
         const [rows, cols] = gridLayout.split('x').map(Number)
         const memoriesPerPage = rows * cols
-        const pageCount = newlyCreatedBook.value.page_count || 1
+        const pageCount = bookData.page_count || 1
         const totalPhotos = memoriesPerPage * pageCount
         console.log('🔍 Photo count calculation:', {
           gridLayout,
