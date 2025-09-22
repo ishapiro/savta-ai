@@ -5,7 +5,7 @@
       <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-flash to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
         <i class="pi pi-images text-xl sm:text-2xl text-white"></i>
       </div>
-      <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Choose which photos to replace</h3>
+      <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Choose the photos to replace</h3>
       <p class="text-xs sm:text-base text-gray-600 mb-2">
         Tap on photos you want to replace with new ones. I'll keep the ones you don't select and find new photos for the ones you mark.
       </p>
