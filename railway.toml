@@ -1,0 +1,15 @@
+# Railway configuration for development debugging
+[build]
+builder = "nixpacks"
+buildCommand = "npm run build"
+startCommand = "npm run dev"
+
+[deploy]
+startCommand = "npm run dev"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[env]
+NODE_ENV = "development"
+NUXT_DEV = "true"
+NUXT_DEBUG = "true"
