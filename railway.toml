@@ -1,7 +1,7 @@
 # Railway configuration for production (backup)
 [build]
 builder = "nixpacks"
-buildCommand = "npm run build"
+buildCommand = "apt-get update && apt-get install -y poppler-utils graphicsmagick imagemagick && npm run build"
 
 [deploy]
 startCommand = "npm start"
