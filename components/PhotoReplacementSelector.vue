@@ -27,8 +27,8 @@
               : 'border-gray-200'">
             <!-- Actual photo thumbnail -->
             <img 
-              v-if="getAssetThumbnail(photo) && !imageErrorStates[photo]"
-              :src="getAssetThumbnail(photo)" 
+              v-if="getPhotoThumbnail(photo) && !imageErrorStates[photo]"
+              :src="getPhotoThumbnail(photo)" 
               :alt="`Photo ${photo}`"
               class="w-full h-full object-contain"
               @error="handleImageError"
@@ -96,21 +96,47 @@ const photosToReplace = ref([...props.modelValue])
 const imageLoadingStates = ref({})
 const imageErrorStates = ref({})
 
+// Cache thumbnails to avoid calling getAssetThumbnail multiple times
+const photoThumbnailCache = ref({})
+
+// Computed method to get photo thumbnail with caching
+const getPhotoThumbnail = (photoId) => {
+  if (!photoId) return null
+  
+  // Return cached result if available
+  if (photoThumbnailCache.value[photoId] !== undefined) {
+    return photoThumbnailCache.value[photoId]
+  }
+  
+  // Get thumbnail and cache it
+  const thumbnail = getAssetThumbnail(photoId)
+  photoThumbnailCache.value[photoId] = thumbnail
+  return thumbnail
+}
+
 // Watch for external changes to modelValue
-watch(() => props.modelValue, (newValue) => {
-  photosToReplace.value = [...newValue]
+watch(() => props.modelValue, (newValue, oldValue) => {
+  console.log('🔍 [PhotoReplacementSelector] modelValue changed from:', oldValue, 'to:', newValue)
+  // Only update if the values are actually different to prevent loops
+  if (JSON.stringify(newValue) !== JSON.stringify(photosToReplace.value)) {
+    photosToReplace.value = [...newValue]
+  }
 }, { deep: true })
 
 // Watch for changes to photosToReplace and emit updates
-watch(photosToReplace, (newValue) => {
-  emit('update:modelValue', [...newValue])
+watch(photosToReplace, (newValue, oldValue) => {
+  console.log('🔍 [PhotoReplacementSelector] photosToReplace changed from:', oldValue, 'to:', newValue)
+  // Only emit if the values are actually different to prevent loops
+  if (JSON.stringify(newValue) !== JSON.stringify(props.modelValue)) {
+    emit('update:modelValue', [...newValue])
+  }
 }, { deep: true })
 
 // Watch for thumbnail availability and set loading states
 watch(() => props.existingAssets, (newAssets) => {
   if (newAssets && newAssets.length > 0) {
     newAssets.forEach(photoId => {
-      if (getAssetThumbnail(photoId)) {
+      if (getPhotoThumbnail(photoId)) {
         imageLoadingStates.value[photoId] = true
       }
     })
@@ -120,19 +146,29 @@ watch(() => props.existingAssets, (newAssets) => {
 // Photo replacement methods
 const togglePhotoReplacement = (photoId) => {
   console.log('🔍 [PhotoReplacementSelector] togglePhotoReplacement called for photo:', photoId)
+  const startTime = performance.now()
   
   try {
     const index = photosToReplace.value.indexOf(photoId)
+    console.log('🔍 [PhotoReplacementSelector] Found index:', index)
+    
     if (index > -1) {
       // Remove from replacement list
+      console.log('🔍 [PhotoReplacementSelector] Removing photo from replacement list')
       photosToReplace.value.splice(index, 1)
     } else {
       // Add to replacement list
+      console.log('🔍 [PhotoReplacementSelector] Adding photo to replacement list')
       photosToReplace.value.push(photoId)
     }
-    console.log('🔍 [PhotoReplacementSelector] Photos to replace:', photosToReplace.value)
+    
+    const endTime = performance.now()
+    console.log('🔍 [PhotoReplacementSelector] togglePhotoReplacement completed in:', endTime - startTime, 'ms')
+    console.log('🔍 [PhotoReplacementSelector] Photos to replace after:', [...photosToReplace.value])
   } catch (error) {
-    console.error('🔍 [PhotoReplacementSelector] Error in togglePhotoReplacement:', error)
+    const endTime = performance.now()
+    console.error('🔍 [PhotoReplacementSelector] Error in togglePhotoReplacement after:', endTime - startTime, 'ms:', error)
+    console.error('🔍 [PhotoReplacementSelector] Error stack:', error.stack)
     // Don't let this error crash the component
   }
 }
@@ -140,34 +176,53 @@ const togglePhotoReplacement = (photoId) => {
 // Image load handler
 const handleImageLoad = (event) => {
   console.log('🔍 [PhotoReplacementSelector] Image loaded successfully for:', event.target.src)
-  // Find the photo ID from the src and clear loading state
-  const photoId = Object.keys(imageLoadingStates.value).find(id => 
-    getAssetThumbnail(id) === event.target.src
-  )
-  if (photoId) {
-    imageLoadingStates.value[photoId] = false
+  const startTime = performance.now()
+  
+  try {
+    // Find the photo ID from the src and clear loading state
+    const photoId = Object.keys(imageLoadingStates.value).find(id => 
+      getPhotoThumbnail(id) === event.target.src
+    )
+    if (photoId) {
+      imageLoadingStates.value[photoId] = false
+      console.log('🔍 [PhotoReplacementSelector] Cleared loading state for photo:', photoId)
+    } else {
+      console.log('🔍 [PhotoReplacementSelector] Could not find photo ID for loaded image:', event.target.src)
+    }
+  } catch (error) {
+    console.error('🔍 [PhotoReplacementSelector] Error in handleImageLoad:', error)
+  } finally {
+    const endTime = performance.now()
+    console.log('🔍 [PhotoReplacementSelector] handleImageLoad completed in:', endTime - startTime, 'ms')
   }
 }
 
 // Image error handler
 const handleImageError = (event) => {
   console.log('🔍 [PhotoReplacementSelector] Image load error for:', event.target.src)
+  const startTime = performance.now()
   
   try {
     // Find the photo ID from the src and mark as error
     const photoId = Object.keys(imageErrorStates.value).find(id => 
-      getAssetThumbnail(id) === event.target.src
+      getPhotoThumbnail(id) === event.target.src
     ) || Object.keys(imageLoadingStates.value).find(id => 
-      getAssetThumbnail(id) === event.target.src
+      getPhotoThumbnail(id) === event.target.src
     )
     
     if (photoId) {
       imageErrorStates.value[photoId] = true
       imageLoadingStates.value[photoId] = false
+      console.log('🔍 [PhotoReplacementSelector] Marked photo as error:', photoId)
+    } else {
+      console.log('🔍 [PhotoReplacementSelector] Could not find photo ID for error image:', event.target.src)
     }
   } catch (error) {
     console.error('🔍 [PhotoReplacementSelector] Error in handleImageError:', error)
-    // Don't let this error crash the component
+    console.error('🔍 [PhotoReplacementSelector] Error stack:', error.stack)
+  } finally {
+    const endTime = performance.now()
+    console.log('🔍 [PhotoReplacementSelector] handleImageError completed in:', endTime - startTime, 'ms')
   }
 }
 </script>

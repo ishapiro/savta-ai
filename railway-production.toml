@@ -1,4 +1,4 @@
-# Railway configuration for production (backup)
+# Railway configuration for production
 [build]
 builder = "nixpacks"
 buildCommand = "npm run build"

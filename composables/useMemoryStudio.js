@@ -123,16 +123,27 @@ export const useMemoryStudio = () => {
   }
 
   const getAssetThumbnail = (assetId) => {
+    const startTime = performance.now()
+    
     if (!assetId) {
       console.log('🔍 [getAssetThumbnail] No asset ID provided')
       return null
     }
     
+    console.log('🔍 [getAssetThumbnail] Getting thumbnail for asset:', assetId)
+    
     const thumbnail = assetThumbnails.value[assetId] || null
     if (!thumbnail) {
       console.log('🔍 [getAssetThumbnail] No thumbnail found for asset:', assetId)
       console.log('🔍 [getAssetThumbnail] Available thumbnails:', Object.keys(assetThumbnails.value))
+      console.log('🔍 [getAssetThumbnail] Total thumbnails cache size:', Object.keys(assetThumbnails.value).length)
+    } else {
+      console.log('🔍 [getAssetThumbnail] Found thumbnail for asset:', assetId, 'URL:', thumbnail.substring(0, 50) + '...')
     }
+    
+    const endTime = performance.now()
+    console.log('🔍 [getAssetThumbnail] getAssetThumbnail completed in:', endTime - startTime, 'ms')
+    
     return thumbnail
   }
 

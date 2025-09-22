@@ -1,4 +1,5 @@
-# Railway configuration for production (backup)
+# Railway configuration for debugging production issues
+# This version keeps production build but enables debug logging
 [build]
 builder = "nixpacks"
 buildCommand = "npm run build"
@@ -10,3 +11,4 @@ restartPolicyMaxRetries = 3
 
 [env]
 NODE_ENV = "production"
+NUXT_DEBUG = "true"
