@@ -69,10 +69,16 @@ export const useProgressDialog = () => {
         // Stop polling
         stopProgressPolling()
         
-        // Close dialog IMMEDIATELY - no setTimeout
-        console.log('🔍 [PDF Ready] DEBUG: Setting showProgressDialog to false immediately')
-        showProgressDialog.value = false
-        console.log('🔍 [PDF Ready] DEBUG: showProgressDialog.value =', showProgressDialog.value)
+        // Show "Loading preview..." message for 1 second before closing
+        console.log('🔍 [PDF Ready] Showing loading preview message')
+        currentProgressMessage.value = 'Loading preview...'
+        
+        // Close dialog after brief preview loading message
+        setTimeout(() => {
+          console.log('🔍 [PDF Ready] DEBUG: Setting showProgressDialog to false after preview loading')
+          showProgressDialog.value = false
+          console.log('🔍 [PDF Ready] DEBUG: showProgressDialog.value =', showProgressDialog.value)
+        }, 1500)
         
         setTimeout(async () => {
           
@@ -129,10 +135,16 @@ export const useProgressDialog = () => {
         // Stop polling
         stopProgressPolling()
         
-        // Close dialog IMMEDIATELY - no setTimeout
-        console.log('🔍 [PDF Fallback] DEBUG: Setting showProgressDialog to false immediately')
-        showProgressDialog.value = false
-        console.log('🔍 [PDF Fallback] DEBUG: showProgressDialog.value =', showProgressDialog.value)
+        // Show "Loading preview..." message for 1 second before closing
+        console.log('🔍 [PDF Fallback] Showing loading preview message')
+        currentProgressMessage.value = 'Loading preview...'
+        
+        // Close dialog after brief preview loading message
+        setTimeout(() => {
+          console.log('🔍 [PDF Fallback] DEBUG: Setting showProgressDialog to false after preview loading')
+          showProgressDialog.value = false
+          console.log('🔍 [PDF Fallback] DEBUG: showProgressDialog.value =', showProgressDialog.value)
+        }, 1500)
         
         setTimeout(async () => {
           

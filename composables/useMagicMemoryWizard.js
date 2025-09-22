@@ -11,7 +11,6 @@ export const useMagicMemoryWizard = () => {
   const MAGIC_STEPS = {
     TITLE: 'title',
     EVENT: 'event', 
-    COUNT: 'count',
     BACKGROUND: 'background',
     THEME: 'theme',
     PHOTOS: 'photos',

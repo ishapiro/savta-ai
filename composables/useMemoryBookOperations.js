@@ -47,6 +47,9 @@ export const useMemoryBookOperations = () => {
       // Use the same API call as the magic card wizard
       console.log('🔍 [createMemoryBook] Photo selection pool:', newBook.photo_selection_pool)
       console.log('🔍 [createMemoryBook] Photo selection pool length:', newBook.photo_selection_pool?.length)
+      console.log('🔍 [createMemoryBook] Photo count from newBook.photo_count:', newBook.photo_count)
+      console.log('🔍 [createMemoryBook] Photo count from newBook.photoCount:', newBook.photoCount)
+      console.log('🔍 [createMemoryBook] Final photo count being sent:', newBook.photo_count || newBook.photoCount || 4)
       
       const response = await $fetch('/api/memory-books/create-magic-memory', {
         method: 'POST',
@@ -57,7 +60,7 @@ export const useMemoryBookOperations = () => {
           title: newBook.ai_supplemental_prompt || 'Create a beautiful memory book',
           background_type: newBook.backgroundType || 'white',
           background_color: newBook.backgroundColor || null,
-          photo_count: newBook.photoCount || 4,
+          photo_count: newBook.photo_count || newBook.photoCount || 4,
           theme_id: newBook.themeId || null,
           output: newBook.output || 'PDF',
           print_size: newBook.printSize || '8.5x11',

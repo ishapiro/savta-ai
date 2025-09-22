@@ -1516,7 +1516,7 @@ const createMemoryBookFromDialog = async (data) => {
       quality: data.quality,
       medium: data.medium,
       theme_id: data.theme_id,
-      gridLayout: data.gridLayout,
+      gridLayout: data.gridLayout || data.grid_layout,
       pageCount: data.page_count || 1,
       memoryShape: data.memoryShape,
       includeCaptions: data.includeCaptions,
@@ -1524,6 +1524,9 @@ const createMemoryBookFromDialog = async (data) => {
       backgroundOpacity: data.backgroundOpacity || 30,
       memoryEvent: data.memoryEvent,
       customMemoryEvent: data.customMemoryEvent,
+      // Ensure grid layout and photo count are properly set for grid layouts
+      grid_layout: data.grid_layout || data.gridLayout,
+      photo_count: data.photo_count || (data.layoutType === 'grid' ? (data.page_count || 1) * (data.gridLayout ? data.gridLayout.split('x').reduce((a, b) => a * b, 1) : 4) : undefined),
       // Use photo selection pool (up to 100 photos for AI selection)
       selectedAssetIds: data.photo_selection_pool || (Array.isArray(data.selectedAssets) ? data.selectedAssets.map(a => a.id) : []),
       photo_selection_pool: data.photo_selection_pool || []
@@ -1532,6 +1535,10 @@ const createMemoryBookFromDialog = async (data) => {
     console.log('🔧 [createMemoryBookFromDialog] Mapped data:', mappedData)
     console.log('🔧 [createMemoryBookFromDialog] Photo selection pool in mapped data:', mappedData.photo_selection_pool)
     console.log('🔧 [createMemoryBookFromDialog] Photo selection pool length:', mappedData.photo_selection_pool?.length)
+    console.log('🔧 [createMemoryBookFromDialog] Grid layout in mapped data:', mappedData.grid_layout)
+    console.log('🔧 [createMemoryBookFromDialog] Photo count in mapped data:', mappedData.photo_count)
+    console.log('🔧 [createMemoryBookFromDialog] Original data grid_layout:', data.grid_layout)
+    console.log('🔧 [createMemoryBookFromDialog] Original data photo_count:', data.photo_count)
     
     // Call the createBook function from useMemoryBookOperations
     const createdBook = await createBook(mappedData)

@@ -907,8 +907,12 @@ const fetchThemes = async () => {
 const { $supabase: supabase } = useNuxtApp()
 
 // Watchers
-watch(() => props.initialData, (val) => {
-  if (val && Object.keys(val).length > 0) {
+// Initialize form on mount instead of using a watcher
+onMounted(() => {
+  console.log('🔍 [MemoryBookDialog] Component mounted, initializing form')
+  console.log('🔍 [MemoryBookDialog] Initial data:', props.initialData)
+  
+  if (props.initialData && Object.keys(props.initialData).length > 0) {
     form.value = {
       ai_supplemental_prompt: '',
       layoutType: 'grid',
@@ -925,11 +929,12 @@ watch(() => props.initialData, (val) => {
       autoEnhance: true,
       gridLayout: '2x2',
       page_count: 1,
-      ...val,
+      ...props.initialData,
       output: 'PDF'
     }
+    console.log('🔍 [MemoryBookDialog] Form initialized with initialData. GridLayout:', form.value.gridLayout)
   }
-}, { immediate: true })
+})
 
 watch(() => form.value.layoutType, (newLayoutType) => {
   if (newLayoutType !== 'theme') {
@@ -939,11 +944,17 @@ watch(() => form.value.layoutType, (newLayoutType) => {
 
 // Watch for grid layout changes and adjust page count if it exceeds the new maximum
 watch(() => form.value.gridLayout, (newGridLayout) => {
+  console.log('🔍 [MemoryBookDialog] Grid layout changed to:', newGridLayout)
+  console.log('🔍 [MemoryBookDialog] Current form.gridLayout:', form.value.gridLayout)
+  console.log('🔍 [MemoryBookDialog] Current form.layoutType:', form.value.layoutType)
+  
   if (form.value.layoutType === 'grid') {
     // Calculate new maximum pages for the new grid layout
     const [rows, cols] = (newGridLayout || '2x2').split('x').map(Number)
     const memoriesPerPage = rows * cols
     const newMaxPages = Math.max(1, Math.floor(100 / memoriesPerPage))
+    
+    console.log(`📐 Grid layout changed to ${newGridLayout}, memories per page: ${memoriesPerPage}, max pages: ${newMaxPages}`)
     
     // If current page count exceeds new maximum, adjust it
     if (form.value.page_count > newMaxPages) {
@@ -997,29 +1008,41 @@ watch(() => props.visible, (isVisible) => {
     initialSelectedAssets: props.initialSelectedAssets, 
     initialPhotoSelectionMethod: props.initialPhotoSelectionMethod 
   })
+  console.log('🔍 [MemoryBookDialog] Current form.gridLayout when visibility changes:', form.value.gridLayout)
   
   if (isVisible) {
     if (!props.isEditing) {
-      // Reset all state for new memory book creation
-      console.log('🔄 Resetting all state for new memory book')
+      // Only reset form if it's completely empty (first time opening)
+      const hasUserInput = form.value.ai_supplemental_prompt || 
+                          form.value.gridLayout !== '2x2' || 
+                          form.value.page_count !== 1 ||
+                          form.value.printSize !== '8.5x11' ||
+                          form.value.backgroundType !== 'white'
       
-      // Reset form to defaults
-      form.value = {
-        ai_supplemental_prompt: '',
-        layoutType: 'grid',
-        printSize: '8.5x11',
-        quality: 'standard',
-        medium: 'digital',
-        output: 'PDF',
-        theme_id: null,
-        memoryEvent: '',
-        customMemoryEvent: '',
-        backgroundType: 'white',
-        backgroundOpacity: 30,
-        includeCaptions: true,
-        autoEnhance: true,
-        gridLayout: '2x2',
-        page_count: 1
+      if (!hasUserInput) {
+        // Reset all state for new memory book creation
+        console.log('🔄 Resetting all state for new memory book')
+        
+        // Reset form to defaults
+        form.value = {
+          ai_supplemental_prompt: '',
+          layoutType: 'grid',
+          printSize: '8.5x11',
+          quality: 'standard',
+          medium: 'digital',
+          output: 'PDF',
+          theme_id: null,
+          memoryEvent: '',
+          customMemoryEvent: '',
+          backgroundType: 'white',
+          backgroundOpacity: 30,
+          includeCaptions: true,
+          autoEnhance: true,
+          gridLayout: '2x2',
+          page_count: 1
+        }
+      } else {
+        console.log('🔄 Preserving user input, not resetting form')
       }
       
       // Reset selected assets only if no initial assets are provided
@@ -1116,13 +1139,21 @@ async function handleSubmit() {
     photoSelectionMethod: photoSelection_method.value,
     photosToReplace: getPhotosToReplace(photoSelection_method.value),
     // Match wizard logic exactly for photos_to_replace
-    photos_to_replace: getPhotosToReplace(photoSelection_method.value)
+    photos_to_replace: getPhotosToReplace(photoSelection_method.value),
+    // Ensure grid layout and photo count are properly set for grid layouts
+    grid_layout: form.value.layoutType === 'grid' ? form.value.gridLayout : undefined,
+    photo_count: form.value.layoutType === 'grid' ? totalPhotosNeeded.value : undefined
   }
   
   console.log('🔍 [MemoryBookDialog] Emitting submit event with data:', submitData)
   console.log('🔍 [MemoryBookDialog] Photo selection pool length:', photoSelectionPool.length)
   console.log('🔍 [MemoryBookDialog] Photo selection pool:', photoSelectionPool)
   console.log('🔍 [MemoryBookDialog] Photos to replace:', photosToReplace.value)
+  console.log('🔍 [MemoryBookDialog] Form gridLayout:', form.value.gridLayout)
+  console.log('🔍 [MemoryBookDialog] Form layoutType:', form.value.layoutType)
+  console.log('🔍 [MemoryBookDialog] Total photos needed:', totalPhotosNeeded.value)
+  console.log('🔍 [MemoryBookDialog] Submit data grid_layout:', submitData.grid_layout)
+  console.log('🔍 [MemoryBookDialog] Submit data photo_count:', submitData.photo_count)
   emit('submit', submitData)
 }
 
