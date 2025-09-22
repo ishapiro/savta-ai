@@ -34,6 +34,70 @@ railway link
 ./scripts/railway-monitor.sh
 ```
 
+## 🔧 Development Mode Deployment
+
+### **Why Deploy in Development Mode?**
+
+When debugging issues that work locally but fail in production, deploying in development mode can help identify the root cause:
+
+- **Better error messages** and stack traces
+- **Source maps** for exact line numbers
+- **Less aggressive optimizations** that might hide issues
+- **More detailed console logs** for debugging
+- **Vue DevTools** work better in development mode
+
+### **Using the Development Deploy Script**
+
+```bash
+# Deploy in development mode to Railway
+./railway-dev-deploy.sh
+```
+
+This script will:
+1. ✅ Create a temporary development `package.json`
+2. ✅ Set Railway environment variables for development
+3. ✅ Deploy to Railway in development mode
+4. ✅ Restore your original `package.json`
+
+### **Manual Development Mode Deployment**
+
+If you prefer to set it up manually:
+
+```bash
+# Set development environment variables
+railway variables set NODE_ENV=development
+railway variables set NUXT_DEV=true
+railway variables set NUXT_DEBUG=true
+
+# Deploy
+railway up
+```
+
+### **Using railway.toml for Development**
+
+The `railway.toml` file automatically configures development mode:
+
+```toml
+[build]
+builder = "nixpacks"
+buildCommand = "npm run build"
+startCommand = "npm run dev"
+
+[env]
+NODE_ENV = "development"
+NUXT_DEV = "true"
+NUXT_DEBUG = "true"
+```
+
+### **When to Use Development Mode**
+
+Use development mode deployment when:
+- 🔍 **Issues work locally** but fail in production
+- 🐛 **Need better error messages** for debugging
+- 🔧 **Testing fixes** before production deployment
+- 📊 **Comparing behavior** between dev and production
+- 🎯 **Isolating build-related** vs environment-related issues
+
 ## 🔧 Script Features
 
 ### **Option 1: Monitor Photo Replacement Logs (Real-time)**
@@ -230,6 +294,53 @@ railway redeploy
 - Check the Logs tab
 - Look for error messages
 
+## 🔧 Development Mode Debugging
+
+### **When Issues Work Locally But Fail in Production**
+
+If your photo replacement works locally but fails on Railway:
+
+#### **Step 1: Deploy in Development Mode**
+```bash
+# Use the development deploy script
+./railway-dev-deploy.sh
+
+# Or manually set development variables
+railway variables set NODE_ENV=development
+railway variables set NUXT_DEV=true
+railway variables set NUXT_DEBUG=true
+railway up
+```
+
+#### **Step 2: Test in Development Mode**
+- Open your Railway app in development mode
+- Test the photo replacement functionality
+- Check browser console for better error messages
+- Compare behavior with local development
+
+#### **Step 3: Analyze the Differences**
+- **If it works in dev mode**: Build optimization issue
+- **If it still fails**: Environment or network issue
+- **Check logs**: Development mode provides better error details
+
+#### **Step 4: Gradual Production Deployment**
+```bash
+# Remove development variables
+railway variables unset NODE_ENV
+railway variables unset NUXT_DEV
+railway variables unset NUXT_DEBUG
+
+# Deploy production version
+railway up
+```
+
+### **Development Mode Benefits for Debugging**
+- ✅ **Better error messages** with exact line numbers
+- ✅ **Source maps** for debugging minified code
+- ✅ **Vue DevTools** work properly
+- ✅ **Hot reloading** for quick testing
+- ✅ **Less aggressive optimizations** that might hide issues
+
 ## 📞 Getting Help
 
 If you're still having issues:
@@ -260,3 +371,17 @@ After identifying the issue:
 - [ ] Monitoring script running
 - [ ] Debug messages appearing in logs
 - [ ] Issue identified and documented
+
+## 🔧 Development Mode Checklist
+
+### **For Issues That Work Locally But Fail in Production:**
+
+- [ ] **Development deploy script ready** (`./railway-dev-deploy.sh`)
+- [ ] **Development mode deployed** to Railway
+- [ ] **Environment variables set** (NODE_ENV=development, NUXT_DEV=true, NUXT_DEBUG=true)
+- [ ] **Tested in development mode** on Railway
+- [ ] **Compared behavior** with local development
+- [ ] **Analyzed differences** between dev and production
+- [ ] **Identified root cause** (build vs environment issue)
+- [ ] **Applied appropriate fix** based on findings
+- [ ] **Deployed production version** after testing

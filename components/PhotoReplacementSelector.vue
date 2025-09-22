@@ -18,13 +18,13 @@
         <div 
           v-for="photo in existingAssets || []" 
           :key="`photo-${photo}`"
-          class="relative cursor-pointer group"
-          @click="() => togglePhotoReplacement(photo)"
+          class="relative cursor-pointer"
+          @click="togglePhotoReplacement(photo)"
         >
-          <div class="aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300"
-            :class="photosToReplace.includes(photo) 
-              ? 'border-brand-flash bg-gradient-to-br from-brand-flash/10 to-brand-highlight/10 shadow-lg scale-105' 
-              : 'border-gray-200 hover:border-brand-flash/50 hover:shadow-md'">
+          <div class="aspect-square rounded-md overflow-hidden border"
+            :class="photosToReplace.includes(photo)
+              ? 'border-orange-500 ring-2 ring-orange-500 bg-orange-50'
+              : 'border-gray-200'">
             <!-- Actual photo thumbnail -->
             <img 
               v-if="getAssetThumbnail(photo) && !imageErrorStates[photo]"
@@ -40,24 +40,8 @@
               <i class="pi pi-image text-xl text-gray-400"></i>
             </div>
             
-            <!-- Loading spinner (shown while image loads) -->
-            <div v-if="getAssetThumbnail(photo) && imageLoadingStates[photo]" class="absolute inset-0 bg-gray-100 flex items-center justify-center">
-              <i class="pi pi-spin pi-spinner text-gray-400 text-xl"></i>
-            </div>
-            
-            <!-- Replace indicator -->
-            <div v-if="photosToReplace.includes(photo)" class="absolute top-1 right-1">
-              <div class="w-4 h-4 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-refresh text-white text-xs"></i>
-              </div>
-            </div>
-            
-            <!-- Keep indicator -->
-            <div v-else class="absolute top-1 right-1">
-              <div class="w-4 h-4 bg-brand-accent rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-check text-white text-xs"></i>
-              </div>
-            </div>
+            <!-- Minimal selected badge -->
+            <div v-if="photosToReplace.includes(photo)" class="absolute top-1 right-1 text-[10px] px-1.5 py-0.5 rounded bg-orange-500 text-white">Replace</div>
           </div>
           
           <!-- Photo status text -->

@@ -26,49 +26,35 @@ fi
 
 echo "✅ Railway CLI ready"
 
-# Create a temporary package.json for dev deployment
-echo "📝 Creating development package.json..."
-cp package.json package.json.backup
+echo "📝 Ensuring Railway dev configuration is present (railway.toml) ..."
+if [ ! -f "railway.toml" ]; then
+  cat > railway.toml << 'EOF'
+# Railway configuration for development debugging
+[build]
+builder = "nixpacks"
+buildCommand = "echo 'skip build for dev'"
+startCommand = "npm run dev"
 
-# Modify package.json to use dev mode
-cat > package.json << 'EOF'
-{
-  "name": "savta-ai",
-  "private": true,
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
-  },
-  "devDependencies": {
-    "@nuxt/devtools": "latest",
-    "nuxt": "^3.8.0"
-  },
-  "dependencies": {
-    "@nuxtjs/supabase": "^0.5.0",
-    "@pinia/nuxt": "^0.5.1",
-    "@primevue/nuxt": "^0.0.1",
-    "@primevue/volt": "^0.0.1",
-    "@primevue/themes": "^0.0.1",
-    "nuxt": "^3.8.0",
-    "pinia": "^2.1.7",
-    "primeicons": "^7.0.0",
-    "primevue": "^3.50.0",
-    "vue": "^3.4.0",
-    "vue-router": "^4.2.5"
-  }
-}
+[deploy]
+startCommand = "npm run dev"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[env]
+NODE_ENV = "development"
+NUXT_DEV = "true"
+NUXT_DEBUG = "true"
 EOF
-
-echo "✅ Development package.json created"
+  echo "✅ Created default railway.toml for dev"
+else
+  echo "✅ Found existing railway.toml"
+fi
 
 # Set Railway environment variables for development
 echo "🔧 Setting Railway environment variables..."
-railway variables set NODE_ENV=development
-railway variables set NUXT_DEV=true
-railway variables set NUXT_DEBUG=true
+railway variables --set NODE_ENV=development
+railway variables --set NUXT_DEV=true
+railway variables --set NUXT_DEBUG=true
 
 echo "✅ Environment variables set"
 
@@ -77,10 +63,6 @@ echo "🚀 Deploying to Railway in development mode..."
 railway up
 
 echo "✅ Development deployment completed!"
-
-# Restore original package.json
-echo "🔄 Restoring original package.json..."
-mv package.json.backup package.json
 
 echo "📋 Development Deployment Summary:"
 echo "=================================="
