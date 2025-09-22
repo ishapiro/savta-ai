@@ -817,13 +817,26 @@ This script will:
 
 **Build Command:**
 ```bash
-apt-get update && apt-get install -y poppler-utils && npm run build
+apt-get update && apt-get install -y poppler-utils graphicsmagick imagemagick && npm run build
+```
+
+**Start Command:**
+```bash
+npm start
 ```
 
 **Configuration:**
 - **Builder**: Nixpacks
 - **Runtime**: Node.js
-- **Dependencies**: `poppler-utils` for PDF processing
+- **Dependencies**: 
+  - `poppler-utils` for PDF processing
+  - `graphicsmagick` for image processing
+  - `imagemagick` for smartcrop-gm functionality
+
+**Important Notes:**
+- ❌ **DO NOT use `npm run dev`** as the start command on Railway
+- ✅ **MUST use `npm start`** for production deployment
+- ✅ **MUST include ImageMagick and GraphicsMagick** in build command for image processing
 
 ### Why poppler-utils?
 

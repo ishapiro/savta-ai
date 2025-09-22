@@ -6,6 +6,29 @@ This guide explains how to use the Railway debugging script to diagnose photo re
 
 The `scripts/railway-monitor.sh` script helps you monitor and debug photo replacement issues on Railway.com. It provides real-time log monitoring, debug endpoint testing, and deployment assistance.
 
+## ⚠️ Important Railway Configuration Notes
+
+**Critical Requirements for Railway Deployment:**
+
+1. **Start Command**: 
+   - ❌ **DO NOT use `npm run dev`** as the start command on Railway
+   - ✅ **MUST use `npm start`** for both development and production deployment
+
+2. **Build Command Requirements**:
+   - ✅ **MUST include ImageMagick and GraphicsMagick** in build command
+   - ✅ **Required for smartcrop-gm functionality** (intelligent photo cropping)
+   - ✅ **Required for image processing** (resizing, format conversion)
+
+**Correct Build Command:**
+```bash
+apt-get update && apt-get install -y poppler-utils graphicsmagick imagemagick && npm run build
+```
+
+**Why These Dependencies Are Required:**
+- **`poppler-utils`**: PDF to JPG conversion for memory books
+- **`graphicsmagick`**: Image processing and manipulation
+- **`imagemagick`**: Required by smartcrop-gm for intelligent cropping
+
 ## 📋 Prerequisites
 
 - Railway CLI installed (`npm install -g @railway/cli`)
@@ -80,14 +103,19 @@ The `railway.toml` file automatically configures development mode:
 ```toml
 [build]
 builder = "nixpacks"
-buildCommand = "npm run build"
-startCommand = "npm run dev"
+buildCommand = "apt-get update && apt-get install -y poppler-utils graphicsmagick imagemagick && npm run build"
+startCommand = "npm start"
 
 [env]
 NODE_ENV = "development"
 NUXT_DEV = "true"
 NUXT_DEBUG = "true"
 ```
+
+**Important Notes:**
+- ❌ **DO NOT use `npm run dev`** as the start command on Railway
+- ✅ **MUST use `npm start`** for both development and production deployment
+- ✅ **MUST include ImageMagick and GraphicsMagick** in build command for image processing
 
 ### **When to Use Development Mode**
 

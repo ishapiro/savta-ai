@@ -32,11 +32,11 @@ if [ ! -f "railway.toml" ]; then
 # Railway configuration for development debugging
 [build]
 builder = "nixpacks"
-buildCommand = "echo 'skip build for dev'"
-startCommand = "npm run dev"
+buildCommand = "apt-get update && apt-get install -y poppler-utils graphicsmagick imagemagick && npm run build"
+startCommand = "npm start"
 
 [deploy]
-startCommand = "npm run dev"
+startCommand = "npm start"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
