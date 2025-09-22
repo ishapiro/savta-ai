@@ -210,6 +210,7 @@
       <!-- Shared Photo Replacement Selector -->
       <PhotoReplacementSelector
         :existing-assets="existingBookForRecreation?.created_from_assets || []"
+        :asset-thumbnails="assetThumbnails"
         item-type="memory card"
         v-model="photosToReplace"
       />
@@ -439,7 +440,7 @@ const {
 } = useMagicMemoryWizard()
 
 // Memory studio functionality
-const { getAssetThumbnail } = useMemoryStudio()
+const { getAssetThumbnail, assetThumbnails } = useMemoryStudio()
 
 // Toast functionality
 const toast = useToast()

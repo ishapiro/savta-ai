@@ -67,7 +67,6 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useMemoryStudio } from '~/composables/useMemoryStudio'
 
 // Props
 const props = defineProps({
@@ -82,36 +81,27 @@ const props = defineProps({
   modelValue: {
     type: Array,
     default: () => []
+  },
+  assetThumbnails: {
+    type: Object,
+    default: () => ({})
   }
 })
 
 // Emits
 const emit = defineEmits(['update:modelValue'])
 
-// Use memory studio for asset thumbnails
-const { getAssetThumbnail } = useMemoryStudio()
-
 // Local state
 const photosToReplace = ref([...props.modelValue])
 const imageLoadingStates = ref({})
 const imageErrorStates = ref({})
 
-// Cache thumbnails to avoid calling getAssetThumbnail multiple times
-const photoThumbnailCache = ref({})
-
-// Computed method to get photo thumbnail with caching
+// Method to get photo thumbnail from passed props
 const getPhotoThumbnail = (photoId) => {
   if (!photoId) return null
   
-  // Return cached result if available
-  if (photoThumbnailCache.value[photoId] !== undefined) {
-    return photoThumbnailCache.value[photoId]
-  }
-  
-  // Get thumbnail and cache it
-  const thumbnail = getAssetThumbnail(photoId)
-  photoThumbnailCache.value[photoId] = thumbnail
-  return thumbnail
+  // Get thumbnail from passed props
+  return props.assetThumbnails[photoId] || null
 }
 
 // Watch for external changes to modelValue
