@@ -135,6 +135,8 @@ export default defineEventHandler(async (event) => {
       // Replacement logic strictly following original-pool minus used
       console.log('🔄 Photo replacement detected, replacing', photosToReplace.length, 'photos')
       console.log('🔄 DEBUG - photosToReplace:', photosToReplace)
+      console.log('🔄 DEBUG - Environment:', process.env.NODE_ENV)
+      console.log('🔄 DEBUG - Timestamp:', new Date().toISOString())
 
       const originalPool = Array.isArray(memoryBook.photo_selection_pool) ? memoryBook.photo_selection_pool : []
       const usedOriginals = Array.isArray(memoryBook.created_from_assets) && memoryBook.created_from_assets.length > 0
@@ -168,12 +170,22 @@ export default defineEventHandler(async (event) => {
 
       // Ask AI to select exactly the number of replacements from candidate pool
       const replacementCount = photosToReplace.length
+      console.log('🔄 DEBUG - About to call selectPhotosByAttributes with:', {
+        candidateCount: candidateAssets.length,
+        replacementCount,
+        prompt: memoryBook.ai_supplemental_prompt?.substring(0, 100) + '...'
+      })
+      console.log('🔄 DEBUG - Starting OpenAI API call at:', new Date().toISOString())
+      
       const replacementSelectionResult = await selectPhotosByAttributes(
         candidateAssets,
         memoryBook.ai_supplemental_prompt,
         replacementCount,
         []
       )
+      
+      console.log('🔄 DEBUG - OpenAI API call completed at:', new Date().toISOString())
+      console.log('🔄 DEBUG - Replacement selection result:', replacementSelectionResult)
       if (!replacementSelectionResult || !replacementSelectionResult.selected_photo_numbers) {
         console.error('❌ No replacement photo selection result returned')
         throw createError({ statusCode: 500, statusMessage: 'Photo replacement failed - unable to find suitable replacement photos.' })

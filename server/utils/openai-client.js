@@ -23,9 +23,16 @@ async function makeOpenAIRequest(payload) {
 
   // Add timeout configuration - increased for larger photo selection requests
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout for large requests
+  const timeoutId = setTimeout(() => {
+    console.log('⏰ DEBUG - Request timeout triggered at:', new Date().toISOString());
+    controller.abort();
+  }, 300000); // 5 minute timeout for large requests
 
   try {
+    console.log('🔗 DEBUG - Making OpenAI API request at:', new Date().toISOString());
+    console.log('🔗 DEBUG - Request URL:', `${OPENAI_BASE_URL}/responses`);
+    console.log('🔗 DEBUG - Payload size:', JSON.stringify(payload).length, 'characters');
+    
     const response = await fetch(`${OPENAI_BASE_URL}/responses`, {
       method: 'POST',
       headers: {
@@ -35,6 +42,9 @@ async function makeOpenAIRequest(payload) {
       body: JSON.stringify(payload),
       signal: controller.signal
     });
+    
+    console.log('🔗 DEBUG - OpenAI API response received at:', new Date().toISOString());
+    console.log('🔗 DEBUG - Response status:', response.status);
 
     clearTimeout(timeoutId);
 
@@ -1026,6 +1036,8 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
   }
 
   console.log(`🎯 Selecting ${targetCount} photos from ${availableAssets.length} available assets based on prompt: "${aiSupplementalPrompt}"`);
+  console.log('🎯 DEBUG - Environment:', process.env.NODE_ENV);
+  console.log('🎯 DEBUG - Starting photo selection at:', new Date().toISOString());
 
   // Prepare asset data for AI analysis
   const assetData = availableAssets.map((asset, index) => ({
@@ -1151,8 +1163,14 @@ Return ONLY JSON with the selected photo numbers and your reasoning.`
     max_output_tokens: 50000
   };
 
+  console.log('🎯 DEBUG - About to make OpenAI request at:', new Date().toISOString());
+  console.log('🎯 DEBUG - Payload size:', JSON.stringify(payload).length, 'characters');
+  
   const response = await makeOpenAIRequest(payload);
+  console.log('🎯 DEBUG - OpenAI response received at:', new Date().toISOString());
+  
   const result = parseOpenAIResponse(response);
+  console.log('🎯 DEBUG - Response parsed at:', new Date().toISOString());
   
   // Map the selected photo numbers back to the original asset array indices
   if (result && result.selected_photo_numbers) {
