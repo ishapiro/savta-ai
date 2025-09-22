@@ -123,6 +123,11 @@ export const useMemoryStudio = () => {
   }
 
   const getAssetThumbnail = (assetId) => {
+    if (!assetId) {
+      console.log('🔍 [getAssetThumbnail] No asset ID provided')
+      return null
+    }
+    
     const thumbnail = assetThumbnails.value[assetId] || null
     if (!thumbnail) {
       console.log('🔍 [getAssetThumbnail] No thumbnail found for asset:', assetId)

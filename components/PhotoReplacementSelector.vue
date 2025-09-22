@@ -17,9 +17,9 @@
       <div class="grid grid-cols-3 gap-2 sm:gap-3">
         <div 
           v-for="photo in existingAssets || []" 
-          :key="photo"
+          :key="`photo-${photo}`"
           class="relative cursor-pointer group"
-          @click="togglePhotoReplacement(photo)"
+          @click="() => togglePhotoReplacement(photo)"
         >
           <div class="aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300"
             :class="photosToReplace.includes(photo) 
@@ -27,15 +27,22 @@
               : 'border-gray-200 hover:border-brand-flash/50 hover:shadow-md'">
             <!-- Actual photo thumbnail -->
             <img 
+              v-if="getAssetThumbnail(photo) && !imageErrorStates[photo]"
               :src="getAssetThumbnail(photo)" 
               :alt="`Photo ${photo}`"
               class="w-full h-full object-contain"
               @error="handleImageError"
+              @load="handleImageLoad"
             />
             
-            <!-- Fallback placeholder (hidden by default) -->
-            <div class="image-placeholder w-full h-full bg-gray-100 flex items-center justify-center" style="display: none;">
+            <!-- Fallback placeholder (shown when no thumbnail or error) -->
+            <div v-else class="image-placeholder w-full h-full bg-gray-100 flex items-center justify-center">
               <i class="pi pi-image text-xl text-gray-400"></i>
+            </div>
+            
+            <!-- Loading spinner (shown while image loads) -->
+            <div v-if="getAssetThumbnail(photo) && imageLoadingStates[photo]" class="absolute inset-0 bg-gray-100 flex items-center justify-center">
+              <i class="pi pi-spin pi-spinner text-gray-400 text-xl"></i>
             </div>
             
             <!-- Replace indicator -->
@@ -102,6 +109,8 @@ const { getAssetThumbnail } = useMemoryStudio()
 
 // Local state
 const photosToReplace = ref([...props.modelValue])
+const imageLoadingStates = ref({})
+const imageErrorStates = ref({})
 
 // Watch for external changes to modelValue
 watch(() => props.modelValue, (newValue) => {
@@ -113,28 +122,68 @@ watch(photosToReplace, (newValue) => {
   emit('update:modelValue', [...newValue])
 }, { deep: true })
 
+// Watch for thumbnail availability and set loading states
+watch(() => props.existingAssets, (newAssets) => {
+  if (newAssets && newAssets.length > 0) {
+    newAssets.forEach(photoId => {
+      if (getAssetThumbnail(photoId)) {
+        imageLoadingStates.value[photoId] = true
+      }
+    })
+  }
+}, { immediate: true })
+
 // Photo replacement methods
 const togglePhotoReplacement = (photoId) => {
   console.log('🔍 [PhotoReplacementSelector] togglePhotoReplacement called for photo:', photoId)
-  const index = photosToReplace.value.indexOf(photoId)
-  if (index > -1) {
-    // Remove from replacement list
-    photosToReplace.value.splice(index, 1)
-  } else {
-    // Add to replacement list
-    photosToReplace.value.push(photoId)
+  
+  try {
+    const index = photosToReplace.value.indexOf(photoId)
+    if (index > -1) {
+      // Remove from replacement list
+      photosToReplace.value.splice(index, 1)
+    } else {
+      // Add to replacement list
+      photosToReplace.value.push(photoId)
+    }
+    console.log('🔍 [PhotoReplacementSelector] Photos to replace:', photosToReplace.value)
+  } catch (error) {
+    console.error('🔍 [PhotoReplacementSelector] Error in togglePhotoReplacement:', error)
+    // Don't let this error crash the component
   }
-  console.log('🔍 [PhotoReplacementSelector] Photos to replace:', photosToReplace.value)
+}
+
+// Image load handler
+const handleImageLoad = (event) => {
+  console.log('🔍 [PhotoReplacementSelector] Image loaded successfully for:', event.target.src)
+  // Find the photo ID from the src and clear loading state
+  const photoId = Object.keys(imageLoadingStates.value).find(id => 
+    getAssetThumbnail(id) === event.target.src
+  )
+  if (photoId) {
+    imageLoadingStates.value[photoId] = false
+  }
 }
 
 // Image error handler
 const handleImageError = (event) => {
   console.log('🔍 [PhotoReplacementSelector] Image load error for:', event.target.src)
-  // Hide the image and show placeholder
-  event.target.style.display = 'none'
-  const placeholder = event.target.nextElementSibling
-  if (placeholder && placeholder.classList.contains('image-placeholder')) {
-    placeholder.style.display = 'flex'
+  
+  try {
+    // Find the photo ID from the src and mark as error
+    const photoId = Object.keys(imageErrorStates.value).find(id => 
+      getAssetThumbnail(id) === event.target.src
+    ) || Object.keys(imageLoadingStates.value).find(id => 
+      getAssetThumbnail(id) === event.target.src
+    )
+    
+    if (photoId) {
+      imageErrorStates.value[photoId] = true
+      imageLoadingStates.value[photoId] = false
+    }
+  } catch (error) {
+    console.error('🔍 [PhotoReplacementSelector] Error in handleImageError:', error)
+    // Don't let this error crash the component
   }
 }
 </script>

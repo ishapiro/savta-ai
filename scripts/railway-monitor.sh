@@ -33,8 +33,16 @@ monitor_railway_logs() {
     echo "🔍 Monitoring Railway logs for photo replacement..."
     echo "Press Ctrl+C to stop"
     echo ""
+    echo "Note: Railway CLI doesn't support real-time following, so this will refresh every 2 seconds"
+    echo ""
     
-    railway logs --follow | grep --line-buffered -E "(🔄|🎯|🔗|DEBUG|Photo replacement|selectPhotosByAttributes|makeOpenAIRequest|OpenAI|timeout|AbortError)"
+    # Railway CLI doesn't support --follow, so we'll use a loop with --lines
+    while true; do
+        echo "=== $(date) ==="
+        railway logs --lines 20 | grep -E "(🔄|🎯|🔗|DEBUG|Photo replacement|selectPhotosByAttributes|makeOpenAIRequest|OpenAI|timeout|AbortError)" || echo "No matching logs found"
+        echo ""
+        sleep 2
+    done
 }
 
 # Show recent Railway logs
@@ -114,18 +122,54 @@ deploy_to_railway() {
     echo "✅ Deployment completed"
 }
 
+# Open Railway dashboard
+open_railway_dashboard() {
+    echo "🌐 Opening Railway dashboard..."
+    echo "=============================="
+    
+    # Get the Railway URL
+    RAILWAY_URL=$(railway domain)
+    if [ -z "$RAILWAY_URL" ]; then
+        echo "❌ Could not get Railway URL. Please check your Railway project."
+        return 1
+    fi
+    
+    echo "Railway URL: https://$RAILWAY_URL"
+    echo "Dashboard: https://railway.app"
+    echo ""
+    echo "To monitor logs in the Railway dashboard:"
+    echo "1. Go to https://railway.app"
+    echo "2. Navigate to your project"
+    echo "3. Click on your service"
+    echo "4. Go to the 'Logs' tab"
+    echo "5. Look for the debug messages we added"
+    echo ""
+    echo "Search for these patterns in the logs:"
+    echo "- 🔄 (Photo replacement flow)"
+    echo "- 🎯 (Photo selection process)"
+    echo "- 🔗 (OpenAI API calls)"
+    echo "- DEBUG (Debug messages)"
+    echo "- Photo replacement"
+    echo "- selectPhotosByAttributes"
+    echo "- makeOpenAIRequest"
+    echo "- OpenAI"
+    echo "- timeout"
+    echo "- AbortError"
+}
+
 # Main menu
 show_menu() {
     echo ""
     echo "🔧 Railway Monitoring Menu:"
     echo "==========================="
-    echo "1. Monitor photo replacement logs (real-time)"
+    echo "1. Monitor photo replacement logs (refresh every 2s)"
     echo "2. Show recent activity"
     echo "3. Test debug endpoint"
     echo "4. Deploy updated code"
-    echo "5. Exit"
+    echo "5. Open Railway dashboard (recommended)"
+    echo "6. Exit"
     echo ""
-    read -p "Select an option (1-5): " choice
+    read -p "Select an option (1-6): " choice
 }
 
 # Main execution
@@ -159,11 +203,14 @@ main() {
                 deploy_to_railway
                 ;;
             5)
+                open_railway_dashboard
+                ;;
+            6)
                 echo "👋 Goodbye!"
                 exit 0
                 ;;
             *)
-                echo "❌ Invalid option. Please select 1-5."
+                echo "❌ Invalid option. Please select 1-6."
                 ;;
         esac
         
