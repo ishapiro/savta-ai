@@ -192,7 +192,7 @@
       >
         <div v-if="selectedBook" class="sm:mb-5 bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen sm:min-h-[90%] flex flex-col sm:h-auto sm:overflow-hidden">
           <!-- Header + Content Area -->
-          <div class="flex-1 sm:max-h-[calc(85vh-80px)] sm:overflow-y-auto">
+          <div class="flex-1 sm:max-h-[calc(85vh-80px)] sm:overflow-y-auto pb-20 sm:pb-0">
             <!-- Header Section - Compact on mobile -->
             <div class="bg-gradient-to-br from-white via-brand-navigation/5 to-brand-accent/10 rounded-t-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
               <!-- Mobile: Compact header -->
@@ -451,7 +451,7 @@
             </div>
 
             <!-- Memory Book Section -->
-            <div v-if="selectedBook.pdf_url" class="mb-10 sm:mb-5 bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+             <div v-if="selectedBook.pdf_url" class="mb-10 sm:mb-5 bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -483,48 +483,74 @@
           </div>
 
           <!-- Actions Section - Fixed at bottom on both mobile and desktop -->
-          <div class="bg-white rounded-b-2xl shadow-lg border border-gray-100 py-0.5 px-1 sm:p-3 fixed bottom-0 left-0 right-0 sm:fixed sm:bottom-0 sm:left-0 sm:right-0 sm:rounded-b-2xl sm:shadow-2xl sm:border-t-2 sm:border-gray-200">
-            <!-- Mobile: Compact icon buttons in one row -->
-            <div class="sm:hidden mr-20 mt-3 -mb-4">
-              <div class="flex justify-start gap-0.5 px-1">
-                <button
-                  data-testid="details-create-memory-button"
-                  v-if="selectedBook.status === 'draft'"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-save text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
-                  @click="onGenerateClick(selectedBook)"
-                >
-                  <i class="pi pi-magic-wand text-xs mb-0.5"></i>
-                  <span class="text-xs">Create</span>
-                </button>
-                <button
-                  data-testid="details-recreate-button"
-                  v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-edit text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
-                  @click="onRegenerateClick(selectedBook)"
-                  :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
-                >
-                  <i class="pi pi-refresh text-xs mb-0.5"></i>
-                  <span class="text-xs">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Edit' }}</span>
-                </button>
-                <button
-                  data-testid="details-approve-button"
-                  v-if="selectedBook.status === 'ready'"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-save text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
-                  @click="approveBook(selectedBook.id)"
-                >
-                  <i class="pi pi-check text-xs mb-0.5"></i>
-                  <span class="text-xs">Approve</span>
-                </button>
-                <button
-                  data-testid="details-trash-button"
-                  v-if="selectedBook"
-                  class="flex flex-col items-center justify-center bg-brand-dialog-delete text-white font-bold rounded-lg px-1 py-0.5 text-xs shadow-lg transition-all duration-200 flex-1"
-                  @click="confirmDeleteBook(selectedBook)"
-                >
-                  <i class="pi pi-trash text-xs mb-0.5"></i>
-                  <span class="text-xs">Trash</span>
-                </button>
-              </div>
+          <div class="bg-gray-50 rounded-b-2xl shadow-lg border border-gray-100 py-0.5 px-1 sm:p-3 fixed bottom-0 left-0 right-0 z-50 pb-safe sm:fixed sm:bottom-0 sm:left-0 sm:right-0 sm:rounded-b-2xl sm:shadow-2xl sm:border-t-2 sm:border-gray-200 sm:z-auto">
+            <!-- Mobile: Icon-based navigation -->
+            <div class="flex justify-between items-center px-4 py-3 sm:hidden">
+              <!-- Close Button -->
+              <button
+                data-testid="details-close-button"
+                @click="showDetailsModal = false"
+                class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
+              >
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i class="pi pi-times text-gray-600 text-lg"></i>
+                </div>
+                <span class="text-xs text-gray-600 font-medium">Close</span>
+              </button>
+              
+              <!-- Create Button -->
+              <button
+                v-if="selectedBook.status === 'draft'"
+                data-testid="details-create-memory-button"
+                @click="onGenerateClick(selectedBook)"
+                class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
+              >
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i class="pi pi-magic-wand text-brand-secondary text-lg"></i>
+                </div>
+                <span class="text-xs text-brand-secondary font-medium">Create</span>
+              </button>
+              
+              <!-- Edit/Regenerate Button -->
+              <button
+                v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
+                data-testid="details-recreate-button"
+                @click="onRegenerateClick(selectedBook)"
+                :disabled="selectedBook.status === 'background_ready'"
+                class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200 disabled:opacity-50"
+              >
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i v-if="selectedBook.status !== 'background_ready'" class="pi pi-refresh text-brand-secondary text-lg"></i>
+                  <i v-else class="pi pi-spin pi-spinner text-brand-secondary text-lg"></i>
+                </div>
+                <span class="text-xs text-brand-secondary font-medium">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Edit' }}</span>
+              </button>
+              
+              <!-- Approve Button -->
+              <button
+                v-if="selectedBook.status === 'ready'"
+                data-testid="details-approve-button"
+                @click="approveBook(selectedBook.id)"
+                class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
+              >
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i class="pi pi-check text-brand-secondary text-lg"></i>
+                </div>
+                <span class="text-xs text-brand-secondary font-medium">Approve</span>
+              </button>
+              
+              <!-- Delete Button -->
+              <button
+                v-if="selectedBook"
+                data-testid="details-trash-button"
+                @click="confirmDeleteBook(selectedBook)"
+                class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
+              >
+                <div class="w-6 h-6 flex items-center justify-center">
+                  <i class="pi pi-trash text-red-600 text-lg"></i>
+                </div>
+                <span class="text-xs text-red-600 font-medium">Trash</span>
+              </button>
             </div>
 
             <!-- Desktop: Full buttons -->
