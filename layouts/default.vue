@@ -11,7 +11,7 @@
       <nav class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
-          <div class="flex items-center">
+          <div class="flex items-center justify-center sm:justify-start flex-1 sm:flex-none">
             <NuxtLink to="/" class="flex items-center space-x-2 no-underline">
               <SavtaIcon class="h-12 w-auto" />
               <span class="text-xl font-bold text-brand-secondary no-underline">Savta</span>
@@ -429,6 +429,9 @@
     
     <!-- Toast component for notifications -->
     <Toast position="bottom-right" style="min-width: 180px; max-width: 500px; font-size: 0.5rem; border-radius: 0.5rem; padding: 0.5rem 1rem;" />
+
+    <!-- Tawk to button -->
+    <TawkButton />
   </div>
 </template>
 

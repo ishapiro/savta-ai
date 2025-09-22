@@ -8,7 +8,7 @@
   >
     <!-- Step 1: Title Input -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
-      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -51,7 +51,7 @@
 
     <!-- Step 2: Theme Selection -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.THEME && currentButtonConfig?.steps.includes(MAGIC_STEPS.THEME)"
-      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -90,7 +90,7 @@
 
     <!-- Step 3: Background Selection -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.BACKGROUND && currentButtonConfig?.steps.includes(MAGIC_STEPS.BACKGROUND)"
-      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -142,7 +142,7 @@
 
     <!-- Step 3: Photo Selection Method -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTOS && currentButtonConfig?.steps.includes(MAGIC_STEPS.PHOTOS)"
-      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -197,7 +197,7 @@
 
     <!-- Step 4: Photo Replacement Selection (for replace_selected method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTO_REPLACEMENT && photoSelection_method === 'replace_selected'"
-      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -218,7 +218,7 @@
 
     <!-- Step 5: Photo Library Selection (MANUAL step for photo_library method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library'"
-      class="h-full min-h-screen m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-20 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -265,46 +265,100 @@
 
     <!-- Navigation Footer -->
     <template #footer>
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50 rounded-b-2xl fixed bottom-0 left-0 right-0 sm:relative sm:bottom-auto sm:left-auto sm:right-auto sm:rounded-b-2xl">
-        <!-- Mobile: Stack buttons vertically with smaller spacing -->
-        <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-3">
+      <div class="bg-gray-50 rounded-b-2xl fixed bottom-0 left-0 right-0 z-50 pb-safe sm:relative sm:bottom-auto sm:left-auto sm:right-auto sm:rounded-b-2xl sm:z-auto">
+        <!-- Mobile: Icon-based navigation -->
+        <div class="flex justify-between items-center px-4 py-3 sm:hidden">
           <!-- Cancel Button -->
-          <Button
-            label="Cancel"
-            icon="pi pi-times"
+          <button
             @click="() => closeMagicMemoryDialog(true, true)"
-            class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
-          />
+            class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
+          >
+            <div class="w-6 h-6 flex items-center justify-center">
+              <i class="pi pi-times text-gray-600 text-lg"></i>
+            </div>
+            <span class="text-xs text-gray-600 font-medium">Cancel</span>
+          </button>
           
           <!-- Back Button (not on first step) -->
-          <Button
+          <button
             v-if="!isFirstStep()"
-            label="Back"
-            icon="pi pi-arrow-left"
             @click="previousMagicMemoryStep()"
-            class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
-          />
+            class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
+          >
+            <div class="w-6 h-6 flex items-center justify-center">
+              <i class="pi pi-arrow-left text-gray-600 text-lg"></i>
+            </div>
+            <span class="text-xs text-gray-600 font-medium">Back</span>
+          </button>
+          
+          <!-- Next/Generate Button -->
+          <button
+            v-if="!isLastStep()"
+            :disabled="isNextButtonDisabled"
+            @click="nextMagicMemoryStep"
+            class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200 disabled:opacity-50"
+          >
+            <div class="w-6 h-6 flex items-center justify-center">
+              <i class="pi pi-arrow-right text-brand-secondary text-lg"></i>
+            </div>
+            <span class="text-xs text-brand-secondary font-medium">Next</span>
+          </button>
+          
+          <button
+            v-if="isLastStep()"
+            :disabled="isNextButtonDisabled || magicLoading"
+            @click="handleGenerateMagicMemory"
+            class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200 disabled:opacity-50"
+          >
+            <div class="w-6 h-6 flex items-center justify-center">
+              <i v-if="!magicLoading" class="pi pi-bolt text-brand-secondary text-lg"></i>
+              <i v-else class="pi pi-spin pi-spinner text-brand-secondary text-lg"></i>
+            </div>
+            <span class="text-xs text-brand-secondary font-medium">Create</span>
+          </button>
         </div>
         
-        <!-- Next/Generate Button - Full width on mobile, auto on desktop -->
-        <Button
-          v-if="!isLastStep()"
-          :label="getNextButtonLabel()"
-          icon="pi pi-arrow-right"
-          :disabled="isNextButtonDisabled"
-          @click="nextMagicMemoryStep"
-          class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
-        />
-        
-        <Button
-          v-if="isLastStep()"
-          label="Let's create something beautiful together"
-          icon="pi pi-bolt"
-          :disabled="isNextButtonDisabled || magicLoading"
-          :loading="magicLoading"
-          @click="handleGenerateMagicMemory"
-          class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto border-0"
-        />
+        <!-- Desktop: Original button layout -->
+        <div class="hidden sm:flex flex-row justify-between items-center gap-3 p-4">
+          <div class="flex flex-row gap-3">
+            <!-- Cancel Button -->
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
+              @click="() => closeMagicMemoryDialog(true, true)"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200"
+            />
+            
+            <!-- Back Button (not on first step) -->
+            <Button
+              v-if="!isFirstStep()"
+              label="Back"
+              icon="pi pi-arrow-left"
+              @click="previousMagicMemoryStep()"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200"
+            />
+          </div>
+          
+          <!-- Next/Generate Button -->
+          <Button
+            v-if="!isLastStep()"
+            :label="getNextButtonLabel()"
+            icon="pi pi-arrow-right"
+            :disabled="isNextButtonDisabled"
+            @click="nextMagicMemoryStep"
+            class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs shadow-lg transition-all duration-200 border-0"
+          />
+          
+          <Button
+            v-if="isLastStep()"
+            label="Let's create something beautiful together"
+            icon="pi pi-bolt"
+            :disabled="isNextButtonDisabled || magicLoading"
+            :loading="magicLoading"
+            @click="handleGenerateMagicMemory"
+            class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs shadow-lg transition-all duration-200 border-0"
+          />
+        </div>
       </div>
     </template>
   </Dialog>

@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto">
       <!-- Clean Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center sm:justify-start gap-3">
           <h1 class="text-2xl lg:text-3xl font-bold text-brand-primary">Memory Studio</h1>
           <button
             data-testid="info-button"
@@ -43,7 +43,7 @@
 
       <!-- Dynamic Listing Section -->
       <div class="mb-12" data-savta="memory-listing-section">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-center sm:justify-between mb-6">
           <h2 class="text-2xl font-semibold text-brand-primary">
             {{ activeView === 'cards' ? 'Your Memory Cards' : 'Your Memory Books' }}
           </h2>
@@ -2018,88 +2018,6 @@ watch(() => route.query, (newQuery) => {
   }
 }, { deep: true })
 
-// Function to scale Tawk widget on mobile using JavaScript
-const scaleTawkWidgetMobile = () => {
-  if (process.client && window.innerWidth <= 640) {
-    // Use multiple approaches to catch the Tawk widget
-    const scaleTawkWidget = () => {
-      // Target the iframe
-      const tawkIframe = document.querySelector('iframe[title="chat widget"]') || 
-                        document.querySelector('iframe[id*="tawk"]') ||
-                        document.querySelector('iframe[src*="tawk"]')
-      
-      if (tawkIframe) {
-        // Override inline styles with JavaScript
-        tawkIframe.style.setProperty('transform', 'scale(0.5)', 'important')
-        tawkIframe.style.setProperty('transform-origin', 'bottom right', 'important')
-        tawkIframe.style.setProperty('width', '64px', 'important')
-        tawkIframe.style.setProperty('height', '60px', 'important')
-        tawkIframe.style.setProperty('min-width', '64px', 'important')
-        tawkIframe.style.setProperty('min-height', '60px', 'important')
-        tawkIframe.style.setProperty('max-width', '64px', 'important')
-        tawkIframe.style.setProperty('max-height', '60px', 'important')
-        tawkIframe.style.setProperty('bottom', '10px', 'important')
-        tawkIframe.style.setProperty('right', '10px', 'important')
-        tawkIframe.style.setProperty('position', 'fixed', 'important')
-        console.log('✅ Tawk widget scaled to 50% and repositioned')
-      }
-      
-      // Also target the button inside the iframe
-      const tawkButton = document.querySelector('button[aria-label="Chat widget"]') ||
-                        document.querySelector('.tawk-button') ||
-                        document.querySelector('.tawk-button-circle')
-      
-      if (tawkButton) {
-        tawkButton.style.setProperty('transform', 'scale(0.5)', 'important')
-        tawkButton.style.setProperty('transform-origin', 'bottom right', 'important')
-        console.log('✅ Tawk button scaled to 50%')
-      }
-    }
-    
-    // Try immediately
-    scaleTawkWidget()
-    
-    // Use MutationObserver to watch for Tawk widget loading
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'childList') {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === 1) { // Element node
-              if (node.tagName === 'IFRAME' && 
-                  (node.title === 'chat widget' || 
-                   node.id?.includes('tawk') || 
-                   node.src?.includes('tawk'))) {
-                console.log('🔍 Tawk iframe detected, scaling...')
-                setTimeout(scaleTawkWidget, 100)
-              }
-            }
-          })
-        }
-      })
-    })
-    
-    // Start observing
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    })
-    
-    // Also try periodically in case it loads later
-    const interval = setInterval(() => {
-      const tawkIframe = document.querySelector('iframe[title="chat widget"]')
-      if (tawkIframe) {
-        scaleTawkWidget()
-        clearInterval(interval)
-      }
-    }, 1000)
-    
-    // Stop trying after 10 seconds
-    setTimeout(() => {
-      clearInterval(interval)
-      observer.disconnect()
-    }, 10000)
-  }
-}
 
 // Listen for PDF viewing events from progress dialog
 onMounted(() => {
@@ -2134,9 +2052,6 @@ onMounted(() => {
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     // Note: Upload dialog handling moved to dedicated /upload route
-    
-    // Scale Tawk widget on mobile using JavaScript
-    scaleTawkWidgetMobile()
   }
 })
 
@@ -2226,11 +2141,6 @@ onUnmounted(() => {
     z-index: 1000;
   }
   
-  /* Ensure action buttons are visible above Tawk widget */
-  .fixed.bottom-0 {
-    z-index: 1001 !important;
-    padding-bottom: 50px !important;
-  }
 }
 
 </style>
