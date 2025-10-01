@@ -138,7 +138,7 @@
 
                       <!-- Admin -->
                       <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
-                        <NuxtLink to="/app/admin" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="logEditorClick; closeDesktopMenu">
+                        <NuxtLink to="/app/admin" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="logEditorClick(); closeDesktopMenu()">
                           <div class="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
                             <i class="pi pi-palette text-white text-sm"></i>
                           </div>
@@ -330,7 +330,7 @@
 
             <!-- Admin -->
             <template v-if="userProfile && (userProfile.role === 'admin' || userProfile.role === 'editor')">
-              <NuxtLink to="/app/admin" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="logEditorClick; closeMobileMenu">
+              <NuxtLink to="/app/admin" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="logEditorClick(); closeMobileMenu()">
                 <div class="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
                   <i class="pi pi-palette text-white text-sm"></i>
                 </div>

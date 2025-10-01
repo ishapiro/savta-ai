@@ -1,7 +1,7 @@
 // PDF generation endpoint
 // Generates PDF using pre-generated background
 
-import { PDFDocument, rgb } from 'pdf-lib'
+import { PDFDocument, rgb, degrees } from 'pdf-lib'
 import sharp from 'sharp'
 import smartcropGm from 'smartcrop-gm'
 
@@ -2077,12 +2077,17 @@ export default defineEventHandler(async (event) => {
         ? JSON.parse(theme.layout_config) 
         : theme.layout_config
 
+      console.log('🔍 DEBUG - Layout config:', JSON.stringify(layoutConfig, null, 2))
+      console.log('🔍 DEBUG - Layout config type:', typeof layoutConfig)
+      console.log('🔍 DEBUG - Layout config keys:', layoutConfig ? Object.keys(layoutConfig) : 'null')
+
+      // If no layout_config or missing photos array, fall back to grid layout
       if (!layoutConfig || !layoutConfig.photos) {
-        console.error('❌ Invalid layout_config in theme')
-        throw createError({
-          statusCode: 400,
-          statusMessage: 'Invalid theme layout configuration'
-        })
+        console.log('⚠️ Theme has no layout_config configured, falling back to grid layout')
+        // Change layout type to grid and continue with grid layout processing
+        book.layout_type = 'grid'
+        // This will cause the code to skip theme processing and use grid layout instead
+        throw new Error('SWITCH_TO_GRID_LAYOUT')
       }
 
       // Convert theme size to PDF dimensions
@@ -2435,7 +2440,10 @@ export default defineEventHandler(async (event) => {
             (Math.min(targetWidth, targetHeight) * (photoConfig.borderRadius / 100)) : 
             (theme.rounded ? Math.min(targetWidth, targetHeight) * 0.15 : 0)
           
-          console.log(`🎨 Theme photo processing - Asset ${i + 1}: photoBorder=${photoBorder}, borderRadius=${borderRadius}, theme.rounded=${theme.rounded}, photoConfig.borderRadius=${photoConfig.borderRadius}`)
+          // Get rotation from photoConfig (in degrees)
+          const rotationDegrees = photoConfig.rotation || 0
+          
+          console.log(`🎨 Theme photo processing - Asset ${i + 1}: photoBorder=${photoBorder}, borderRadius=${borderRadius}, rotation=${rotationDegrees}°, theme.rounded=${theme.rounded}, photoConfig.borderRadius=${photoConfig.borderRadius}`)
           console.log(`🎨 Theme photo processing - Target dimensions: ${targetWidth}x${targetHeight}, calculated radius: ${Math.min(targetWidth, targetHeight) * 0.15}`)
           
                       if (photoBorder > 0) {
@@ -2523,16 +2531,24 @@ export default defineEventHandler(async (event) => {
               // Convert pixels to points for PDF drawing (1 point = 1/72 inch, 1 pixel = 1/96 inch)
               const borderPoints = photoBorder * (72 / 96)
               const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-              page.drawImage(pdfImage, { 
-                x: photoX - borderPoints, 
-                y: photoY - borderPoints, 
+              const drawOptions = { 
+                x: photoX - borderPoints + (photoWidth + borderPoints * 2) / 2, 
+                y: photoY - borderPoints + (photoHeight + borderPoints * 2) / 2, 
                 width: photoWidth + (borderPoints * 2), 
                 height: photoHeight + (borderPoints * 2) 
-              })
+              }
+              if (rotationDegrees !== 0) {
+                drawOptions.rotate = degrees(rotationDegrees)
+              }
+              page.drawImage(pdfImage, drawOptions)
             } catch (borderError) {
               console.warn('⚠️ Failed to apply photo border:', borderError)
               const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-              page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
+              const drawOptions = { x: photoX + photoWidth / 2, y: photoY + photoHeight / 2, width: photoWidth, height: photoHeight }
+              if (rotationDegrees !== 0) {
+                drawOptions.rotate = degrees(rotationDegrees)
+              }
+              page.drawImage(pdfImage, drawOptions)
             }
           } else if (borderRadius > 0) {
             console.log(`🎨 Theme photo processing - Applying rounded corners only (no border): ${borderRadius}px`)
@@ -2546,12 +2562,20 @@ export default defineEventHandler(async (event) => {
                 .toBuffer()
             } catch (roundError) {}
             const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-            page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
+            const drawOptions = { x: photoX + photoWidth / 2, y: photoY + photoHeight / 2, width: photoWidth, height: photoHeight }
+            if (rotationDegrees !== 0) {
+              drawOptions.rotate = degrees(rotationDegrees)
+            }
+            page.drawImage(pdfImage, drawOptions)
           } else {
             console.log(`🎨 Theme photo processing - No border or radius applied`)
             // No border or radius
             const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-            page.drawImage(pdfImage, { x: photoX, y: photoY, width: photoWidth, height: photoHeight })
+            const drawOptions = { x: photoX + photoWidth / 2, y: photoY + photoHeight / 2, width: photoWidth, height: photoHeight }
+            if (rotationDegrees !== 0) {
+              drawOptions.rotate = degrees(rotationDegrees)
+            }
+            page.drawImage(pdfImage, drawOptions)
           }
         } catch (err) {}
       }
@@ -3378,8 +3402,8 @@ export default defineEventHandler(async (event) => {
       message: 'PDF generated successfully'
     }
   } catch (error) {
-    logger.error('❌ PDF GENERATION PROCESS - FAILED', error.message)
-    logger.step('📊 Error details', {
+    console.error('❌ PDF GENERATION PROCESS - FAILED', error.message)
+    console.error('📊 Error details', {
       statusCode: error.statusCode || 500,
       statusMessage: error.statusMessage || 'Failed to generate PDF',
       stack: error.stack
