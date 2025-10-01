@@ -485,7 +485,15 @@
         @click="handleCanvasClick"
       >
         <!-- Card Outline -->
-        <div :style="cardOutlineStyle" class="card-outline"></div>
+        <div :style="cardOutlineStyle" class="card-outline">
+          <!-- Dimension Labels -->
+          <div class="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-semibold text-gray-700 shadow-sm">
+            {{ props.size || '7x5' }} ({{ Math.round(layoutData.cardWidthMm) }}×{{ Math.round(layoutData.cardHeightMm) }}mm)
+          </div>
+          <div class="absolute bottom-2 right-2 bg-white/90 px-2 py-1 rounded text-xs text-gray-600 shadow-sm">
+            {{ cardDimensions.width }}×{{ cardDimensions.height }}px
+          </div>
+        </div>
         
         <!-- Grid Lines (within card boundaries) -->
         <div v-if="snapEnabled" class="absolute pointer-events-none" :style="cardOutlineStyle">
@@ -1195,9 +1203,10 @@ const cardOutlineStyle = computed(() => ({
   top: `${cardPosition.value.top}px`,
   width: `${cardDimensions.value.width}px`,
   height: `${cardDimensions.value.height}px`,
-  border: '2px dashed #666',
-  backgroundColor: 'transparent',
-  pointerEvents: 'none'
+  border: '3px dashed #333',
+  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  pointerEvents: 'none',
+  boxShadow: 'inset 0 0 10px rgba(0, 0, 0, 0.1)'
 }))
 
 function boxStyle(position, size) {
