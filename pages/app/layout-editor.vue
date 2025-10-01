@@ -1,4 +1,5 @@
 <template>
+  <!--Layout Editor Page-->
   <div class="h-screen w-full bg-brand-background overflow-hidden">
     <div class="w-full h-full flex flex-col">
       <!-- Header -->

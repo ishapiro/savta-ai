@@ -1,0 +1,33 @@
+<svg width="1000" height="1000" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simple shadow frame effect -->
+  <defs>
+    <filter id="drop-shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="6" dy="6" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="inner-shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2"/>
+      <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix values="0 0 0 0 0
+                             0 0 0 0 0
+                             0 0 0 0 0
+                             0 0 0 0.3 0"/>
+    </filter>
+  </defs>
+  
+  <!-- Minimal white border with shadow -->
+  <rect width="1000" height="1000" fill="#ffffff" filter="url(#drop-shadow)"/>
+  
+  <!-- Subtle inner shadow for depth -->
+  <rect x="28" y="28" width="944" height="944" fill="none" stroke="#f0f0f0" stroke-width="1" filter="url(#inner-shadow)"/>
+  <rect x="30" y="30" width="940" height="940" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+</svg>
+

@@ -389,6 +389,91 @@
       </div>
     </div>
 
+    <!-- Photo Properties Dialog -->
+    <div v-if="showPhotoPropertiesDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-lg mx-4 shadow-xl border-2 border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-brand-secondary">Photo Properties</h3>
+          <button
+            @click="showPhotoPropertiesDialog = false"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <i class="pi pi-times text-xl"></i>
+          </button>
+        </div>
+        
+        <div class="space-y-6">
+          <!-- Rotation Control -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Rotation: <strong>{{ photoPropertiesData.rotation }}°</strong>
+            </label>
+            <div class="flex items-center gap-3">
+              <input
+                type="range"
+                v-model.number="photoPropertiesData.rotation"
+                min="-180"
+                max="180"
+                step="1"
+                class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              />
+              <InputText
+                v-model.number="photoPropertiesData.rotation"
+                type="number"
+                min="-180"
+                max="180"
+                class="w-20 text-center"
+              />
+            </div>
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>-180°</span>
+              <span>0°</span>
+              <span>180°</span>
+            </div>
+          </div>
+
+          <!-- Frame Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Frame</label>
+            <select
+              v-model="photoPropertiesData.selectedFrameIndex"
+              @change="onFrameChange"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option v-for="(frame, index) in availableFrames" :key="index" :value="index">
+                {{ frame.label }}
+              </option>
+            </select>
+            
+            <!-- Frame Preview Info -->
+            <div v-if="photoPropertiesData.frame" class="mt-3 p-3 bg-gray-50 rounded border border-gray-200 text-xs">
+              <div class="font-semibold text-gray-700 mb-2">Frame Details:</div>
+              <div class="space-y-1 text-gray-600">
+                <div>Image: <span class="font-mono">{{ photoPropertiesData.frame.imageUrl }}</span></div>
+                <div>Fit Mode: <strong>{{ photoPropertiesData.frame.fitMode }}</strong></div>
+                <div>Padding: Top {{ photoPropertiesData.frame.padding.top }}mm, Right {{ photoPropertiesData.frame.padding.right }}mm, Bottom {{ photoPropertiesData.frame.padding.bottom }}mm, Left {{ photoPropertiesData.frame.padding.left }}mm</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-6 flex justify-end gap-3">
+          <button
+            @click="showPhotoPropertiesDialog = false"
+            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            @click="applyPhotoProperties"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div 
       class="relative overflow-hidden bg-gray-50 rounded-lg border border-gray-200 p-4 h-full" 
       :class="{ 'border-2 border-amber-400 bg-amber-50': isEditDefaultsMode }"
@@ -441,14 +526,26 @@
         v-for="photo in layoutData.photos"
         :key="photo.id"
         class="box photo-box"
-          :class="{ 'selected': selectedBoxes.includes(photo.id) }"
+          :class="{ 'selected': selectedBoxes.includes(photo.id), 'has-rotation': photo.rotation && photo.rotation !== 0, 'has-frame': photo.frame }"
         :id="`box-${photo.id}`"
         :style="photoBoxStyle(photo)"
           @click="toggleSelection(photo.id, $event)"
           @dblclick="handleBoxDoubleClick(photo.id, $event)"
+          @contextmenu.prevent="openPhotoProperties(photo.id, $event)"
       >
         <div class="drag-handle" :id="`drag-${photo.id}`" @pointerdown="startDrag(photo.id, $event)"></div>
         <span>Photo {{ photo.id }}</span>
+        <div class="photo-badges">
+          <span v-if="photo.rotation && photo.rotation !== 0" class="badge rotation-badge" :title="`Rotated ${photo.rotation}°`">
+            <i class="pi pi-replay"></i> {{ photo.rotation }}°
+          </span>
+          <span v-if="photo.frame" class="badge frame-badge" :title="getFrameLabel(photo.frame)">
+            <i class="pi pi-image"></i>
+          </span>
+        </div>
+        <button class="properties-btn" @click.stop="openPhotoProperties(photo.id)" title="Edit Properties (Rotation, Frame)">
+          ⚙
+        </button>
         <button @click.stop="deletePhoto(photo.id)">×</button>
         <div class="resize-handle" @pointerdown.stop.prevent="startResize(photo.id, $event)"></div>
           <div v-if="selectedBoxes.includes(photo.id)" class="selection-indicator"></div>
@@ -594,6 +691,26 @@ const resizeDialogData = ref({
   newWidthMm: '',
   newHeightMm: ''
 })
+
+// Photo properties dialog
+const showPhotoPropertiesDialog = ref(false)
+const photoPropertiesData = ref({
+  id: null,
+  rotation: 0,
+  frame: null
+})
+
+// Available frame options
+const availableFrames = [
+  { label: 'None', value: null },
+  { label: 'Polaroid White', value: { type: 'image', imageUrl: '/frames/polaroid-white.svg', fitMode: 'cover', padding: { top: 4, right: 4, bottom: 12, left: 4 } } },
+  { label: 'Polaroid Black', value: { type: 'image', imageUrl: '/frames/polaroid-black.svg', fitMode: 'cover', padding: { top: 4, right: 4, bottom: 12, left: 4 } } },
+  { label: 'Vintage Gold', value: { type: 'image', imageUrl: '/frames/vintage-gold.svg', fitMode: 'stretch', padding: { top: 8, right: 8, bottom: 8, left: 8 } } },
+  { label: 'Vintage Silver', value: { type: 'image', imageUrl: '/frames/vintage-silver.svg', fitMode: 'stretch', padding: { top: 8, right: 8, bottom: 8, left: 8 } } },
+  { label: 'Rustic Wood', value: { type: 'image', imageUrl: '/frames/rustic-wood.svg', fitMode: 'cover', padding: { top: 6, right: 6, bottom: 6, left: 6 } } },
+  { label: 'Modern Black', value: { type: 'image', imageUrl: '/frames/modern-black.svg', fitMode: 'cover', padding: { top: 5, right: 5, bottom: 5, left: 5 } } },
+  { label: 'Simple Shadow', value: { type: 'image', imageUrl: '/frames/simple-shadow.svg', fitMode: 'cover', padding: { top: 3, right: 3, bottom: 3, left: 3 } } }
+]
 
 // Copy/paste functionality
 const copiedBoxes = ref([])
@@ -823,10 +940,10 @@ const layoutData = reactive({
     align: 'center'
   },
   photos: [
-    { id: '1', position: { x: 10, y: 10 }, size: { width: 100, height: 50 }, borderRadius: 3 },
-    { id: '2', position: { x: 120, y: 10 }, size: { width: 100, height: 50 }, borderRadius: 3 },
-    { id: '3', position: { x: 10, y: 70 }, size: { width: 100, height: 50 }, borderRadius: 3 },
-    { id: '4', position: { x: 120, y: 70 }, size: { width: 100, height: 50 }, borderRadius: 3 }
+    { id: '1', position: { x: 10, y: 10 }, size: { width: 100, height: 50 }, borderRadius: 3, rotation: 0, frame: null },
+    { id: '2', position: { x: 120, y: 10 }, size: { width: 100, height: 50 }, borderRadius: 3, rotation: 0, frame: null },
+    { id: '3', position: { x: 10, y: 70 }, size: { width: 100, height: 50 }, borderRadius: 3, rotation: 0, frame: null },
+    { id: '4', position: { x: 120, y: 70 }, size: { width: 100, height: 50 }, borderRadius: 3, rotation: 0, frame: null }
   ]
 })
 
@@ -1119,10 +1236,18 @@ function photoBoxStyle(photo) {
   const scale = SCALE_FACTOR.value
   const borderRadiusPx = Math.round(photo.borderRadius * scale)
   
-  return {
+  const baseStyle = {
     ...boxStyle(photo.position, photo.size),
     borderRadius: `${borderRadiusPx}px`
   }
+  
+  // Apply rotation transform if rotation exists
+  if (photo.rotation && photo.rotation !== 0) {
+    baseStyle.transform = `rotate(${photo.rotation}deg)`
+    baseStyle.transformOrigin = 'center center'
+  }
+  
+  return baseStyle
 }
 
 function clampToBounds(pos, size) {
@@ -1657,7 +1782,9 @@ function copySelectedBoxes() {
           id: photo.id,
           position: { ...photo.position },
           size: { ...photo.size },
-          borderRadius: photo.borderRadius
+          borderRadius: photo.borderRadius,
+          rotation: photo.rotation || 0,
+          frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
         })
       }
     }
@@ -1712,7 +1839,9 @@ function pasteCopiedBoxes() {
         id: newPhotoId,
         position: clampedPosition,
         size: { ...copiedBox.size },
-        borderRadius: copiedBox.borderRadius
+        borderRadius: copiedBox.borderRadius,
+        rotation: copiedBox.rotation || 0,
+        frame: copiedBox.frame ? JSON.parse(JSON.stringify(copiedBox.frame)) : null
       }
       
       layoutData.photos.push(newPhoto)
@@ -1804,7 +1933,9 @@ function addPhoto() {
     id: newId,
     position: { x: 20, y: 20 },
     size: { width: 50, height: 40 },
-    borderRadius: 3
+    borderRadius: 3,
+    rotation: 0,
+    frame: null
   }
   
   layoutData.photos.push(newPhoto)
@@ -1933,7 +2064,9 @@ function saveLayout() {
       width: photo.size.width,
       height: photo.size.height
     },
-    borderRadius: photo.borderRadius
+    borderRadius: photo.borderRadius,
+    rotation: photo.rotation || 0,
+    frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
   }))
 
   delete jsonLayout.canvasSize
@@ -2033,7 +2166,9 @@ function openJsonDialog() {
         id: photo.id,
         position: { ...photo.position },
         size: { ...photo.size },
-        borderRadius: photo.borderRadius || 0
+        borderRadius: photo.borderRadius || 0,
+        rotation: photo.rotation || 0,
+        frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
       }))
     }
     
@@ -2067,7 +2202,9 @@ function getCurrentLayoutJson() {
         id: photo.id,
         position: { ...photo.position },
         size: { ...photo.size },
-        borderRadius: photo.borderRadius || 0
+        borderRadius: photo.borderRadius || 0,
+        rotation: photo.rotation || 0,
+        frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
       }))
     }
     
@@ -2122,7 +2259,9 @@ function applyJsonChanges() {
         id: photo.id,
         position: { ...photo.position },
         size: { ...photo.size },
-        borderRadius: photo.borderRadius || 0
+        borderRadius: photo.borderRadius || 0,
+        rotation: photo.rotation || 0,
+        frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
       }))
       
       // Update nextPhotoId to avoid conflicts
@@ -2182,7 +2321,9 @@ function saveJsonChanges() {
         id: photo.id,
         position: { ...photo.position },
         size: { ...photo.size },
-        borderRadius: photo.borderRadius || 0
+        borderRadius: photo.borderRadius || 0,
+        rotation: photo.rotation || 0,
+        frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
       }))
       
       // Update nextPhotoId to avoid conflicts
@@ -2258,6 +2399,73 @@ function handleBoxDoubleClick(id, event) {
   showResizeDialog.value = true
 }
 
+// Function to open photo properties dialog
+function openPhotoProperties(photoId, event) {
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  
+  const photo = layoutData.photos.find(p => p.id === photoId)
+  if (!photo) return
+  
+  // Find the frame index
+  let selectedFrameIndex = 0
+  if (photo.frame) {
+    const frameIndex = availableFrames.findIndex(f => {
+      if (!f.value) return false
+      return f.value.imageUrl === photo.frame.imageUrl
+    })
+    selectedFrameIndex = frameIndex >= 0 ? frameIndex : 0
+  }
+  
+  photoPropertiesData.value = {
+    id: photoId,
+    rotation: photo.rotation || 0,
+    frame: photo.frame ? { ...photo.frame } : null,
+    selectedFrameIndex: selectedFrameIndex
+  }
+  
+  showPhotoPropertiesDialog.value = true
+}
+
+// Function to handle frame selection change
+function onFrameChange() {
+  const selectedFrame = availableFrames[photoPropertiesData.value.selectedFrameIndex]
+  if (selectedFrame && selectedFrame.value) {
+    photoPropertiesData.value.frame = JSON.parse(JSON.stringify(selectedFrame.value))
+  } else {
+    photoPropertiesData.value.frame = null
+  }
+}
+
+// Function to apply photo properties
+function applyPhotoProperties() {
+  const photoId = photoPropertiesData.value.id
+  const photo = layoutData.photos.find(p => p.id === photoId)
+  if (!photo) return
+  
+  // Apply rotation
+  photo.rotation = photoPropertiesData.value.rotation
+  
+  // Apply frame
+  if (photoPropertiesData.value.frame) {
+    photo.frame = JSON.parse(JSON.stringify(photoPropertiesData.value.frame))
+  } else {
+    photo.frame = null
+  }
+  
+  showPhotoPropertiesDialog.value = false
+  console.log('[PHOTO PROPERTIES] Applied to photo:', photoId, { rotation: photo.rotation, frame: photo.frame })
+}
+
+// Function to get frame label for display
+function getFrameLabel(frame) {
+  if (!frame) return 'No Frame'
+  const found = availableFrames.find(f => f.value && f.value.imageUrl === frame.imageUrl)
+  return found ? found.label : 'Custom Frame'
+}
+
 // Generate proper default layout for a given size
 function generateDefaultLayout(size) {
   const dimensions = calculateSizeDimensions(size)
@@ -2292,10 +2500,10 @@ function generateDefaultLayout(size) {
         align: 'center'
       },
       photos: [
-        { id: '1', position: { x: marginMm, y: marginMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
-        { id: '2', position: { x: marginMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
-        { id: '3', position: { x: marginMm + photoWidth + spacingMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
-        { id: '4', position: { x: marginMm + photoWidth + spacingMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 }
+        { id: '1', position: { x: marginMm, y: marginMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3, rotation: 0, frame: null },
+        { id: '2', position: { x: marginMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3, rotation: 0, frame: null },
+        { id: '3', position: { x: marginMm + photoWidth + spacingMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3, rotation: 0, frame: null },
+        { id: '4', position: { x: marginMm + photoWidth + spacingMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3, rotation: 0, frame: null }
       ]
     }
   } else {
@@ -2315,10 +2523,10 @@ function generateDefaultLayout(size) {
         align: 'center'
       },
       photos: [
-        { id: '1', position: { x: marginMm, y: marginMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
-        { id: '2', position: { x: marginMm + photoWidth + spacingMm, y: marginMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
-        { id: '3', position: { x: marginMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 },
-        { id: '4', position: { x: marginMm + photoWidth + spacingMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3 }
+        { id: '1', position: { x: marginMm, y: marginMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3, rotation: 0, frame: null },
+        { id: '2', position: { x: marginMm + photoWidth + spacingMm, y: marginMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3, rotation: 0, frame: null },
+        { id: '3', position: { x: marginMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3, rotation: 0, frame: null },
+        { id: '4', position: { x: marginMm + photoWidth + spacingMm, y: marginMm + photoHeight + spacingMm }, size: { width: photoWidth, height: photoHeight }, borderRadius: 3, rotation: 0, frame: null }
       ]
     }
   }
@@ -2427,6 +2635,121 @@ function generateDefaultLayout(size) {
   pointer-events: none;
   z-index: 5;
   background: rgba(59, 130, 246, 0.05);
+}
+
+/* Photo badges */
+.photo-badges {
+  position: absolute;
+  bottom: 3px;
+  left: 3px;
+  display: flex;
+  gap: 3px;
+  z-index: 15;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.rotation-badge {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  border: 1px solid #6d28d9;
+}
+
+.frame-badge {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: 1px solid #b45309;
+}
+
+/* Properties button */
+.box .properties-btn {
+  position: absolute;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%);
+  width: 32px !important;
+  height: 32px !important;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px !important;
+  font-weight: normal !important;
+  line-height: 1;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  z-index: 25 !important;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  opacity: 0.95;
+}
+
+.box .properties-btn:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+  transform: translate(-50%, -50%) scale(1.15);
+  opacity: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Visual indicators for photo states */
+.photo-box.has-rotation {
+  outline: 1px solid #8b5cf6;
+  outline-offset: -1px;
+}
+
+.photo-box.has-frame {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+/* Range slider styling */
+input[type="range"].slider {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="range"].slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #3b82f6;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"].slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #3b82f6;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"].slider::-webkit-slider-runnable-track {
+  background: #e5e7eb;
+  border-radius: 4px;
+  height: 8px;
+}
+
+input[type="range"].slider::-moz-range-track {
+  background: #e5e7eb;
+  border-radius: 4px;
+  height: 8px;
 }
 
 </style>
