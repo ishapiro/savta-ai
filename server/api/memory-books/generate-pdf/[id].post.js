@@ -2195,6 +2195,9 @@ export default defineEventHandler(async (event) => {
       const cardX = (pageWidth - cardWidthPoints) / 2
       const cardY = (pageHeight - cardHeightPoints) / 2
       console.log(`📐 Card dimensions: ${cardWidthPoints}x${cardHeightPoints} points (${cardWidthMm}x${cardHeightMm}mm)`)
+      console.log(`📐 Page dimensions: ${pageWidth}x${pageHeight} points`)
+      console.log(`📐 Card positioning: cardX=${cardX}, cardY=${cardY}`)
+      console.log(`📐 Card width vs page width: ${cardWidthPoints} vs ${pageWidth} (diff: ${cardWidthPoints - pageWidth})`)
 
       // Process photos from layout_config
       const themePhotoCount = layoutConfig.photos.length
@@ -2449,7 +2452,9 @@ export default defineEventHandler(async (event) => {
             cardPosition: { x: cardX, y: cardY },
             cardDimensions: { width: cardWidthPoints, height: cardHeightPoints },
             photoDimensions: { width: photoWidth, height: photoHeight },
-            rotation: rotationDegrees
+            rotation: rotationDegrees,
+            xCalculation: `${cardX} + ${themeX} = ${photoX}`,
+            yCalculation: `${cardY} + (${cardHeightPoints} - ${themeY} - ${photoHeight}) = ${photoY}`
           })
           
           const targetWidth = Math.round(photoWidth * 2)
@@ -2812,6 +2817,10 @@ export default defineEventHandler(async (event) => {
       case '12x12':
         regularPageWidth = 864 // 12x12 inches in points (12 * 72)
         regularPageHeight = 864 // 12 inches in points (12 * 72)
+        break
+      case '8.5x11':
+        regularPageWidth = 612 // 8.5 inches in points (8.5 * 72)
+        regularPageHeight = 792 // 11 inches in points (11 * 72)
         break
       case 'a4':
         regularPageWidth = 595 // A4 width in points
