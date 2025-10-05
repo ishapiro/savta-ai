@@ -12,7 +12,7 @@
     >
       <div
         v-if="open"
-        class="fixed inset-0 bg-black/20 z-[1199]"
+        class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[1199]"
         @click="$emit('update:open', false)"
       />
     </transition>
@@ -333,4 +333,21 @@ onBeforeUnmount(() => {
 <style scoped>
 /***** Optional: subtle lifted shadow *****/
 .shadow-rose-100 { box-shadow: 0 10px 20px rgba(209, 109, 132, 0.08), 0 6px 6px rgba(0,0,0,0.04); }
+
+/* Enhanced defocus effect for backdrop overlay */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Ensure the overlay covers everything properly */
+.fixed.inset-0 {
+  /* Additional fallback for older browsers */
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth transition for backdrop filter */
+.transition {
+  transition: backdrop-filter 0.2s ease-out, -webkit-backdrop-filter 0.2s ease-out;
+}
 </style>

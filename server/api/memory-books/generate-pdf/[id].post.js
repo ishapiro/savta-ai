@@ -2416,10 +2416,42 @@ export default defineEventHandler(async (event) => {
               console.warn('⚠️ Failed to auto-enhance image for asset', asset.id, enhanceErr)
             }
           }
-          const photoX = cardX + (photoConfig.position.x * mmToPoints)
-          const photoY = cardY + (photoConfig.position.y * mmToPoints)
           const photoWidth = photoConfig.size.width * mmToPoints
           const photoHeight = photoConfig.size.height * mmToPoints
+
+          // Calculate base position in theme editor coordinates (top-origin)
+          let themeX = photoConfig.position.x * mmToPoints
+          let themeY = photoConfig.position.y * mmToPoints
+
+          // The theme editor positions photos at their unrotated top-left corner,
+          // then applies CSS transform: rotate() with transform-origin: center center
+          // The PDF library works the same way - it expects the unrotated top-left position
+          // and rotates around the center automatically
+          const rotationDegrees = photoConfig.rotation || 0
+          
+          console.log(`🔄 Photo ${i + 1} POSITIONING LOGIC:`, {
+            originalPosition: { x: photoConfig.position.x, y: photoConfig.position.y },
+            rotation: rotationDegrees,
+            photoSize: { width: photoConfig.size.width, height: photoConfig.size.height },
+            themeX: themeX,
+            themeY: themeY,
+            explanation: 'Using unrotated top-left position - PDF library will rotate around center'
+          })
+
+          // Convert theme coordinates to PDF coordinates (bottom-origin)
+          // Theme editor uses top-origin (Y=0 at top), PDF uses bottom-origin (Y=0 at bottom)
+          const photoX = cardX + themeX
+          const photoY = cardY + (cardHeightPoints - themeY - photoHeight)
+          
+          console.log(`📐 Photo ${i + 1} FINAL POSITIONING:`, {
+            themeCoordinates: { x: themeX / mmToPoints, y: themeY / mmToPoints },
+            pdfCoordinates: { x: photoX, y: photoY },
+            cardPosition: { x: cardX, y: cardY },
+            cardDimensions: { width: cardWidthPoints, height: cardHeightPoints },
+            photoDimensions: { width: photoWidth, height: photoHeight },
+            rotation: rotationDegrees
+          })
+          
           const targetWidth = Math.round(photoWidth * 2)
           const targetHeight = Math.round(photoHeight * 2)
           let finalImageBuffer
@@ -2440,8 +2472,7 @@ export default defineEventHandler(async (event) => {
             (Math.min(targetWidth, targetHeight) * (photoConfig.borderRadius / 100)) : 
             (theme.rounded ? Math.min(targetWidth, targetHeight) * 0.15 : 0)
           
-          // Get rotation from photoConfig (in degrees)
-          const rotationDegrees = photoConfig.rotation || 0
+          // rotationDegrees already declared above
           
           console.log(`🎨 Theme photo processing - Asset ${i + 1}: photoBorder=${photoBorder}, borderRadius=${borderRadius}, rotation=${rotationDegrees}°, theme.rounded=${theme.rounded}, photoConfig.borderRadius=${photoConfig.borderRadius}`)
           console.log(`🎨 Theme photo processing - Target dimensions: ${targetWidth}x${targetHeight}, calculated radius: ${Math.min(targetWidth, targetHeight) * 0.15}`)
@@ -2539,7 +2570,7 @@ export default defineEventHandler(async (event) => {
               }
               if (rotationDegrees !== 0) {
                 // Add rotation - PDF library handles rotation around center automatically
-                drawOptions.rotate = degrees(rotationDegrees)
+                drawOptions.rotate = degrees(-rotationDegrees)
               }
               page.drawImage(pdfImage, drawOptions)
             } catch (borderError) {
@@ -2548,7 +2579,7 @@ export default defineEventHandler(async (event) => {
               const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
               if (rotationDegrees !== 0) {
                 // Add rotation - PDF library handles rotation around center automatically
-                drawOptions.rotate = degrees(rotationDegrees)
+                drawOptions.rotate = degrees(-rotationDegrees)
               }
               page.drawImage(pdfImage, drawOptions)
             }
@@ -2567,7 +2598,7 @@ export default defineEventHandler(async (event) => {
             const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
             if (rotationDegrees !== 0) {
               // Add rotation - PDF library handles rotation around center automatically
-              drawOptions.rotate = degrees(rotationDegrees)
+              drawOptions.rotate = degrees(-rotationDegrees)
             }
             page.drawImage(pdfImage, drawOptions)
           } else {
@@ -2577,7 +2608,7 @@ export default defineEventHandler(async (event) => {
             const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
             if (rotationDegrees !== 0) {
               // Add rotation - PDF library handles rotation around center automatically
-              drawOptions.rotate = degrees(rotationDegrees)
+              drawOptions.rotate = degrees(-rotationDegrees)
             }
             page.drawImage(pdfImage, drawOptions)
           }

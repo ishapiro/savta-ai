@@ -412,6 +412,7 @@ import { useMemoryStudio } from '~/composables/useMemoryStudio'
 import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
 import ProgressDialog from '~/components/ProgressDialog.vue'
 import { useToast } from 'primevue/usetoast'
+import { watch, onMounted, onUnmounted } from 'vue'
 
 // Use the wizard composable
 const {
@@ -495,6 +496,46 @@ const {
 
 // Memory studio functionality
 const { getAssetThumbnail, assetThumbnails } = useMemoryStudio()
+
+// Body scroll blocking for modal dialog
+const blockBodyScroll = () => {
+  if (process.client) {
+    // Store the current scroll position
+    const scrollY = window.scrollY
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    document.body.style.overflow = 'hidden'
+  }
+}
+
+const unblockBodyScroll = () => {
+  if (process.client) {
+    // Restore the scroll position
+    const scrollY = document.body.style.top
+    document.body.style.position = ''
+    document.body.style.top = ''
+    document.body.style.width = ''
+    document.body.style.overflow = ''
+    if (scrollY) {
+      window.scrollTo(0, parseInt(scrollY || '0') * -1)
+    }
+  }
+}
+
+// Watch for dialog visibility changes to block/unblock body scroll
+watch(showMagicMemoryDialog, (isOpen) => {
+  if (isOpen) {
+    blockBodyScroll()
+  } else {
+    unblockBodyScroll()
+  }
+}, { immediate: true })
+
+// Cleanup on component unmount
+onUnmounted(() => {
+  unblockBodyScroll()
+})
 
 // Toast functionality
 const toast = useToast()
@@ -712,4 +753,17 @@ defineExpose({
 }
 
 /* Edit Mode Indicator Styling */
+
+/* Ensure dropdowns within the modal don't interfere with scroll blocking */
+.p-dropdown-panel {
+  position: fixed !important;
+  z-index: 10000 !important;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
 </style>
