@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const body = await readBody(event)
-    const { asset_ids, photo_selection_pool, story, title, background_type = 'white', background_color, photo_count = 4, theme_id, output = 'PDF', print_size = '8.5x11', photo_selection_method } = body
+    const { asset_ids, photo_selection_pool, story, title, background_type = 'white', background_color, photo_count = 4, theme_id, output = 'PDF', print_size = '8.5x11', photo_selection_method, ui = 'wizard' } = body
     
     // Check if this is a template creation (no story or assets yet)
     const isTemplate = !story || story.trim() === '' || !asset_ids || !Array.isArray(asset_ids) || asset_ids.length === 0
@@ -51,6 +51,9 @@ export default defineEventHandler(async (event) => {
     // Determine layout type based on whether a theme is selected
     const layoutType = theme_id ? 'theme' : 'grid'
     
+    // Determine format based on UI: wizard creates cards, dialog creates books
+    const format = ui === 'wizard' ? 'card' : 'book'
+    
     // Insert new memory book
     const { data, error } = await supabase
       .from('memory_books')
@@ -58,8 +61,8 @@ export default defineEventHandler(async (event) => {
         user_id: user.id,
         ai_supplemental_prompt: title || 'Select Photos That Tell a Story',
         layout_type: layoutType,
-        ui: 'wizard',
-        format: 'book',
+        ui: ui,
+        format: format,
         created_from_assets: isTemplate ? null : asset_ids,
         photo_selection_pool: photo_selection_pool || (isTemplate ? null : asset_ids),
         magic_story: isTemplate ? null : story,

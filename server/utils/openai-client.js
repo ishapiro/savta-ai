@@ -12,11 +12,12 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_BASE_URL = 'https://api.openai.com/v1';
 
 /**
- * Make a request to OpenAI's Responses API
+ * Make a request to OpenAI's Responses API with retry logic for timeout errors
  * @param {Object} payload - The API payload
+ * @param {number} attempt - Current attempt number (for internal use)
  * @returns {Promise<Object>} The API response
  */
-async function makeOpenAIRequest(payload) {
+async function makeOpenAIRequest(payload, attempt = 1) {
   if (!OPENAI_API_KEY) {
     throw new Error('OpenAI API key not configured');
   }
@@ -29,7 +30,7 @@ async function makeOpenAIRequest(payload) {
   }, 300000); // 5 minute timeout for large requests
 
   try {
-    console.log('🔗 DEBUG - Making OpenAI API request at:', new Date().toISOString());
+    console.log(`🔗 DEBUG - Making OpenAI API request (attempt ${attempt}) at:`, new Date().toISOString());
     console.log('🔗 DEBUG - Request URL:', `${OPENAI_BASE_URL}/responses`);
     console.log('🔗 DEBUG - Payload size:', JSON.stringify(payload).length, 'characters');
     
@@ -60,13 +61,30 @@ async function makeOpenAIRequest(payload) {
     clearTimeout(timeoutId);
     
     if (error.name === 'AbortError') {
-      throw new Error('OpenAI API request timed out after 5 minutes');
+      const timeoutError = new Error('OpenAI API request timed out after 5 minutes');
+      timeoutError.isTimeout = true;
+      throw timeoutError;
     }
     
     // Check if it's a timeout error from OpenAI
     if (error.message && error.message.includes('Timeout while downloading')) {
       console.error('❌ Image download timeout detected. This usually means the image URL is not accessible or the image is too large.');
       throw new Error('Image download timeout - please check that your images are accessible and not too large');
+    }
+    
+    // Check if it's a connect timeout error and we haven't retried yet
+    const isConnectTimeout = error.message && (
+      error.message.includes('Connect Timeout Error') ||
+      error.message.includes('fetch failed') ||
+      error.message.includes('ETIMEDOUT') ||
+      error.message.includes('ECONNRESET')
+    );
+    
+    if (isConnectTimeout && attempt === 1) {
+      console.log('🔄 DEBUG - Connect timeout detected, retrying once...');
+      // Wait a moment before retrying
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return makeOpenAIRequest(payload, 2);
     }
     
     throw error;

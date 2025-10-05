@@ -682,7 +682,8 @@ export const useMagicMemoryWizard = () => {
             theme_id: magicSelectedTheme.value,
             print_size: '8.5x11', // Default print size for magic memories
             output: 'JPG', // Wizard creates single-page memories, so always use JPG
-            photo_selection_method: photoSelection_method.value
+            photo_selection_method: photoSelection_method.value,
+            ui: 'wizard' // Magic memory wizard creates cards
           },
           headers: {
             Authorization: `Bearer ${accessToken}`

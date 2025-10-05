@@ -2417,7 +2417,7 @@ export default defineEventHandler(async (event) => {
             }
           }
           const photoX = cardX + (photoConfig.position.x * mmToPoints)
-          const photoY = cardY + (cardHeightPoints - (photoConfig.position.y + photoConfig.size.height) * mmToPoints)
+          const photoY = cardY + (photoConfig.position.y * mmToPoints)
           const photoWidth = photoConfig.size.width * mmToPoints
           const photoHeight = photoConfig.size.height * mmToPoints
           const targetWidth = Math.round(photoWidth * 2)
@@ -2532,20 +2532,22 @@ export default defineEventHandler(async (event) => {
               const borderPoints = photoBorder * (72 / 96)
               const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
               const drawOptions = { 
-                x: photoX - borderPoints + (photoWidth + borderPoints * 2) / 2, 
-                y: photoY - borderPoints + (photoHeight + borderPoints * 2) / 2, 
+                x: photoX - borderPoints, 
+                y: photoY - borderPoints, 
                 width: photoWidth + (borderPoints * 2), 
                 height: photoHeight + (borderPoints * 2) 
               }
               if (rotationDegrees !== 0) {
+                // Add rotation - PDF library handles rotation around center automatically
                 drawOptions.rotate = degrees(rotationDegrees)
               }
               page.drawImage(pdfImage, drawOptions)
             } catch (borderError) {
               console.warn('⚠️ Failed to apply photo border:', borderError)
               const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-              const drawOptions = { x: photoX + photoWidth / 2, y: photoY + photoHeight / 2, width: photoWidth, height: photoHeight }
+              const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
               if (rotationDegrees !== 0) {
+                // Add rotation - PDF library handles rotation around center automatically
                 drawOptions.rotate = degrees(rotationDegrees)
               }
               page.drawImage(pdfImage, drawOptions)
@@ -2562,8 +2564,9 @@ export default defineEventHandler(async (event) => {
                 .toBuffer()
             } catch (roundError) {}
             const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-            const drawOptions = { x: photoX + photoWidth / 2, y: photoY + photoHeight / 2, width: photoWidth, height: photoHeight }
+            const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
             if (rotationDegrees !== 0) {
+              // Add rotation - PDF library handles rotation around center automatically
               drawOptions.rotate = degrees(rotationDegrees)
             }
             page.drawImage(pdfImage, drawOptions)
@@ -2571,8 +2574,9 @@ export default defineEventHandler(async (event) => {
             console.log(`🎨 Theme photo processing - No border or radius applied`)
             // No border or radius
             const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-            const drawOptions = { x: photoX + photoWidth / 2, y: photoY + photoHeight / 2, width: photoWidth, height: photoHeight }
+            const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
             if (rotationDegrees !== 0) {
+              // Add rotation - PDF library handles rotation around center automatically
               drawOptions.rotate = degrees(rotationDegrees)
             }
             page.drawImage(pdfImage, drawOptions)

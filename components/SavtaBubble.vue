@@ -48,7 +48,7 @@
 
               <div class="min-w-0">
                 <!-- Optional heading -->
-                <p v-if="heading" class="font-bold mb-2 font-architects-daughter text-brand-header text-xl">{{ cleanedHeading }}</p>
+                <p v-if="heading" class="font-bold mb-2 font-sans text-brand-header text-xl">{{ cleanedHeading }}</p>
                 <!-- Main content - HTML or text with line break support -->
                 <div v-if="html" class="text-sm text-gray-700 leading-relaxed max-h-[60vh] overflow-y-auto pr-2" v-html="html"></div>
                 <p v-else-if="text" class="whitespace-pre-line text-sm text-gray-700 leading-relaxed">{{ cleanedText }}</p>

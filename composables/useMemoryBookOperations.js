@@ -64,7 +64,8 @@ export const useMemoryBookOperations = () => {
           theme_id: newBook.themeId || null,
           output: newBook.output || 'PDF',
           print_size: newBook.printSize || '8.5x11',
-          photo_selection_method: newBook.photoSelectionMethod || 'last_100'
+          photo_selection_method: newBook.photoSelectionMethod || 'last_100',
+          ui: 'form' // Memory book dialog creates books
         },
         headers: {
           Authorization: `Bearer ${accessToken}`

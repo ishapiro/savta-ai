@@ -1776,13 +1776,14 @@ const formatDateRange = (dateRange) => {
   return 'any date'
 }
 
-
-// Watch for conditions to show Savta bubble
-watch([memoryCards, memoryBooksOnly, activeView], ([cards, books, view]) => {
-  // Show bubble when user has no memory books at all (cards or books)
-  const totalMemoryBooks = cards.length + books.length
-  showSavtaBubble.value = totalMemoryBooks === 0
-  console.log('🔍 [SavtaBubble] totalMemoryBooks:', totalMemoryBooks, 'showSavtaBubble:', showSavtaBubble.value)
+// Watch for empty state condition to show Savta bubble
+watch(() => !loadingMemoryBooks.value && currentItems.value.length === 0, (isEmpty) => {
+  showSavtaBubble.value = isEmpty
+  if (isEmpty) {
+    console.log('🔍 [SavtaBubble] Empty state detected, showing bubble')
+  } else {
+    console.log('🔍 [SavtaBubble] Not in empty state, hiding bubble')
+  }
 }, { immediate: true })
 
 // Watch for create modal to check authentication

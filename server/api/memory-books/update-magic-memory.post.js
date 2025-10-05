@@ -39,7 +39,8 @@ export default defineEventHandler(async (event) => {
       photo_selection_date_range,
       photo_selection_tags,
       photo_selection_location,
-      photos_to_replace
+      photos_to_replace,
+      ui = 'wizard'
     } = body
     
     if (!book_id) {
@@ -125,12 +126,15 @@ export default defineEventHandler(async (event) => {
     // Determine layout type based on whether a theme is selected
     const layoutType = theme_id ? 'theme' : 'grid'
     
+    // Determine format based on UI: wizard creates cards, dialog creates books
+    const format = ui === 'wizard' ? 'card' : 'book'
+    
     // Prepare update data
     const updateData = {
       ai_supplemental_prompt: title || 'Select Photos That Tell a Story',
       layout_type: layoutType,
-      ui: 'wizard',
-      format: 'card',
+      ui: ui,
+      format: format,
       created_from_assets: isTemplate ? null : (originalCreatedFromAssets || asset_ids),
       photo_selection_pool: photo_selection_pool || (isTemplate ? null : asset_ids),
       magic_story: isTemplate ? null : story,
