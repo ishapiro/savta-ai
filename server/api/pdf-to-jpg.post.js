@@ -44,6 +44,14 @@ export default defineEventHandler(async (event) => {
         targetWidth = 2100  // 7 inches × 300 DPI
         targetHeight = 1500 // 5 inches × 300 DPI
         break
+      case '8.5x11':
+        targetWidth = 2550  // 8.5 inches × 300 DPI
+        targetHeight = 3300 // 11 inches × 300 DPI
+        break
+      case '11x8.5':
+        targetWidth = 3300  // 11 inches × 300 DPI
+        targetHeight = 2550 // 8.5 inches × 300 DPI
+        break
       case '8x10':
         targetWidth = 2400  // 8 inches × 300 DPI
         targetHeight = 3000 // 10 inches × 300 DPI

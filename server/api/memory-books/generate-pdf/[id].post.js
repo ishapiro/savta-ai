@@ -10,6 +10,11 @@ import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../
 import { enhanceImage } from '../../../utils/image-enhancer.js'
 import PdfLogger from '../../../utils/pdf-logger.js'
 
+// Verbose logging gate for PDF generation
+const PDF_VERBOSE = process.env.PDF_VERBOSE === 'true'
+const vlog = (...args) => { if (PDF_VERBOSE) console.log(...args) }
+const vwarn = (...args) => { if (PDF_VERBOSE) console.warn(...args) }
+
 // Centralized function to save and upload PDF/JPG files
 async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize = '7x5', logger) {
   // Ensure printSize is always a valid string
@@ -795,11 +800,11 @@ export default defineEventHandler(async (event) => {
     // Helper function to perform smart cropping
     async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null, photoIndex = null, totalPhotos = null, assetId = null, userId = null) {
       try {
-        console.log('🧠 Performing OpenAI person detection crop...')
+        vlog('🧠 Performing OpenAI person detection crop...')
         if (photoIndex !== null && totalPhotos !== null) {
           await updatePdfStatus(supabase, book.id, user.id, `👥 Cropping photo ${photoIndex + 1} of ${totalPhotos}...`)
         }
-        console.log(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
+        vlog(`📏 Target dimensions: ${targetWidth}x${targetHeight}`)
         
         // Get image metadata to determine orientation
         const metadata = await sharp(imageBuffer).metadata()
@@ -809,7 +814,7 @@ export default defineEventHandler(async (event) => {
         // Handle EXIF orientation to prevent automatic rotation
         let processedImageBuffer = imageBuffer
         if (metadata.orientation && metadata.orientation !== 1) {
-          console.log(`🔄 Correcting EXIF orientation: ${metadata.orientation}`)
+          vlog(`🔄 Correcting EXIF orientation: ${metadata.orientation}`)
           // Create a new Sharp instance that will handle the orientation
           const sharpInstance = sharp(imageBuffer)
           
@@ -831,11 +836,11 @@ export default defineEventHandler(async (event) => {
           
           // Get updated metadata after rotation
           const updatedMetadata = await sharp(processedImageBuffer).metadata()
-          console.log(`📐 Updated dimensions after orientation correction: ${updatedMetadata.width}x${updatedMetadata.height}`)
+          vlog(`📐 Updated dimensions after orientation correction: ${updatedMetadata.width}x${updatedMetadata.height}`)
         }
         
-        console.log(`📐 Image orientation: ${isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'}`)
-        console.log(`📏 Original dimensions: ${metadata.width}x${metadata.height}`)
+        vlog(`📐 Image orientation: ${isPortrait ? 'Portrait' : isLandscape ? 'Landscape' : 'Square'}`)
+        vlog(`📏 Original dimensions: ${metadata.width}x${metadata.height}`)
         
         // Use the processed image buffer for all operations
         const workingImageBuffer = processedImageBuffer || imageBuffer
@@ -844,11 +849,11 @@ export default defineEventHandler(async (event) => {
         let faces = []
         let cropArea = null
         
-        console.log('👥 Using smartcrop-gm as primary cropping method')
+        vlog('👥 Using smartcrop-gm as primary cropping method')
         
         try {
           // Use smartcrop-gm for intelligent cropping with AWS Rekognition face detection
-          console.log('🎯 Using smartcrop-gm with AWS Rekognition face detection')
+          vlog('🎯 Using smartcrop-gm with AWS Rekognition face detection')
           
           // Create a temporary file for GraphicsMagick to work with
           const tempInputPath = `/tmp/smartcrop-input-${Date.now()}.jpg`
@@ -861,13 +866,13 @@ export default defineEventHandler(async (event) => {
           
           // Get the dimensions of the processed image for logging
           const processedMetadata = await sharp(processedImageBuffer || imageBuffer).metadata()
-          console.log('🔍 Smartcrop-gm input:', { width: processedMetadata.width, height: processedMetadata.height, tempPath: tempInputPath })
+          vlog('🔍 Smartcrop-gm input:', { width: processedMetadata.width, height: processedMetadata.height, tempPath: tempInputPath })
           
           // Detect faces using AWS Rekognition if we have a storage URL
           let faceBoosts = []
           if (storageUrl) {
             try {
-              console.log('🔍 AWS Rekognition: Detecting faces for smartcrop-gm boost...')
+              vlog('🔍 AWS Rekognition: Detecting faces for smartcrop-gm boost...')
               
               const rekognitionResponse = await fetch(`${config.public.siteUrl}/api/ai/detect-faces-rekognition`, {
                 method: 'POST',
@@ -2419,8 +2424,22 @@ export default defineEventHandler(async (event) => {
               console.warn('⚠️ Failed to auto-enhance image for asset', asset.id, enhanceErr)
             }
           }
+          // Inner content (photo) size in points
           const photoWidth = photoConfig.size.width * mmToPoints
           const photoHeight = photoConfig.size.height * mmToPoints
+
+          // Frame padding handling (in points and pixels)
+          let paddingTopPt = 0, paddingRightPt = 0, paddingBottomPt = 0, paddingLeftPt = 0
+          if (photoConfig.frame && photoConfig.frame.padding) {
+            paddingTopPt = (photoConfig.frame.padding.top || 0) * mmToPoints
+            paddingRightPt = (photoConfig.frame.padding.right || 0) * mmToPoints
+            paddingBottomPt = (photoConfig.frame.padding.bottom || 0) * mmToPoints
+            paddingLeftPt = (photoConfig.frame.padding.left || 0) * mmToPoints
+          }
+
+          // Outer (frame-included) box size in points
+          const outerWidthPt = photoWidth + paddingLeftPt + paddingRightPt
+          const outerHeightPt = photoHeight + paddingTopPt + paddingBottomPt
 
           // Calculate base position in theme editor coordinates (top-origin)
           let themeX = photoConfig.position.x * mmToPoints
@@ -2432,7 +2451,7 @@ export default defineEventHandler(async (event) => {
           // and rotates around the center automatically
           const rotationDegrees = photoConfig.rotation || 0
           
-          console.log(`🔄 Photo ${i + 1} POSITIONING LOGIC:`, {
+          vlog(`🔄 Photo ${i + 1} POSITIONING LOGIC:`, {
             originalPosition: { x: photoConfig.position.x, y: photoConfig.position.y },
             rotation: rotationDegrees,
             photoSize: { width: photoConfig.size.width, height: photoConfig.size.height },
@@ -2443,24 +2462,34 @@ export default defineEventHandler(async (event) => {
 
           // Convert theme coordinates to PDF coordinates (bottom-origin)
           // Theme editor uses top-origin (Y=0 at top), PDF uses bottom-origin (Y=0 at bottom)
+          // Use OUTER box for anchoring so the top-left in the editor equals the top-left of the final drawn box
           const photoX = cardX + themeX
-          const photoY = cardY + (cardHeightPoints - themeY - photoHeight)
+          const photoY = cardY + (cardHeightPoints - themeY - outerHeightPt)
           
-          console.log(`📐 Photo ${i + 1} FINAL POSITIONING:`, {
+          vlog(`📐 Photo ${i + 1} FINAL POSITIONING:`, {
             themeCoordinates: { x: themeX / mmToPoints, y: themeY / mmToPoints },
             pdfCoordinates: { x: photoX, y: photoY },
             cardPosition: { x: cardX, y: cardY },
             cardDimensions: { width: cardWidthPoints, height: cardHeightPoints },
             photoDimensions: { width: photoWidth, height: photoHeight },
+            framePaddingPt: { top: paddingTopPt, right: paddingRightPt, bottom: paddingBottomPt, left: paddingLeftPt },
+            outerDimensionsPt: { width: outerWidthPt, height: outerHeightPt },
             rotation: rotationDegrees,
             xCalculation: `${cardX} + ${themeX} = ${photoX}`,
             yCalculation: `${cardY} + (${cardHeightPoints} - ${themeY} - ${photoHeight}) = ${photoY}`
           })
           
+          // Render inner content at 2x pixel density for quality
           const targetWidth = Math.round(photoWidth * 2)
           const targetHeight = Math.round(photoHeight * 2)
+          // Convert frame padding points -> pixels for compositing
+          const pointsToPixels = 96 / 72
+          const padTopPx = Math.round(paddingTopPt * pointsToPixels)
+          const padRightPx = Math.round(paddingRightPt * pointsToPixels)
+          const padBottomPx = Math.round(paddingBottomPt * pointsToPixels)
+          const padLeftPx = Math.round(paddingLeftPt * pointsToPixels)
           let finalImageBuffer
-          console.log(`🔍 Debug: Asset ${i + 1} storage_url:`, asset.storage_url)
+          vlog(`🔍 Debug: Asset ${i + 1} storage_url:`, asset.storage_url)
           try {
             finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight, asset.storage_url, i, matchedAssets.length, asset.id, user.id)
           } catch (smartCropError) {
@@ -2479,28 +2508,28 @@ export default defineEventHandler(async (event) => {
           
           // rotationDegrees already declared above
           
-          console.log(`🎨 Theme photo processing - Asset ${i + 1}: photoBorder=${photoBorder}, borderRadius=${borderRadius}, rotation=${rotationDegrees}°, theme.rounded=${theme.rounded}, photoConfig.borderRadius=${photoConfig.borderRadius}`)
-          console.log(`🎨 Theme photo processing - Target dimensions: ${targetWidth}x${targetHeight}, calculated radius: ${Math.min(targetWidth, targetHeight) * 0.15}`)
+          vlog(`🎨 Theme photo processing - Asset ${i + 1}: photoBorder=${photoBorder}, borderRadius=${borderRadius}, rotation=${rotationDegrees}°, theme.rounded=${theme.rounded}, photoConfig.borderRadius=${photoConfig.borderRadius}`)
+          vlog(`🎨 Theme photo processing - Target dimensions: ${targetWidth}x${targetHeight}, calculated radius: ${Math.min(targetWidth, targetHeight) * 0.15}`)
           
                       if (photoBorder > 0) {
-              console.log(`🎨 Theme photo processing - Applying border with width: ${photoBorder}`)
+              vlog(`🎨 Theme photo processing - Applying border with width: ${photoBorder}`)
               // Ensure border color has # prefix for Sharp
               let borderColor = theme.body_font_color || '#333333'
               if (borderColor && !borderColor.startsWith('#')) {
                 borderColor = '#' + borderColor
               }
-              console.log(`🎨 Theme photo processing - Border color: ${borderColor}`)
+              vlog(`🎨 Theme photo processing - Border color: ${borderColor}`)
               // Increase border width for better visibility of rounded corners
               const borderWidth = Math.max(photoBorder, 3) // Minimum 3 pixels for visibility
-              console.log(`🎨 Theme photo processing - Using border width: ${borderWidth} (original: ${photoBorder})`)
+              vlog(`🎨 Theme photo processing - Using border width: ${borderWidth} (original: ${photoBorder})`)
                           try {
                 if (borderRadius > 0) {
-                  console.log(`🎨 Theme photo processing - Applying border radius: ${borderRadius}px`)
+                  vlog(`🎨 Theme photo processing - Applying border radius: ${borderRadius}px`)
                   // Apply border radius to both image and border
                   const borderRadiusPixels = Math.round(borderRadius)
                   // The border background should have radius = image radius + border width
                   const borderRadiusWithBorder = borderRadiusPixels + borderWidth
-                  console.log(`🎨 Theme photo processing - Border radius pixels: ${borderRadiusPixels}, border background radius: ${borderRadiusWithBorder}`)
+                  vlog(`🎨 Theme photo processing - Border radius pixels: ${borderRadiusPixels}, border background radius: ${borderRadiusWithBorder}`)
                 
                 // Create background layer with theme color
                 let themeBackgroundColor = '#FFFFFF' // Default to white
@@ -2509,7 +2538,7 @@ export default defineEventHandler(async (event) => {
                   themeBackgroundColor = theme.background_color.startsWith('#') ? theme.background_color : `#${theme.background_color}`
                 }
                 const themeBackgroundOpacity = theme.background_opacity || 100
-                console.log(`🎨 Theme photo processing - Using theme background: ${themeBackgroundColor} with opacity ${themeBackgroundOpacity}%`)
+                vlog(`🎨 Theme photo processing - Using theme background: ${themeBackgroundColor} with opacity ${themeBackgroundOpacity}%`)
                 
                 // Create a larger canvas with theme background color and border
                 const borderedWidth = targetWidth + (borderWidth * 2)
@@ -2546,9 +2575,9 @@ export default defineEventHandler(async (event) => {
                   .composite([{ input: Buffer.from(borderSvg), blend: 'over' }])
                   .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
-                console.log(`🎨 Theme photo processing - Final image with rounded border created successfully`)
+                vlog(`🎨 Theme photo processing - Final image with rounded border created successfully`)
                               } else {
-                  console.log(`🎨 Theme photo processing - No border radius, using rectangular border`)
+                  vlog(`🎨 Theme photo processing - No border radius, using rectangular border`)
                   // Create border by extending the image with border color (no radius)
                   const borderedImage = await sharp(finalImageBuffer)
                     .extend({
@@ -2579,7 +2608,7 @@ export default defineEventHandler(async (event) => {
               }
               page.drawImage(pdfImage, drawOptions)
             } catch (borderError) {
-              console.warn('⚠️ Failed to apply photo border:', borderError)
+              vwarn('⚠️ Failed to apply photo border:', borderError)
               const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
               const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
               if (rotationDegrees !== 0) {
@@ -2589,7 +2618,7 @@ export default defineEventHandler(async (event) => {
               page.drawImage(pdfImage, drawOptions)
             }
           } else if (borderRadius > 0) {
-            console.log(`🎨 Theme photo processing - Applying rounded corners only (no border): ${borderRadius}px`)
+            vlog(`🎨 Theme photo processing - Applying rounded corners only (no border): ${borderRadius}px`)
             // Apply rounded corners only (no border)
             const borderRadiusPixels = Math.round(borderRadius)
             try {
@@ -2598,19 +2627,77 @@ export default defineEventHandler(async (event) => {
                 .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
                 .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                 .toBuffer()
-            } catch (roundError) {}
+            } catch (roundError) { vwarn('⚠️ Failed to apply rounded corners:', roundError) }
+            // If there is frame padding, extend the image to include the padding so placement uses the OUTER box
+            if (padTopPx || padRightPx || padBottomPx || padLeftPx) {
+              try {
+                // Extend with white (simulates a simple frame). If theme.background_color exists, prefer it.
+                let frameBackground = '#ffffff'
+                if (photoConfig.frame && photoConfig.frame.type === 'image') {
+                  // Most polaroid frames are white; keep white background as a reasonable default.
+                }
+                finalImageBuffer = await sharp(finalImageBuffer)
+                  .extend({ top: padTopPx, right: padRightPx, bottom: padBottomPx, left: padLeftPx, background: frameBackground })
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                  .toBuffer()
+              } catch (extendErr) {
+                console.warn('⚠️ Failed to extend image for frame padding:', extendErr)
+              }
+            }
+            // Pre-rotate bitmap so the top-left anchor remains fixed after rotation
+            if (rotationDegrees !== 0) {
+              try {
+                const rotated = await sharp(finalImageBuffer)
+                  .rotate(-rotationDegrees, { background: '#ffffff' })
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                  .toBuffer()
+                finalImageBuffer = rotated
+                // Draw at intended outer size; anchoring stays at top-left
+                const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
+                page.drawImage(pdfImage, { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt })
+                continue
+              } catch (rotErr) {
+                vwarn('⚠️ Failed to pre-rotate image; falling back to PDF rotation:', rotErr)
+              }
+            }
             const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-            const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
+            const drawOptions = { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt }
             if (rotationDegrees !== 0) {
               // Add rotation - PDF library handles rotation around center automatically
               drawOptions.rotate = degrees(-rotationDegrees)
             }
             page.drawImage(pdfImage, drawOptions)
           } else {
-            console.log(`🎨 Theme photo processing - No border or radius applied`)
+            vlog(`🎨 Theme photo processing - No border or radius applied`)
             // No border or radius
+            // If there is frame padding, extend the image to include the padding so placement uses the OUTER box
+            if (padTopPx || padRightPx || padBottomPx || padLeftPx) {
+              try {
+                let frameBackground = '#ffffff'
+                finalImageBuffer = await sharp(finalImageBuffer)
+                  .extend({ top: padTopPx, right: padRightPx, bottom: padBottomPx, left: padLeftPx, background: frameBackground })
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                  .toBuffer()
+              } catch (extendErr) {
+                console.warn('⚠️ Failed to extend image for frame padding:', extendErr)
+              }
+            }
+            if (rotationDegrees !== 0) {
+              try {
+                const rotated = await sharp(finalImageBuffer)
+                  .rotate(-rotationDegrees, { background: '#ffffff' })
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                  .toBuffer()
+                finalImageBuffer = rotated
+                const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
+                page.drawImage(pdfImage, { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt })
+                continue
+              } catch (rotErr) {
+                vwarn('⚠️ Failed to pre-rotate image; falling back to PDF rotation:', rotErr)
+              }
+            }
             const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-            const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
+            const drawOptions = { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt }
             if (rotationDegrees !== 0) {
               // Add rotation - PDF library handles rotation around center automatically
               drawOptions.rotate = degrees(-rotationDegrees)
