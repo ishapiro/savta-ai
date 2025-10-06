@@ -2633,6 +2633,9 @@ export default defineEventHandler(async (event) => {
               try {
                 // Extend with white (simulates a simple frame). If theme.background_color exists, prefer it.
                 let frameBackground = '#ffffff'
+                if (theme && theme.background_color) {
+                  frameBackground = theme.background_color.startsWith('#') ? theme.background_color : `#${theme.background_color}`
+                }
                 if (photoConfig.frame && photoConfig.frame.type === 'image') {
                   // Most polaroid frames are white; keep white background as a reasonable default.
                 }
@@ -2648,13 +2651,16 @@ export default defineEventHandler(async (event) => {
             if (rotationDegrees !== 0) {
               try {
                 const rotated = await sharp(finalImageBuffer)
-                  .rotate(-rotationDegrees, { background: '#ffffff' })
+                  .rotate(rotationDegrees, { background: theme && theme.background_color ? (theme.background_color.startsWith('#') ? theme.background_color : `#${theme.background_color}`) : '#ffffff' })
                   .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 finalImageBuffer = rotated
-                // Draw at intended outer size; anchoring stays at top-left
+                // Draw using intended OUTER dimensions so bitmap resolution doesn't affect size
+                const anchoredX = photoX
+                const anchoredY = cardY + (cardHeightPoints - themeY - outerHeightPt)
+                vlog(`🧭 Pre-rotated (with padding). Drawing at intended size pt: ${Math.round(outerWidthPt)}x${Math.round(outerHeightPt)}; anchored at (${anchoredX}, ${anchoredY})`)
                 const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-                page.drawImage(pdfImage, { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt })
+                page.drawImage(pdfImage, { x: anchoredX, y: anchoredY, width: outerWidthPt, height: outerHeightPt })
                 continue
               } catch (rotErr) {
                 vwarn('⚠️ Failed to pre-rotate image; falling back to PDF rotation:', rotErr)
@@ -2674,6 +2680,9 @@ export default defineEventHandler(async (event) => {
             if (padTopPx || padRightPx || padBottomPx || padLeftPx) {
               try {
                 let frameBackground = '#ffffff'
+                if (theme && theme.background_color) {
+                  frameBackground = theme.background_color.startsWith('#') ? theme.background_color : `#${theme.background_color}`
+                }
                 finalImageBuffer = await sharp(finalImageBuffer)
                   .extend({ top: padTopPx, right: padRightPx, bottom: padBottomPx, left: padLeftPx, background: frameBackground })
                   .jpeg({ quality: 100, progressive: true, mozjpeg: true })
@@ -2685,12 +2694,15 @@ export default defineEventHandler(async (event) => {
             if (rotationDegrees !== 0) {
               try {
                 const rotated = await sharp(finalImageBuffer)
-                  .rotate(-rotationDegrees, { background: '#ffffff' })
+                  .rotate(rotationDegrees, { background: theme && theme.background_color ? (theme.background_color.startsWith('#') ? theme.background_color : `#${theme.background_color}`) : '#ffffff' })
                   .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
                 finalImageBuffer = rotated
+                const anchoredX = photoX
+                const anchoredY = cardY + (cardHeightPoints - themeY - outerHeightPt)
+                vlog(`🧭 Pre-rotated (with padding). Drawing at intended size pt: ${Math.round(outerWidthPt)}x${Math.round(outerHeightPt)}; anchored at (${anchoredX}, ${anchoredY})`)
                 const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-                page.drawImage(pdfImage, { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt })
+                page.drawImage(pdfImage, { x: anchoredX, y: anchoredY, width: outerWidthPt, height: outerHeightPt })
                 continue
               } catch (rotErr) {
                 vwarn('⚠️ Failed to pre-rotate image; falling back to PDF rotation:', rotErr)
