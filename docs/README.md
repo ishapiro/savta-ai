@@ -34,6 +34,12 @@ Complete documentation for the Savta.ai memory books and cards application.
 - Why we use PrimeVue 3 instead of PrimeVue 4
 - Adding new components to the plugin
 
+#### [`MCP_SERVER_SETUP.md`](./MCP_SERVER_SETUP.md)
+- Supabase MCP Server configuration for Cursor.ai
+- Direct database access from AI
+- Security considerations and read-only user setup
+- Usage examples and troubleshooting
+
 ### Database Setup
 
 #### [`BACKUP_STORAGE_SETUP.md`](./BACKUP_STORAGE_SETUP.md)
@@ -246,6 +252,7 @@ When adding new documentation:
 ### Setup & Configuration
 - `ENVIRONMENT_SETUP.md` - Environment variables
 - `PRIMEVUE_SETUP.md` - UI framework setup
+- `MCP_SERVER_SETUP.md` - Cursor AI database access
 - `BACKUP_STORAGE_SETUP.md` - Backup configuration
 
 ### Core Features

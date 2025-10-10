@@ -708,7 +708,53 @@ Detailed documentation is available in the `docs/` directory:
 - **Database Guides**: Schema updates, migration instructions
 - **Troubleshooting**: Common issues and solutions
 
-### Database Access with susql
+### Database Access
+
+The project provides two ways to access your Supabase database:
+
+1. **Supabase MCP Server** (for Cursor.ai) - AI-powered database queries
+2. **susql alias** (terminal) - Direct SQL access for migrations and queries
+
+#### Supabase MCP Server for Cursor.ai
+
+The Supabase MCP (Model Context Protocol) Server enables Cursor.ai to directly interact with your database.
+
+**Quick Setup:**
+
+1. Run the setup script:
+   ```bash
+   ./scripts/setup-mcp.sh
+   ```
+
+2. Restart Cursor.ai
+
+3. Test by typing `@supabase` in the AI chat
+
+**Or configure manually** by editing `.cursor/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server",
+        "--connection-string",
+        "postgresql://postgres:YOUR_PASSWORD@YOUR_HOST:5432/postgres"
+      ]
+    }
+  }
+}
+```
+
+**Usage Examples:**
+- `@supabase Show me all tables in the database`
+- `@supabase What is the schema of the memory_books table?`
+- `@supabase Count memory books created this week`
+
+📚 **Full documentation**: See [`docs/MCP_SERVER_SETUP.md`](./docs/MCP_SERVER_SETUP.md)
+
+#### Database Access with susql
 
 The project uses a `susql` alias to run PostgreSQL commands against the Supabase database. This provides a convenient way to execute SQL commands and migrations.
 

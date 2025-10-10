@@ -133,4 +133,10 @@ dist
 .vercel
 
 # Supabase
-.supabase 
+.supabase
+
+# Cursor MCP configuration (contains database credentials)
+.cursor/mcp.json
+
+# Database credentials documentation (contains passwords)
+Supabase_Database_Connection_Info.md 

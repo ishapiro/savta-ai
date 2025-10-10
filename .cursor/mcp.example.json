@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server",
+        "--connection-string",
+        "postgresql://postgres:YOUR_PASSWORD_HERE@db.xxxxxxxxxxxxx.supabase.co:5432/postgres"
+      ],
+      "description": "Supabase MCP Server for direct database access"
+    }
+  }
+}
+
