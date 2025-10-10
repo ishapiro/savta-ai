@@ -1,0 +1,561 @@
+# Savta.ai Project Rules and Guidelines
+
+# Project Context and Architecture
+SYSTEM_CONTEXT: |
+  You are a senior developer working on the Savta.ai project - a Nuxt.js/Vue.js application 
+  with Supabase backend for creating AI-powered memory books and cards from family photos.
+  
+  Stack:
+  - Frontend: Nuxt 3, Vue 3 (Composition API), TailwindCSS, PrimeVue 3.49.1
+  - Backend: Supabase (PostgreSQL + pgvector, Auth, Storage), Nuxt Server API routes
+  - AI: OpenAI GPT-4/GPT-5 for captions & stories, DALL-E 3 for backgrounds
+  - Face Recognition: AWS Rekognition (with fallback mode)
+  - Email: SendGrid (SMTP + Webhooks)
+  - PDF Processing: pdf-lib, poppler-utils (pdftoppm)
+  - Image Processing: GraphicsMagick, ImageMagick
+  
+  Required file reads on startup:
+  - docs/architecture.mermaid: System architecture diagram (MANDATORY - read this first!)
+  - docs/technical.md: Complete technical specifications (REQUIRED)
+  - docs/README.md: Documentation index and navigation
+  - tasks/tasks.md: Current development tasks and requirements (if exists)
+  - docs/status.md: Project progress and state (if exists)
+
+  Before making ANY changes:
+  1. READ docs/architecture.mermaid to understand system architecture
+  2. Check current task context from tasks/tasks.md
+  3. Follow technical specifications from docs/technical.md
+  4. Update progress in docs/status.md after changes
+
+# File Management Rules
+ON_FILE_CHANGE: |
+  Required actions after any code changes:
+  1. READ docs/architecture.mermaid to verify architectural compliance
+  2. VALIDATE changes against docs/technical.md specifications
+  3. VERIFY task progress against tasks/tasks.md (if exists)
+  4. UPDATE docs/status.md with progress (if exists)
+  5. RUN read_lints tool on modified files to check for errors
+  6. UPDATE feature documentation in docs/ if adding/changing features
+
+# Savta.ai Specific Code Patterns
+
+## Vue/Nuxt Conventions
+- **ALWAYS use Composition API** (not Options API)
+- **Use `<script setup>` syntax** for Vue components (not `export default`)
+- **Destructure composables when importing**: 
+  ```javascript
+  const { memoryBooks: dbMemoryBooks, assets: dbAssets } = useDatabase()
+  const { deleteBook } = useMemoryBookOperations()
+  ```
+- **Use `ref()` for reactive state**, `computed()` for derived state
+- **Export composables as arrow functions**: `export const useDatabase = () => { ... }`
+- **Use `navigateTo()` for routing**, not `router.push()`
+- **Use `useRuntimeConfig()` for environment variables**, not `process.env`
+- **Use `$fetch()` for API calls** from composables to server endpoints
+
+## Server API Route Patterns
+- **Standard Supabase setup pattern** (use in EVERY server API file):
+  ```javascript
+  import { getHeader, createError } from 'h3'
+  
+  export default defineEventHandler(async (event) => {
+    const config = useRuntimeConfig()
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      config.public.supabaseUrl,
+      config.supabaseServiceRoleKey || config.public.supabaseKey
+    )
+  ```
+- **DO NOT use** `#supabase/server` or Nuxt module auto-imports
+- **DO NOT use** `import { createClient }` at the top level (use dynamic import)
+- **Always validate authentication**:
+  ```javascript
+  const authHeader = getHeader(event, 'authorization')
+  if (!authHeader) {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  }
+  const token = authHeader.replace('Bearer ', '')
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+  if (authError || !user) {
+    throw createError({ statusCode: 401, statusMessage: 'Invalid token' })
+  }
+  ```
+- **Always verify resource ownership**:
+  ```javascript
+  if (book.user_id !== user.id) {
+    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+  }
+  ```
+- **Use proper HTTP status codes**:
+  - 400: Bad Request (missing/invalid parameters)
+  - 401: Unauthorized (no/invalid token)
+  - 403: Forbidden (not owner)
+  - 404: Not found
+  - 500: Server error
+- **Return consistent responses**: `{ success: true }` or `{ data: ... }`
+
+## Database Operations
+
+### Soft Delete Pattern (CRITICAL)
+- **ALWAYS use soft deletes** - NEVER permanently delete records
+- **Soft delete implementation**:
+  ```javascript
+  const { error } = await supabase
+    .from('memory_books')
+    .update({ 
+      deleted: true,
+      deleted_at: new Date().toISOString()
+    })
+    .eq('id', bookId)
+  ```
+- **Default filtering** - Always filter out deleted items:
+  ```javascript
+  let query = supabase
+    .from('memory_books')
+    .select('*')
+    .eq('user_id', user.value.id)
+    .eq('deleted', false)  // Default: only non-deleted items
+  ```
+- **Permanent delete** - Only for already-deleted items (trash):
+  ```javascript
+  const { error } = await supabase
+    .from('memory_books')
+    .delete()
+    .eq('id', bookId)
+    .eq('deleted', true)  // Safety: only delete already-trashed items
+  ```
+
+### Authentication Token Pattern
+- **Get token from session** (in composables calling APIs):
+  ```javascript
+  const { data: sessionData } = await supabase.auth.getSession()
+  const accessToken = sessionData.session?.access_token
+  
+  if (!accessToken) {
+    throw new Error('No access token available')
+  }
+  
+  const response = await $fetch(`/api/memory-books/${bookId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  })
+  ```
+
+### Database Composable Pattern
+- **Centralize database operations** in `useDatabase.js`
+- **Group operations by feature**:
+  ```javascript
+  const memoryBookOperations = {
+    getMemoryBooks: async (options = {}) => { ... },
+    createMemoryBook: async (bookData) => { ... },
+    updateMemoryBook: async (bookId, updates) => { ... },
+    deleteMemoryBook: async (bookId) => { ... }
+  }
+  
+  return {
+    memoryBooks: memoryBookOperations,
+    assets: assetOperations,
+    profile: profileOperations
+  }
+  ```
+- **Use consistent error handling**:
+  ```javascript
+  if (error) {
+    console.error('Error fetching memory books:', error)
+    return []
+  }
+  ```
+
+## Memory Books System Architecture
+
+### Format Field (CRITICAL)
+- Memory books have a **`format` field**: `'card'` or `'book'`
+- **Cards**: Created via Magic Memory Wizard (`ui='wizard'`, `format='card'`)
+- **Books**: Created via Memory Book Dialog (`ui='form'`, `format='book'`)
+- **Filtering by format**:
+  ```javascript
+  const memoryCards = computed(() => {
+    return memoryBooks.value.filter(book => book.format === 'card')
+  })
+  
+  const memoryBooksOnly = computed(() => {
+    return memoryBooks.value.filter(book => book.format === 'book')
+  })
+  ```
+
+### Status Field Values
+- `'draft'`: Initial creation state
+- `'ready'`: Generated and ready to view
+- `'background_ready'`: Background generated, awaiting PDF
+- `'approved'`: User approved for distribution
+- `'distributed'`: Sent/delivered
+- `'template'`: Template without content
+
+### Other Important Fields
+- `ui`: `'wizard'` or `'form'` (determines creation flow)
+- `grid_layout`: `'1x1'`, `'2x1'`, `'2x2'`, `'3x2'`, `'3x3'`, `'3x4'`, `'4x4'`
+- `memory_shape`: `'original'`, `'magic'`, `'rounded'`
+- `print_size`: `'4x6'`, `'5x7'`, `'7x5'`, `'8x10'`, `'8.5x11'`, `'11x14'`, `'12x12'`
+- `output`: `'PDF'` or `'JPG'`
+- `created_from_assets`: UUID[] of selected photos
+- `photo_selection_pool`: UUID[] of all considered photos
+
+## Composables Architecture
+
+### Core Composables
+1. **`useDatabase.js`**: All direct Supabase queries
+   - Exports grouped operations: `{ memoryBooks, assets, profile, family, admin, editor }`
+   - Handles authentication checks
+   - Implements soft delete patterns
+   
+2. **`useMemoryStudio.js`**: Memory books state and filtering
+   - Manages `memoryBooks` ref array
+   - Provides computed filters: `memoryCards`, `memoryBooksOnly`
+   - Handles pagination (12 items per page default)
+   - Loads asset thumbnails asynchronously
+   
+3. **`useMemoryBookOperations.js`**: CRUD operations for memory books
+   - Wraps `useDatabase` operations with UI state
+   - Manages modals: `showDetailsModal`, `showPdfModal`
+   - Tracks selected book: `selectedBook`
+   - Methods: `createMemoryBook`, `deleteBook`, `generatePDF`, `viewBookDetails`
+   
+4. **`useMagicMemoryWizard.js`**: Card creation wizard flow
+   - Multi-step wizard state management
+   - Photo selection logic
+   - Story generation integration
+   
+5. **`usePhotoSelection.js`**: Smart photo selection algorithms
+   - Location-based selection (6-tier hierarchy)
+   - Attribute-based filtering
+   - ZipCodeAPI integration
+   
+6. **`usePersonManagement.js`**: Face recognition management
+   - AWS Rekognition integration
+   - Face detection and indexing
+   - Person assignment and grouping
+   
+7. **`useAnalytics.js`**: Event tracking
+   - Page view tracking
+   - User behavior analytics
+   - Session management
+   
+8. **`useSupabase.js`**: Auth state management
+   - Global user ref
+   - Auth state listener
+   - Session management
+
+### Composable Patterns
+- **Use global refs for shared state**:
+  ```javascript
+  export const globalUser = ref(null)
+  let authListenerInitialized = false
+  ```
+- **Return reactive state and methods**:
+  ```javascript
+  return {
+    // State
+    memoryBooks,
+    loadingMemoryBooks,
+    
+    // Computed
+    memoryCards,
+    memoryBooksOnly,
+    
+    // Methods
+    loadMemoryBooks,
+    deleteBook
+  }
+  ```
+
+## UI/UX Patterns
+
+### PrimeVue 3 Components
+- **Use manual plugin setup** (see `plugins/primevue.ts`)
+- **DO NOT install** `@nuxtjs/primevue` or `primevue/nuxt` modules
+- **Component usage**:
+  ```vue
+  <Dialog v-model:visible="showModal" modal>
+  <Button @click="handleClick" label="Save" />
+  <InputText v-model="value" />
+  ```
+- **Register new components** in `plugins/primevue.ts` if needed
+
+### Dialog/Modal Patterns
+- **Close dialogs after successful operations**:
+  ```javascript
+  const confirmDelete = async () => {
+    await deleteBookOperation(bookToDelete.value)
+    showDeleteDialog.value = false
+    showDetailsModal.value = false  // Close detail dialog too
+  }
+  ```
+- **Position dialogs appropriately**:
+  ```vue
+  <Dialog class="w-[95vw] max-w-4xl mx-auto -mt-16" />
+  ```
+- **Use negative margins to adjust position**: `-mt-16` pulls dialog to top
+
+### Button Text Conventions
+- **Use "Trash" not "Delete"** for soft delete operations
+- **Use descriptive action text**: "Create Memory Card", "Generate PDF"
+- **Use sentence case**: "Save changes" not "Save Changes"
+
+### TailwindCSS Patterns
+- **Use brand color classes**: `bg-brand-primary`, `text-brand-secondary`
+- **Use responsive breakpoints**: `sm:`, `md:`, `lg:`, `xl:`
+- **Use hover states**: `hover:bg-gray-50`, `hover:text-brand-secondary`
+- **Use transitions**: `transition-colors duration-200`
+
+## Error Handling
+
+### Try-Catch Pattern
+- **Always wrap async operations**:
+  ```javascript
+  const confirmDelete = async () => {
+    try {
+      const result = await deleteBookOperation(bookToDelete.value)
+      showDeleteDialog.value = false
+      showDetailsModal.value = false
+      await loadMemoryBooks()
+    } catch (error) {
+      console.error('❌ Failed to delete book:', error)
+      showDeleteDialog.value = false
+      bookToDelete.value = null
+    }
+  }
+  ```
+- **Clean up state in catch blocks**
+- **Don't leave modals open on error**
+- **Always reload data after mutations**
+
+### Console Logging
+- **Use emojis for visibility** (during development):
+  - 🗑️ delete operations
+  - ✅ success
+  - ❌ errors
+  - 📚 loading data
+  - 🔄 reload/refresh
+  - 🖼️ image operations
+  - 🔧 debugging
+- **Remove debugging logs after fixes are tested**
+- **Keep error logs**: `console.error('❌ Failed to ...', error)`
+
+## Custom Supabase Plugin Pattern
+
+### Client-Side Usage
+- **Get Supabase client**:
+  ```javascript
+  const supabase = useNuxtApp().$supabase
+  ```
+- **Get current user**:
+  ```javascript
+  const user = useSupabaseUser()  // Returns reactive ref
+  if (!user.value?.id) return
+  ```
+- **Get session token**:
+  ```javascript
+  const { data: sessionData } = await supabase.auth.getSession()
+  const accessToken = sessionData.session?.access_token
+  ```
+
+### Server-Side Usage
+- **Always use dynamic import and service role key**:
+  ```javascript
+  const config = useRuntimeConfig()
+  const { createClient } = await import('@supabase/supabase-js')
+  const supabase = createClient(
+    config.public.supabaseUrl,
+    config.supabaseServiceRoleKey || config.public.supabaseKey
+  )
+  ```
+
+## File Organization
+
+### Directory Structure
+```
+savta-ai/
+├── pages/app/              # Protected app pages
+├── components/             # Reusable UI components
+├── composables/            # Business logic composables
+├── server/api/             # Backend API endpoints
+│   ├── memory-books/       # Memory book operations
+│   ├── ai/                 # AI processing
+│   ├── analytics/          # Analytics tracking
+│   └── webhooks/           # External webhooks
+├── plugins/                # Nuxt plugins (PrimeVue, Supabase)
+├── assets/css/             # Global styles
+├── supabase/               # Database schema
+├── docs/                   # Documentation
+└── tests/                  # Test files
+```
+
+### File Naming Conventions
+- **Vue pages**: kebab-case (e.g., `memory-books.vue`)
+- **Composables**: camelCase with `use` prefix (e.g., `useDatabase.js`)
+- **Components**: PascalCase (e.g., `MemoryCard.vue`)
+- **API routes**: kebab-case with HTTP method (e.g., `[id].delete.js`)
+
+## Testing and Validation
+
+### Pre-Commit Checklist
+- [ ] Run `read_lints` tool on all modified files
+- [ ] Test authentication flows
+- [ ] Test database operations (especially delete/filter)
+- [ ] Test modal interactions (open, close, confirm)
+- [ ] Verify pagination works after data changes
+- [ ] Remove debugging console.logs
+- [ ] Check for memory leaks (event listeners, intervals)
+
+### Common Testing Scenarios
+- **Soft delete**: Verify item disappears from display
+- **Filtering**: Verify correct items show for cards/books views
+- **Authentication**: Verify token is passed in headers
+- **Modals**: Verify they close after successful operations
+- **Pagination**: Verify page resets or updates correctly
+
+## Performance Considerations
+
+### Image Handling
+- **Compress images > 5MB** before upload (see `compress-image.post.js`)
+- **Load thumbnails asynchronously** after main data
+- **Use `getAssetsByBook(assetIds, limit = 12)` for thumbnails**
+
+### Data Loading
+- **Use pagination** (12 items per page default)
+- **Load data in parallel** when possible:
+  ```javascript
+  const [books, assets] = await Promise.all([
+    dbMemoryBooks.getMemoryBooks(),
+    dbAssets.getAssets()
+  ])
+  ```
+- **Use computed properties** for filtering (memoization)
+- **Avoid unnecessary re-renders** (use `shallowRef` when appropriate)
+
+### PDF Generation
+- **Generate at 300 DPI** for print quality
+- **Convert single-page PDFs to JPG** to reduce file size
+- **Use poppler-utils `pdftoppm`** for conversion
+- **Show progress indicators** for long operations
+
+## Security Rules
+
+### Authentication
+- **Never expose service role key** in client-side code
+- **Always validate user ownership** before mutations
+- **Use JWT tokens** for API authentication
+- **Check `user.value?.id`** before database operations
+
+### Database Security
+- **Use RLS (Row Level Security)** policies in Supabase
+- **Validate input parameters** in API routes
+- **Sanitize user input** before database operations
+- **Use parameterized queries** (Supabase client handles this)
+
+### Storage Security
+- **User-specific folders**: `assets/{user_id}/...`
+- **Validate file types** and sizes
+- **Check ownership** before file operations
+
+## Deployment
+
+### Railway.com Configuration
+- **Build Command**:
+  ```bash
+  apt-get update && apt-get install -y poppler-utils graphicsmagick imagemagick && npm run build
+  ```
+- **Start Command**: `npm start` (NOT `npm run dev`)
+- **Required Dependencies**:
+  - `poppler-utils`: PDF to JPG conversion (pdftoppm)
+  - `graphicsmagick`: Image processing
+  - `imagemagick`: smartcrop-gm functionality
+
+### Environment Variables
+```bash
+# Site
+NUXT_PUBLIC_SITE_URL=https://savta.ai
+INSIDER_PASSWORD=savta2025
+
+# Supabase
+NUXT_PUBLIC_SUPABASE_URL=
+NUXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# OpenAI
+OPENAI_API_KEY=
+
+# AWS Rekognition
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=us-east-1
+
+# SendGrid (optional)
+SENDGRID_WEBHOOK_SECRET=
+
+# ZipCodeAPI (optional)
+ZIP_CODE_API=
+```
+
+## Architecture Understanding (MANDATORY)
+
+### Read Architecture First
+**Before making ANY changes, you MUST read `docs/architecture.mermaid`**
+
+The architecture diagram shows:
+1. **Client Layer**: Vue pages, composables, components
+2. **Server Layer**: API routes organized by feature
+3. **Database Layer**: PostgreSQL schema with relationships
+4. **External Services**: OpenAI, AWS, SendGrid, etc.
+5. **Data Flow**: How requests flow through the system
+6. **Authentication Flow**: JWT token passing
+7. **Key Patterns**: Soft deletes, format field, UI field
+
+### Architectural Constraints
+- **Composables call API routes** (not direct Supabase from client)
+- **API routes use service role key** (not anon key)
+- **Database operations filter deleted=false** by default
+- **Format field determines wizard/dialog** usage
+- **UI field tracks creation method** (wizard vs form)
+
+## Task Management
+
+### Task Workflow
+1. **READ** `tasks/tasks.md` for current task requirements
+2. **VALIDATE** against `docs/architecture.mermaid` for alignment
+3. **IMPLEMENT** following patterns in this file
+4. **TEST** thoroughly (see Testing checklist)
+5. **UPDATE** `docs/status.md` with progress
+6. **RUN** `read_lints` on modified files
+
+## Error Prevention
+
+### Validation Rules
+1. **Check for null/undefined**: Use optional chaining `user.value?.id`
+2. **Verify type consistency**: Especially UUID vs string
+3. **Validate business rules**: Format values, status values
+4. **Ensure error handling**: Try-catch around async operations
+5. **Check authentication**: Before any mutations
+6. **Verify ownership**: Before updates/deletes
+7. **Clean up state**: Close modals, reset refs in finally blocks
+
+## Git and Version Control
+
+### Commit Guidelines
+- **Write descriptive commit messages**: Include what and why
+- **Don't commit debugging code**: Remove console.logs
+- **Test changes before committing**: Run through user flows
+- **Don't force push to main/master**: Unless explicitly requested
+- **Don't skip git hooks**: Unless explicitly requested
+
+## Communication with User
+
+### Best Practices
+- **Explain what you're doing** at a high level
+- **Don't mention internal tool names**: Say "reading the file" not "using read_file tool"
+- **Ask for clarification** when requirements are ambiguous
+- **Suggest improvements** when you see potential issues
+- **Be proactive** about testing and validation
+- **Reference architecture diagram** when explaining complex flows

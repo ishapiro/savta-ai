@@ -1,0 +1,200 @@
+graph TB
+    subgraph "Client Layer - Vue 3 / Nuxt 3"
+        A[Landing Page /]
+        B[Auth Pages<br/>/login /signup]
+        C[App Pages<br/>/app/*]
+        
+        subgraph "Main App Pages"
+            C1[Upload /app/upload]
+            C2[Review /app/review]
+            C3[Memory Books /app/memory-books]
+            C4[Person Manager /app/person-manager]
+            C5[Analytics Dashboard /app/analytics-dashboard]
+            C6[Admin /app/admin]
+        end
+        
+        subgraph "Vue Composables - Business Logic"
+            D1[useDatabase.js<br/>Database Operations]
+            D2[useMemoryStudio.js<br/>State & Filtering]
+            D3[useMemoryBookOperations.js<br/>CRUD Operations]
+            D4[useMagicMemoryWizard.js<br/>Card Creation Wizard]
+            D5[usePhotoSelection.js<br/>Smart Photo Selection]
+            D6[usePersonManagement.js<br/>Face Recognition]
+            D7[useAnalytics.js<br/>Event Tracking]
+            D8[useSupabase.js<br/>Auth State]
+        end
+        
+        subgraph "UI Components"
+            E1[PrimeVue 3 Components<br/>Dialog, Button, DataView]
+            E2[Custom Components<br/>MemoryCard, MemoryBook]
+            E3[TailwindCSS<br/>Brand Color System]
+        end
+    end
+    
+    subgraph "Server Layer - Nuxt Server API"
+        subgraph "Memory Books API"
+            F1[create-magic-memory.post.js<br/>Create Card format='card']
+            F2[/api/memory-books/[id].post.js<br/>Create Book format='book']
+            F3[/api/memory-books/[id].delete.js<br/>Soft Delete deleted=true]
+            F4[generate-pdf/[id].post.js<br/>PDF Generation 300 DPI]
+            F5[generate-background/[id].post.js<br/>DALL-E 3 Backgrounds]
+        end
+        
+        subgraph "AI Processing API"
+            G1[process-asset.post.js<br/>Caption & Tag Generation]
+            G2[detect-faces-rekognition.post.js<br/>AWS Rekognition]
+            G3[generate-story.post.js<br/>GPT-4 Story Generation]
+            G4[magic-memory.post.js<br/>AI-Powered Card Creation]
+            G5[crop-recommendation.post.js<br/>Smart Cropping]
+            G6[analyze-photo.post.js<br/>Vision API Analysis]
+        end
+        
+        subgraph "Analytics API"
+            H1[/api/analytics/track.post.js<br/>Event Tracking + Geolocation]
+            H2[/api/admin/analytics-dashboard.get.js<br/>Analytics Data]
+        end
+        
+        subgraph "Utilities API"
+            I1[compress-image.post.js<br/>Image Compression >5MB]
+            I2[pdf-to-jpg.post.js<br/>PDF Conversion poppler-utils]
+            I3[render-caption.post.js<br/>Text Rendering]
+        end
+        
+        subgraph "Webhooks"
+            J1[/api/webhooks/sendgrid.post.js<br/>Email Event Tracking]
+        end
+    end
+    
+    subgraph "External Services"
+        subgraph "Supabase Backend"
+            K1[(PostgreSQL Database<br/>+ pgvector extension)]
+            K2[Supabase Auth<br/>JWT Tokens]
+            K3[Supabase Storage<br/>assets/ bucket]
+        end
+        
+        subgraph "AI Services"
+            L1[OpenAI GPT-4<br/>Caption & Story Generation]
+            L2[OpenAI DALL-E 3<br/>Background Generation]
+            L3[AWS Rekognition<br/>Face Detection & Indexing]
+        end
+        
+        subgraph "Third-Party APIs"
+            M1[IP-API<br/>Geolocation Free]
+            M2[ZipCodeAPI<br/>Location Distance Calc]
+            M3[SendGrid<br/>SMTP + Webhooks]
+        end
+    end
+    
+    subgraph "Database Schema"
+        subgraph "Core Tables"
+            N1[profiles<br/>user_id, role, deleted]
+            N2[assets<br/>photos & text, ai_caption<br/>face_detection_data]
+            N3[memory_books<br/>format='card'|'book'<br/>deleted=false default]
+            N4[themes<br/>card_default, card_wizard]
+        end
+        
+        subgraph "Supporting Tables"
+            O1[families<br/>delivery scheduling]
+            O2[activity_log<br/>analytics & tracking]
+            O3[email_events<br/>SendGrid webhook data]
+            O4[pdf_status<br/>generation progress]
+            O5[asset_tags<br/>many-to-many junction]
+            O6[people<br/>face recognition data]
+            O7[face_vectors<br/>AWS Rekognition vectors]
+        end
+    end
+    
+    %% Client to Composables
+    C1 --> D1
+    C2 --> D1
+    C3 --> D2
+    C3 --> D3
+    C3 --> D4
+    C4 --> D6
+    C5 --> D7
+    
+    %% Composables to Components
+    D2 --> E2
+    D3 --> E1
+    D4 --> E1
+    
+    %% Composables to Server API
+    D1 -.HTTP.-> F1
+    D1 -.HTTP.-> F2
+    D1 -.HTTP.-> F3
+    D3 -.HTTP.-> F4
+    D3 -.HTTP.-> F5
+    D4 -.HTTP.-> F1
+    D4 -.HTTP.-> G4
+    D5 -.HTTP.-> G6
+    D6 -.HTTP.-> G2
+    D7 -.HTTP.-> H1
+    
+    %% Server to Database
+    F1 --> K1
+    F2 --> K1
+    F3 --> K1
+    F4 --> K1
+    G1 --> K1
+    G2 --> K1
+    H1 --> K1
+    
+    %% Server to Storage
+    F4 --> K3
+    F5 --> K3
+    I1 --> K3
+    
+    %% Server to External AI
+    F5 --> L2
+    G1 --> L1
+    G2 --> L3
+    G3 --> L1
+    G4 --> L1
+    G6 --> L1
+    
+    %% Server to Third-Party
+    H1 --> M1
+    G4 --> M2
+    J1 --> K1
+    
+    %% Auth Flow
+    B --> K2
+    K2 -.JWT.-> D8
+    D8 -.Token Headers.-> F1
+    D8 -.Token Headers.-> F2
+    D8 -.Token Headers.-> F3
+    
+    %% Database Relationships
+    N1 -.user_id.-> N2
+    N1 -.user_id.-> N3
+    N2 -.asset_id.-> O5
+    N3 -.created_from_assets[].-> N2
+    N3 -.theme_id.-> N4
+    O6 -.asset_id.-> N2
+    O7 -.person_id.-> O6
+    
+    %% SendGrid Flow
+    K2 -.SMTP.-> M3
+    M3 -.Webhook.-> J1
+    J1 --> O3
+    
+    %% Image Processing Pipeline
+    C1 --> I1
+    I1 --> G1
+    G1 --> G2
+    
+    %% PDF Generation Flow
+    F4 --> I2
+    I2 --> I3
+    
+    %% Styling
+    classDef clientLayer fill:#e1f5ff,stroke:#0288d1
+    classDef serverLayer fill:#fff3e0,stroke:#f57c00
+    classDef databaseLayer fill:#f3e5f5,stroke:#7b1fa2
+    classDef externalLayer fill:#e8f5e9,stroke:#388e3c
+    
+    class A,B,C,C1,C2,C3,C4,C5,C6,D1,D2,D3,D4,D5,D6,D7,D8,E1,E2,E3 clientLayer
+    class F1,F2,F3,F4,F5,G1,G2,G3,G4,G5,G6,H1,H2,I1,I2,I3,J1 serverLayer
+    class K1,K2,K3,N1,N2,N3,N4,O1,O2,O3,O4,O5,O6,O7 databaseLayer
+    class L1,L2,L3,M1,M2,M3 externalLayer
+
