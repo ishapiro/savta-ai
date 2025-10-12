@@ -34,7 +34,7 @@ The Supabase MCP (Model Context Protocol) Server allows Cursor.ai to directly in
 
 The MCP configuration file is located at `.cursor/mcp.json` in the project root.
 
-**Edit the configuration file**:
+**Recommended Configuration (Two MCP Servers)**:
 
 ```json
 {
@@ -45,35 +45,32 @@ The MCP configuration file is located at `.cursor/mcp.json` in the project root.
         "-y",
         "@supabase/mcp-server",
         "--connection-string",
-        "postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres"
+        "postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-us-east-2.pooler.supabase.com:5432/postgres"
       ],
       "description": "Supabase MCP Server for direct database access"
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-us-east-2.pooler.supabase.com:5432/postgres"
+      ],
+      "description": "Generic PostgreSQL MCP Server"
     }
   }
 }
 ```
 
 **Replace the placeholders**:
-- `[YOUR-PASSWORD]`: Your Supabase database password
-- `[YOUR-HOST]`: Your Supabase database host (e.g., `db.abcdefghijklmnop.supabase.co`)
+- `[PROJECT-REF]`: Your Supabase project reference (e.g., `hjcfurvpshxbgxaedmeu`)
+- `[PASSWORD]`: Your Supabase database password
 
-**Example**:
-```json
-{
-  "mcpServers": {
-    "supabase": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@supabase/mcp-server",
-        "--connection-string",
-        "postgresql://postgres:your-secure-password@db.abcdefghijklmnop.supabase.co:5432/postgres"
-      ],
-      "description": "Supabase MCP Server for direct database access"
-    }
-  }
-}
-```
+**Important Notes**:
+- Use the **connection pooler** host (not direct database host)
+- Connection pooler supports IPv4 (works in WSL2 without IPv6)
+- Username format must be: `postgres.[PROJECT-REF]` (not just `postgres`)
+- Port is `5432` for the pooler
 
 ### Step 3: Restart Cursor.ai
 
@@ -84,12 +81,16 @@ The MCP configuration file is located at `.cursor/mcp.json` in the project root.
 ### Step 4: Verify MCP Server Connection
 
 1. Open the **Cursor AI chat**
-2. Type: `@supabase` - you should see the Supabase MCP server as an option
+2. Type: `@` - you should see both `@supabase` and `@postgres` as options
 3. Try a test query: `@supabase show me all tables in the database`
+
+**Expected Result**: All 18 tables from your database should be listed.
 
 ## Usage Examples
 
-### Querying Database Schema
+### Using @supabase (Recommended)
+
+**Querying Database Schema**:
 
 ```
 @supabase List all tables in the database
@@ -103,7 +104,7 @@ The MCP configuration file is located at `.cursor/mcp.json` in the project root.
 @supabase What are the relationships between assets and memory_books?
 ```
 
-### Inspecting Data
+**Inspecting Data**:
 
 ```
 @supabase Show me the first 10 memory books
@@ -117,7 +118,7 @@ The MCP configuration file is located at `.cursor/mcp.json` in the project root.
 @supabase Show me the face recognition tables and their structure
 ```
 
-### Database Analysis
+**Database Analysis**:
 
 ```
 @supabase What indexes exist on the faces table?
@@ -130,6 +131,20 @@ The MCP configuration file is located at `.cursor/mcp.json` in the project root.
 ```
 @supabase List all database functions related to face recognition
 ```
+
+### Using @postgres (Alternative)
+
+The `@postgres` server provides similar functionality:
+
+```
+@postgres Show all tables
+
+@postgres What columns are in the memory_books table?
+
+@postgres Count memory books by status
+```
+
+**Both servers work identically** - use whichever you prefer!
 
 ## Security Considerations
 
@@ -195,13 +210,38 @@ Then update `.cursor/mcp.json`:
 
 **Issue**: MCP server can't connect to database
 
-**Solutions**:
-1. Verify database credentials are correct
-2. Check network connectivity to Supabase
-3. Ensure your IP is not blocked by Supabase
-4. Test connection with `psql` or `susql` alias:
+**Common Causes & Solutions**:
+
+1. **"Network is unreachable" or IPv6 error**
+   - **Cause**: Trying to connect to direct database host (IPv6 only)
+   - **Solution**: Use connection pooler instead
+   - Correct host: `aws-0-us-east-2.pooler.supabase.com` (IPv4)
+   - Wrong host: `db.[PROJECT-REF].supabase.co` (IPv6 only)
+
+2. **"Wrong password"**
+   - **Cause**: Incorrect database password or username format
+   - **Solution**: 
+     - Get password from Supabase Dashboard → Settings → Database
+     - Username must be: `postgres.[PROJECT-REF]` (not just `postgres`)
+
+3. **"Tenant or user not found"**
+   - **Cause**: Missing project reference in username
+   - **Solution**: Use `postgres.[PROJECT-REF]` format
+
+4. **Test connection manually**:
    ```bash
-   psql "postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres" -c "SELECT 1;"
+   # Test with psql (replace placeholders with your values)
+   psql -h aws-0-us-east-2.pooler.supabase.com \
+        -p 5432 \
+        -U postgres.[PROJECT-REF] \
+        -d postgres \
+        -c "SELECT version();"
+   ```
+
+5. **Check network connectivity**:
+   ```bash
+   # Verify pooler is reachable (should show IPv4 address)
+   ping aws-0-us-east-2.pooler.supabase.com
    ```
 
 ### npx Command Not Found
