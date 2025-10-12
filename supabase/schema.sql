@@ -702,6 +702,34 @@ BEGIN
   END IF;
 END $$; 
 
+-- Add background and photo pool fields to memory_books (safe to rerun)
+DO $$
+BEGIN
+  -- Add background_type column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'background_type'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN background_type text DEFAULT 'white';
+  END IF;
+  
+  -- Add original_photo_pool column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'memory_books' 
+      AND column_name = 'original_photo_pool'
+  ) THEN
+    ALTER TABLE memory_books ADD COLUMN original_photo_pool uuid[] DEFAULT array[]::uuid[];
+  END IF;
+END $$;
+
+-- Add comments for these fields
+COMMENT ON COLUMN memory_books.background_type IS 'Type of background: white, color, ai-generated, image';
+COMMENT ON COLUMN memory_books.original_photo_pool IS 'Original unfiltered set of photos before selection/filtering';
+
 -- Add border fields to themes table (safe to rerun)
 DO $$
 BEGIN
