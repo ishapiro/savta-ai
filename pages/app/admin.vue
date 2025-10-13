@@ -258,6 +258,13 @@
                     placeholder="All Status"
                     class="w-32"
                   />
+                  <Button
+                    icon="pi pi-trash"
+                    label="Trash"
+                    @click="openMemoryBooksTrash"
+                    class="bg-brand-accent hover:bg-brand-accent/80 text-white border-0 px-3 py-2"
+                    title="View trashed memory books"
+                  />
                 </div>
               </div>
 
@@ -273,10 +280,10 @@
                 class="p-datatable-sm text-sm"
                 style="font-size: 0.875rem;"
               >
-                <Column field="title" header="Title" sortable style="min-width: 200px; max-width: 400px;">
+                <Column field="ai_supplemental_prompt" header="Supplemental Prompt" sortable style="min-width: 200px; max-width: 400px;">
                   <template #body="{ data }">
-                    <div class="truncate" :title="data.title">
-                      {{ data.title || 'Untitled' }}
+                    <div class="truncate" :title="data.ai_supplemental_prompt">
+                      {{ data.ai_supplemental_prompt || 'No prompt' }}
                     </div>
                   </template>
                 </Column>
@@ -315,6 +322,12 @@
                         icon="pi pi-eye"
                         class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
                         @click="viewBook(data)"
+                      />
+                      <Button
+                        icon="pi pi-trash"
+                        class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-2 py-1 text-xs"
+                        @click="confirmDeleteBook(data)"
+                        title="Trash"
                       />
                     </div>
                   </template>
@@ -3009,6 +3022,230 @@
         </div>
       </template>
     </Dialog>
+
+    <!-- Delete Memory Book Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showDeleteBookConfirmDialog"
+      modal
+      header="Trash Memory Book"
+      :style="{ width: '30rem' }"
+      class="rounded-lg shadow-2xl"
+    >
+      <div class="py-4">
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+          <p class="text-sm text-yellow-700">
+            Are you sure you want to move the memory book <strong>"{{ bookToDelete?.ai_supplemental_prompt || 'No prompt' }}"</strong> to trash?
+          </p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            @click="cancelDeleteBook"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+          />
+          <Button
+            label="Trash"
+            class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-3 py-1 text-xs"
+            @click="deleteBookConfirmed"
+            :loading="deletingBook"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Memory Books Trash Dialog -->
+    <Dialog
+      v-model:visible="showMemoryBooksTrashDialog"
+      modal
+      header="Memory Books Trash"
+      :style="{ width: '90vw', maxWidth: '1200px' }"
+      class="rounded-lg shadow-2xl"
+    >
+      <div v-if="selectedUser" class="mb-4 p-3 bg-brand-surface-100 rounded-lg">
+        <div class="font-semibold text-brand-primary">
+          Trashed Memory Books for: <span class="text-brand-secondary">{{ selectedUser.email }}</span>
+        </div>
+        <div class="text-sm text-brand-primary/70 mt-1">
+          {{ deletedMemoryBooks.length }} book{{ deletedMemoryBooks.length !== 1 ? 's' : '' }} in trash
+        </div>
+      </div>
+
+      <div v-if="loadingDeletedBooks" class="flex justify-center items-center py-12">
+        <div class="text-center">
+          <i class="pi pi-spin pi-spinner text-3xl mb-4 text-brand-highlight"></i>
+          <p class="text-base text-brand-text-muted">Loading trashed memory books...</p>
+        </div>
+      </div>
+
+      <div v-else-if="deletedMemoryBooks.length > 0">
+        <DataTable
+          :value="deletedMemoryBooks"
+          :paginator="true"
+          :rows="10"
+          :rowsPerPageOptions="[5, 10, 20]"
+          class="p-datatable-sm text-sm"
+        >
+          <Column field="ai_supplemental_prompt" header="Supplemental Prompt" sortable style="min-width: 200px; max-width: 400px;">
+            <template #body="{ data }">
+              <div class="truncate" :title="data.ai_supplemental_prompt">
+                {{ data.ai_supplemental_prompt || 'No prompt' }}
+              </div>
+            </template>
+          </Column>
+
+          <Column field="status" header="Status" sortable>
+            <template #body="{ data }">
+              <Tag
+                :value="getBookStatusText(data.status)"
+                :severity="getBookStatusSeverity(data.status)"
+              />
+            </template>
+          </Column>
+
+          <Column field="deleted_at" header="Deleted" sortable>
+            <template #body="{ data }">
+              <span class="text-sm text-brand-primary/70">{{ formatDate(data.deleted_at) }}</span>
+            </template>
+          </Column>
+
+          <Column header="Actions">
+            <template #body="{ data }">
+              <div class="flex items-center space-x-2">
+                <Button
+                  icon="pi pi-eye"
+                  class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-2 py-1 text-xs"
+                  @click="viewBook(data)"
+                  title="View Details"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  label="Delete"
+                  class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-2 py-1 text-xs"
+                  @click="confirmPermanentDeleteBook(data)"
+                  title="Permanently Delete"
+                />
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+
+      <div v-else class="text-center py-12">
+        <i class="pi pi-trash text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg font-semibold text-brand-primary/70 mb-2">Trash is Empty</h3>
+        <p class="text-sm text-brand-primary/50">No deleted memory books found for this user.</p>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-between items-center gap-3">
+          <Button
+            v-if="deletedMemoryBooks.length > 0"
+            label="Empty Trash"
+            icon="pi pi-trash"
+            @click="confirmEmptyTrash"
+            class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-4 py-2 rounded-lg transition-colors duration-200"
+            title="Permanently delete all trashed books for this user"
+          />
+          <div class="flex gap-2 ml-auto">
+            <Button
+              label="Refresh"
+              icon="pi pi-refresh"
+              @click="loadDeletedMemoryBooks(selectedUser.user_id)"
+              class="bg-blue-500 hover:bg-blue-600 text-white border-0 px-4 py-2 rounded-lg transition-colors duration-200"
+            />
+            <Button
+              label="Close"
+              icon="pi pi-times"
+              @click="showMemoryBooksTrashDialog = false"
+              class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-4 py-2 rounded-lg transition-colors duration-200"
+            />
+          </div>
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Permanent Delete Memory Book Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showPermanentDeleteBookConfirmDialog"
+      modal
+      header="Permanently Delete Memory Book"
+      :style="{ width: '30rem' }"
+      class="rounded-lg shadow-2xl"
+    >
+      <div class="py-4">
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+          <p class="text-sm text-red-700 mb-2">
+            <strong>⚠️ WARNING:</strong> This action cannot be undone!
+          </p>
+          <p class="text-sm text-red-700">
+            Are you sure you want to <strong>permanently delete</strong> the memory book 
+            <strong>"{{ bookToPermanentDelete?.ai_supplemental_prompt || 'No prompt' }}"</strong>?
+          </p>
+        </div>
+        <p class="text-xs text-brand-primary/70">
+          This will remove the book from the database completely.
+        </p>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            @click="cancelPermanentDeleteBook"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+          />
+          <Button
+            label="Permanently Delete"
+            class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-3 py-1 text-xs"
+            @click="permanentDeleteBookConfirmed"
+            :loading="deletingBookPermanently"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Empty Trash Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showEmptyTrashConfirmDialog"
+      modal
+      header="Empty Memory Books Trash"
+      :style="{ width: '30rem' }"
+      class="rounded-lg shadow-2xl"
+    >
+      <div class="py-4">
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+          <p class="text-sm text-red-700 mb-2">
+            <strong>⚠️ WARNING:</strong> This action cannot be undone!
+          </p>
+          <p class="text-sm text-red-700">
+            Are you sure you want to <strong>permanently delete ALL {{ deletedMemoryBooks.length }}</strong> trashed memory books 
+            for user <strong>{{ selectedUser?.email }}</strong>?
+          </p>
+        </div>
+        <p class="text-xs text-brand-primary/70">
+          This will remove all trashed books from the database completely.
+        </p>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            @click="cancelEmptyTrash"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-1 text-xs"
+          />
+          <Button
+            label="Empty Trash"
+            class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-3 py-1 text-xs"
+            @click="emptyTrashConfirmed"
+            :loading="emptyingTrash"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -3184,6 +3421,21 @@ const deletedUsers = ref([])
 const showDeleteUserConfirmDialog = ref(false)
 const userToDelete = ref(null)
 const deletingUser = ref(false)
+
+// Delete memory book variables
+const showDeleteBookConfirmDialog = ref(false)
+const bookToDelete = ref(null)
+const deletingBook = ref(false)
+
+// Memory books trash variables
+const showMemoryBooksTrashDialog = ref(false)
+const deletedMemoryBooks = ref([])
+const loadingDeletedBooks = ref(false)
+const showPermanentDeleteBookConfirmDialog = ref(false)
+const bookToPermanentDelete = ref(null)
+const deletingBookPermanently = ref(false)
+const showEmptyTrashConfirmDialog = ref(false)
+const emptyingTrash = ref(false)
 
 // User management options
 const roleOptions = ref([
@@ -3478,22 +3730,6 @@ onMounted(async () => {
   } catch (error) {
     console.error('[Admin Page] Error loading data:', error)
     // Continue loading even if there's an error
-  }
-  
-  // Display role-based toast after profile is loaded
-  if (userProfile.value) {
-    const role = userProfile.value.role
-    if (role === 'admin' || role === 'editor') {
-      const roleText = role === 'admin' ? 'Administrator' : 'Editor'
-      const severity = role === 'admin' ? 'danger' : 'warning'
-      
-      toast.add({
-        severity: severity,
-        summary: `Welcome, ${roleText}!`,
-        detail: `You have ${role} privileges and can manage themes, review assets, and ${role === 'admin' ? 'manage users' : 'approve content'}.`,
-        life: 10000 // 10 seconds
-      })
-    }
   }
 
   // Check for tab query parameter and set active tab
@@ -5498,6 +5734,260 @@ const deleteUser = async () => {
     })
   } finally {
     deletingUser.value = false
+  }
+}
+
+// Delete Memory Book Functions
+const confirmDeleteBook = (book) => {
+  bookToDelete.value = book
+  showDeleteBookConfirmDialog.value = true
+}
+
+const cancelDeleteBook = () => {
+  showDeleteBookConfirmDialog.value = false
+  bookToDelete.value = null
+}
+
+const deleteBookConfirmed = async () => {
+  if (!bookToDelete.value) return
+
+  deletingBook.value = true
+  try {
+    const config = useRuntimeConfig()
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      config.public.supabaseUrl,
+      config.supabaseServiceRoleKey || config.public.supabaseKey
+    )
+
+    // Soft delete the memory book
+    const { error } = await supabase
+      .from('memory_books')
+      .update({ 
+        deleted: true,
+        deleted_at: new Date().toISOString()
+      })
+      .eq('id', bookToDelete.value.id)
+
+    if (error) {
+      throw new Error(error.message || 'Failed to delete memory book')
+    }
+
+    toast.add({
+      severity: 'success',
+      summary: 'Memory Book Trashed',
+      detail: `Successfully moved "${bookToDelete.value.ai_supplemental_prompt || 'No prompt'}" to trash`,
+      life: 3000
+    })
+
+    // Close dialog and reset
+    showDeleteBookConfirmDialog.value = false
+    bookToDelete.value = null
+
+    // Reload books for the selected user
+    if (selectedUser.value && selectedUser.value.user_id) {
+      await loadUserBooks(selectedUser.value.user_id)
+    }
+
+  } catch (error) {
+    console.error('❌ Delete memory book error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Delete Failed',
+      detail: error.message || 'Failed to delete memory book',
+      life: 5000
+    })
+  } finally {
+    deletingBook.value = false
+  }
+}
+
+// Memory Books Trash Functions
+const openMemoryBooksTrash = async () => {
+  if (!selectedUser.value || !selectedUser.value.user_id) return
+  
+  showMemoryBooksTrashDialog.value = true
+  await loadDeletedMemoryBooks(selectedUser.value.user_id)
+}
+
+const loadDeletedMemoryBooks = async (userId) => {
+  if (!userId) return
+  
+  loadingDeletedBooks.value = true
+  try {
+    const config = useRuntimeConfig()
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      config.public.supabaseUrl,
+      config.supabaseServiceRoleKey || config.public.supabaseKey
+    )
+
+    // Get deleted memory books for the specific user
+    const { data, error } = await supabase
+      .from('memory_books')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('deleted', true)
+      .order('deleted_at', { ascending: false })
+
+    if (error) {
+      throw new Error(error.message || 'Failed to load deleted memory books')
+    }
+
+    deletedMemoryBooks.value = data || []
+    
+  } catch (error) {
+    console.error('❌ Error loading deleted memory books:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Load Failed',
+      detail: error.message || 'Failed to load deleted memory books',
+      life: 5000
+    })
+    deletedMemoryBooks.value = []
+  } finally {
+    loadingDeletedBooks.value = false
+  }
+}
+
+// Permanent delete single book
+const confirmPermanentDeleteBook = (book) => {
+  bookToPermanentDelete.value = book
+  showPermanentDeleteBookConfirmDialog.value = true
+}
+
+const cancelPermanentDeleteBook = () => {
+  showPermanentDeleteBookConfirmDialog.value = false
+  bookToPermanentDelete.value = null
+}
+
+const permanentDeleteBookConfirmed = async () => {
+  if (!bookToPermanentDelete.value) return
+
+  deletingBookPermanently.value = true
+  try {
+    const config = useRuntimeConfig()
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      config.public.supabaseUrl,
+      config.supabaseServiceRoleKey || config.public.supabaseKey
+    )
+
+    // Double-check the book is deleted and belongs to the selected user
+    const bookToDeleteId = bookToPermanentDelete.value.id
+    const userId = selectedUser.value.user_id
+
+    // Verify it's a deleted book for this user
+    const { data: verifyBook, error: verifyError } = await supabase
+      .from('memory_books')
+      .select('id, user_id, deleted')
+      .eq('id', bookToDeleteId)
+      .eq('user_id', userId)
+      .eq('deleted', true)
+      .single()
+
+    if (verifyError || !verifyBook) {
+      throw new Error('Book not found or not marked for deletion')
+    }
+
+    // Permanently delete the memory book
+    const { error } = await supabase
+      .from('memory_books')
+      .delete()
+      .eq('id', bookToDeleteId)
+      .eq('user_id', userId)
+      .eq('deleted', true)
+
+    if (error) {
+      throw new Error(error.message || 'Failed to permanently delete memory book')
+    }
+
+    toast.add({
+      severity: 'success',
+      summary: 'Permanently Deleted',
+      detail: `Successfully deleted "${bookToPermanentDelete.value.ai_supplemental_prompt || 'No prompt'}"`,
+      life: 3000
+    })
+
+    // Close dialog and reset
+    showPermanentDeleteBookConfirmDialog.value = false
+    bookToPermanentDelete.value = null
+
+    // Reload deleted books
+    await loadDeletedMemoryBooks(userId)
+
+  } catch (error) {
+    console.error('❌ Permanent delete memory book error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Delete Failed',
+      detail: error.message || 'Failed to permanently delete memory book',
+      life: 5000
+    })
+  } finally {
+    deletingBookPermanently.value = false
+  }
+}
+
+// Empty trash (delete all trashed books for user)
+const confirmEmptyTrash = () => {
+  showEmptyTrashConfirmDialog.value = true
+}
+
+const cancelEmptyTrash = () => {
+  showEmptyTrashConfirmDialog.value = false
+}
+
+const emptyTrashConfirmed = async () => {
+  if (!selectedUser.value || !selectedUser.value.user_id) return
+
+  emptyingTrash.value = true
+  try {
+    const config = useRuntimeConfig()
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      config.public.supabaseUrl,
+      config.supabaseServiceRoleKey || config.public.supabaseKey
+    )
+
+    const userId = selectedUser.value.user_id
+
+    // Permanently delete ALL deleted memory books for this user
+    const { error } = await supabase
+      .from('memory_books')
+      .delete()
+      .eq('user_id', userId)
+      .eq('deleted', true)
+
+    if (error) {
+      throw new Error(error.message || 'Failed to empty trash')
+    }
+
+    const deletedCount = deletedMemoryBooks.value.length
+
+    toast.add({
+      severity: 'success',
+      summary: 'Trash Emptied',
+      detail: `Successfully deleted ${deletedCount} memory book${deletedCount !== 1 ? 's' : ''} for ${selectedUser.value.email}`,
+      life: 5000
+    })
+
+    // Close dialogs and reset
+    showEmptyTrashConfirmDialog.value = false
+    
+    // Reload deleted books (should be empty now)
+    await loadDeletedMemoryBooks(userId)
+
+  } catch (error) {
+    console.error('❌ Empty trash error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Empty Trash Failed',
+      detail: error.message || 'Failed to empty trash',
+      life: 5000
+    })
+  } finally {
+    emptyingTrash.value = false
   }
 }
 </script>
