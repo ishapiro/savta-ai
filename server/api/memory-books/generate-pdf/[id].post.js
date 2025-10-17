@@ -2463,8 +2463,50 @@ export default defineEventHandler(async (event) => {
           // Convert theme coordinates to PDF coordinates (bottom-origin)
           // Theme editor uses top-origin (Y=0 at top), PDF uses bottom-origin (Y=0 at bottom)
           // Use OUTER box for anchoring so the top-left in the editor equals the top-left of the final drawn box
-          const photoX = cardX + themeX
-          const photoY = cardY + (cardHeightPoints - themeY - outerHeightPt)
+          let photoX = cardX + themeX
+          let photoY = cardY + (cardHeightPoints - themeY - outerHeightPt)
+
+          // Handle rotation positioning: pdf-lib rotates around bottom-left, but CSS rotates around center
+          // We need to adjust the position so the rotated image appears in the same place as the layout editor
+          if (rotationDegrees !== 0) {
+            // The theme editor places the box at (themeX, themeY) and rotates around its center
+            // We need to find where the bottom-left corner should be positioned in PDF coords
+            // so that after pdf-lib rotates around that point, the center ends up in the right place
+            
+            // Calculate the center position in PDF coordinates (where we want the center to end up)
+            const centerX = photoX + outerWidthPt / 2
+            const centerY = photoY + outerHeightPt / 2
+
+            // IMPORTANT: We negate rotationDegrees when passing to degrees() function
+            // So we must use -rotationDegrees in our compensation calculation too
+            const angleRad = (-rotationDegrees * Math.PI) / 180
+
+            // When rotating around bottom-left by angle θ, the center point rotates to:
+            // newCenterX = bottomLeftX + (width/2 * cos(θ) - height/2 * sin(θ))
+            // newCenterY = bottomLeftY + (width/2 * sin(θ) + height/2 * cos(θ))
+            //
+            // We want newCenter to equal our target center, so solve for bottomLeft:
+            // bottomLeftX = centerX - (width/2 * cos(θ) - height/2 * sin(θ))
+            // bottomLeftY = centerY - (width/2 * sin(θ) + height/2 * cos(θ))
+            
+            const offsetX = (outerWidthPt / 2) * Math.cos(angleRad) - (outerHeightPt / 2) * Math.sin(angleRad)
+            const offsetY = (outerWidthPt / 2) * Math.sin(angleRad) + (outerHeightPt / 2) * Math.cos(angleRad)
+
+            // Adjust position to compensate for rotation origin difference
+            photoX = centerX - offsetX
+            photoY = centerY - offsetY
+
+            vlog(`🔄 Photo ${i + 1} ROTATION COMPENSATION:`, {
+              unrotatedPosition: { x: cardX + themeX, y: cardY + (cardHeightPoints - themeY - outerHeightPt) },
+              targetCenter: { x: centerX, y: centerY },
+              rotation: rotationDegrees,
+              angleUsedInCompensation: -rotationDegrees,
+              angleRad: angleRad,
+              offset: { x: offsetX, y: offsetY },
+              adjustedPosition: { x: photoX, y: photoY },
+              explanation: 'Compensating for pdf-lib rotating around bottom-left, using negated angle to match degrees(-rotationDegrees)'
+            })
+          }
           
           vlog(`📐 Photo ${i + 1} FINAL POSITIONING:`, {
             themeCoordinates: { x: themeX / mmToPoints, y: themeY / mmToPoints },
