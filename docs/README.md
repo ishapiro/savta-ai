@@ -143,6 +143,11 @@ Complete documentation for the Savta.ai memory books and cards application.
 - Story text rendering enhancements
 - Typography and layout improvements
 
+#### [`PDF_ROTATION_AND_POSITIONING.md`](./PDF_ROTATION_AND_POSITIONING.md)
+- Rotated image positioning in PDF generation
+- Coordinate system conversions (CSS vs pdf-lib)
+- Mathematical compensation for rotation origin differences
+
 ### Mobile & UI
 
 #### [`MOBILE_PDF_FULLSCREEN_FIX.md`](./MOBILE_PDF_FULLSCREEN_FIX.md)

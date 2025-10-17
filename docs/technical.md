@@ -1241,14 +1241,21 @@ const { distance } = await response.json()
 ### PDF Optimization
 
 **Generation:**
-- pdf-lib for PDF creation
+- pdf-lib v1.17.1 for PDF creation
 - 300 DPI for print quality
 - Convert single-page PDFs to JPG (smaller file size)
+- Coordinate system: Bottom-origin (Y=0 at bottom)
+- Rotation: Around bottom-left corner (compensated to match CSS center rotation)
 
 **Conversion:**
 - poppler-utils `pdftoppm` for PDF → JPG
 - High-quality output
 - Exact pixel dimensions for print sizes
+
+**Rotation & Positioning:**
+- See [`docs/PDF_ROTATION_AND_POSITIONING.md`](./PDF_ROTATION_AND_POSITIONING.md) for details
+- Mathematical compensation ensures rotated images match theme editor preview
+- Converts between top-origin (CSS) and bottom-origin (PDF) coordinate systems
 
 ### Database Optimization
 

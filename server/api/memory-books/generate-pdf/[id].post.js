@@ -2447,8 +2447,8 @@ export default defineEventHandler(async (event) => {
 
           // The theme editor positions photos at their unrotated top-left corner,
           // then applies CSS transform: rotate() with transform-origin: center center
-          // The PDF library works the same way - it expects the unrotated top-left position
-          // and rotates around the center automatically
+          // The PDF library rotates around the bottom-left corner, so we need to compensate
+          // to make the rotation appear centered like in the theme editor
           const rotationDegrees = photoConfig.rotation || 0
           
           vlog(`🔄 Photo ${i + 1} POSITIONING LOGIC:`, {
@@ -2645,7 +2645,7 @@ export default defineEventHandler(async (event) => {
                 height: photoHeight + (borderPoints * 2) 
               }
               if (rotationDegrees !== 0) {
-                // Add rotation - PDF library handles rotation around center automatically
+                // Add rotation - pdf-lib rotates around bottom-left, position already compensated
                 drawOptions.rotate = degrees(-rotationDegrees)
               }
               page.drawImage(pdfImage, drawOptions)
@@ -2654,7 +2654,7 @@ export default defineEventHandler(async (event) => {
               const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
               const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
               if (rotationDegrees !== 0) {
-                // Add rotation - PDF library handles rotation around center automatically
+                // Add rotation - pdf-lib rotates around bottom-left, position already compensated
                 drawOptions.rotate = degrees(-rotationDegrees)
               }
               page.drawImage(pdfImage, drawOptions)
@@ -2693,7 +2693,7 @@ export default defineEventHandler(async (event) => {
             const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
             const drawOptions = { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt }
             if (rotationDegrees !== 0) {
-              // Add rotation - PDF library handles rotation around center automatically
+              // Add rotation - pdf-lib rotates around bottom-left, position already compensated
               drawOptions.rotate = degrees(-rotationDegrees)
             }
             page.drawImage(pdfImage, drawOptions)
@@ -2719,7 +2719,7 @@ export default defineEventHandler(async (event) => {
             const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
             const drawOptions = { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt }
             if (rotationDegrees !== 0) {
-              // Add rotation - PDF library handles rotation around center automatically
+              // Add rotation - pdf-lib rotates around bottom-left, position already compensated
               drawOptions.rotate = degrees(-rotationDegrees)
             }
             page.drawImage(pdfImage, drawOptions)
