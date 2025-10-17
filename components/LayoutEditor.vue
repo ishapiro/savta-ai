@@ -390,25 +390,81 @@
     </div>
 
     <!-- Photo Properties Dialog -->
-    <div v-if="showPhotoPropertiesDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-lg mx-4 shadow-xl border-2 border-gray-200">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-brand-secondary">Photo Properties</h3>
+    <div v-if="showPhotoPropertiesDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg p-4 w-full max-w-md shadow-xl border-2 border-gray-200 max-h-[85vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold text-brand-secondary">Photo Properties</h3>
           <button
             @click="showPhotoPropertiesDialog = false"
             class="text-gray-500 hover:text-gray-700"
           >
-            <i class="pi pi-times text-xl"></i>
+            <i class="pi pi-times text-lg"></i>
           </button>
         </div>
         
-        <div class="space-y-6">
+        <div class="space-y-4">
+          <!-- Position Controls -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1.5">Position (mm)</label>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">X</label>
+                <InputText
+                  v-model.number="photoPropertiesData.position.x"
+                  type="number"
+                  step="0.1"
+                  class="w-full text-sm p-1.5"
+                  placeholder="X"
+                />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Y</label>
+                <InputText
+                  v-model.number="photoPropertiesData.position.y"
+                  type="number"
+                  step="0.1"
+                  class="w-full text-sm p-1.5"
+                  placeholder="Y"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Size Controls -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1.5">Size (mm)</label>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Width</label>
+                <InputText
+                  v-model.number="photoPropertiesData.size.width"
+                  type="number"
+                  step="0.1"
+                  min="1"
+                  class="w-full text-sm p-1.5"
+                  placeholder="Width"
+                />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Height</label>
+                <InputText
+                  v-model.number="photoPropertiesData.size.height"
+                  type="number"
+                  step="0.1"
+                  min="1"
+                  class="w-full text-sm p-1.5"
+                  placeholder="Height"
+                />
+              </div>
+            </div>
+          </div>
+
           <!-- Rotation Control -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-xs font-medium text-gray-700 mb-1.5">
               Rotation: <strong>{{ photoPropertiesData.rotation }}°</strong>
             </label>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
               <input
                 type="range"
                 v-model.number="photoPropertiesData.rotation"
@@ -422,10 +478,10 @@
                 type="number"
                 min="-180"
                 max="180"
-                class="w-20 text-center"
+                class="w-16 text-center text-sm p-1.5"
               />
             </div>
-            <div class="flex justify-between text-xs text-gray-500 mt-1">
+            <div class="flex justify-between text-xs text-gray-500 mt-0.5">
               <span>-180°</span>
               <span>0°</span>
               <span>180°</span>
@@ -434,11 +490,11 @@
 
           <!-- Frame Selection -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Frame</label>
+            <label class="block text-xs font-medium text-gray-700 mb-1.5">Frame</label>
             <select
               v-model="photoPropertiesData.selectedFrameIndex"
               @change="onFrameChange"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option v-for="(frame, index) in availableFrames" :key="index" :value="index">
                 {{ frame.label }}
@@ -446,27 +502,27 @@
             </select>
             
             <!-- Frame Preview Info -->
-            <div v-if="photoPropertiesData.frame" class="mt-3 p-3 bg-gray-50 rounded border border-gray-200 text-xs">
-              <div class="font-semibold text-gray-700 mb-2">Frame Details:</div>
-              <div class="space-y-1 text-gray-600">
-                <div>Image: <span class="font-mono">{{ photoPropertiesData.frame.imageUrl }}</span></div>
-                <div>Fit Mode: <strong>{{ photoPropertiesData.frame.fitMode }}</strong></div>
-                <div>Padding: Top {{ photoPropertiesData.frame.padding.top }}mm, Right {{ photoPropertiesData.frame.padding.right }}mm, Bottom {{ photoPropertiesData.frame.padding.bottom }}mm, Left {{ photoPropertiesData.frame.padding.left }}mm</div>
+            <div v-if="photoPropertiesData.frame" class="mt-2 p-2 bg-gray-50 rounded border border-gray-200 text-xs">
+              <div class="font-semibold text-gray-700 mb-1">Frame Details:</div>
+              <div class="space-y-0.5 text-gray-600">
+                <div class="truncate">Image: <span class="font-mono text-xs">{{ photoPropertiesData.frame.imageUrl }}</span></div>
+                <div>Fit: <strong>{{ photoPropertiesData.frame.fitMode }}</strong></div>
+                <div>Padding: T{{ photoPropertiesData.frame.padding.top }}mm R{{ photoPropertiesData.frame.padding.right }}mm B{{ photoPropertiesData.frame.padding.bottom }}mm L{{ photoPropertiesData.frame.padding.left }}mm</div>
               </div>
             </div>
           </div>
         </div>
         
-        <div class="mt-6 flex justify-end gap-3">
+        <div class="mt-4 flex justify-end gap-2">
           <button
             @click="showPhotoPropertiesDialog = false"
-            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+            class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
           >
             Cancel
           </button>
           <button
             @click="applyPhotoProperties"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
           >
             Apply
           </button>
@@ -705,7 +761,9 @@ const showPhotoPropertiesDialog = ref(false)
 const photoPropertiesData = ref({
   id: null,
   rotation: 0,
-  frame: null
+  frame: null,
+  position: { x: 0, y: 0 },
+  size: { width: 0, height: 0 }
 })
 
 // Available frame options
@@ -1047,7 +1105,7 @@ async function saveEditedDefaults() {
   try {
     const layouts = await loadDefaultLayouts()
     
-    // Create a clean copy of the current layout data with mm units
+    // Create a clean copy of the current layout data with mm units (truncated to whole integers)
     const layoutToSave = {
       name: layoutData.name,
       units: {
@@ -1055,10 +1113,47 @@ async function saveEditedDefaults() {
         size: 'mm',
         fontSize: 'pt'
       },
-      cardWidthMm: layoutData.cardWidthMm,
-      cardHeightMm: layoutData.cardHeightMm,
-      story: layoutData.story ? { ...layoutData.story } : null,
-      photos: layoutData.photos.map(photo => ({ ...photo }))
+      cardWidthMm: Math.round(layoutData.cardWidthMm),
+      cardHeightMm: Math.round(layoutData.cardHeightMm),
+      story: layoutData.story ? {
+        position: {
+          x: Math.round(layoutData.story.position.x),
+          y: Math.round(layoutData.story.position.y)
+        },
+        size: {
+          width: Math.round(layoutData.story.size.width),
+          height: Math.round(layoutData.story.size.height)
+        },
+        fontSizePt: Math.round(layoutData.story.fontSizePt || 12)
+      } : null,
+      photos: layoutData.photos.map(photo => {
+        const photoData = {
+          id: photo.id,
+          position: {
+            x: Math.round(photo.position.x),
+            y: Math.round(photo.position.y)
+          },
+          size: {
+            width: Math.round(photo.size.width),
+            height: Math.round(photo.size.height)
+          },
+          borderRadius: Math.round(photo.borderRadius || 0),
+          rotation: Math.round(photo.rotation || 0),
+          frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
+        }
+        
+        // Truncate frame padding values if frame exists
+        if (photoData.frame && photoData.frame.padding) {
+          photoData.frame.padding = {
+            top: Math.round(photoData.frame.padding.top || 0),
+            right: Math.round(photoData.frame.padding.right || 0),
+            bottom: Math.round(photoData.frame.padding.bottom || 0),
+            left: Math.round(photoData.frame.padding.left || 0)
+          }
+        }
+        
+        return photoData
+      })
     }
     
     // Update the layout for current size
@@ -2047,36 +2142,51 @@ function saveLayout() {
     fontSize: 'pt'
   }
 
-  // Add card dimensions in mm
-  jsonLayout.cardWidthMm = layoutData.cardWidthMm
-  jsonLayout.cardHeightMm = layoutData.cardHeightMm
+  // Add card dimensions in mm (truncated to whole integers)
+  jsonLayout.cardWidthMm = Math.round(layoutData.cardWidthMm)
+  jsonLayout.cardHeightMm = Math.round(layoutData.cardHeightMm)
 
   if (jsonLayout.story) {
-    // Story position and size are already in mm
+    // Story position and size are already in mm (truncated to whole integers)
     jsonLayout.story.position = {
-      x: layoutData.story.position.x,
-      y: layoutData.story.position.y
+      x: Math.round(layoutData.story.position.x),
+      y: Math.round(layoutData.story.position.y)
     }
     jsonLayout.story.size = {
-      width: layoutData.story.size.width,
-      height: layoutData.story.size.height
+      width: Math.round(layoutData.story.size.width),
+      height: Math.round(layoutData.story.size.height)
     }
+    jsonLayout.story.fontSizePt = Math.round(layoutData.story.fontSizePt || 12)
   }
 
-  jsonLayout.photos = layoutData.photos.map(photo => ({
-    ...photo,
-    position: {
-      x: photo.position.x,
-      y: photo.position.y
-    },
-    size: {
-      width: photo.size.width,
-      height: photo.size.height
-    },
-    borderRadius: photo.borderRadius,
-    rotation: photo.rotation || 0,
-    frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
-  }))
+  jsonLayout.photos = layoutData.photos.map(photo => {
+    const photoData = {
+      ...photo,
+      position: {
+        x: Math.round(photo.position.x),
+        y: Math.round(photo.position.y)
+      },
+      size: {
+        width: Math.round(photo.size.width),
+        height: Math.round(photo.size.height)
+      },
+      borderRadius: Math.round(photo.borderRadius),
+      rotation: Math.round(photo.rotation || 0),
+      frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
+    }
+    
+    // Truncate frame padding values if frame exists
+    if (photoData.frame && photoData.frame.padding) {
+      photoData.frame.padding = {
+        top: Math.round(photoData.frame.padding.top || 0),
+        right: Math.round(photoData.frame.padding.right || 0),
+        bottom: Math.round(photoData.frame.padding.bottom || 0),
+        left: Math.round(photoData.frame.padding.left || 0)
+      }
+    }
+    
+    return photoData
+  })
 
   delete jsonLayout.canvasSize
   emit('save', jsonLayout)
@@ -2164,21 +2274,47 @@ function openJsonDialog() {
     const jsonLayout = {
       name: `Layout for ${props.size}`,
       units: { position: 'mm', size: 'mm', fontSize: 'pt' },
-      cardWidthMm: layoutData.cardWidthMm,
-      cardHeightMm: layoutData.cardHeightMm,
+      cardWidthMm: Math.round(layoutData.cardWidthMm),
+      cardHeightMm: Math.round(layoutData.cardHeightMm),
       story: layoutData.story ? {
-        position: { ...layoutData.story.position },
-        size: { ...layoutData.story.size },
-        fontSizePt: layoutData.story.fontSizePt || 12
+        position: { 
+          x: Math.round(layoutData.story.position.x),
+          y: Math.round(layoutData.story.position.y)
+        },
+        size: { 
+          width: Math.round(layoutData.story.size.width),
+          height: Math.round(layoutData.story.size.height)
+        },
+        fontSizePt: Math.round(layoutData.story.fontSizePt || 12)
       } : null,
-      photos: layoutData.photos.map(photo => ({
-        id: photo.id,
-        position: { ...photo.position },
-        size: { ...photo.size },
-        borderRadius: photo.borderRadius || 0,
-        rotation: photo.rotation || 0,
-        frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
-      }))
+      photos: layoutData.photos.map(photo => {
+        const photoData = {
+          id: photo.id,
+          position: { 
+            x: Math.round(photo.position.x),
+            y: Math.round(photo.position.y)
+          },
+          size: { 
+            width: Math.round(photo.size.width),
+            height: Math.round(photo.size.height)
+          },
+          borderRadius: Math.round(photo.borderRadius || 0),
+          rotation: Math.round(photo.rotation || 0),
+          frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
+        }
+        
+        // Truncate frame padding values if frame exists
+        if (photoData.frame && photoData.frame.padding) {
+          photoData.frame.padding = {
+            top: Math.round(photoData.frame.padding.top || 0),
+            right: Math.round(photoData.frame.padding.right || 0),
+            bottom: Math.round(photoData.frame.padding.bottom || 0),
+            left: Math.round(photoData.frame.padding.left || 0)
+          }
+        }
+        
+        return photoData
+      })
     }
     
     // Populate the editable content
@@ -2200,21 +2336,47 @@ function getCurrentLayoutJson() {
     const jsonLayout = {
       name: `Layout for ${props.size}`,
       units: { position: 'mm', size: 'mm', fontSize: 'pt' },
-      cardWidthMm: layoutData.cardWidthMm,
-      cardHeightMm: layoutData.cardHeightMm,
+      cardWidthMm: Math.round(layoutData.cardWidthMm),
+      cardHeightMm: Math.round(layoutData.cardHeightMm),
       story: layoutData.story ? {
-        position: { ...layoutData.story.position },
-        size: { ...layoutData.story.size },
-        fontSizePt: layoutData.story.fontSizePt || 12
+        position: { 
+          x: Math.round(layoutData.story.position.x),
+          y: Math.round(layoutData.story.position.y)
+        },
+        size: { 
+          width: Math.round(layoutData.story.size.width),
+          height: Math.round(layoutData.story.size.height)
+        },
+        fontSizePt: Math.round(layoutData.story.fontSizePt || 12)
       } : null,
-      photos: layoutData.photos.map(photo => ({
-        id: photo.id,
-        position: { ...photo.position },
-        size: { ...photo.size },
-        borderRadius: photo.borderRadius || 0,
-        rotation: photo.rotation || 0,
-        frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
-      }))
+      photos: layoutData.photos.map(photo => {
+        const photoData = {
+          id: photo.id,
+          position: { 
+            x: Math.round(photo.position.x),
+            y: Math.round(photo.position.y)
+          },
+          size: { 
+            width: Math.round(photo.size.width),
+            height: Math.round(photo.size.height)
+          },
+          borderRadius: Math.round(photo.borderRadius || 0),
+          rotation: Math.round(photo.rotation || 0),
+          frame: photo.frame ? JSON.parse(JSON.stringify(photo.frame)) : null
+        }
+        
+        // Truncate frame padding values if frame exists
+        if (photoData.frame && photoData.frame.padding) {
+          photoData.frame.padding = {
+            top: Math.round(photoData.frame.padding.top || 0),
+            right: Math.round(photoData.frame.padding.right || 0),
+            bottom: Math.round(photoData.frame.padding.bottom || 0),
+            left: Math.round(photoData.frame.padding.left || 0)
+          }
+        }
+        
+        return photoData
+      })
     }
     
     // Populate the editable content when getting JSON
@@ -2432,7 +2594,9 @@ function openPhotoProperties(photoId, event) {
     id: photoId,
     rotation: photo.rotation || 0,
     frame: photo.frame ? { ...photo.frame } : null,
-    selectedFrameIndex: selectedFrameIndex
+    selectedFrameIndex: selectedFrameIndex,
+    position: { x: photo.position.x, y: photo.position.y },
+    size: { width: photo.size.width, height: photo.size.height }
   }
   
   showPhotoPropertiesDialog.value = true
@@ -2457,6 +2621,14 @@ function applyPhotoProperties() {
   // Apply rotation
   photo.rotation = photoPropertiesData.value.rotation
   
+  // Apply position
+  photo.position.x = parseFloat(photoPropertiesData.value.position.x)
+  photo.position.y = parseFloat(photoPropertiesData.value.position.y)
+  
+  // Apply size
+  photo.size.width = parseFloat(photoPropertiesData.value.size.width)
+  photo.size.height = parseFloat(photoPropertiesData.value.size.height)
+  
   // Apply frame
   if (photoPropertiesData.value.frame) {
     photo.frame = JSON.parse(JSON.stringify(photoPropertiesData.value.frame))
@@ -2465,7 +2637,12 @@ function applyPhotoProperties() {
   }
   
   showPhotoPropertiesDialog.value = false
-  console.log('[PHOTO PROPERTIES] Applied to photo:', photoId, { rotation: photo.rotation, frame: photo.frame })
+  console.log('[PHOTO PROPERTIES] Applied to photo:', photoId, { 
+    rotation: photo.rotation, 
+    position: photo.position, 
+    size: photo.size, 
+    frame: photo.frame 
+  })
 }
 
 // Function to get frame label for display
