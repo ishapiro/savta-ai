@@ -347,19 +347,9 @@ export const useMemoryStudio = () => {
       }
     }, { immediate: true })
 
-    // Watch for changes in paginated cards and load their thumbnails
-    watch(paginatedMemoryCards, async (newCards) => {
-      if (newCards && newCards.length > 0) {
-        await loadVisibleThumbnails(newCards)
-      }
-    }, { immediate: true })
-
-    // Watch for changes in paginated books and load their thumbnails
-    watch(paginatedMemoryBooks, async (newBooks) => {
-      if (newBooks && newBooks.length > 0) {
-        await loadVisibleThumbnails(newBooks)
-      }
-    }, { immediate: true })
+    // Note: Thumbnail loading removed from automatic watchers for performance
+    // Thumbnails are now loaded on-demand when user clicks "details" button
+    // This significantly improves initial page load time
   }
 
   return {
