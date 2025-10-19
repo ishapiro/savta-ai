@@ -8,6 +8,46 @@ This document describes the optimistic UI update pattern implemented for the Mem
 
 October 19, 2025
 
+## Critical Fix: Global State (Same Day)
+
+**Issue**: Initial implementation had `memoryBooks` as a local ref inside the composable function, causing each call to `useMemoryStudio()` to create a new instance. This meant the page component and `useMemoryBookOperations` were using different refs, so UI updates weren't reflected.
+
+**Solution**: Moved all state refs to module-level (global scope) so all components share the same reactive state:
+
+```javascript
+// Global state - shared across all instances of useMemoryStudio
+const memoryBooks = ref([])
+const loadingMemoryBooks = ref(true)
+const assetThumbnails = ref({})
+// ... etc
+```
+
+This is the standard pattern for shared state in Vue 3 composables.
+
+**Additional Fix**: Added watcher initialization guard to prevent multiple watchers:
+
+```javascript
+// Flag to ensure watchers are only set up once
+let watchersInitialized = false
+
+export const useMemoryStudio = () => {
+  // ... composable code ...
+  
+  // Set up watchers only once (since state is global)
+  if (!watchersInitialized) {
+    watchersInitialized = true
+    
+    watch(user, (newUser) => {
+      if (newUser?.id) {
+        loadMemoryBooks()
+      }
+    }, { immediate: true })
+  }
+}
+```
+
+This prevents the page from hanging due to multiple watcher instances trying to load data simultaneously.
+
 ## Problem Statement
 
 Previously, when a user deleted a memory book or card, the page would:

@@ -2,25 +2,28 @@ import { ref, computed, watch } from 'vue'
 import { useDatabase } from './useDatabase'
 import { useSupabaseUser } from './useSupabase'
 
+// Global state - shared across all instances of useMemoryStudio
+const memoryBooks = ref([])
+const loadingMemoryBooks = ref(true)
+const assetThumbnails = ref({})
+const hasAssets = ref(false)
+const approvedAssetsCount = ref(0)
+const loadingAssets = ref(false)
+
+// Pagination for memory cards
+const currentCardsPage = ref(1)
+const cardsPerPage = ref(12)
+
+// Pagination for memory books
+const currentBooksPage = ref(1)
+const booksPerPage = ref(12)
+
+// Flag to ensure watchers are only set up once
+let watchersInitialized = false
+
 export const useMemoryStudio = () => {
   const { memoryBooks: dbMemoryBooks, assets: dbAssets } = useDatabase()
   const user = useSupabaseUser()
-
-  // State
-  const memoryBooks = ref([])
-  const loadingMemoryBooks = ref(true)
-  const assetThumbnails = ref({})
-  const hasAssets = ref(false)
-  const approvedAssetsCount = ref(0)
-  const loadingAssets = ref(false)
-
-  // Pagination for memory cards
-  const currentCardsPage = ref(1)
-  const cardsPerPage = ref(12)
-
-  // Pagination for memory books
-  const currentBooksPage = ref(1)
-  const booksPerPage = ref(12)
 
   // Computed properties
   const memoryCards = computed(() => {
@@ -332,26 +335,32 @@ export const useMemoryStudio = () => {
     return book.output === 'JPG' ? 'text-brand-accent' : 'text-brand-primary'
   }
 
-  // Watch for user changes to load memory books
-  watch(user, (newUser) => {
-    if (newUser?.id) {
-      loadMemoryBooks()
-    }
-  }, { immediate: true })
+  // Set up watchers only once (since state is global)
+  if (!watchersInitialized) {
+    watchersInitialized = true
+    
+    // Watch for user changes to load memory books
+    watch(user, (newUser) => {
+      if (newUser?.id) {
+        console.log('📚 [useMemoryStudio] User changed, loading memory books')
+        loadMemoryBooks()
+      }
+    }, { immediate: true })
 
-  // Watch for changes in paginated cards and load their thumbnails
-  watch(paginatedMemoryCards, async (newCards) => {
-    if (newCards && newCards.length > 0) {
-      await loadVisibleThumbnails(newCards)
-    }
-  }, { immediate: true })
+    // Watch for changes in paginated cards and load their thumbnails
+    watch(paginatedMemoryCards, async (newCards) => {
+      if (newCards && newCards.length > 0) {
+        await loadVisibleThumbnails(newCards)
+      }
+    }, { immediate: true })
 
-  // Watch for changes in paginated books and load their thumbnails
-  watch(paginatedMemoryBooks, async (newBooks) => {
-    if (newBooks && newBooks.length > 0) {
-      await loadVisibleThumbnails(newBooks)
-    }
-  }, { immediate: true })
+    // Watch for changes in paginated books and load their thumbnails
+    watch(paginatedMemoryBooks, async (newBooks) => {
+      if (newBooks && newBooks.length > 0) {
+        await loadVisibleThumbnails(newBooks)
+      }
+    }, { immediate: true })
+  }
 
   return {
     // State
