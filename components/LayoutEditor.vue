@@ -2189,6 +2189,15 @@ function saveLayout() {
   })
 
   delete jsonLayout.canvasSize
+  
+  // Log frame data for debugging
+  console.log('[SAVE LAYOUT] Saving layout with photos:', jsonLayout.photos.map(p => ({
+    id: p.id,
+    hasFrame: !!p.frame,
+    frameUrl: p.frame?.imageUrl,
+    framePadding: p.frame?.padding
+  })))
+  
   emit('save', jsonLayout)
 }
 

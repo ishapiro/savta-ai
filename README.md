@@ -857,6 +857,91 @@ This script will:
 - Clear npm cache
 - Reinstall dependencies
 
+### Restart Development Server
+
+The project includes convenient scripts to stop all running dev processes and start fresh:
+
+#### **Quick Restart Scripts**
+
+Two restart scripts are available in the project root:
+
+1. **`restart-dev.sh`** (Recommended)
+   - Safe restart that targets only dev-related processes
+   - Clears common dev ports (3000, 3001, 24678, 8080, 5173)
+   - Cleans up lock files and caches
+   - Starts fresh `npm run dev`
+
+2. **`force-restart-dev.sh`** (Nuclear Option)
+   - Aggressively kills ALL node processes on your system
+   - Use when processes are really stuck
+   - ⚠️ Warning: Will kill all Node.js applications running
+
+#### **Usage**
+
+```bash
+# From project directory
+./restart-dev.sh
+
+# Or for force restart
+./force-restart-dev.sh
+```
+
+#### **Setting Up Shell Aliases (Optional)**
+
+For convenient access from anywhere, add aliases to your shell profile:
+
+**For Bash users** - Add to `~/.bashrc`:
+```bash
+# Savta.ai development aliases
+alias restart-dev='cd ~/drvax_code/savta-ai && ./restart-dev.sh'
+alias force-restart='cd ~/drvax_code/savta-ai && ./force-restart-dev.sh'
+```
+
+**For Zsh users** - Add to `~/.zshrc`:
+```bash
+# Savta.ai development aliases
+alias restart-dev='cd ~/drvax_code/savta-ai && ./restart-dev.sh'
+alias force-restart='cd ~/drvax_code/savta-ai && ./force-restart-dev.sh'
+```
+
+**Activate the aliases**:
+```bash
+# For Bash
+source ~/.bashrc
+
+# For Zsh
+source ~/.zshrc
+```
+
+**Then use from anywhere**:
+```bash
+# Quick restart from any directory
+restart-dev
+
+# Force restart if needed
+force-restart
+```
+
+#### **What the Scripts Do**
+
+**restart-dev.sh**:
+- ✅ Kills `npm run dev` processes
+- ✅ Kills node dev-related processes
+- ✅ Clears ports: 3000, 3001, 24678, 8080, 5173
+- ✅ Removes `.nuxt/.lock` and cache files
+- ✅ Starts fresh `npm run dev`
+
+**force-restart-dev.sh**:
+- ⚠️ Kills ALL node processes (use with caution)
+- ⚠️ Kills ALL npm processes
+- ✅ Thorough cleanup of all node-related port listeners
+- ✅ Cleans up `.nuxt`, `.output`, and cache directories
+- ✅ Starts fresh `npm run dev`
+
+**When to use each**:
+- Use `restart-dev` for normal development restarts (95% of the time)
+- Use `force-restart` only when processes are stuck and `restart-dev` doesn't work
+
 ## 🚀 Deployment
 
 ### Railway.com Deployment

@@ -167,6 +167,87 @@ async function saveAndUploadFile(pdfDoc, book, user, supabase, config, printSize
   return publicUrl
 }
 
+// Frame cache: { 'frameUrl_widthxheight': pngBuffer }
+const frameCache = new Map()
+
+/**
+ * Process frame for PDF using 4-layer approach
+ * Converts SVG frame to PNG at full placeholder size (no transparent center)
+ * The image will be drawn separately at a reduced size to fit inside the frame
+ * 
+ * Layer order:
+ *   1. Background (page background)
+ *   2. Border (photo border if specified)
+ *   3. Frame (this function - full placeholder size)
+ *   4. Image (drawn separately - reduced size to fit inside frame padding)
+ * 
+ * @param {string} frameUrl - Path to frame SVG (e.g., '/frames/polaroid-white.svg')
+ * @param {number} widthPt - Frame width in PDF points (full placeholder width)
+ * @param {number} heightPt - Frame height in PDF points (full placeholder height)
+ * @returns {Promise<Buffer>} PNG buffer at full size (no transparent center)
+ */
+async function processFrame(frameUrl, widthPt, heightPt) {
+  // Create cache key
+  const cacheKey = `${frameUrl}_${Math.round(widthPt)}x${Math.round(heightPt)}`
+  
+  console.log(`🖼️ processFrame called: ${frameUrl}, size: ${Math.round(widthPt)}x${Math.round(heightPt)}pt`)
+  
+  // Check cache first
+  if (frameCache.has(cacheKey)) {
+    console.log(`🖼️ Using CACHED frame: ${cacheKey}`)
+    vlog(`🖼️ Using cached frame: ${cacheKey}`)
+    return frameCache.get(cacheKey)
+  }
+  
+  try {
+    // Validate SVG file exists
+    const fs = await import('fs/promises')
+    const path = await import('path')
+    const framePath = path.join(process.cwd(), 'public', frameUrl.replace(/^\//, ''))
+    
+    try {
+      await fs.access(framePath)
+      console.log(`✅ Frame file found: ${framePath}`)
+    } catch (err) {
+      console.warn(`⚠️ Frame file NOT FOUND: ${framePath}`)
+      vwarn(`⚠️ Frame file not found: ${framePath}`)
+      return null
+    }
+    
+    // Read SVG file
+    const svgBuffer = await fs.readFile(framePath)
+    vlog(`🖼️ Processing frame: ${frameUrl} at ${widthPt}x${heightPt}pt`)
+    
+    // Convert points to pixels at 300 DPI for high-quality rendering
+    const DPI_SCALE = 300 / 72
+    const frameWidthPx = Math.round(widthPt * DPI_SCALE)
+    const frameHeightPx = Math.round(heightPt * DPI_SCALE)
+    
+    vlog(`🖼️ Frame pixel dimensions: ${frameWidthPx}x${frameHeightPx}px`)
+    
+    // Convert SVG to PNG at full placeholder size
+    // No transparent center needed - image will be drawn separately at reduced size
+    const framePng = await sharp(svgBuffer)
+      .resize(frameWidthPx, frameHeightPx, { fit: 'fill' })
+      .png()
+      .toBuffer()
+    
+    vlog(`✅ Frame processed at full size (4-layer approach - image will be drawn on top)`)
+    console.log(`✅ Frame PNG created at full size: ${frameWidthPx}x${frameHeightPx}px`)
+    
+    // Cache the result
+    frameCache.set(cacheKey, framePng)
+    console.log(`💾 Frame CACHED: ${cacheKey}`)
+    vlog(`💾 Cached frame: ${cacheKey}`)
+    
+    return framePng
+  } catch (err) {
+    console.error(`❌ ERROR processing frame for ${frameUrl}:`, err.message)
+    vwarn(`❌ Error processing frame for ${frameUrl}:`, err.message)
+    return null
+  }
+}
+
 export default defineEventHandler(async (event) => {
   try {
     const config = useRuntimeConfig()
@@ -2082,7 +2163,13 @@ export default defineEventHandler(async (event) => {
         ? JSON.parse(theme.layout_config) 
         : theme.layout_config
 
+      console.log('🔍 DEBUG - Raw theme.layout_config type:', typeof theme.layout_config)
       console.log('🔍 DEBUG - Layout config:', JSON.stringify(layoutConfig, null, 2))
+      console.log('🔍 DEBUG - Layout config photos with frames:', layoutConfig?.photos?.map((p, i) => ({
+        photoIndex: i,
+        hasFrame: !!p.frame,
+        frameData: p.frame
+      })))
       console.log('🔍 DEBUG - Layout config type:', typeof layoutConfig)
       console.log('🔍 DEBUG - Layout config keys:', layoutConfig ? Object.keys(layoutConfig) : 'null')
 
@@ -2399,17 +2486,19 @@ export default defineEventHandler(async (event) => {
       
       // Match assets to positions based on aspect ratio similarity
       const matchedAssets = []
+      const matchedConfigs = []
       for (let i = 0; i < Math.min(assetAspectRatios.length, positionAspectRatios.length); i++) {
         const position = positionAspectRatios[i]
         const asset = assetAspectRatios[i]
         matchedAssets[position.index] = asset.asset
+        matchedConfigs[position.index] = position.config  // Use the config from the position, not the original order!
         console.log(`🎯 Matched asset ${asset.asset.id} (${asset.aspectRatio.toFixed(3)}) to position ${position.index} (${position.aspectRatio.toFixed(3)})`)
       }
       
       // Process each photo according to layout_config with matched assets
       for (let i = 0; i < Math.min(matchedAssets.length, photoCount); i++) {
         const asset = matchedAssets[i]
-        const photoConfig = layoutConfig.photos[i]
+        const photoConfig = matchedConfigs[i]  // Use matched config instead of layoutConfig.photos[i]
         if (!asset || !photoConfig || !photoConfig.position || !photoConfig.size) continue
         try {
           const imageRes = await fetch(asset.storage_url)
@@ -2424,11 +2513,16 @@ export default defineEventHandler(async (event) => {
               console.warn('⚠️ Failed to auto-enhance image for asset', asset.id, enhanceErr)
             }
           }
-          // Inner content (photo) size in points
-          const photoWidth = photoConfig.size.width * mmToPoints
-          const photoHeight = photoConfig.size.height * mmToPoints
+          // Placeholder size in points (full size allocated for this photo in the layout)
+          const placeholderWidth = photoConfig.size.width * mmToPoints
+          const placeholderHeight = photoConfig.size.height * mmToPoints
 
           // Frame padding handling (in points and pixels)
+          // 4-LAYER APPROACH: Frame padding defines how much smaller the image should be
+          // Layer 1: Background (page background)
+          // Layer 2: Border (if photoBorder > 0)
+          // Layer 3: Frame (drawn at full placeholder size)
+          // Layer 4: Image (drawn at reduced size: placeholder - padding)
           let paddingTopPt = 0, paddingRightPt = 0, paddingBottomPt = 0, paddingLeftPt = 0
           if (photoConfig.frame && photoConfig.frame.padding) {
             paddingTopPt = (photoConfig.frame.padding.top || 0) * mmToPoints
@@ -2437,9 +2531,9 @@ export default defineEventHandler(async (event) => {
             paddingLeftPt = (photoConfig.frame.padding.left || 0) * mmToPoints
           }
 
-          // Outer (frame-included) box size in points
-          const outerWidthPt = photoWidth + paddingLeftPt + paddingRightPt
-          const outerHeightPt = photoHeight + paddingTopPt + paddingBottomPt
+          // Calculate inner image dimensions (image is reduced by frame padding)
+          const imageWidth = placeholderWidth - paddingLeftPt - paddingRightPt
+          const imageHeight = placeholderHeight - paddingTopPt - paddingBottomPt
 
           // Calculate base position in theme editor coordinates (top-origin)
           let themeX = photoConfig.position.x * mmToPoints
@@ -2454,7 +2548,7 @@ export default defineEventHandler(async (event) => {
           vlog(`🔄 Photo ${i + 1} POSITIONING LOGIC:`, {
             originalPosition: { x: photoConfig.position.x, y: photoConfig.position.y },
             rotation: rotationDegrees,
-            photoSize: { width: photoConfig.size.width, height: photoConfig.size.height },
+            placeholderSize: { width: photoConfig.size.width, height: photoConfig.size.height },
             themeX: themeX,
             themeY: themeY,
             explanation: 'Using unrotated top-left position - PDF library will rotate around center'
@@ -2462,20 +2556,24 @@ export default defineEventHandler(async (event) => {
 
           // Convert theme coordinates to PDF coordinates (bottom-origin)
           // Theme editor uses top-origin (Y=0 at top), PDF uses bottom-origin (Y=0 at bottom)
-          // Use OUTER box for anchoring so the top-left in the editor equals the top-left of the final drawn box
-          let photoX = cardX + themeX
-          let photoY = cardY + (cardHeightPoints - themeY - outerHeightPt)
+          // Placeholder position (where frame and border will be drawn)
+          let placeholderX = cardX + themeX
+          let placeholderY = cardY + (cardHeightPoints - themeY - placeholderHeight)
+          
+          // Image position (offset by frame padding to fit inside frame)
+          let imageX = placeholderX + paddingLeftPt
+          let imageY = placeholderY + paddingBottomPt
 
           // Handle rotation positioning: pdf-lib rotates around bottom-left, but CSS rotates around center
-          // We need to adjust the position so the rotated image appears in the same place as the layout editor
+          // We need to adjust the position so the rotated placeholder appears in the same place as the layout editor
           if (rotationDegrees !== 0) {
             // The theme editor places the box at (themeX, themeY) and rotates around its center
             // We need to find where the bottom-left corner should be positioned in PDF coords
             // so that after pdf-lib rotates around that point, the center ends up in the right place
             
             // Calculate the center position in PDF coordinates (where we want the center to end up)
-            const centerX = photoX + outerWidthPt / 2
-            const centerY = photoY + outerHeightPt / 2
+            const centerX = placeholderX + placeholderWidth / 2
+            const centerY = placeholderY + placeholderHeight / 2
 
             // IMPORTANT: We negate rotationDegrees when passing to degrees() function
             // So we must use -rotationDegrees in our compensation calculation too
@@ -2489,49 +2587,52 @@ export default defineEventHandler(async (event) => {
             // bottomLeftX = centerX - (width/2 * cos(θ) - height/2 * sin(θ))
             // bottomLeftY = centerY - (width/2 * sin(θ) + height/2 * cos(θ))
             
-            const offsetX = (outerWidthPt / 2) * Math.cos(angleRad) - (outerHeightPt / 2) * Math.sin(angleRad)
-            const offsetY = (outerWidthPt / 2) * Math.sin(angleRad) + (outerHeightPt / 2) * Math.cos(angleRad)
+            const offsetX = (placeholderWidth / 2) * Math.cos(angleRad) - (placeholderHeight / 2) * Math.sin(angleRad)
+            const offsetY = (placeholderWidth / 2) * Math.sin(angleRad) + (placeholderHeight / 2) * Math.cos(angleRad)
 
             // Adjust position to compensate for rotation origin difference
-            photoX = centerX - offsetX
-            photoY = centerY - offsetY
+            placeholderX = centerX - offsetX
+            placeholderY = centerY - offsetY
+            
+            // Also adjust image position to maintain offset from placeholder
+            imageX = placeholderX + paddingLeftPt
+            imageY = placeholderY + paddingBottomPt
 
             vlog(`🔄 Photo ${i + 1} ROTATION COMPENSATION:`, {
-              unrotatedPosition: { x: cardX + themeX, y: cardY + (cardHeightPoints - themeY - outerHeightPt) },
+              unrotatedPosition: { x: cardX + themeX, y: cardY + (cardHeightPoints - themeY - placeholderHeight) },
               targetCenter: { x: centerX, y: centerY },
               rotation: rotationDegrees,
               angleUsedInCompensation: -rotationDegrees,
               angleRad: angleRad,
               offset: { x: offsetX, y: offsetY },
-              adjustedPosition: { x: photoX, y: photoY },
+              adjustedPlaceholderPosition: { x: placeholderX, y: placeholderY },
+              adjustedImagePosition: { x: imageX, y: imageY },
               explanation: 'Compensating for pdf-lib rotating around bottom-left, using negated angle to match degrees(-rotationDegrees)'
             })
           }
           
-          vlog(`📐 Photo ${i + 1} FINAL POSITIONING:`, {
+          vlog(`📐 Photo ${i + 1} FINAL POSITIONING (4-LAYER):`, {
             themeCoordinates: { x: themeX / mmToPoints, y: themeY / mmToPoints },
-            pdfCoordinates: { x: photoX, y: photoY },
+            placeholderPdfCoordinates: { x: placeholderX, y: placeholderY },
+            imagePdfCoordinates: { x: imageX, y: imageY },
             cardPosition: { x: cardX, y: cardY },
             cardDimensions: { width: cardWidthPoints, height: cardHeightPoints },
-            photoDimensions: { width: photoWidth, height: photoHeight },
+            placeholderDimensions: { width: placeholderWidth, height: placeholderHeight },
+            imageDimensions: { width: imageWidth, height: imageHeight },
             framePaddingPt: { top: paddingTopPt, right: paddingRightPt, bottom: paddingBottomPt, left: paddingLeftPt },
-            outerDimensionsPt: { width: outerWidthPt, height: outerHeightPt },
             rotation: rotationDegrees,
-            xCalculation: `${cardX} + ${themeX} = ${photoX}`,
-            yCalculation: `${cardY} + (${cardHeightPoints} - ${themeY} - ${photoHeight}) = ${photoY}`
+            layerOrder: '1:Background 2:Border 3:Frame 4:Image'
           })
           
-          // Render inner content at 2x pixel density for quality
-          const targetWidth = Math.round(photoWidth * 2)
-          const targetHeight = Math.round(photoHeight * 2)
-          // Convert frame padding points -> pixels for compositing
-          const pointsToPixels = 96 / 72
-          const padTopPx = Math.round(paddingTopPt * pointsToPixels)
-          const padRightPx = Math.round(paddingRightPt * pointsToPixels)
-          const padBottomPx = Math.round(paddingBottomPt * pointsToPixels)
-          const padLeftPx = Math.round(paddingLeftPt * pointsToPixels)
+          // Render image at 2x pixel density for quality
+          // Image size is REDUCED by frame padding to fit inside the frame
+          const targetWidth = Math.round(imageWidth * 2)
+          const targetHeight = Math.round(imageHeight * 2)
+          
           let finalImageBuffer
           vlog(`🔍 Debug: Asset ${i + 1} storage_url:`, asset.storage_url)
+          vlog(`🖼️ Image will be rendered at ${targetWidth}x${targetHeight}px to fit inside frame`)
+          
           try {
             finalImageBuffer = await smartCropImage(imageBuffer, targetWidth, targetHeight, asset.storage_url, i, matchedAssets.length, asset.id, user.id)
           } catch (smartCropError) {
@@ -2541,58 +2642,64 @@ export default defineEventHandler(async (event) => {
               .jpeg({ quality: 100, progressive: true, mozjpeg: true })
               .toBuffer()
           }
-          // Apply photo border and/or rounded corners if specified in theme
+          // =============================================================================
+          // 4-LAYER RENDERING APPROACH
+          // =============================================================================
+          // Layer 1: Background (already drawn as page background)
+          // Layer 2: Border (if photoBorder > 0, drawn as extended image)
+          // Layer 3: Frame (if frame exists, drawn at full placeholder size)
+          // Layer 4: Image (drawn at reduced size to fit inside frame)
+          // =============================================================================
+          
           const photoBorder = theme.photo_border || 0
           // Use photoConfig.borderRadius as percentage when available, otherwise use 15% when theme.rounded is true
           const borderRadius = photoConfig.borderRadius ? 
             (Math.min(targetWidth, targetHeight) * (photoConfig.borderRadius / 100)) : 
             (theme.rounded ? Math.min(targetWidth, targetHeight) * 0.15 : 0)
           
-          // rotationDegrees already declared above
+          console.log(`\n🔍 PHOTO ${i + 1} CONFIG:`, JSON.stringify(photoConfig, null, 2))
+          console.log(`🔍 PHOTO ${i + 1} FRAME:`, photoConfig.frame ? JSON.stringify(photoConfig.frame, null, 2) : 'NO FRAME DATA')
+          console.log(`🎨 4-LAYER APPROACH - Asset ${i + 1}: photoBorder=${photoBorder}, borderRadius=${borderRadius}, rotation=${rotationDegrees}°`)
+          vlog(`🎨 Image dimensions: ${targetWidth}x${targetHeight}px, placeholder: ${placeholderWidth}x${placeholderHeight}pt`)
           
-          vlog(`🎨 Theme photo processing - Asset ${i + 1}: photoBorder=${photoBorder}, borderRadius=${borderRadius}, rotation=${rotationDegrees}°, theme.rounded=${theme.rounded}, photoConfig.borderRadius=${photoConfig.borderRadius}`)
-          vlog(`🎨 Theme photo processing - Target dimensions: ${targetWidth}x${targetHeight}, calculated radius: ${Math.min(targetWidth, targetHeight) * 0.15}`)
-          
-                      if (photoBorder > 0) {
-              vlog(`🎨 Theme photo processing - Applying border with width: ${photoBorder}`)
-              // Ensure border color has # prefix for Sharp
-              let borderColor = theme.body_font_color || '#333333'
-              if (borderColor && !borderColor.startsWith('#')) {
-                borderColor = '#' + borderColor
-              }
-              vlog(`🎨 Theme photo processing - Border color: ${borderColor}`)
-              // Increase border width for better visibility of rounded corners
+          // =============================================================================
+          // 4-LAYER RENDERING: Process and draw each layer in order
+          // =============================================================================
+          try {
+            // Prepare border color and theme background color
+            let borderColor = theme.body_font_color || '#333333'
+            if (borderColor && !borderColor.startsWith('#')) {
+              borderColor = '#' + borderColor
+            }
+            
+            let themeBackgroundColor = '#FFFFFF'
+            if (theme && theme.background_color) {
+              themeBackgroundColor = theme.background_color.startsWith('#') ? 
+                theme.background_color : `#${theme.background_color}`
+            }
+            
+            // Variables for drawing (defined at function scope)
+            let pdfImage
+            let imageDrawX = imageX
+            let imageDrawY = imageY
+            let imageDrawWidth = imageWidth
+            let imageDrawHeight = imageHeight
+            
+            // LAYER 2: Apply photo border and/or rounded corners
+            if (photoBorder > 0) {
+              console.log(`📐 Layer 2: Applying border with width: ${photoBorder}px, color: ${borderColor}`)
               const borderWidth = Math.max(photoBorder, 3) // Minimum 3 pixels for visibility
-              vlog(`🎨 Theme photo processing - Using border width: ${borderWidth} (original: ${photoBorder})`)
-                          try {
-                if (borderRadius > 0) {
-                  vlog(`🎨 Theme photo processing - Applying border radius: ${borderRadius}px`)
-                  // Apply border radius to both image and border
-                  const borderRadiusPixels = Math.round(borderRadius)
-                  // The border background should have radius = image radius + border width
-                  const borderRadiusWithBorder = borderRadiusPixels + borderWidth
-                  vlog(`🎨 Theme photo processing - Border radius pixels: ${borderRadiusPixels}, border background radius: ${borderRadiusWithBorder}`)
+              
+              if (borderRadius > 0) {
+                // Apply border with rounded corners
+                const borderRadiusPixels = Math.round(borderRadius)
+                console.log(`   └─ Rounded border: radius=${borderRadiusPixels}px, width=${borderWidth}px`)
                 
-                // Create background layer with theme color
-                let themeBackgroundColor = '#FFFFFF' // Default to white
-                if (theme.background_color) {
-                  // Ensure the color has # prefix for Sharp compatibility
-                  themeBackgroundColor = theme.background_color.startsWith('#') ? theme.background_color : `#${theme.background_color}`
-                }
-                const themeBackgroundOpacity = theme.background_opacity || 100
-                vlog(`🎨 Theme photo processing - Using theme background: ${themeBackgroundColor} with opacity ${themeBackgroundOpacity}%`)
-                
-                // Create a larger canvas with theme background color and border
-                const borderedWidth = targetWidth + (borderWidth * 2)
-                const borderedHeight = targetHeight + (borderWidth * 2)
-                
-                // Create mask SVG with white fill
                 const maskSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${targetWidth}" height="${targetHeight}">
                   <rect x="0" y="0" width="${targetWidth}" height="${targetHeight}"
                         rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" fill="#ffffff"/>
                 </svg>`
                 
-                // Create border SVG with proper positioning
                 const borderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${targetWidth}" height="${targetHeight}">
                   <rect x="${borderWidth/2}" y="${borderWidth/2}"
                         width="${targetWidth - borderWidth}" height="${targetHeight - borderWidth}"
@@ -2600,129 +2707,121 @@ export default defineEventHandler(async (event) => {
                         fill="none" stroke="${borderColor}" stroke-width="${borderWidth}"/>
                 </svg>`
                 
-                // 1) Ensure the image has an alpha channel (critical!)
                 const withAlpha = await sharp(finalImageBuffer)
-                  .ensureAlpha() // <= guarantees RGBA so the mask can cut corners
-                  .composite([{ input: Buffer.from(maskSvg), blend: 'dest-in' }]) // transparent corners now
-                  .png() // keep alpha while we work
+                  .ensureAlpha()
+                  .composite([{ input: Buffer.from(maskSvg), blend: 'dest-in' }])
+                  .png()
                   .toBuffer()
                 
-                // 2) Bake the background color so later JPG/PDF won't default to black
                 const flattened = await sharp(withAlpha)
-                  .flatten({ background: themeBackgroundColor }) // replaces transparency with your theme color
+                  .flatten({ background: themeBackgroundColor })
                   .toBuffer()
                 
-                // 3) Draw the rounded border on top and export (JPG-safe)
                 finalImageBuffer = await sharp(flattened)
                   .composite([{ input: Buffer.from(borderSvg), blend: 'over' }])
                   .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                   .toBuffer()
-                vlog(`🎨 Theme photo processing - Final image with rounded border created successfully`)
-                              } else {
-                  vlog(`🎨 Theme photo processing - No border radius, using rectangular border`)
-                  // Create border by extending the image with border color (no radius)
-                  const borderedImage = await sharp(finalImageBuffer)
-                    .extend({
-                      top: borderWidth,
-                      bottom: borderWidth,
-                      left: borderWidth,
-                      right: borderWidth,
-                      background: borderColor
-                    })
-                    .jpeg({ quality: 100, progressive: true, mozjpeg: true })
-                    .toBuffer()
-                  finalImageBuffer = borderedImage
-                }
+              } else {
+                // Apply rectangular border
+                console.log(`   └─ Rectangular border: width=${borderWidth}px`)
+                finalImageBuffer = await sharp(finalImageBuffer)
+                  .extend({
+                    top: borderWidth,
+                    bottom: borderWidth,
+                    left: borderWidth,
+                    right: borderWidth,
+                    background: borderColor
+                  })
+                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
+                  .toBuffer()
+              }
               
-              // Adjust drawing dimensions to account for border
-              // Convert pixels to points for PDF drawing (1 point = 1/72 inch, 1 pixel = 1/96 inch)
-              const borderPoints = photoBorder * (72 / 96)
-              const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-              const drawOptions = { 
-                x: photoX - borderPoints, 
-                y: photoY - borderPoints, 
-                width: photoWidth + (borderPoints * 2), 
-                height: photoHeight + (borderPoints * 2) 
-              }
-              if (rotationDegrees !== 0) {
-                // Add rotation - pdf-lib rotates around bottom-left, position already compensated
-                drawOptions.rotate = degrees(-rotationDegrees)
-              }
-              page.drawImage(pdfImage, drawOptions)
-            } catch (borderError) {
-              vwarn('⚠️ Failed to apply photo border:', borderError)
-              const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-              const drawOptions = { x: photoX, y: photoY, width: photoWidth, height: photoHeight }
-              if (rotationDegrees !== 0) {
-                // Add rotation - pdf-lib rotates around bottom-left, position already compensated
-                drawOptions.rotate = degrees(-rotationDegrees)
-              }
-              page.drawImage(pdfImage, drawOptions)
-            }
-          } else if (borderRadius > 0) {
-            vlog(`🎨 Theme photo processing - Applying rounded corners only (no border): ${borderRadius}px`)
-            // Apply rounded corners only (no border)
-            const borderRadiusPixels = Math.round(borderRadius)
-            try {
+              // Border adds extra size - adjust drawing dimensions
+              const borderPoints = photoBorder * (72 / 96) // Convert pixels to points
+              imageDrawWidth = imageWidth + (borderPoints * 2)
+              imageDrawHeight = imageHeight + (borderPoints * 2)
+              imageDrawX = imageX - borderPoints
+              imageDrawY = imageY - borderPoints
+              
+              console.log(`   └─ Image with border: (${Math.round(imageDrawX)}, ${Math.round(imageDrawY)}), size: ${Math.round(imageDrawWidth)}x${Math.round(imageDrawHeight)}pt`)
+            } else if (borderRadius > 0) {
+              // Apply rounded corners only (no border)
+              console.log(`📐 Layer 2: Applying rounded corners (no border), radius=${Math.round(borderRadius)}px`)
+              const borderRadiusPixels = Math.round(borderRadius)
               const roundedSvg = `<svg width="${targetWidth}" height="${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" rx="${borderRadiusPixels}" ry="${borderRadiusPixels}" fill="white"/></svg>`
               finalImageBuffer = await sharp(finalImageBuffer)
                 .composite([{ input: Buffer.from(roundedSvg), blend: 'dest-in' }])
                 .jpeg({ quality: 100, progressive: true, mozjpeg: true })
                 .toBuffer()
-            } catch (roundError) { vwarn('⚠️ Failed to apply rounded corners:', roundError) }
-            // If there is frame padding, extend the image to include the padding so placement uses the OUTER box
-            if (padTopPx || padRightPx || padBottomPx || padLeftPx) {
+              
+              console.log(`   └─ Rounded image: (${Math.round(imageDrawX)}, ${Math.round(imageDrawY)}), size: ${Math.round(imageDrawWidth)}x${Math.round(imageDrawHeight)}pt`)
+            } else {
+              // Plain image (no border or radius)
+              console.log(`📐 Layer 2: Plain image (no border/radius)`)
+              console.log(`   └─ Image: (${Math.round(imageDrawX)}, ${Math.round(imageDrawY)}), size: ${Math.round(imageDrawWidth)}x${Math.round(imageDrawHeight)}pt`)
+            }
+            
+            // Embed the processed image
+            pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
+            
+            // LAYER 3: Draw frame at full placeholder size (if frame exists)
+            if (photoConfig.frame && photoConfig.frame.imageUrl) {
+              console.log(`📐 Layer 3: Drawing frame at full placeholder size`)
+              console.log(`   └─ Frame: ${photoConfig.frame.imageUrl}`)
               try {
-                // Extend with white (simulates a simple frame). If theme.background_color exists, prefer it.
-                let frameBackground = '#ffffff'
-                if (theme && theme.background_color) {
-                  frameBackground = theme.background_color.startsWith('#') ? theme.background_color : `#${theme.background_color}`
+                const framePng = await processFrame(
+                  photoConfig.frame.imageUrl,
+                  placeholderWidth,
+                  placeholderHeight
+                )
+                
+                if (framePng) {
+                  const pdfFrame = await pdfDoc.embedPng(framePng)
+                  const frameDrawOptions = {
+                    x: placeholderX,
+                    y: placeholderY,
+                    width: placeholderWidth,
+                    height: placeholderHeight
+                  }
+                  if (rotationDegrees !== 0) {
+                    frameDrawOptions.rotate = degrees(-rotationDegrees)
+                  }
+                  page.drawImage(pdfFrame, frameDrawOptions)
+                  console.log(`   └─ Frame drawn at (${Math.round(placeholderX)}, ${Math.round(placeholderY)}), size: ${Math.round(placeholderWidth)}x${Math.round(placeholderHeight)}pt`)
                 }
-                if (photoConfig.frame && photoConfig.frame.type === 'image') {
-                  // Most polaroid frames are white; keep white background as a reasonable default.
-                }
-                finalImageBuffer = await sharp(finalImageBuffer)
-                  .extend({ top: padTopPx, right: padRightPx, bottom: padBottomPx, left: padLeftPx, background: frameBackground })
-                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
-                  .toBuffer()
-              } catch (extendErr) {
-                console.warn('⚠️ Failed to extend image for frame padding:', extendErr)
+              } catch (frameErr) {
+                console.warn(`⚠️ Failed to draw frame for photo ${i + 1}:`, frameErr.message)
               }
             }
-            // Do NOT pre-rotate; use PDF rotation so scale matches editor's pre-rotation box
-            const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-            const drawOptions = { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt }
+            
+            // LAYER 4: Draw the image on top
+            console.log(`📐 Layer 4: Drawing image on top`)
+            const imageDrawOptions = { 
+              x: imageDrawX, 
+              y: imageDrawY, 
+              width: imageDrawWidth, 
+              height: imageDrawHeight 
+            }
             if (rotationDegrees !== 0) {
-              // Add rotation - pdf-lib rotates around bottom-left, position already compensated
-              drawOptions.rotate = degrees(-rotationDegrees)
+              imageDrawOptions.rotate = degrees(-rotationDegrees)
             }
-            page.drawImage(pdfImage, drawOptions)
-          } else {
-            vlog(`🎨 Theme photo processing - No border or radius applied`)
-            // No border or radius
-            // If there is frame padding, extend the image to include the padding so placement uses the OUTER box
-            if (padTopPx || padRightPx || padBottomPx || padLeftPx) {
-              try {
-                let frameBackground = '#ffffff'
-                if (theme && theme.background_color) {
-                  frameBackground = theme.background_color.startsWith('#') ? theme.background_color : `#${theme.background_color}`
-                }
-                finalImageBuffer = await sharp(finalImageBuffer)
-                  .extend({ top: padTopPx, right: padRightPx, bottom: padBottomPx, left: padLeftPx, background: frameBackground })
-                  .jpeg({ quality: 100, progressive: true, mozjpeg: true })
-                  .toBuffer()
-              } catch (extendErr) {
-                console.warn('⚠️ Failed to extend image for frame padding:', extendErr)
-              }
+            page.drawImage(pdfImage, imageDrawOptions)
+            console.log(`✅ All 4 layers rendered successfully for photo ${i + 1}`)
+            
+          } catch (renderError) {
+            // Fallback: draw image without enhancements
+            console.error('⚠️ Failed to render image with enhancements:', renderError)
+            const fallbackPdfImage = await pdfDoc.embedJpg(finalImageBuffer)
+            const fallbackDrawOptions = { 
+              x: imageX, 
+              y: imageY, 
+              width: imageWidth, 
+              height: imageHeight 
             }
-            // Use PDF rotation to preserve scale relative to the unrotated box
-            const pdfImage = await pdfDoc.embedJpg(finalImageBuffer)
-            const drawOptions = { x: photoX, y: photoY, width: outerWidthPt, height: outerHeightPt }
             if (rotationDegrees !== 0) {
-              // Add rotation - pdf-lib rotates around bottom-left, position already compensated
-              drawOptions.rotate = degrees(-rotationDegrees)
+              fallbackDrawOptions.rotate = degrees(-rotationDegrees)
             }
-            page.drawImage(pdfImage, drawOptions)
+            page.drawImage(fallbackPdfImage, fallbackDrawOptions)
           }
         } catch (err) {}
       }
@@ -3586,4 +3685,5 @@ async function updatePdfStatus(supabase, bookId, userId, status) {
 
 
 
+ 
  
