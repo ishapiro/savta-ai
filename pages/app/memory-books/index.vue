@@ -1432,13 +1432,14 @@ const editBook = (book) => {
         const confirmDelete = async () => {
           try {
             const bookId = bookToDelete.value
+            // Delete operation now handles optimistic UI update internally
             const result = await deleteBookOperation(bookId)
             showDeleteDialog.value = false
             bookToDelete.value = null
             // Close the detailed dialog since the book no longer exists
             showDetailsModal.value = false
-            // Emit event to update memory books
-            emitMemoryBookUpdate(bookId, 'deleted')
+            // No need to emit event - optimistic update already handled it
+            console.log('✅ [Memory Books] Book deleted and removed from UI')
           } catch (error) {
             console.error('❌ Failed to delete book:', error)
             showDeleteDialog.value = false

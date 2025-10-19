@@ -181,12 +181,18 @@ export const useMemoryBookOperations = () => {
 
   const approveBook = async (bookId) => {
     try {
+      // Optimistic UI update
+      const { updateMemoryBook: optimisticUpdate } = useMemoryStudio()
+      optimisticUpdate(bookId, { status: 'approved' })
+      
       const { data, error } = await dbMemoryBooks.updateMemoryBook(bookId, {
         status: 'approved'
       })
 
       if (error) {
         console.error('❌ Error approving book:', error)
+        // Revert optimistic update on error
+        optimisticUpdate(bookId, { status: 'ready' })
         throw error
       }
 
@@ -206,12 +212,18 @@ export const useMemoryBookOperations = () => {
 
   const unapproveBook = async (bookId) => {
     try {
+      // Optimistic UI update
+      const { updateMemoryBook: optimisticUpdate } = useMemoryStudio()
+      optimisticUpdate(bookId, { status: 'ready' })
+      
       const { data, error } = await dbMemoryBooks.updateMemoryBook(bookId, {
         status: 'ready'
       })
 
       if (error) {
         console.error('❌ Error unapproving book:', error)
+        // Revert optimistic update on error
+        optimisticUpdate(bookId, { status: 'approved' })
         throw error
       }
 
@@ -231,14 +243,24 @@ export const useMemoryBookOperations = () => {
 
   const deleteBook = async (bookId) => {
     try {
+      // Get optimistic update function from useMemoryStudio
+      const { removeMemoryBook } = useMemoryStudio()
+      
+      // Optimistic UI update: Remove from UI immediately
+      console.log('🗑️ Performing optimistic delete for book:', bookId)
+      removeMemoryBook(bookId)
+      
+      // Then perform actual database delete in background
       const { data, error } = await dbMemoryBooks.deleteMemoryBook(bookId)
 
       if (error) {
-        console.error('❌ Error deleting book:', error)
+        console.error('❌ Error deleting book from database:', error)
+        // If delete fails, we should reload to restore state
+        // But this is rare with soft deletes, so we'll just log it
         throw error
       }
 
-      console.log('✅ Book deleted successfully:', data)
+      console.log('✅ Book deleted from database successfully:', data)
       
       // Track deletion
       trackEvent('memory_book_deleted', {
@@ -248,6 +270,11 @@ export const useMemoryBookOperations = () => {
       return data
     } catch (error) {
       console.error('❌ Failed to delete book:', error)
+      
+      // On error, reload data to restore correct state
+      const { loadMemoryBooks } = useMemoryStudio()
+      await loadMemoryBooks()
+      
       throw error
     }
   }

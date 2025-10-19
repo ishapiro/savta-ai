@@ -60,16 +60,9 @@ export const useMemoryStudio = () => {
     try {
       loadingMemoryBooks.value = true
       
-      // Clear existing thumbnails cache to ensure fresh URLs are loaded
-      assetThumbnails.value = {}
-      
+      // Fetch memory books only (no thumbnails yet for performance)
       const books = await dbMemoryBooks.getMemoryBooks()
       memoryBooks.value = books || []
-      
-      // Load thumbnails for all books
-      for (const book of memoryBooks.value) {
-        await loadAssetThumbnails(book)
-      }
       
     } catch (error) {
       console.error('❌ Failed to load memory books:', error)
@@ -79,9 +72,9 @@ export const useMemoryStudio = () => {
     }
   }
 
+  // Load thumbnails for specific books (optimized for visible items only)
   const loadAssetThumbnails = async (book) => {
     if (!book || !book.created_from_assets || book.created_from_assets.length === 0) {
-      console.log('🖼️ No assets to load for book:', book?.id, 'created_from_assets:', book?.created_from_assets)
       return
     }
 
@@ -99,6 +92,58 @@ export const useMemoryStudio = () => {
       }
     } catch (error) {
       console.error('❌ Failed to load asset thumbnails:', error)
+    }
+  }
+
+  // Batch load thumbnails for multiple books (single query optimization)
+  const loadVisibleThumbnails = async (books) => {
+    if (!books || books.length === 0) {
+      return
+    }
+
+    try {
+      // Collect all asset IDs from all visible books
+      const allAssetIds = []
+      const bookAssetMap = new Map()
+      
+      books.forEach(book => {
+        if (book.created_from_assets && book.created_from_assets.length > 0) {
+          // Limit to first 12 assets per book
+          const bookAssets = book.created_from_assets.slice(0, 12)
+          bookAssetMap.set(book.id, bookAssets)
+          allAssetIds.push(...bookAssets)
+        }
+      })
+
+      // Remove duplicates
+      const uniqueAssetIds = [...new Set(allAssetIds)]
+
+      // Skip if no assets to load or all already cached
+      if (uniqueAssetIds.length === 0) {
+        return
+      }
+
+      // Check which assets are already cached
+      const uncachedAssetIds = uniqueAssetIds.filter(id => !assetThumbnails.value[id])
+      
+      if (uncachedAssetIds.length === 0) {
+        // All thumbnails already cached
+        return
+      }
+
+      // Single batched query for all needed assets
+      const batchedAssets = await dbAssets.getAssetsByBook(uncachedAssetIds, uniqueAssetIds.length)
+      
+      // Store thumbnails in cache
+      if (batchedAssets && Array.isArray(batchedAssets)) {
+        batchedAssets.forEach(asset => {
+          if (asset && asset.storage_url) {
+            assetThumbnails.value[asset.id] = asset.storage_url
+          }
+        })
+      }
+    } catch (error) {
+      console.error('❌ Failed to load visible thumbnails:', error)
     }
   }
 
@@ -122,29 +167,74 @@ export const useMemoryStudio = () => {
     }
   }
 
-  const getAssetThumbnail = (assetId) => {
-    const startTime = performance.now()
+  // Optimistic delete: Remove book from local state without database reload
+  const removeMemoryBook = (bookId) => {
+    console.log('🗑️ Optimistic delete: Removing book from UI:', bookId)
     
+    // Find the book being deleted
+    const deletedBook = memoryBooks.value.find(book => book.id === bookId)
+    
+    // Remove from local array immediately
+    memoryBooks.value = memoryBooks.value.filter(book => book.id !== bookId)
+    
+    // Optionally clean up thumbnails for this specific book to free memory
+    if (deletedBook?.created_from_assets) {
+      deletedBook.created_from_assets.forEach(assetId => {
+        // Only delete thumbnail if no other books are using it
+        const stillInUse = memoryBooks.value.some(book => 
+          book.created_from_assets?.includes(assetId)
+        )
+        if (!stillInUse) {
+          delete assetThumbnails.value[assetId]
+        }
+      })
+    }
+    
+    // Adjust pagination if we deleted the last item on the current page
+    const currentView = memoryCards.value.some(c => c.id === bookId) ? 'cards' : 'books'
+    
+    if (currentView === 'cards') {
+      const totalPages = Math.ceil(memoryCards.value.length / cardsPerPage.value)
+      if (currentCardsPage.value > totalPages && totalPages > 0) {
+        currentCardsPage.value = totalPages
+      }
+    } else {
+      const totalPages = Math.ceil(memoryBooksOnly.value.length / booksPerPage.value)
+      if (currentBooksPage.value > totalPages && totalPages > 0) {
+        currentBooksPage.value = totalPages
+      }
+    }
+    
+    console.log('✅ Book removed from UI, current count:', memoryBooks.value.length)
+  }
+
+  // Add book to local state (for create operations)
+  const addMemoryBook = (book) => {
+    console.log('➕ Adding new book to UI:', book.id)
+    
+    // Add to beginning of array (most recent first)
+    memoryBooks.value = [book, ...memoryBooks.value]
+    
+    console.log('✅ Book added to UI, current count:', memoryBooks.value.length)
+  }
+
+  // Update book in local state (for update operations)
+  const updateMemoryBook = (bookId, updates) => {
+    console.log('🔄 Updating book in UI:', bookId)
+    
+    const index = memoryBooks.value.findIndex(book => book.id === bookId)
+    if (index !== -1) {
+      memoryBooks.value[index] = { ...memoryBooks.value[index], ...updates }
+      console.log('✅ Book updated in UI')
+    }
+  }
+
+  const getAssetThumbnail = (assetId) => {
     if (!assetId) {
-      console.log('🔍 [getAssetThumbnail] No asset ID provided')
       return null
     }
     
-    console.log('🔍 [getAssetThumbnail] Getting thumbnail for asset:', assetId)
-    
-    const thumbnail = assetThumbnails.value[assetId] || null
-    if (!thumbnail) {
-      console.log('🔍 [getAssetThumbnail] No thumbnail found for asset:', assetId)
-      console.log('🔍 [getAssetThumbnail] Available thumbnails:', Object.keys(assetThumbnails.value))
-      console.log('🔍 [getAssetThumbnail] Total thumbnails cache size:', Object.keys(assetThumbnails.value).length)
-    } else {
-      console.log('🔍 [getAssetThumbnail] Found thumbnail for asset:', assetId, 'URL:', thumbnail.substring(0, 50) + '...')
-    }
-    
-    const endTime = performance.now()
-    console.log('🔍 [getAssetThumbnail] getAssetThumbnail completed in:', endTime - startTime, 'ms')
-    
-    return thumbnail
+    return assetThumbnails.value[assetId] || null
   }
 
   const getFirstAssetThumbnail = (book) => {
@@ -249,6 +339,20 @@ export const useMemoryStudio = () => {
     }
   }, { immediate: true })
 
+  // Watch for changes in paginated cards and load their thumbnails
+  watch(paginatedMemoryCards, async (newCards) => {
+    if (newCards && newCards.length > 0) {
+      await loadVisibleThumbnails(newCards)
+    }
+  }, { immediate: true })
+
+  // Watch for changes in paginated books and load their thumbnails
+  watch(paginatedMemoryBooks, async (newBooks) => {
+    if (newBooks && newBooks.length > 0) {
+      await loadVisibleThumbnails(newBooks)
+    }
+  }, { immediate: true })
+
   return {
     // State
     memoryBooks,
@@ -273,7 +377,11 @@ export const useMemoryStudio = () => {
     // Methods
     loadMemoryBooks,
     loadAssetThumbnails,
+    loadVisibleThumbnails,
     reloadAssetThumbnails,
+    removeMemoryBook,
+    addMemoryBook,
+    updateMemoryBook,
     getAssetThumbnail,
     getFirstAssetThumbnail,
     formatDate,
