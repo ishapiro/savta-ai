@@ -2795,10 +2795,42 @@ export default defineEventHandler(async (event) => {
             }
             
             // LAYER 4: Draw the image on top
+            // IMPORTANT: When rotating, both frame and image must rotate around the same pivot point
+            // to maintain proper alignment. We use the placeholder's bottom-left as the pivot.
             console.log(`📐 Layer 4: Drawing image on top`)
+            
+            let finalImageDrawX = imageDrawX
+            let finalImageDrawY = imageDrawY
+            
+            // If rotation is applied, we need to adjust the image position so it rotates
+            // around the placeholder's pivot point, not its own bottom-left corner
+            if (rotationDegrees !== 0) {
+              // Calculate the offset of the image from the placeholder
+              const offsetX = imageDrawX - placeholderX
+              const offsetY = imageDrawY - placeholderY
+              
+              // When we rotate the image around placeholderX,placeholderY instead of imageDrawX,imageDrawY,
+              // we need to adjust its position. The offset vector needs to be rotated as well.
+              const angleRad = (-rotationDegrees * Math.PI) / 180
+              const cosAngle = Math.cos(angleRad)
+              const sinAngle = Math.sin(angleRad)
+              
+              // Rotate the offset vector
+              const rotatedOffsetX = offsetX * cosAngle - offsetY * sinAngle
+              const rotatedOffsetY = offsetX * sinAngle + offsetY * cosAngle
+              
+              // The image should be drawn at the placeholder position, and the rotation will
+              // handle positioning it correctly with the rotated offset
+              // Actually, we need to account for where the image will end up after rotation
+              finalImageDrawX = placeholderX + rotatedOffsetX
+              finalImageDrawY = placeholderY + rotatedOffsetY
+              
+              console.log(`   └─ Rotation adjustment: offset (${offsetX.toFixed(2)}, ${offsetY.toFixed(2)}) -> rotated offset (${rotatedOffsetX.toFixed(2)}, ${rotatedOffsetY.toFixed(2)})`)
+            }
+            
             const imageDrawOptions = { 
-              x: imageDrawX, 
-              y: imageDrawY, 
+              x: finalImageDrawX, 
+              y: finalImageDrawY, 
               width: imageDrawWidth, 
               height: imageDrawHeight 
             }
@@ -2806,6 +2838,7 @@ export default defineEventHandler(async (event) => {
               imageDrawOptions.rotate = degrees(-rotationDegrees)
             }
             page.drawImage(pdfImage, imageDrawOptions)
+            console.log(`   └─ Image drawn at (${Math.round(finalImageDrawX)}, ${Math.round(finalImageDrawY)}), size: ${Math.round(imageDrawWidth)}x${Math.round(imageDrawHeight)}pt`)
             console.log(`✅ All 4 layers rendered successfully for photo ${i + 1}`)
             
           } catch (renderError) {

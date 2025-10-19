@@ -100,15 +100,35 @@ All comments throughout the code have been updated to reflect:
 
 ## Testing Checklist
 
-- [ ] Test cards with frames (e.g., Polaroid frames)
+- [x] Test cards with frames (e.g., Polaroid frames) ✅ Working
+- [x] Test cards with borders ✅ Working  
 - [ ] Test cards without frames
-- [ ] Test with photo borders
+- [ ] Test with photo borders and frames together
 - [ ] Test with rounded corners
-- [ ] Test with both borders and frames
-- [ ] Test with rotation
+- [ ] Test with rotation (fixed: image now stays centered in frame)
 - [ ] Test different frame sizes and padding amounts
 - [ ] Verify frame cache is working properly
-- [ ] Check that images fit properly inside frames
+- [x] Check that images fit properly inside frames ✅ Fixed
+
+## Recent Fixes
+
+### Image Centering in Frames (Oct 19, 2025)
+**Issue:** When a frame was applied, the image was cropped to fit but wasn't properly centered within the frame opening.
+
+**Root Cause:** When rotation was applied, the frame and image were rotating around different pivot points:
+- Frame: `(placeholderX, placeholderY)`
+- Image: `(imageX, imageY)`
+
+This caused the image to become misaligned relative to the frame after rotation.
+
+**Solution:** Adjusted the image position calculation to account for rotation by:
+1. Calculating the offset of the image from the placeholder
+2. Rotating that offset vector by the same angle as the frame
+3. Positioning the image at the rotated offset position
+
+This ensures both frame and image maintain their relative positions regardless of rotation angle.
+
+**Test:** Generate a card with a frame and rotation applied. The image should now be properly centered within the frame opening.
 
 ## Technical Details
 
@@ -119,8 +139,33 @@ Frame padding now defines how much the image should be **reduced** rather than d
 - `paddingBottom`: Reduces image height from bottom
 - `paddingLeft`: Reduces image width from left
 
-### Rotation Handling
-Both the frame and image are rotated together using the same rotation angle, maintaining their relative positions.
+### Rotation Handling (Updated)
+When rotation is applied, both the frame and image must rotate around the **same pivot point** to maintain proper alignment. 
+
+**The Issue:** 
+- Frame rotates around `(placeholderX, placeholderY)`
+- Image was rotating around `(imageX, imageY)` 
+- Different pivot points caused misalignment after rotation
+
+**The Fix:**
+- Both frame and image now rotate with the same angle
+- Image position is adjusted by rotating the offset vector
+- This ensures the image maintains correct position relative to the frame after rotation
+
+**Math:**
+```javascript
+// Calculate offset of image from placeholder
+const offsetX = imageDrawX - placeholderX
+const offsetY = imageDrawY - placeholderY
+
+// Rotate the offset vector by the same angle
+const rotatedOffsetX = offsetX * cos(θ) - offsetY * sin(θ)
+const rotatedOffsetY = offsetX * sin(θ) + offsetY * cos(θ)
+
+// Final image position maintains rotated offset from frame
+finalImageX = placeholderX + rotatedOffsetX
+finalImageY = placeholderY + rotatedOffsetY
+```
 
 ### Border Handling
 When a photo border is applied, the image is extended by the border amount, and the drawing position is adjusted to account for the extra size.
