@@ -452,10 +452,11 @@ function calculateInitialScale() {
   const windowHeight = window.innerHeight
   
   // Actual usable content area within the dialog (accounting for all chrome)
-  const DIALOG_HEADER = 60
-  const DIALOG_CONTROLS = 80
-  const DIALOG_PADDING = 40 // Total padding top and bottom
-  const SIDE_MARGIN = 20 // Additional margin for spacing
+  // Reduced to allow PDFs to display larger
+  const DIALOG_HEADER = 40
+  const DIALOG_CONTROLS = 60
+  const DIALOG_PADDING = 20 // Total padding top and bottom
+  const SIDE_MARGIN = 10 // Additional margin for spacing
   
   const availableWidth = (windowWidth * 0.95) - SIDE_MARGIN
   const availableHeight = (windowHeight * 0.95) - DIALOG_HEADER - DIALOG_CONTROLS - DIALOG_PADDING
