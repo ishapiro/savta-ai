@@ -132,7 +132,7 @@
       v-model:visible="showPermanentDeleteDialog"
       modal
       header="Permanently Delete Memory Book?"
-      class="w-full max-w-md rounded-2xl"
+      class="w-full max-w-md"
     >
       <div class="text-center py-4">
         <i class="pi pi-exclamation-triangle text-3xl text-red-500 mb-2"></i>
@@ -141,15 +141,15 @@
           Are you sure you want to permanently delete "{{ bookToDelete?.ai_supplemental_prompt || 'Untitled Memory Book' }}"?
           This will permanently remove the memory book and all associated data.
         </div>
-        <div class="flex justify-center gap-3">
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
           <button
-            class="bg-brand-dialog-cancel hover:bg-gray-600 text-white font-bold rounded-full px-5 py-2 text-base shadow border-0"
+            class="px-5 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
             @click="showPermanentDeleteDialog = false"
           >
             Cancel
           </button>
           <button
-            class="bg-brand-dialog-delete hover:bg-red-600 text-white font-bold rounded-full px-5 py-2 text-base shadow border-0"
+            class="px-5 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
             @click="permanentDeleteConfirmed"
           >
             Permanently Delete
@@ -163,7 +163,7 @@
       v-model:visible="showEmptyTrashDialog"
       modal
       header="Empty Trash?"
-      class="w-full max-w-md rounded-2xl"
+      class="w-full max-w-md"
     >
       <div class="text-center py-4">
         <i class="pi pi-exclamation-triangle text-3xl text-red-500 mb-2"></i>
@@ -172,15 +172,15 @@
           Are you sure you want to permanently delete all {{ deletedBooks.length }} memory book(s) in the trash?
           This will permanently remove all deleted memory books and their associated data.
         </div>
-        <div class="flex justify-center gap-3">
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
           <button
-            class="bg-brand-dialog-cancel hover:bg-gray-600 text-white font-bold rounded-full px-5 py-2 text-base shadow border-0"
+            class="px-5 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
             @click="showEmptyTrashDialog = false"
           >
             Cancel
           </button>
           <button
-            class="bg-brand-dialog-delete hover:bg-red-600 text-white font-bold rounded-full px-5 py-2 text-base shadow border-0"
+            class="px-5 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
             @click="emptyTrashConfirmed"
           >
             Empty Trash

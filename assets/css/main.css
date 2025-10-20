@@ -8,7 +8,7 @@
 /* CSS Custom Properties for colors */
 :root {
   /* Dialog border color */
-  --dialog-border-color: #10B981; /* brand-highlight color - Emerald green */
+  --dialog-border-color: #00796B; /* brand-secondary - Material Teal */
 }
 
 @layer base {
@@ -39,25 +39,45 @@
 }
 
 @layer components {
+  /* Material Design 2 Button Base */
+  .btn-base {
+    @apply px-4 py-2 text-sm font-medium uppercase tracking-wider focus:outline-none;
+  }
+  
+  /* MD2 Contained Button (Primary) */
   .btn-primary {
-    @apply bg-primary text-white px-4 py-2 rounded transition-all focus:outline-none border-0;
+    @apply btn-base bg-primary text-white rounded shadow-elevation-2 border-0;
   }
   
   .btn-primary:hover {
-    @apply brightness-90;
+    @apply bg-primary-800 shadow-elevation-3;
   }
   
+  /* MD2 Outlined Button (Secondary) */
   .btn-secondary {
-    @apply bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded transition-all;
+    @apply btn-base bg-transparent text-brand-secondary border border-brand-secondary rounded;
+  }
+  
+  .btn-secondary:hover {
+    @apply bg-brand-secondary/10;
+  }
+  
+  /* MD2 Text Button (Tertiary) */
+  .btn-text {
+    @apply btn-base bg-transparent text-brand-primary border-0;
+  }
+  
+  .btn-text:hover {
+    @apply bg-gray-100;
   }
 
   /* Card styles */
   .card {
-    @apply bg-surface-card rounded-lg shadow-md p-6;
+    @apply bg-surface-card shadow-elevation-2 p-6;
   }
 
   .input-field {
-    @apply w-full px-3 py-2 border border-surface-border rounded focus:outline-none focus:ring-2 focus:ring-primary;
+    @apply w-full px-3 py-2 border border-surface-border focus:outline-none focus:ring-2 focus:ring-primary;
   }
 
   /* Add PrimeVue button overrides */
@@ -65,25 +85,24 @@
     @apply text-white no-underline !important;
   }
 
-  /* Global PrimeVue Dialog Border Styling */
+  /* Material Design 2 Dialog Styling */
   .p-dialog {
     border: 1px solid var(--dialog-border-color) !important;
-    border-radius: 12px !important;
-    overflow: hidden !important; /* Ensures content doesn't break the rounded corners */
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 24px 38px rgba(0,0,0,0.14), 0 9px 46px rgba(0,0,0,0.12), 0 11px 15px rgba(0,0,0,0.20) !important;
   }
 
   .p-dialog .p-dialog-header {
-    border-top-left-radius: 12px !important;
-    border-top-right-radius: 12px !important;
+    border-radius: 8px 8px 0 0 !important;
   }
 
   .p-dialog .p-dialog-content {
-    border-radius: 0 !important; /* Remove default border radius since parent handles it */
+    border-radius: 0 !important;
   }
 
   .p-dialog .p-dialog-footer {
-    border-bottom-left-radius: 12px !important;
-    border-bottom-right-radius: 12px !important;
+    border-radius: 0 0 8px 8px !important;
   }
 
 
@@ -97,21 +116,18 @@
 
   /* Custom progress dialog styling */
   .custom-progress-dialog {
-    border: 4px solid #ef4444 !important;
-    border-radius: 12px !important;
+    border: 4px solid #D32F2F !important;
     box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25) !important;
   }
 
   /* Force border visibility for progress dialog */
   .progress-dialog-container {
-    border: 16px solid #ef4444 !important;
-    border-radius: 12px !important;
+    border: 16px solid #D32F2F !important;
     box-sizing: border-box !important;
   }
 
   /* Specific styling for progress dialog only */
   .progress-dialog .p-dialog-content {
-    border-radius: 12px !important;
     overflow: hidden !important;
   }
 
@@ -144,11 +160,11 @@
   }
 
   .p-button:hover {
-    @apply brightness-90 no-underline !important;
+    @apply no-underline !important;
   }
 
   .p-button.p-button-secondary {
-    @apply bg-blue-400 hover:bg-blue-500 text-white no-underline !important;
+    @apply bg-brand-secondary hover:bg-brand-secondary-dark text-white no-underline !important;
   }
 
   .p-button.p-button-text {
@@ -165,11 +181,11 @@
 
   /* Image overlay styles */
   .overlay-card {
-    @apply relative overflow-hidden rounded-lg;
+    @apply relative overflow-hidden;
   }
 
   .overlay-card::before {
-    @apply absolute inset-0 bg-black bg-opacity-50 transition-opacity;
+    @apply absolute inset-0 bg-black bg-opacity-50;
     content: '';
   }
 
@@ -181,17 +197,18 @@
     @apply absolute inset-0 flex flex-col items-center justify-center text-white z-10;
   }
 
+  /* MD2 Dialog Buttons */
   .dialog-cancel {
-    @apply bg-brand-dialog-cancel text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-dialog-cancel/80;
+    @apply bg-brand-dialog-cancel text-white px-6 py-2 text-sm font-medium uppercase tracking-wider rounded shadow-elevation-2 focus:outline-none border-0 hover:bg-brand-dialog-cancel-hover hover:shadow-elevation-3;
   }
   .dialog-edit {
-    @apply bg-brand-secondary text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-secondary/80;
+    @apply bg-brand-dialog-edit text-white px-6 py-2 text-sm font-medium uppercase tracking-wider rounded shadow-elevation-2 focus:outline-none border-0 hover:bg-brand-dialog-edit-hover hover:shadow-elevation-3;
   }
   .dialog-save {
-    @apply bg-brand-header text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-header/80;
+    @apply bg-brand-dialog-save text-white px-6 py-2 text-sm font-medium uppercase tracking-wider rounded shadow-elevation-2 focus:outline-none border-0 hover:bg-brand-dialog-save-hover hover:shadow-elevation-3;
   }
   .dialog-delete {
-    @apply bg-brand-dialog-delete text-white px-6 py-2 rounded transition-all focus:outline-none border-0 hover:bg-brand-dialog-delete/80;
+    @apply bg-brand-dialog-delete text-white px-6 py-2 text-sm font-medium uppercase tracking-wider rounded shadow-elevation-2 focus:outline-none border-0 hover:bg-brand-dialog-delete-hover hover:shadow-elevation-3;
   }
 }
 
@@ -201,22 +218,22 @@
 }
 
 .markdown-content img {
-  @apply rounded-lg shadow-md;
+  @apply shadow-elevation-2;
 }
 
 /* Custom styles for review cards */
 .review-card {
-  @apply transition-transform duration-200 hover:scale-[1.02];
+  /* No animations or transitions */
 }
 
 /* Custom styles for star ratings */
 .star-rating {
-  @apply text-yellow-400;
+  @apply text-brand-warning;
 }
 
 /* Custom styles for premium user badge */
 .premium-badge {
-  @apply bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-2 py-1 rounded-full text-xs font-bold;
+  @apply bg-brand-warning text-white px-2 py-1 text-xs font-bold;
 }
 
 html, body {
@@ -242,8 +259,8 @@ html, body {
 }
 
 body {
-  background-color: #FEFCF8; /* brand.background - Bright warm white */
-  color: text-brand-primary;
+  background-color: #FAFAFA; /* brand.background - Material Grey 50 */
+  color: #212121; /* Material Grey 900 */
   font-family: "Inter", system-ui, sans-serif;
 }
 

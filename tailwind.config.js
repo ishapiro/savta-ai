@@ -12,119 +12,109 @@ export default {
   ],
   theme: {
     extend: {
-      animation: {
-        'fade-in-up': 'fadeInUp 1s ease-out',
-        'fade-in-down': 'fadeInDown 1s ease-out',
-        'bounce-slow': 'bounce 2s infinite',
-        'pulse-slow': 'pulse 3s infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'glow': 'glow 2s ease-in-out infinite alternate',
-      },
-      keyframes: {
-        fadeInUp: {
-          '0%': {
-            opacity: '0',
-            transform: 'translateY(30px)'
-          },
-          '100%': {
-            opacity: '1',
-            transform: 'translateY(0)'
-          }
-        },
-        fadeInDown: {
-          '0%': {
-            opacity: '0',
-            transform: 'translateY(-30px)'
-          },
-          '100%': {
-            opacity: '1',
-            transform: 'translateY(0)'
-          }
-        },
-        float: {
-          '0%, 100%': {
-            transform: 'translateY(0px)'
-          },
-          '50%': {
-            transform: 'translateY(-20px)'
-          }
-        },
-        glow: {
-          '0%': {
-            boxShadow: '0 0 20px rgba(59, 130, 246, 0.5)'
-          },
-          '100%': {
-            boxShadow: '0 0 30px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.3)'
-          }
-        },
-      },
       colors: {
+        // Material Design 3 Color System
         brand: {
-          // Primary Brand Identity - Bright & Welcoming
-          header: '#9F1239',        // Sophisticated burgundy-rose (was #FF6B9D vibrant coral-pink)
-          background: '#FEFCF8',    // Bright warm white (was #F9F6F2 cream)
-          primary: '#2D3748',       // Modern charcoal #2D3748 (was #333333 dark gray)
-          'primary-hover-color': '#4A5568',    // Modern hover state
-          'primary-active-color': '#2D3748',   // Active state
-          'primary-contrast-color': '#FFFFFF', // White text
-          secondary: '#1E3A8A',     // Navy blue #1E3A8A (was #3B82F6 warm blue)
+          // Primary - Material Blue
+          primary: '#1976D2',           // Material Blue 700
+          'primary-light': '#42A5F5',   // Material Blue 400
+          'primary-dark': '#1565C0',    // Material Blue 800
+          'primary-hover': '#1565C0',   // Darker on hover
+          'primary-contrast': '#FFFFFF', // White text on primary
           
-          // Navigation & UI Elements
-          navigation: '#F1F5F9',    // Cool light gray (was #e4e4e7)
-          highlight: '#41706C',     // Teal #41706C(was Emerald green  #10B981)
-          accent: '#D97706',        // Sophisticated amber (was #F59E0B bright golden amber)
-          'accent-light': '#FDE68A',          // Rich yellow (was #FEF3C7 very light yellow)
-          card: '#FFFFFF',          // Pure white (was #F6E7D8 tan)
+          // Secondary - Material Teal
+          secondary: '#00796B',         // Material Teal 700
+          'secondary-light': '#26A69A', // Material Teal 400
+          'secondary-dark': '#00695C',  // Material Teal 800
+          'secondary-hover': '#00695C', // Darker on hover
+          'secondary-contrast': '#FFFFFF', // White text on secondary
           
-          // Surface System - Clean & Modern
-          'surface-ground': '#FEFCF8',         // Bright warm white
-          'surface-section': '#FFFFFF',        // Pure white
-          'surface-card': '#FFFFFF',           // Pure white
-          'surface-hover': '#F8FAFC',          // Subtle hover
-          'surface-border': '#E2E8F0',        // Modern border
+          // Tertiary - Material Purple
+          tertiary: '#7B1FA2',          // Material Purple 700
+          'tertiary-light': '#AB47BC',  // Material Purple 400
+          'tertiary-dark': '#6A1B9A',   // Material Purple 800
           
-          // Text System - High Contrast & Readable
-          'text-color': '#2D3748',            // Modern charcoal
-          'text-color-secondary': '#1E3A8A',  // Navy blue
-          'text-muted': '#64748B',            // Modern muted gray
+          // Surface System
+          background: '#FAFAFA',        // Material Grey 50
+          surface: '#FFFFFF',           // Pure white
+          'surface-variant': '#F5F5F5', // Material Grey 100
+          'surface-hover': '#F5F5F5',   // Light gray on hover
+          'surface-border': '#E0E0E0',  // Material Grey 300
           
-          // Dialog System - Enhanced & Playful
-          'dialog-cancel': 'rgba(100, 116, 139, 0.2)',      // Modern cancel
-          'dialog-cancel-hover': 'rgba(100, 116, 139, 0.4)', // Hover state
-          'dialog-edit': '#1E3A8A',           // Navy blue
-          'dialog-edit-hover': '#1E40AF',     // Darker navy blue
-          'dialog-save': '#41706C',           // Teal
-          'dialog-save-hover': '#2D4A47',     // Darker teal
-          'dialog-delete': '#9F1239',         // Sophisticated burgundy-rose (was #FF6B9D vibrant coral)
-          'dialog-delete-hover': '#7F0D2E',   // Darker burgundy-rose (was #EC4899 darker coral)
-          'dialog-primary': '#1E3A8A',        // Navy blue
-          'dialog-primary-hover': '#1E40AF',  // Darker navy blue
-          'dialog-secondary': '#FDE68A',      // Rich yellow (was #FEF3C7 soft yellow)
-          'dialog-secondary-hover': '#FCD34D', // Darker yellow (was #FDE68A)
+          // Legacy aliases for compatibility
+          header: '#1976D2',            // Maps to primary
+          navigation: '#F5F5F5',        // Maps to surface-variant
+          highlight: '#00796B',         // Maps to secondary
+          accent: '#FB8C00',            // Material Orange 600
+          'accent-light': '#FFB74D',    // Material Orange 300
+          card: '#FFFFFF',              // Pure white
           
-          // Modern Accent Colors
-          'flash': '#1E3A8A',                 // Navy blue
-          'success': '#41706C',               // Teal
-          'warning': '#D97706',                // Sophisticated amber (was #F59E0B bright golden amber)
-          'error': '#DC2626',                 // Sophisticated red (was #EF4444 bright red)
-          'info': '#1E3A8A',                  // Navy blue
+          // Text System
+          'text-primary': '#212121',    // Material Grey 900
+          'text-secondary': '#757575',  // Material Grey 600
+          'text-disabled': '#9E9E9E',   // Material Grey 500
+          'text-hint': '#BDBDBD',       // Material Grey 400
+          'text-color': '#212121',      // Legacy alias
+          'text-muted': '#757575',      // Legacy alias
+          
+          // Semantic Colors
+          error: '#D32F2F',             // Material Red 700
+          'error-light': '#EF5350',     // Material Red 400
+          'error-dark': '#C62828',      // Material Red 800
+          
+          warning: '#F57C00',           // Material Orange 700
+          'warning-light': '#FF9800',   // Material Orange 500
+          'warning-dark': '#E65100',    // Material Orange 900
+          
+          success: '#388E3C',           // Material Green 700
+          'success-light': '#66BB6A',   // Material Green 400
+          'success-dark': '#2E7D32',    // Material Green 800
+          
+          info: '#0288D1',              // Material Light Blue 700
+          'info-light': '#29B6F6',      // Material Light Blue 400
+          'info-dark': '#01579B',       // Material Light Blue 900
+          
+          // Action Colors
+          flash: '#1976D2',             // Primary blue
+          
+          // Dialog System
+          'dialog-cancel': '#9E9E9E',          // Material Grey 500
+          'dialog-cancel-hover': '#757575',    // Material Grey 600
+          'dialog-edit': '#1976D2',            // Primary
+          'dialog-edit-hover': '#1565C0',      // Primary dark
+          'dialog-save': '#388E3C',            // Success
+          'dialog-save-hover': '#2E7D32',      // Success dark
+          'dialog-delete': '#D32F2F',          // Error
+          'dialog-delete-hover': '#C62828',    // Error dark
+          'dialog-primary': '#1976D2',         // Primary
+          'dialog-primary-hover': '#1565C0',   // Primary dark
+          'dialog-secondary': '#00796B',       // Secondary
+          'dialog-secondary-hover': '#00695C', // Secondary dark
         },
+        
+        // Simplified primary scale for direct use
         primary: {
-          DEFAULT: '#2D3748', // brand.primary - Modern charcoal
-          hover: '#4A5568', // brand.primary-hover-color - Modern hover state
-          active: '#2D3748', // brand.primary-active-color - Active state
-          contrast: '#FFFFFF' // brand.primary-contrast-color - White text
+          DEFAULT: '#1976D2',   // Material Blue 700
+          50: '#E3F2FD',        // Material Blue 50
+          100: '#BBDEFB',       // Material Blue 100
+          200: '#90CAF9',       // Material Blue 200
+          300: '#64B5F6',       // Material Blue 300
+          400: '#42A5F5',       // Material Blue 400
+          500: '#2196F3',       // Material Blue 500
+          600: '#1E88E5',       // Material Blue 600
+          700: '#1976D2',       // Material Blue 700
+          800: '#1565C0',       // Material Blue 800
+          900: '#0D47A1',       // Material Blue 900
+          hover: '#1565C0',     // Alias for hover state (800)
         },
+        
+        // Surface scale
         surface: {
-          DEFAULT: '#FEFCF8', // brand.surface-ground - Bright warm white
-          section: '#FFFFFF', // brand.surface-section - Pure white
-          card: '#FFFFFF', // brand.surface-card - Pure white
-          hover: '#F8FAFC', // brand.surface-hover - Subtle hover
-          border: '#E2E8F0', // brand.surface-border - Modern border
-          highlight: '#F8FAFC', // brand.surface-hover - Subtle hover
-          text: '#2D3748', // brand.text-color - Modern charcoal
-          'text-secondary': '#1E3A8A', // brand.text-color-secondary - Navy blue
-          'text-muted': '#64748B' // brand.text-color-secondary - Modern muted gray
+          DEFAULT: '#FFFFFF',   // White
+          card: '#FFFFFF',      // White cards
+          variant: '#F5F5F5',   // Grey 100
+          hover: '#F5F5F5',     // Grey 100
+          border: '#E0E0E0',    // Grey 300
         }
       },
       fontFamily: {
@@ -132,20 +122,33 @@ export default {
         serif: ['"EB Garamond"', 'Georgia', 'serif'],
       },
       fontSize: {
-        base: ['0.9375rem', { lineHeight: '1.5' }], // 15px (1pt smaller than default 16px)
-        h1: ['2.5rem', { lineHeight: '1.2', fontWeight: '700' }], // 40px
-        h2: ['2rem', { lineHeight: '1.3', fontWeight: '600' }],    // 32px
-        h3: ['1.5rem', { lineHeight: '1.4', fontWeight: '500' }],  // 24px
+        base: ['1rem', { lineHeight: '1.5' }],       // 16px - Material Design base
+        h1: ['2.5rem', { lineHeight: '1.2', fontWeight: '400' }],  // 40px
+        h2: ['2rem', { lineHeight: '1.3', fontWeight: '400' }],    // 32px
+        h3: ['1.5rem', { lineHeight: '1.4', fontWeight: '400' }],  // 24px
+        h4: ['1.25rem', { lineHeight: '1.5', fontWeight: '500' }], // 20px
+        h5: ['1rem', { lineHeight: '1.5', fontWeight: '500' }],    // 16px
+        h6: ['0.875rem', { lineHeight: '1.5', fontWeight: '500' }], // 14px
+      },
+      boxShadow: {
+        // Material Design Elevation System
+        'elevation-1': '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
+        'elevation-2': '0 3px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12)',
+        'elevation-3': '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10)',
+        'elevation-4': '0 15px 25px rgba(0,0,0,0.15), 0 5px 10px rgba(0,0,0,0.05)',
+        'elevation-5': '0 20px 40px rgba(0,0,0,0.2)',
       },
       typography: {
         DEFAULT: {
           css: {
             maxWidth: '65ch',
-            color: '#2D3748', // brand.text-color - Modern charcoal
+            color: '#212121', // Material Grey 900
             a: {
-              color: '#2D3748', // brand.primary - Modern charcoal
+              color: '#1976D2', // Material Blue 700
+              textDecoration: 'none',
               '&:hover': {
-                color: '#4A5568', // brand.primary-hover-color - Modern hover state
+                color: '#1565C0', // Material Blue 800
+                textDecoration: 'underline',
               },
             },
           },

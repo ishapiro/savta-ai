@@ -271,7 +271,7 @@
           <!-- Cancel Button -->
           <button
             @click="() => closeMagicMemoryDialog(true, true)"
-            class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
+            class="flex flex-col items-center gap-1 p-2"
           >
             <div class="w-6 h-6 flex items-center justify-center">
               <i class="pi pi-times text-gray-600 text-lg"></i>
@@ -283,7 +283,7 @@
           <button
             v-if="!isFirstStep()"
             @click="previousMagicMemoryStep()"
-            class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
+            class="flex flex-col items-center gap-1 p-2"
           >
             <div class="w-6 h-6 flex items-center justify-center">
               <i class="pi pi-arrow-left text-gray-600 text-lg"></i>
@@ -296,7 +296,7 @@
             v-if="!isLastStep()"
             :disabled="isNextButtonDisabled"
             @click="nextMagicMemoryStep"
-            class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200 disabled:opacity-50"
+            class="flex flex-col items-center gap-1 p-2 disabled:opacity-50"
           >
             <div class="w-6 h-6 flex items-center justify-center">
               <i class="pi pi-arrow-right text-brand-secondary text-lg"></i>
@@ -308,7 +308,7 @@
             v-if="isLastStep()"
             :disabled="isNextButtonDisabled || magicLoading"
             @click="handleGenerateMagicMemory"
-            class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200 disabled:opacity-50"
+            class="flex flex-col items-center gap-1 p-2 disabled:opacity-50"
           >
             <div class="w-6 h-6 flex items-center justify-center">
               <i v-if="!magicLoading" class="pi pi-bolt text-brand-secondary text-lg"></i>
@@ -323,40 +323,40 @@
           <div class="flex flex-row gap-3">
             <!-- Cancel Button -->
             <Button
-              label="Cancel"
+              label="CANCEL"
               icon="pi pi-times"
               @click="() => closeMagicMemoryDialog(true, true)"
-              class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200"
+              class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white font-bold px-3 py-2 text-xs tracking-wider border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
             />
             
             <!-- Back Button (not on first step) -->
             <Button
               v-if="!isFirstStep()"
-              label="Back"
+              label="BACK"
               icon="pi pi-arrow-left"
               @click="previousMagicMemoryStep()"
-              class="bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200"
+              class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white font-bold px-3 py-2 text-xs tracking-wider border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
             />
           </div>
           
           <!-- Next/Generate Button -->
           <Button
             v-if="!isLastStep()"
-            :label="getNextButtonLabel()"
+            :label="getNextButtonLabel().toUpperCase()"
             icon="pi pi-arrow-right"
             :disabled="isNextButtonDisabled"
             @click="nextMagicMemoryStep"
-            class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs shadow-lg transition-all duration-200 border-0"
+            class="bg-brand-secondary hover:bg-brand-secondary-dark text-white font-bold px-4 py-2 text-xs tracking-wider border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
           />
           
           <Button
             v-if="isLastStep()"
-            label="Let's create something beautiful together"
+            label="CREATE"
             icon="pi pi-bolt"
             :disabled="isNextButtonDisabled || magicLoading"
             :loading="magicLoading"
             @click="handleGenerateMagicMemory"
-            class="bg-brand-secondary hover:bg-brand-secondary/80 text-white font-bold rounded-full px-4 py-2 text-xs shadow-lg transition-all duration-200 border-0"
+            class="bg-brand-secondary hover:bg-brand-secondary-dark text-white font-bold px-4 py-2 text-xs tracking-wider border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
           />
         </div>
       </div>
@@ -389,16 +389,16 @@
       
       <div class="flex flex-col gap-2">
         <Button 
-          label="Keep the Same Photos" 
+          label="KEEP THE SAME PHOTOS" 
           icon="pi pi-check" 
           @click="handleKeepSamePhotos"
-          class="bg-brand-dialog-edit text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow transition-all duration-200 flex items-center justify-center w-full"
+          class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 px-3 sm:px-4 py-2 sm:py-3 font-bold text-xs sm:text-sm tracking-wider flex items-center justify-center w-full rounded shadow-elevation-2 hover:shadow-elevation-3"
         />
         <Button 
-          label="Upload More Photos" 
+          label="UPLOAD MORE PHOTOS" 
           icon="pi pi-upload" 
           @click="handleUploadMorePhotos"
-          class="bg-brand-dialog-save text-white border-0 px-3 sm:px-4 py-2 sm:py-3 rounded-full font-bold text-xs sm:text-sm shadow-lg transition-all duration-200 flex items-center justify-center w-full"
+          class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 sm:px-4 py-2 sm:py-3 font-bold text-xs sm:text-sm tracking-wider flex items-center justify-center w-full rounded shadow-elevation-2 hover:shadow-elevation-3"
         />
       </div>
     </div>

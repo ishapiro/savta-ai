@@ -1,13 +1,13 @@
 <template>
   <div class="flex items-center justify-center sm:justify-end">
-    <div class="bg-white rounded-lg p-1 shadow-sm border border-brand-surface-border">
+    <div class="bg-white rounded p-1 shadow-elevation-1 border border-gray-200">
       <div class="flex">
         <button
           :class="[
-            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
+            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded',
             activeView === 'cards' 
-              ? 'bg-brand-secondary text-white shadow-sm' 
-              : 'text-brand-text-muted hover:text-brand-primary hover:bg-brand-surface-hover'
+              ? 'bg-brand-secondary text-white shadow-elevation-1' 
+              : 'text-brand-text-secondary hover:text-brand-primary hover:bg-gray-50'
           ]"
           @click="$emit('update:activeView', 'cards')"
           data-testid="toggle-cards"
@@ -18,10 +18,10 @@
         </button>
         <button
           :class="[
-            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
+            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded',
             activeView === 'books' 
-              ? 'bg-brand-highlight text-white shadow-sm' 
-              : 'text-brand-text-muted hover:text-brand-primary hover:bg-brand-surface-hover'
+              ? 'bg-brand-highlight text-white shadow-elevation-1' 
+              : 'text-brand-text-secondary hover:text-brand-primary hover:bg-gray-50'
           ]"
           @click="$emit('update:activeView', 'books')"
           data-testid="toggle-books"

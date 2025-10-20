@@ -96,14 +96,14 @@
       <div class="flex flex-col sm:flex-row gap-2 justify-center w-full">
         <Button
           v-if="!isUserDisabled"
-          :label="isNewUser ? 'Getting Started' : 'Continue to the Memory Studio'"
-          class="bg-brand-header hover:bg-brand-secondary text-white px-4 py-2 rounded-lg font-semibold text-sm"
+          :label="isNewUser ? 'GETTING STARTED' : 'CONTINUE TO MEMORY STUDIO'"
+          class="bg-brand-primary hover:bg-brand-primary-dark text-white px-4 py-2 rounded shadow-elevation-2 hover:shadow-elevation-3 font-semibold uppercase tracking-wider text-sm"
           @click="goToDashboard"
         />
         <Button
           v-else
-          label="Continue"
-          class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold text-sm"
+          label="CONTINUE"
+          class="bg-brand-error hover:bg-brand-error-dark text-white px-4 py-2 rounded shadow-elevation-2 hover:shadow-elevation-3 font-semibold uppercase tracking-wider text-sm"
           @click="logoutAndRedirect"
         />
       </div>

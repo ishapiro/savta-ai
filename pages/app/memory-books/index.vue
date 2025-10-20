@@ -559,40 +559,40 @@
                 <button
                   data-testid="details-create-memory-button"
                   v-if="selectedBook.status === 'draft'"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white font-bold uppercase tracking-wider rounded px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-elevation-2 hover:shadow-elevation-3 w-auto sm:min-w-[120px]"
                   @click="onGenerateClick(selectedBook)"
                 >
                   <i class="pi pi-magic-wand text-xs sm:text-sm"></i>
-                  <span>Create Memory</span>
+                  <span>CREATE MEMORY</span>
                 </button>
                 <button
                   data-testid="details-recreate-button"
                   v-if="selectedBook.status === 'ready' || selectedBook.status === 'background_ready'"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white font-bold uppercase tracking-wider rounded px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-elevation-2 hover:shadow-elevation-3 w-auto sm:min-w-[120px]"
                   @click="onRegenerateClick(selectedBook)"
                   :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
                 >
                   <i class="pi pi-refresh text-xs sm:text-sm"></i>
-                  <span>{{ selectedBook.status === 'background_ready' ? 'Processing ...' : 'Edit/Revise' }}</span>
+                  <span>{{ selectedBook.status === 'background_ready' ? 'PROCESSING ...' : 'EDIT/REVISE' }}</span>
                 </button>
                 <button
                   data-testid="details-approve-button"
                   v-if="selectedBook.status === 'ready'"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white font-bold uppercase tracking-wider rounded px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-elevation-2 hover:shadow-elevation-3 w-auto sm:min-w-[120px]"
                   @click="approveBook(selectedBook.id)"
                   v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'"
                 >
                   <i class="pi pi-check text-xs sm:text-sm"></i>
-                  <span>Approve</span>
+                  <span>APPROVE</span>
                 </button>
                 <button
                   data-testid="details-trash-button"
                   v-if="selectedBook"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-delete text-white font-bold rounded-full px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-auto sm:min-w-[120px]"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white font-bold uppercase tracking-wider rounded px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-elevation-2 hover:shadow-elevation-3 w-auto sm:min-w-[120px]"
                   @click="confirmDeleteBook(selectedBook)"
                 >
                   <i class="pi pi-trash text-xs sm:text-sm"></i>
-                  <span>Trash</span>
+                  <span>TRASH</span>
                 </button>
               </div>
             </div>
@@ -642,15 +642,15 @@
             This will allow you to modify any of the settings you previously chose. 
             You can keep all the same photos or selectively replace some photos with new ones.
           </p>
-          <div class="flex justify-end gap-2">
+          <div class="flex flex-col sm:flex-row justify-end gap-2">
             <button
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              class="px-4 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
               @click="cancelDialog"
             >
               Cancel
             </button>
             <button
-              class="px-4 py-2 text-sm font-medium text-white bg-brand-highlight hover:bg-brand-highlight/80 rounded-lg transition-colors"
+              class="px-4 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
               @click="confirmRegenerate"
             >
               Recreate
@@ -689,15 +689,15 @@
           <p class="text-brand-text-muted mb-4">
             Are you sure you want to approve this memory book? This will make it available for download.
           </p>
-          <div class="flex gap-3 justify-center">
+          <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              class="bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg px-6 py-2 transition-colors"
+              class="px-6 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
               @click="showApprovalDialog = false"
             >
               Cancel
             </button>
             <button
-              class="bg-brand-flash hover:bg-brand-flash/80 text-white font-medium rounded-lg px-6 py-2 transition-colors"
+              class="px-6 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-primary hover:bg-brand-dialog-primary-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
               @click="confirmApproval"
             >
               Approve
@@ -728,15 +728,15 @@
           <p class="text-brand-text-muted mb-4">
             Are you sure you want to delete this memory book? This action cannot be undone.
           </p>
-          <div class="flex gap-3 justify-center">
+          <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              class="bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg px-6 py-2 transition-colors"
+              class="px-6 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
               @click="showDeleteDialog = false"
             >
               Cancel
             </button>
             <button
-              class="bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg px-6 py-2 transition-colors"
+              class="px-6 py-2 text-sm font-medium uppercase tracking-wider bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 rounded shadow-elevation-2 hover:shadow-elevation-3"
               @click="confirmDelete"
             >
               Trash

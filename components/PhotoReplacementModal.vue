@@ -34,18 +34,17 @@
     </div>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
+      <div class="flex flex-col sm:flex-row justify-end gap-3">
         <Button
-          label="Cancel"
-          severity="secondary"
+          label="CANCEL"
           @click="handleClose"
-          class="px-4 py-2"
+          class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 w-full sm:w-auto px-4 py-2 text-sm font-medium tracking-wider rounded shadow-elevation-2 hover:shadow-elevation-3"
         />
         <Button
-          label="Save Replacements"
+          label="SAVE REPLACEMENTS"
           @click="handleSave"
           :disabled="localPhotosToReplace.length === 0"
-          class="bg-brand-dialog-save border-0 px-4 py-2"
+          class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 w-full sm:w-auto px-4 py-2 text-sm font-medium tracking-wider rounded shadow-elevation-2 hover:shadow-elevation-3"
         />
       </div>
     </template>

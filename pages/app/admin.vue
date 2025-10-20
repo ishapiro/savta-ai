@@ -2252,19 +2252,19 @@
       </div>
 
       <template #footer>
-        <div class="flex justify-end gap-2">
+        <div class="flex flex-col sm:flex-row justify-end gap-2">
           <Button
-            label="Cancel"
+            label="CANCEL"
             icon="pi pi-times"
             @click="cancelDeleteUser"
-            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-brand-primary border-0 px-3 py-2 text-sm"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 w-full sm:w-auto px-3 py-2 text-sm font-medium tracking-wider rounded shadow-elevation-2 hover:shadow-elevation-3"
             :disabled="deletingUser"
           />
           <Button
-            label="Permanently Delete User"
+            label="PERMANENTLY DELETE USER"
             icon="pi pi-times"
             @click="deleteUser"
-            class="bg-red-800 hover:bg-red-900 text-white border-0 px-3 py-2 text-sm"
+            class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 w-full sm:w-auto px-3 py-2 text-sm font-medium tracking-wider rounded shadow-elevation-2 hover:shadow-elevation-3"
             :loading="deletingUser"
             :disabled="deletingUser"
           />

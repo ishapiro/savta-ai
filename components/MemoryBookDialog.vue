@@ -551,25 +551,25 @@
       <div class="flex flex-col sm:flex-row justify-end items-center gap-3 pt-4 border-t border-brand-primary/20">
         <Button
           type="button"
-          label="Cleanup"
+          label="CLEANUP"
           icon="pi pi-refresh"
           @click="$emit('cleanup')"
-          class="bg-brand-dialog-delete border-0 w-auto rounded-full px-6 py-2 shadow"
+          class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 w-full sm:w-auto px-6 py-2 text-sm font-medium tracking-wider rounded shadow-elevation-2 hover:shadow-elevation-3"
         />
         <Button
           type="button"
-          label="Cancel"
+          label="CANCEL"
           icon="pi pi-times"
           @click="$emit('close')"
-          class="bg-brand-dialog-cancel border-0 w-auto rounded-full px-6 py-2"
+          class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 w-full sm:w-auto px-6 py-2 text-sm font-medium tracking-wider rounded shadow-elevation-2 hover:shadow-elevation-3"
         />
         <Button
           type="submit"
-          :label="isEditing ? 'Recreate' : 'Compose Memory Book'"
+          :label="isEditing ? 'RECREATE' : 'COMPOSE MEMORY BOOK'"
           icon="pi pi-check"
           :loading="loading"
           :disabled="loading || !canSubmit"
-          class="bg-brand-dialog-save border-0 w-auto rounded-full px-6 py-2"
+          class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 w-full sm:w-auto px-6 py-2 text-sm font-medium tracking-wider rounded shadow-elevation-2 hover:shadow-elevation-3"
         />
       </div>
     </form>

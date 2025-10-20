@@ -15,8 +15,8 @@
         Just upload and we'll mail them to your loved ones or share them digitally.
       </h2>
       <Button
-        label="Getting Started"
-        class="w-full sm:w-auto bg-brand-header hover:bg-brand-secondary text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 mb-3 border-0"
+        label="GETTING STARTED"
+        class="w-full sm:w-auto bg-brand-primary hover:bg-brand-primary-dark text-white px-8 py-4 text-lg font-semibold uppercase tracking-wider rounded shadow-elevation-2 hover:shadow-elevation-3 mb-3 border-0"
         @click="openMagicMemoryDialog('quick')"
       />
       <div class="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-brand-primary mb-2">

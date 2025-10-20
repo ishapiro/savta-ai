@@ -120,20 +120,20 @@
           </p>
         </form>
 
-        <div class="mt-4 sm:mt-6 sm:flex sm:flex-row-reverse">
-                      <button
+        <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row-reverse gap-3">
+          <button
               type="button"
               @click="handleSubmit"
               :disabled="submitting"
-              class="w-full inline-flex justify-center rounded-full border border-transparent shadow-sm px-3 sm:px-4 py-2 bg-brand-highlight text-xs sm:text-sm font-bold text-white hover:bg-brand-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight sm:ml-3 sm:w-auto transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full inline-flex justify-center border-0 px-3 sm:px-4 py-2 bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-xs sm:text-sm font-bold text-white tracking-wider uppercase focus:outline-none sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-elevation-2 hover:shadow-elevation-3"
             >
               <i v-if="submitting" class="pi pi-spin pi-spinner mr-2"></i>
-              {{ isEdit ? 'Update Person' : 'Create Person' }}
+              {{ isEdit ? 'UPDATE PERSON' : 'CREATE PERSON' }}
             </button>
-                      <button
+          <button
               type="button"
               @click="$emit('close')"
-              class="mt-3 w-full inline-flex justify-center rounded-full border border-brand-primary/20 shadow-sm px-3 sm:px-4 py-2 bg-gray-50 text-xs sm:text-sm font-bold text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight sm:mt-0 sm:w-auto transition-all duration-200"
+              class="w-full inline-flex justify-center border-0 px-3 sm:px-4 py-2 bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-xs sm:text-sm font-bold text-white tracking-wider uppercase focus:outline-none sm:w-auto rounded shadow-elevation-2 hover:shadow-elevation-3"
             >
               Cancel
             </button>
