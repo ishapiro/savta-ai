@@ -19,7 +19,7 @@
           </div>
 
           <!-- Desktop Navigation - Hamburger Menu -->
-          <div class="hidden xl:flex items-center">
+          <div class="hidden lg:flex items-center">
             <div class="relative desktop-menu-container" @click="handleClickOutside">
               <!-- Hamburger Icon -->
               <button
@@ -44,12 +44,14 @@
                 ></span>
               </button>
 
-              <!-- Desktop Navigation Modal -->
+              <!-- Desktop Navigation Modal - Full Screen Centered -->
               <div
                 v-if="showDesktopMenu || desktopMenuOpen"
-                @mouseleave="showDesktopMenu = false"
-                class="absolute top-12 right-0 w-80 xl:w-96 2xl:w-[28rem] bg-brand-background border border-brand-highlight/30 rounded-xl shadow-2xl z-50 overflow-hidden"
+                class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+                @click.self="closeDesktopMenu"
               >
+                <div class="bg-brand-background border border-brand-highlight/30 rounded-xl shadow-2xl overflow-hidden max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+                >
                 <!-- Modal Header -->
                 <div class="bg-gradient-to-r from-brand-header/10 to-brand-secondary/10 p-4 border-b border-brand-highlight/30">
                   <h3 class="text-lg font-semibold text-brand-secondary flex items-center gap-2">
@@ -58,11 +60,11 @@
                   </h3>
                 </div>
 
-                <!-- Modal Content -->
-                <div class="p-4 space-y-3">
+                <!-- Modal Content - Two Column Grid on Desktop -->
+                <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <!-- Primary Actions -->
                   <div class="space-y-2">
-                    <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide">Main</h4>
+                    <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Main</h4>
                     
                     <!-- Home -->
                     <NuxtLink to="/app/home" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
@@ -90,7 +92,7 @@
                   <!-- User Actions -->
                   <template v-if="user && userProfile && !userProfile.deleted">
                     <div class="space-y-2">
-                      <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide">Manage</h4>
+                      <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Manage</h4>
                       
                       <!-- Upload -->
                       <NuxtLink to="/app/upload" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
@@ -154,7 +156,7 @@
                   <!-- Auth Actions -->
                   <template v-if="!user">
                     <div class="space-y-2">
-                      <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide">Account</h4>
+                      <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Account</h4>
                       
                       <NuxtLink :to="`/app/login?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
                         <div class="w-8 h-8 bg-brand-header rounded-lg flex items-center justify-center">
@@ -178,9 +180,9 @@
                     </div>
                   </template>
 
-                  <!-- Sign Out -->
+                  <!-- Sign Out - Full Width on Desktop -->
                   <template v-if="user && userProfile && !userProfile.deleted">
-                    <div class="border-t border-brand-highlight/30 pt-3">
+                    <div class="border-t border-brand-highlight/30 pt-3 lg:col-span-2">
                       <button @click="handleSignOut" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group w-full text-left">
                         <div class="w-8 h-8 bg-brand-background border border-brand-highlight/30 rounded-lg flex items-center justify-center">
                           <i class="pi pi-sign-out text-brand-secondary text-sm"></i>
@@ -193,13 +195,14 @@
                     </div>
                   </template>
                 </div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Hamburger button and drawer remain as flex lg:hidden and lg:hidden respectively -->
           <!-- Mobile Menu Button -->
-          <div class="flex xl:hidden items-center">
+          <div class="flex lg:hidden items-center">
             <button
               @click="toggleMobileMenu"
               class="relative w-8 h-8 flex flex-col justify-center items-center focus:outline-none focus:ring-2 focus:ring-brand-header focus:ring-offset-2 rounded-lg transition-all duration-200"
@@ -225,20 +228,13 @@
       </nav>
     </header>
 
-    <!-- Mobile Menu Backdrop -->
-    <div 
-      v-if="mobileMenuOpen" 
-      @click="closeMobileMenu"
-      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 xl:hidden transition-opacity duration-300"
-    ></div>
-
-    <!-- Mobile Navigation Modal -->
+    <!-- Mobile Navigation Modal - Full Screen -->
     <div
-      class="fixed top-4 left-4 right-4 max-w-sm mx-auto bg-brand-background border border-brand-highlight/30 rounded-xl shadow-2xl z-50 xl:hidden transform transition-all duration-300 ease-in-out"
-      :class="mobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'"
+      class="fixed inset-0 bg-brand-background z-50 lg:hidden transform transition-all duration-300 ease-in-out overflow-y-auto"
+      :class="mobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'"
     >
       <!-- Modal Header -->
-      <div class="bg-gradient-to-r from-brand-header/10 to-brand-secondary/10 p-4 border-b border-brand-highlight/30 rounded-t-xl">
+      <div class="bg-gradient-to-r from-brand-header/10 to-brand-secondary/10 p-4 border-b border-brand-highlight/30">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-brand-secondary flex items-center gap-2">
             <i class="pi pi-th-large text-brand-header"></i>
@@ -250,11 +246,11 @@
         </div>
       </div>
 
-      <!-- Modal Content -->
-      <div class="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+      <!-- Modal Content - Full Screen Single Column -->
+      <div class="p-6 space-y-4">
         <!-- Primary Actions -->
         <div class="space-y-2">
-          <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide">Main</h4>
+          <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Main</h4>
           
           <!-- Home -->
           <NuxtLink to="/app/home" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
@@ -282,7 +278,7 @@
         <!-- User Actions -->
         <template v-if="user && userProfile && !userProfile.deleted">
           <div class="space-y-2">
-            <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide">Manage</h4>
+            <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Manage</h4>
             
             <!-- Upload -->
             <NuxtLink to="/app/upload" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
@@ -346,7 +342,7 @@
         <!-- Auth Actions -->
         <template v-if="!user">
           <div class="space-y-2">
-            <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide">Account</h4>
+            <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Account</h4>
             
             <NuxtLink to="/app/login" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
               <div class="w-8 h-8 bg-brand-header rounded-lg flex items-center justify-center">
