@@ -798,6 +798,7 @@
         :dismissable-mask="true"
         :style="{ width: '95vw', maxWidth: '1200px', height: '95vh' }"
         :class="['w-full', 'h-full', 'm-0', 'rounded-none', 'sm:rounded-2xl']"
+        :transition-options="'0ms'"
         @hide="onPdfModalHide"
       >
         <template #header>

@@ -211,7 +211,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick, onMounted } from 'vue'
 import VuePdfEmbed from 'vue-pdf-embed'
 import 'vue-pdf-embed/dist/styles/annotationLayer.css'
 import 'vue-pdf-embed/dist/styles/textLayer.css'
@@ -231,7 +231,9 @@ const panContainer = ref(null)
 const currentPage = ref(1)
 const pageCount = ref(1)
 const isLoaded = ref(false)
+const isMounted = ref(false) // Track if component is mounted
 const scale = ref(0.7)
+const defaultScale = ref(0.7) // Store the fit-to-view scale for reset
 const pdfEmbedKey = ref(0) // used to force VuePdfEmbed to re-render
 const pdfDimensions = ref({ width: 0, height: 0 })
 const isSharing = ref(false) // Track if we're currently sharing
@@ -409,30 +411,106 @@ function onImageLoaded(event) {
   const actualHeight = img.naturalHeight
   actualImageDimensions.value = { width: actualWidth, height: actualHeight }
   
-  // Calculate display dimensions while maintaining aspect ratio
-  const maxDisplayWidth = 1200
-  const maxDisplayHeight = 900
+  // Wait for component to be mounted and container to be fully sized
+  if (!isMounted.value) {
+    console.log('🔍 Image loaded but component not mounted yet, deferring scale calculation')
+    return
+  }
   
-  const scaleX = maxDisplayWidth / actualWidth
-  const scaleY = maxDisplayHeight / actualHeight
-  const displayScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
+  // Calculate fit-to-view scale after delay to ensure container is fully sized
+  // Even with no animation, DOM needs time to fully render, especially in modals
+  setTimeout(() => {
+    calculateImageScale(actualWidth, actualHeight)
+  }, 300)
+}
+
+function calculateImageScale(actualWidth, actualHeight) {
+  // CRITICAL: Images are generated at 300 DPI for print quality, but screens are ~96 DPI
+  // We need to convert the image dimensions to "screen equivalent" size
+  // Conversion factor: 300 DPI / 96 DPI = 3.125
+  const PRINT_DPI = 300
+  const SCREEN_DPI = 96
+  const DPI_CONVERSION = PRINT_DPI / SCREEN_DPI
   
-  const displayWidth = Math.round(actualWidth * displayScale)
-  const displayHeight = Math.round(actualHeight * displayScale)
+  // Convert high-res image dimensions to screen-equivalent dimensions
+  const screenEquivalentWidth = actualWidth / DPI_CONVERSION
+  const screenEquivalentHeight = actualHeight / DPI_CONVERSION
   
-  imageDimensions.value = { width: displayWidth, height: displayHeight }
+  // Use window dimensions directly instead of waiting for container measurement
+  const windowWidth = window.innerWidth
+  const windowHeight = window.innerHeight
   
-  console.log('🔍 Image loaded successfully:', {
-    src: props.src,
-    actualDimensions: `${actualWidth}x${actualHeight}`,
-    displayDimensions: `${displayWidth}x${displayHeight}`,
-    displayScale: displayScale
+  // Actual usable content area within the dialog (accounting for all chrome)
+  const DIALOG_HEADER = 60
+  const DIALOG_CONTROLS = 80
+  const DIALOG_PADDING = 40
+  const SIDE_MARGIN = 20
+  
+  const availableWidth = (windowWidth * 0.95) - SIDE_MARGIN
+  const availableHeight = (windowHeight * 0.95) - DIALOG_HEADER - DIALOG_CONTROLS - DIALOG_PADDING
+  
+  console.log('🔍 Using window-based calculation with DPI conversion:', {
+    windowSize: `${windowWidth}x${windowHeight}`,
+    actualImageSize: `${actualWidth}x${actualHeight}px (at ${PRINT_DPI} DPI)`,
+    screenEquivalentSize: `${Math.round(screenEquivalentWidth)}x${Math.round(screenEquivalentHeight)}px (at ${SCREEN_DPI} DPI)`,
+    availableSpace: `${Math.round(availableWidth)}x${Math.round(availableHeight)}`,
+    dpiConversion: `${DPI_CONVERSION.toFixed(3)}x`
   })
   
-  // Update initial scale for this specific image
-  if (isJpgImage.value) {
-    scale.value = displayScale
+  // Ensure available dimensions are positive
+  if (availableWidth <= 0 || availableHeight <= 0) {
+    console.warn('🔍 Available space is invalid, using default scale:', {
+      availableWidth,
+      availableHeight
+    })
+    defaultScale.value = 0.7
+    scale.value = 0.7
+    return
   }
+  
+  // Calculate scale to fit both dimensions using screen-equivalent size
+  const scaleX = availableWidth / screenEquivalentWidth
+  const scaleY = availableHeight / screenEquivalentHeight
+  const fitScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
+  
+  console.log('🔍 Image scale calculation:', {
+    screenEquivalentDimensions: `${Math.round(screenEquivalentWidth)}x${Math.round(screenEquivalentHeight)}`,
+    availableSpace: `${Math.round(availableWidth)}x${Math.round(availableHeight)}`,
+    scaleX: scaleX.toFixed(3),
+    scaleY: scaleY.toFixed(3),
+    fitScale: fitScale.toFixed(3)
+  })
+  
+  // Ensure scale is reasonable (now that we're using screen-equivalent dimensions)
+  if (fitScale < 0.1 || fitScale > 2 || isNaN(fitScale)) {
+    console.warn('🔍 Calculated scale out of range, using default:', {
+      fitScale,
+      scaleX,
+      scaleY,
+      reason: isNaN(fitScale) ? 'NaN' : fitScale < 0.1 ? 'too small (< 0.1)' : 'too large (> 2.0)'
+    })
+    defaultScale.value = 0.7
+    scale.value = 0.7
+    return
+  }
+  
+  // Store as default scale for reset
+  defaultScale.value = fitScale
+  scale.value = fitScale
+  
+  // Calculate display dimensions for container sizing
+  const displayWidth = Math.round(actualWidth * fitScale)
+  const displayHeight = Math.round(actualHeight * fitScale)
+  imageDimensions.value = { width: displayWidth, height: displayHeight }
+  
+  console.log('🔍 Image scaled to fit view:', {
+    src: props.src,
+    actualDimensions: `${actualWidth}x${actualHeight}`,
+    containerDimensions: `${containerWidth}x${containerHeight}`,
+    availableSpace: `${availableWidth}x${availableHeight}`,
+    fitScale: fitScale.toFixed(3),
+    displayDimensions: `${displayWidth}x${displayHeight}`
+  })
 }
 
 function onImageError() {
@@ -455,135 +533,171 @@ function onLoaded(pdf) {
     }
     console.log('🔍 PDF Loaded with dimensions:', pdfDimensions.value)
     
-    // Calculate initial scale to fit PDF in dialog with 10px margins
-    // Add small delay to ensure container is available
+    // Calculate initial scale after delay to ensure container is sized
     setTimeout(() => {
       calculateInitialScale()
-    }, 100)
+    }, 300)
+    setTimeout(() => {
+      // Second attempt in case first was too early
+      if (scale.value < 0.5) {
+        console.log('🔍 Recalculating scale (first attempt resulted in:', scale.value, ')')
+        calculateInitialScale()
+      }
+    }, 500)
   }).catch(() => {
     // For 8.5 x 11 documents, use standard dimensions
     pdfDimensions.value = { width: 612, height: 792 } // 8.5 x 11 at 72 DPI
     console.log('🔍 PDF Loaded with 8.5x11 fallback dimensions:', pdfDimensions.value)
     setTimeout(() => {
       calculateInitialScale()
-    }, 100)
+    }, 300)
+    setTimeout(() => {
+      if (scale.value < 0.5) {
+        console.log('🔍 Recalculating scale (first attempt resulted in:', scale.value, ')')
+        calculateInitialScale()
+      }
+    }, 500)
   })
 }
 
 function calculateInitialScale() {
-  // Get the actual container dimensions
-  const container = pdfContainer.value
-  if (!container) {
-    console.log('🔍 Container not available, using default scale')
-    // For JPG images, use detected dimensions or default, for PDFs use 0.7
-    if (isJpgImage.value) {
-      const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
+  // Use window dimensions directly instead of waiting for container measurement
+  // Dialog is set to 95vw x 95vh, but actual content area is smaller due to:
+  // - Dialog header (~60px)
+  // - Dialog padding
+  // - Control bar at bottom (~80px)
+  const windowWidth = window.innerWidth
+  const windowHeight = window.innerHeight
+  
+  // Actual usable content area within the dialog (accounting for all chrome)
+  const DIALOG_HEADER = 60
+  const DIALOG_CONTROLS = 80
+  const DIALOG_PADDING = 40 // Total padding top and bottom
+  const SIDE_MARGIN = 20 // Additional margin for spacing
+  
+  const availableWidth = (windowWidth * 0.95) - SIDE_MARGIN
+  const availableHeight = (windowHeight * 0.95) - DIALOG_HEADER - DIALOG_CONTROLS - DIALOG_PADDING
+  
+  console.log('🔍 PDF: Using window-based calculation:', {
+    windowSize: `${windowWidth}x${windowHeight}`,
+    dialogSize: `${Math.round(windowWidth * 0.95)}x${Math.round(windowHeight * 0.95)}`,
+    availableSpace: `${Math.round(availableWidth)}x${Math.round(availableHeight)}`,
+    reserves: `header:${DIALOG_HEADER}px, controls:${DIALOG_CONTROLS}px, padding:${DIALOG_PADDING}px`
+  })
+  
+  // Validate available dimensions are positive
+  if (availableWidth <= 0 || availableHeight <= 0) {
+    console.warn('🔍 Available space invalid, using default scale:', {
+      availableWidth,
+      availableHeight,
+      containerWidth,
+      containerHeight
+    })
+    defaultScale.value = 0.7
+    scale.value = 0.7
+    return
+  }
+  
+  // For JPG images, use actual dimensions with DPI conversion
+  if (isJpgImage.value) {
+    const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
+    
+    if (actualWidth > 0 && actualHeight > 0) {
+      // CRITICAL: Convert 300 DPI print dimensions to screen-equivalent dimensions
+      const PRINT_DPI = 300
+      const SCREEN_DPI = 96
+      const DPI_CONVERSION = PRINT_DPI / SCREEN_DPI
       
-      if (actualWidth > 0 && actualHeight > 0) {
-        // Use actual image dimensions
-        const maxDisplayWidth = 1200
-        const maxDisplayHeight = 900
-        
-        const scaleX = maxDisplayWidth / actualWidth
-        const scaleY = maxDisplayHeight / actualHeight
-        const fitScale = Math.min(scaleX, scaleY, 1)
-        
-        scale.value = fitScale
-        console.log('🔍 JPG initial scale using actual dimensions:', fitScale)
-      } else {
-        // Fallback to default scale
-        scale.value = 0.8
-        console.log('🔍 JPG initial scale using default:', scale.value)
+      const screenEquivalentWidth = actualWidth / DPI_CONVERSION
+      const screenEquivalentHeight = actualHeight / DPI_CONVERSION
+      
+      // Calculate scale to fit available space using screen-equivalent dimensions
+      const scaleX = availableWidth / screenEquivalentWidth
+      const scaleY = availableHeight / screenEquivalentHeight
+      const fitScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
+      
+      // Validate scale is reasonable (now that we're using screen-equivalent dimensions)
+      if (fitScale < 0.1 || fitScale > 2) {
+        console.warn('🔍 JPG scale out of range, using default:', fitScale)
+        defaultScale.value = 0.7
+        scale.value = 0.7
+        return
       }
+      
+      defaultScale.value = fitScale
+      scale.value = fitScale
+      
+      console.log('🔍 JPG scaled to fit view:', {
+        actualDimensions: `${actualWidth}x${actualHeight}px (at ${PRINT_DPI} DPI)`,
+        screenEquivalentDimensions: `${Math.round(screenEquivalentWidth)}x${Math.round(screenEquivalentHeight)}px (at ${SCREEN_DPI} DPI)`,
+        availableSpace: `${Math.round(availableWidth)}x${Math.round(availableHeight)}`,
+        fitScale: fitScale.toFixed(3)
+      })
     } else {
-      scale.value = 0.7
+      // Fallback to default scale
+      defaultScale.value = 0.8
+      scale.value = 0.8
+      console.log('🔍 JPG using default scale:', scale.value)
     }
     return
   }
   
-  const containerRect = container.getBoundingClientRect()
-  const containerWidth = containerRect.width
-  const containerHeight = containerRect.height
-  
+  // For PDFs, use PDF dimensions (in points, 72 DPI)
   const { width: pdfWidth, height: pdfHeight } = pdfDimensions.value
   
   if (!pdfWidth || !pdfHeight) {
     console.log('🔍 No PDF dimensions available, using default scale')
-    // For JPG images, use detected dimensions or default, for PDFs use 0.7
-    if (isJpgImage.value) {
-      const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
-      
-      if (actualWidth > 0 && actualHeight > 0) {
-        // Use actual image dimensions
-        const maxDisplayWidth = 1200
-        const maxDisplayHeight = 900
-        
-        const scaleX = maxDisplayWidth / actualWidth
-        const scaleY = maxDisplayHeight / actualHeight
-        const fitScale = Math.min(scaleX, scaleY, 1)
-        
-        scale.value = fitScale
-        console.log('🔍 JPG initial scale using actual dimensions:', fitScale)
-      } else {
-        // Fallback to default scale
-        scale.value = 0.8
-        console.log('🔍 JPG initial scale using default:', scale.value)
-      }
-    } else {
-      scale.value = 0.7
-    }
+    defaultScale.value = 0.7
+    scale.value = 0.7
     return
   }
   
-  // For JPG images, use detected dimensions
-  if (isJpgImage.value) {
-    console.log('🔍 JPG image detected, setting initial scale based on actual dimensions')
-    const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
-    
-    if (actualWidth > 0 && actualHeight > 0) {
-      // Calculate the scale to display at actual image dimensions
-      const maxDisplayWidth = 1200
-      const maxDisplayHeight = 900
-      
-      const scaleX = maxDisplayWidth / actualWidth
-      const scaleY = maxDisplayHeight / actualHeight
-      const initialScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
-      
-      scale.value = initialScale
-      console.log('🔍 JPG initial scale set to:', initialScale)
-    } else {
-      // Fallback to default scale
-      scale.value = 0.8
-      console.log('🔍 JPG initial scale using default:', scale.value)
-    }
+  // CRITICAL: PDF dimensions are in points (72 DPI), but screen is 96 DPI
+  // Convert PDF points to screen pixels: points * (96/72) = points * 1.333
+  const PDF_DPI = 72
+  const SCREEN_DPI = 96
+  const pointsToPixels = SCREEN_DPI / PDF_DPI
+  
+  const pdfWidthInPixels = pdfWidth * pointsToPixels
+  const pdfHeightInPixels = pdfHeight * pointsToPixels
+  
+  // Calculate scale to fit both width and height with margins
+  const scaleForWidth = availableWidth / pdfWidthInPixels
+  const scaleForHeight = availableHeight / pdfHeightInPixels
+  
+  // Use the smaller scale to ensure content fits completely
+  const fitScale = Math.min(scaleForWidth, scaleForHeight, 2.5) // Cap at 2.5x zoom
+  const finalScale = Math.max(fitScale, 0.1) // Minimum 0.1x (10%) zoom with proper DPI conversion
+  
+  // Validate scale is reasonable (now that we're using screen-equivalent dimensions)
+  if (finalScale < 0.1 || finalScale > 3 || isNaN(finalScale)) {
+    console.warn('🔍 PDF scale out of range or invalid, using default:', {
+      calculatedScale: finalScale,
+      scaleForWidth,
+      scaleForHeight,
+      availableSpace: `${Math.round(availableWidth)}x${Math.round(availableHeight)}`,
+      pdfDimensions: `${pdfWidth}x${pdfHeight}pt (${PDF_DPI} DPI)`,
+      pdfInPixels: `${Math.round(pdfWidthInPixels)}x${Math.round(pdfHeightInPixels)}px (${SCREEN_DPI} DPI)`,
+      reason: isNaN(finalScale) ? 'NaN' : finalScale < 0.1 ? 'too small (< 0.1)' : 'too large (> 3.0)'
+    })
+    defaultScale.value = 0.7
+    scale.value = 0.7
     return
   }
   
-  // Account for padding (p-4 = 16px on each side)
-  const availableWidth = containerWidth - 32 // 16px padding on each side
-  const availableHeight = containerHeight - 32 // 16px padding on top and bottom
+  // Store as default scale for reset
+  defaultScale.value = finalScale
+  scale.value = finalScale
   
-  // Calculate scale to fit width and height with 20px margins for better spacing
-  const scaleForWidth = (availableWidth - 40) / pdfWidth // 20px margin on each side
-  const scaleForHeight = (availableHeight - 40) / pdfHeight // 20px margin on top and bottom
-  
-  // Use the smaller scale to ensure PDF fits completely
-  const calculatedScale = Math.min(scaleForWidth, scaleForHeight, 2.5) // Cap at 2.5x zoom
-  
-  console.log('🔍 Initial Scale Calculation:', {
-    containerWidth,
-    containerHeight,
-    availableWidth,
-    availableHeight,
-    pdfWidth,
-    pdfHeight,
-    scaleForWidth,
-    scaleForHeight,
-    calculatedScale,
-    finalScale: Math.max(calculatedScale, 0.4)
+  console.log('🔍 PDF scaled to fit view:', {
+    availableSpace: `${Math.round(availableWidth)}x${Math.round(availableHeight)}px`,
+    pdfDimensions: `${pdfWidth}x${pdfHeight}pt (${PDF_DPI} DPI)`,
+    pdfInPixels: `${Math.round(pdfWidthInPixels)}x${Math.round(pdfHeightInPixels)}px (${SCREEN_DPI} DPI)`,
+    scaleForWidth: scaleForWidth.toFixed(3),
+    scaleForHeight: scaleForHeight.toFixed(3),
+    fitScale: fitScale.toFixed(3),
+    finalScale: finalScale.toFixed(3)
   })
-  
-  scale.value = Math.max(calculatedScale, 0.4) // Minimum 0.4x zoom for better visibility
 }
 
 function logPositioningClasses() {
@@ -709,40 +823,18 @@ function zoomOut() {
 }
 
 function resetZoom() {
-  console.log('🔍 Reset Zoom clicked, current scale:', scale.value)
-  if (isJpgImage.value) {
-    // Reset to fit-to-view scale for JPG images based on actual dimensions
-    const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
-    
-    if (actualWidth > 0 && actualHeight > 0) {
-      // Use actual image dimensions to calculate fit-to-view scale
-      const maxDisplayWidth = 1200
-      const maxDisplayHeight = 900
-      
-      const scaleX = maxDisplayWidth / actualWidth
-      const scaleY = maxDisplayHeight / actualHeight
-      const fitScale = Math.min(scaleX, scaleY, 1) // Don't scale up, only down
-      
-      scale.value = fitScale
-      console.log('🔍 JPG scale reset to fit-to-view:', {
-        actualDimensions: `${actualWidth}x${actualHeight}`,
-        fitScale: fitScale
-      })
-    } else {
-      // Fallback to default scale if dimensions not available
-      scale.value = 0.8
-      console.log('🔍 JPG scale reset to default:', scale.value)
-    }
-  } else {
-    scale.value = 0.7
-    console.log('🔍 PDF scale reset to:', scale.value)
-  }
+  console.log('🔍 Reset Zoom clicked, current scale:', scale.value, 'default scale:', defaultScale.value)
+  
+  // Reset to the stored default (fit-to-view) scale
+  scale.value = defaultScale.value
   
   // Reset pan position when zoom is reset
   panX.value = 0
   panY.value = 0
   lastPanX.value = 0
   lastPanY.value = 0
+  
+  console.log('🔍 Zoom reset to fit-to-view scale:', defaultScale.value.toFixed(3))
 }
 
 // Panning functions
@@ -1188,6 +1280,39 @@ watch(isJpgImage, (isJpg) => {
     isJpgImage: isJpg,
     src: props.src
   })
+})
+
+// Lifecycle hook: Set mounted flag and recalculate scale if content already loaded
+onMounted(() => {
+  console.log('🔍 PdfViewer component mounted')
+  isMounted.value = true
+  
+  // If image was loaded before mount, calculate scale now
+  // Even with no animation, DOM needs time to fully render, especially for modal sizing
+  setTimeout(() => {
+    const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
+    if (actualWidth > 0 && actualHeight > 0 && isJpgImage.value) {
+      console.log('🔍 Recalculating image scale after mount')
+      calculateImageScale(actualWidth, actualHeight)
+    } else if (pdfDimensions.value.width > 0 && pdfDimensions.value.height > 0 && !isJpgImage.value) {
+      console.log('🔍 Recalculating PDF scale after mount')
+      calculateInitialScale()
+    }
+  }, 300)
+  
+  // Add a second attempt in case container isn't fully sized yet
+  setTimeout(() => {
+    if (scale.value === 0.7) { // Still using default, try again
+      const { width: actualWidth, height: actualHeight } = actualImageDimensions.value
+      if (actualWidth > 0 && actualHeight > 0 && isJpgImage.value) {
+        console.log('🔍 Second attempt: Recalculating image scale')
+        calculateImageScale(actualWidth, actualHeight)
+      } else if (pdfDimensions.value.width > 0 && pdfDimensions.value.height > 0 && !isJpgImage.value) {
+        console.log('🔍 Second attempt: Recalculating PDF scale')
+        calculateInitialScale()
+      }
+    }
+  }, 500)
 })
 </script>
 
