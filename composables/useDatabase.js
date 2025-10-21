@@ -521,9 +521,9 @@ export const useDatabase = () => {
       
       if (!assetIds || assetIds.length === 0) return []
       
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('assets')
-        .select('id, storage_url, user_caption, ai_caption')
+        .select('id, storage_url, thumbnail_url, thumbnail_width, thumbnail_height, user_caption, ai_caption')
         .eq('user_id', user.value.id)
         .eq('deleted', false)
         .in('id', assetIds)

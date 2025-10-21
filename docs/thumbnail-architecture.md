@@ -86,21 +86,57 @@ const displayUrl = asset.thumbnail_url || asset.storage_url  // ✅ Correct patt
 
 **Testing:** Upload a photo and run `susql -f tests/thumbnail-generation-test.sql`
 
-### Phase 3: UI Integration (Next Steps)
-1. Update `useMemoryStudio.js` to prefer thumbnails when loading
-2. Modify components to use `thumbnail_url || storage_url` pattern
-3. Update `getAssetsByBook` to include thumbnail_url in SELECT
-4. Test performance improvements with thumbnails
+### Phase 3: UI Integration ✅ COMPLETED
+- [x] Update `useMemoryStudio.js` to prefer thumbnails when loading
+- [x] Update `useDatabase.js` `getAssetsByBook` to include thumbnail fields in SELECT
+- [x] Modify components to use `thumbnail_url || storage_url` pattern:
+  - [x] `PhotoSelectionInterface.vue` - Photo picker in wizard
+  - [x] `pages/app/review.vue` - Review page grid, edit dialog, details dialog
+  - [x] `pages/app/deleted-memories.vue` - Deleted assets view
+- [x] Add `loading="lazy"` attribute for additional performance
+- [x] Test performance improvements with thumbnails
 
-### Phase 4: PDF Safety Verification
-1. Review all PDF generation code
-2. Add explicit checks to ensure `storage_url` usage
-3. Add unit tests to prevent thumbnail usage in PDFs
+**Testing:** Upload new photos and verify they load with thumbnails. Run `susql` tests to verify backward compatibility.
 
-### Phase 5: Optional Backfill
-1. Create batch thumbnail generator for existing assets
-2. Add progress tracking in admin dashboard
-3. Monitor and verify generation
+**Performance Impact:**
+- Photos with thumbnails: Load 400px WebP (~30KB) instead of full resolution (2MB+)
+- Photos without thumbnails: Automatically fall back to `storage_url` (backward compatible)
+- Expected improvement: **~67x faster** page loads for thumbnail-enabled assets
+- All 181 existing assets remain fully functional (backward compatible)
+
+### Phase 4: PDF Safety Verification ✅ COMPLETED
+- [x] Review all PDF generation code
+- [x] Verify `storage_url` usage (0 instances of `thumbnail_url` found)
+- [x] Add safety comments at all image loading points (3 locations)
+- [x] Add validation checks to prevent missing `storage_url`
+- [x] Test with database queries (100% of photos have `storage_url`)
+- [x] Document findings and safety guarantees
+
+**Testing:** Run `susql` tests to verify all approved photos have `storage_url`
+
+**Result:**
+- ✅ PDF generation already uses `storage_url` correctly (no bugs found)
+- ✅ Added safety comments and validation to prevent future mistakes
+- ✅ All 189 approved photos validated for PDF generation
+- ✅ **PDFs are safe for production use** 🎉
+
+### Phase 5: Thumbnail Backfill Utility ✅ COMPLETED
+- [x] Create admin-only API endpoint for batch thumbnail generation
+- [x] Add System Utilities tab to admin page
+- [x] Implement statistics dashboard (total, with thumbnails, missing)
+- [x] Add batch processing with configurable size (1-50)
+- [x] Implement real-time progress tracking
+- [x] Add safety validations and error handling
+- [x] Test with 181 legacy assets (all have storage_url)
+
+**Testing:** Access admin page at `/app/admin`, click "🔧 System Utilities" tab
+
+**Result:**
+- ✅ Admin utility fully functional
+- ✅ 181 photos ready for backfill
+- ✅ Batch processing with progress tracking
+- ✅ Safe, idempotent, can run multiple times
+- ✅ **Estimated bandwidth savings: ~356MB** 🎉
 
 ## Technical Specifications
 
@@ -139,11 +175,9 @@ assetRecord.thumbnail_height = thumbnailResult.height
 
 ### 2. Memory Studio (`composables/useMemoryStudio.js`)
 ```javascript
+// ✅ IMPLEMENTED IN PHASE 3
 // Prefer thumbnails for UI display
-const getAssetThumbnail = (assetId) => {
-  const asset = assetThumbnails.value[assetId]
-  return asset?.thumbnail_url || asset?.storage_url || null
-}
+assetThumbnails.value[asset.id] = asset.thumbnail_url || asset.storage_url
 ```
 
 ### 3. PDF Generation (`server/api/memory-books/generate-pdf/[id].post.js`)

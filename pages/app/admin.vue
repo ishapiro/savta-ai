@@ -879,6 +879,115 @@
             </DataTable>
           </div>
         </TabPanel>
+
+        <!-- System Utilities Tab -->
+        <TabPanel header="🔧 System Utilities">
+          <div class="space-y-6">
+            <!-- Thumbnail Backfill Utility -->
+            <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-brand-primary mb-2">Thumbnail Backfill</h3>
+                  <p class="text-sm text-brand-primary/70">
+                    Generate thumbnails for photos that don't have them yet. Thumbnails improve UI performance by loading 400px WebP images (~30KB) instead of full-resolution photos (2MB+).
+                  </p>
+                </div>
+              </div>
+
+              <!-- Stats Display -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-brand-navigation/10 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-brand-primary">{{ thumbnailStats.totalPhotos }}</div>
+                  <div class="text-sm text-brand-primary/70">Total Photos</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-green-600">{{ thumbnailStats.withThumbnails }}</div>
+                  <div class="text-sm text-gray-600">With Thumbnails</div>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-orange-600">{{ thumbnailStats.withoutThumbnails }}</div>
+                  <div class="text-sm text-gray-600">Missing Thumbnails</div>
+                </div>
+              </div>
+
+              <!-- Control Panel -->
+              <div class="flex flex-wrap items-center gap-3 mb-4">
+                <Button
+                  label="Check Status"
+                  icon="pi pi-refresh"
+                  @click="loadThumbnailStats"
+                  :loading="loadingThumbnailStats"
+                  :disabled="backfillRunning"
+                  class="bg-brand-dialog-edit border-0 w-auto rounded-full px-6 py-2 shadow"
+                />
+                <Button
+                  v-if="!backfillRunning"
+                  label="Generate"
+                  icon="pi pi-image"
+                  @click="startThumbnailBackfill"
+                  :disabled="thumbnailStats.withoutThumbnails === 0"
+                  class="bg-brand-dialog-edit border-0 w-auto rounded-full px-6 py-2 shadow"
+                />
+                <Button
+                  v-else
+                  :label="backfillStopping ? 'Stopping...' : 'Stop'"
+                  icon="pi pi-times"
+                  @click="stopThumbnailBackfill"
+                  :disabled="backfillStopping"
+                  class="bg-red-600 hover:bg-red-700 text-white border-0 w-auto rounded-full px-6 py-2 shadow"
+                />
+                <div class="flex items-center gap-2">
+                  <label for="backfillBatchSize" class="text-sm text-brand-primary/70 whitespace-nowrap">Batch size:</label>
+                  <InputNumber
+                    id="backfillBatchSize"
+                    v-model="backfillBatchSize"
+                    :min="1"
+                    :max="50"
+                    :step="5"
+                    showButtons
+                    buttonLayout="horizontal"
+                    style="width: 120px"
+                    :disabled="backfillRunning"
+                  />
+                </div>
+              </div>
+
+              <!-- Progress Display -->
+              <div v-if="backfillProgress.show" class="mt-4 p-4 bg-brand-navigation/10 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-medium text-brand-primary">Processing Thumbnails...</span>
+                  <span class="text-sm text-brand-primary/70">{{ backfillProgress.processed }} / {{ backfillProgress.total }}</span>
+                </div>
+                <ProgressBar :value="backfillProgress.percentage" class="mb-2" />
+                <div class="text-xs text-brand-primary/70 mb-2">
+                  ✅ {{ backfillProgress.succeeded }} succeeded &nbsp;|&nbsp;
+                  ❌ {{ backfillProgress.failed }} failed &nbsp;|&nbsp;
+                  ⏭️ {{ backfillProgress.skipped }} skipped
+                </div>
+                <div v-if="backfillRunning && backfillProgress.currentPhoto > 0 && backfillProgress.currentPhoto <= backfillProgress.total" class="text-xs text-brand-primary/60 mb-2 flex items-center gap-2">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>Processing batch starting at photo {{ backfillProgress.currentPhoto }}...</span>
+                </div>
+                <div v-if="backfillProgress.message" class="text-sm text-brand-primary">
+                  {{ backfillProgress.message }}
+                </div>
+              </div>
+
+              <!-- Info Box -->
+              <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-start gap-3">
+                  <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
+                  <div class="text-sm text-blue-900">
+                    <strong>How it works:</strong> This utility generates 400px wide WebP thumbnails for photos that don't have them.
+                    Full-resolution images are preserved for PDF generation. The process is safe and can be run multiple times.
+                    <br><br>
+                    <strong>Performance impact:</strong> Thumbnails reduce page load times by ~67x (30KB vs 2MB per photo).
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabPanel>
       </TabView>
     </div>
 
@@ -3437,6 +3546,28 @@ const deletingBookPermanently = ref(false)
 const showEmptyTrashConfirmDialog = ref(false)
 const emptyingTrash = ref(false)
 
+// Thumbnail backfill variables
+const thumbnailStats = ref({
+  totalPhotos: 0,
+  withThumbnails: 0,
+  withoutThumbnails: 0
+})
+const loadingThumbnailStats = ref(false)
+const backfillRunning = ref(false)
+const backfillStopping = ref(false)
+const backfillBatchSize = ref(20)
+const backfillProgress = ref({
+  show: false,
+  processed: 0,
+  total: 0,
+  succeeded: 0,
+  failed: 0,
+  skipped: 0,
+  percentage: 0,
+  message: '',
+  currentPhoto: 0
+})
+
 // User management options
 const roleOptions = ref([
   { label: 'All Roles', value: 'all' },
@@ -5990,6 +6121,204 @@ const emptyTrashConfirmed = async () => {
     emptyingTrash.value = false
   }
 }
+
+// Thumbnail backfill functions
+const loadThumbnailStats = async () => {
+  try {
+    loadingThumbnailStats.value = true
+    
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+    
+    if (!accessToken) {
+      throw new Error('No access token available')
+    }
+    
+    // Query stats using susql-like query
+    const statsQuery = `
+      SELECT 
+        COUNT(*) as total_photos,
+        COUNT(thumbnail_url) FILTER (WHERE thumbnail_url IS NOT NULL) as with_thumbnails,
+        COUNT(*) FILTER (WHERE thumbnail_url IS NULL) as without_thumbnails
+      FROM assets
+      WHERE deleted = false AND type = 'photo'
+    `
+    
+    const { data, error } = await supabase.rpc('execute_sql', { query: statsQuery })
+    
+    if (error) {
+      // Fallback: query directly
+      const { data: allPhotos, error: photosError } = await supabase
+        .from('assets')
+        .select('id, thumbnail_url')
+        .eq('type', 'photo')
+        .eq('deleted', false)
+      
+      if (photosError) throw photosError
+      
+      thumbnailStats.value = {
+        totalPhotos: allPhotos.length,
+        withThumbnails: allPhotos.filter(p => p.thumbnail_url).length,
+        withoutThumbnails: allPhotos.filter(p => !p.thumbnail_url).length
+      }
+    } else if (data && data.length > 0) {
+      thumbnailStats.value = {
+        totalPhotos: parseInt(data[0].total_photos || 0),
+        withThumbnails: parseInt(data[0].with_thumbnails || 0),
+        withoutThumbnails: parseInt(data[0].without_thumbnails || 0)
+      }
+    }
+    
+    console.log('📊 Thumbnail stats:', thumbnailStats.value)
+    
+  } catch (error) {
+    console.error('❌ Failed to load thumbnail stats:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Stats Load Failed',
+      detail: error.message || 'Failed to load thumbnail statistics',
+      life: 5000
+    })
+  } finally {
+    loadingThumbnailStats.value = false
+  }
+}
+
+const stopThumbnailBackfill = () => {
+  backfillStopping.value = true
+  backfillProgress.value.message = '⏹️ Stopping after current batch...'
+  backfillProgress.value.currentPhoto = 0  // Hide spinner
+}
+
+const startThumbnailBackfill = async () => {
+  try {
+    backfillRunning.value = true
+    backfillStopping.value = false
+    backfillProgress.value = {
+      show: true,
+      processed: 0,
+      total: thumbnailStats.value.withoutThumbnails,
+      succeeded: 0,
+      failed: 0,
+      skipped: 0,
+      percentage: 0,
+      message: 'Starting thumbnail generation...',
+      currentPhoto: 0
+    }
+    
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+    
+    if (!accessToken) {
+      throw new Error('No access token available')
+    }
+    
+    let totalProcessed = 0
+    let totalSucceeded = 0
+    let totalFailed = 0
+    let totalSkipped = 0
+    const targetCount = thumbnailStats.value.withoutThumbnails
+    
+    // Process in batches until all are done or stopped
+    while (totalProcessed < targetCount && !backfillStopping.value) {
+      const batchNumber = Math.floor(totalProcessed / backfillBatchSize.value) + 1
+      console.log(`🔄 Starting batch ${batchNumber}...`)
+      
+      // Update current photo indicator at start of batch
+      backfillProgress.value.currentPhoto = totalProcessed + 1
+      
+      const response = await $fetch('/api/admin/backfill-thumbnails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: {
+          limit: backfillBatchSize.value
+        }
+      })
+      
+      if (response.success) {
+        totalProcessed += response.processed
+        totalSucceeded += response.succeeded
+        totalFailed += response.failed
+        totalSkipped += response.skipped
+        
+        backfillProgress.value = {
+          show: true,
+          processed: totalProcessed,
+          total: targetCount,
+          succeeded: totalSucceeded,
+          failed: totalFailed,
+          skipped: totalSkipped,
+          percentage: Math.round((totalProcessed / targetCount) * 100),
+          message: backfillStopping.value ? '⏹️ Stopping after current batch...' : (response.message || `Processing batch...`),
+          currentPhoto: 0  // Reset after batch completes
+        }
+        
+        console.log(`✅ Batch complete: ${response.processed} processed, ${response.succeeded} succeeded`)
+        
+        // If no more assets to process, break
+        if (response.processed === 0) {
+          break
+        }
+        
+        // Check if stop was requested
+        if (backfillStopping.value) {
+          backfillProgress.value.message = `⏹️ Stopped. Processed ${totalSucceeded} of ${targetCount} thumbnails.`
+          
+          toast.add({
+            severity: 'info',
+            summary: 'Backfill Stopped',
+            detail: `Generated ${totalSucceeded} thumbnails before stopping. ${totalFailed} failed, ${totalSkipped} skipped.`,
+            life: 8000
+          })
+          
+          break
+        }
+      } else {
+        throw new Error(response.message || 'Backfill failed')
+      }
+      
+      // Small delay between batches to prevent overwhelming the server
+      if (totalProcessed < targetCount && !backfillStopping.value) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+    }
+    
+    // Only show complete message if we weren't stopped
+    if (!backfillStopping.value) {
+      backfillProgress.value.message = `✅ Complete! ${totalSucceeded} thumbnails generated successfully.`
+      
+      toast.add({
+        severity: 'success',
+        summary: 'Thumbnail Backfill Complete',
+        detail: `Generated ${totalSucceeded} thumbnails. ${totalFailed} failed, ${totalSkipped} skipped.`,
+        life: 8000
+      })
+    }
+    
+    // Reload stats
+    await loadThumbnailStats()
+    
+  } catch (error) {
+    console.error('❌ Thumbnail backfill failed:', error)
+    backfillProgress.value.message = `❌ Error: ${error.message}`
+    toast.add({
+      severity: 'error',
+      summary: 'Backfill Failed',
+      detail: error.message || 'Failed to generate thumbnails',
+      life: 5000
+    })
+  } finally {
+    backfillRunning.value = false
+    backfillStopping.value = false
+  }
+}
+
+// Load thumbnail stats on mount
+onMounted(() => {
+  loadThumbnailStats()
+})
 </script>
 
 <style scoped>

@@ -144,10 +144,11 @@
           <div class="rounded-t-xl sm:rounded-t-2xl overflow-hidden bg-gray-100 h-[120px] sm:h-[160px] flex-shrink-0">
             <div class="w-full h-full flex items-center justify-center">
               <img
-                v-if="asset.storage_url"
-                :src="asset.storage_url"
+                v-if="asset.thumbnail_url || asset.storage_url"
+                :src="asset.thumbnail_url || asset.storage_url"
                 :alt="asset.user_caption || 'Family photo'"
                 class="max-w-full max-h-full object-contain"
+                loading="lazy"
               />
               <i v-else class="pi pi-image text-xl sm:text-2xl text-gray-400"></i>
             </div>
@@ -205,10 +206,11 @@
             <div class="w-full lg:w-1/3">
               <div class="bg-brand-navigation/20 rounded-lg p-4">
                 <img
-                  v-if="editingAsset.storage_url"
-                  :src="editingAsset.storage_url"
+                  v-if="editingAsset.thumbnail_url || editingAsset.storage_url"
+                  :src="editingAsset.thumbnail_url || editingAsset.storage_url"
                   :alt="editingAsset.user_caption || 'Family photo'"
                   class="w-full h-48 lg:h-64 object-contain rounded"
+                  loading="lazy"
                 />
                 <i v-else class="pi pi-image text-4xl text-brand-primary/40 flex items-center justify-center h-48 lg:h-64"></i>
               </div>
@@ -443,7 +445,7 @@
       <Dialog v-model:visible="showDetailsDialog" modal :closable="true" :dismissableMask="true" header="Memory Details" :class="['details-dialog', 'w-full', 'max-w-2xl', 'mx-4']">
         <div v-if="detailsAsset" class="space-y-4">
           <div class="flex flex-col items-center">
-            <img v-if="detailsAsset.storage_url" :src="detailsAsset.storage_url" :alt="detailsAsset.user_caption || 'Family photo'" class="w-full max-w-xs rounded-xl mb-4" />
+            <img v-if="detailsAsset.thumbnail_url || detailsAsset.storage_url" :src="detailsAsset.thumbnail_url || detailsAsset.storage_url" :alt="detailsAsset.user_caption || 'Family photo'" class="w-full max-w-xs rounded-xl mb-4" loading="lazy" />
             <i v-else class="pi pi-image text-4xl text-brand-primary/40 flex items-center justify-center h-48"></i>
           </div>
           <div v-if="detailsAsset.ai_caption">

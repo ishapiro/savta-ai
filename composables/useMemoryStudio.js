@@ -86,10 +86,12 @@ export const useMemoryStudio = () => {
       const bookAssets = await dbAssets.getAssetsByBook(book.created_from_assets, 12)
       
       // Store thumbnails in reactive data
+      // Prefer thumbnail_url (optimized) with fallback to storage_url (full resolution)
       if (bookAssets && Array.isArray(bookAssets)) {
         bookAssets.forEach(asset => {
-          if (asset && asset.storage_url) {
-            assetThumbnails.value[asset.id] = asset.storage_url
+          if (asset) {
+            // Use thumbnail if available, otherwise fall back to full resolution
+            assetThumbnails.value[asset.id] = asset.thumbnail_url || asset.storage_url
           }
         })
       }
@@ -138,10 +140,12 @@ export const useMemoryStudio = () => {
       const batchedAssets = await dbAssets.getAssetsByBook(uncachedAssetIds, uniqueAssetIds.length)
       
       // Store thumbnails in cache
+      // Prefer thumbnail_url (optimized) with fallback to storage_url (full resolution)
       if (batchedAssets && Array.isArray(batchedAssets)) {
         batchedAssets.forEach(asset => {
-          if (asset && asset.storage_url) {
-            assetThumbnails.value[asset.id] = asset.storage_url
+          if (asset) {
+            // Use thumbnail if available, otherwise fall back to full resolution
+            assetThumbnails.value[asset.id] = asset.thumbnail_url || asset.storage_url
           }
         })
       }

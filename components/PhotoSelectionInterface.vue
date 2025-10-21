@@ -318,10 +318,11 @@
             </div>
             <div class="aspect-square bg-gradient-to-br from-brand-navigation via-purple-50 to-blue-100 rounded-lg overflow-hidden border-2 border-brand-highlight hover:border-purple-400 transition-colors">
               <img
-                v-if="asset.storage_url"
-                :src="asset.storage_url"
+                v-if="asset.thumbnail_url || asset.storage_url"
+                :src="asset.thumbnail_url || asset.storage_url"
                 :alt="asset.user_caption || asset.ai_caption || 'Memory'"
                 class="w-full h-full object-contain bg-white"
+                loading="lazy"
               />
               <div v-else class="w-full h-full flex items-center justify-center">
                 <i class="pi pi-image text-gray-400 text-lg"></i>

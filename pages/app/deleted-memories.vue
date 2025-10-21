@@ -117,10 +117,11 @@
           <div class="rounded-t-xl sm:rounded-t-2xl overflow-hidden bg-gray-100 h-[150px] sm:h-[200px]" style="flex-shrink: 0;">
             <div class="w-full h-full flex items-center justify-center">
               <img
-                v-if="asset.storage_url"
-                :src="asset.storage_url"
+                v-if="asset.thumbnail_url || asset.storage_url"
+                :src="asset.thumbnail_url || asset.storage_url"
                 :alt="asset.user_caption || 'Family photo'"
                 class="max-w-full max-h-full object-contain"
+                loading="lazy"
               />
               <i v-else class="pi pi-image text-xl sm:text-2xl text-gray-400"></i>
             </div>

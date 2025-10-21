@@ -704,6 +704,21 @@ export default defineEventHandler(async (event) => {
     }
 
     logger.success(`📸 STEP 4: ASSET FETCHING - ✅ COMPLETED - Found ${assets.length} approved assets`)
+    
+    // ⚠️ PHASE 4: PDF SAFETY VALIDATION
+    // Validate that all photo assets have storage_url (full resolution) for print quality
+    const assetsWithoutStorageUrl = assets.filter(asset => asset.type === 'photo' && !asset.storage_url)
+    if (assetsWithoutStorageUrl.length > 0) {
+      logger.error(`❌ PDF SAFETY: ${assetsWithoutStorageUrl.length} photo(s) missing storage_url (full resolution required for PDFs)`)
+      throw new Error(`Cannot generate PDF: ${assetsWithoutStorageUrl.length} photo(s) missing full-resolution storage_url`)
+    }
+    
+    // Log thumbnail_url presence for debugging (thumbnails should NOT be used for PDFs)
+    const assetsWithThumbnails = assets.filter(asset => asset.type === 'photo' && asset.thumbnail_url)
+    if (assetsWithThumbnails.length > 0) {
+      logger.step(`ℹ️ PDF SAFETY: ${assetsWithThumbnails.length} photo(s) have thumbnails (will use storage_url instead for 300 DPI quality)`)
+    }
+    logger.step(`✅ PDF SAFETY: All ${assets.length} assets validated - using storage_url for full-resolution print quality`)
 
     // Generate fingerprints for assets to help AI avoid duplicates
     const assetsWithFingerprints = generateFingerprintsForAssets(assets)
@@ -2443,6 +2458,7 @@ export default defineEventHandler(async (event) => {
       const assetAspectRatios = []
       for (const asset of selectedAssets) {
         try {
+          // ⚠️ CRITICAL: Using storage_url for full-resolution images (required for 300 DPI print quality)
           const imageRes = await fetch(asset.storage_url)
           if (imageRes.ok) {
             const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
@@ -2501,6 +2517,7 @@ export default defineEventHandler(async (event) => {
         const photoConfig = matchedConfigs[i]  // Use matched config instead of layoutConfig.photos[i]
         if (!asset || !photoConfig || !photoConfig.position || !photoConfig.size) continue
         try {
+          // ⚠️ CRITICAL: Using storage_url for full-resolution images (required for 300 DPI print quality)
           const imageRes = await fetch(asset.storage_url)
           if (!imageRes.ok) throw new Error(`Failed to fetch image: ${imageRes.status}`)
           let imageBuffer = Buffer.from(await imageRes.arrayBuffer())
@@ -3303,7 +3320,13 @@ export default defineEventHandler(async (event) => {
         if (asset.type === 'photo' && asset.storage_url) {
           try {
             console.log(`📸 Downloading image from storage URL:`, asset.storage_url)
-            // Download the image from storage_url
+            
+            // ⚠️ CRITICAL: Always use storage_url (full resolution) for PDF generation
+            // NEVER use thumbnail_url for PDFs - thumbnails are 400px wide which would
+            // result in poor print quality. PDFs require 300 DPI full-resolution images.
+            // See: docs/thumbnail-architecture.md for details
+            
+            // Download the full-resolution image from storage_url
             const imageRes = await fetch(asset.storage_url)
             if (!imageRes.ok) {
               console.error('❌ Failed to fetch image:', imageRes.status, imageRes.statusText)

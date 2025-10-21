@@ -41,9 +41,20 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Verify user owns this resource
+  // Verify user owns this resource OR is an admin/editor (for backfill)
   if (user.id !== userId) {
-    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+    // Check if user is admin/editor
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single()
+    
+    if (profileError || !profile || (profile.role !== 'admin' && profile.role !== 'editor')) {
+      throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+    }
+    
+    console.log('🔧 Admin/editor generating thumbnail for another user')
   }
 
   try {
