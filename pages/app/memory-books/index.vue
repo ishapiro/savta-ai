@@ -379,7 +379,7 @@
             </div>
             
             <!-- Content Section -->
-            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-4 mb-5 sm:mb-0">
+            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-20 sm:pb-4 sm:mb-0">
             <!-- Story Section (for Story-based Memories) -->
             <div v-if="selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
               <div class="flex items-center gap-3 mb-4">
@@ -451,7 +451,7 @@
             </div>
 
             <!-- Memory Book Section -->
-             <div v-if="selectedBook.pdf_url" class="mb-10 sm:mb-5 bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+             <div v-if="selectedBook.pdf_url" class="mb-4 sm:mb-5 bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
