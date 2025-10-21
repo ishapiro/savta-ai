@@ -1797,6 +1797,21 @@ watch(showCreateModal, (newValue) => {
   }
 })
 
+// Watch for details modal to freeze/unfreeze scroll on desktop
+watch(showDetailsModal, (isVisible) => {
+  if (typeof window !== 'undefined') {
+    // Only apply scroll freeze on desktop (screens wider than 640px)
+    const isMobile = window.innerWidth < 640
+    if (!isMobile) {
+      if (isVisible) {
+        document.body.style.overflow = 'hidden'
+      } else {
+        document.body.style.overflow = ''
+      }
+    }
+  }
+})
+
 // File selection function
 const selectFiles = () => {
   const fileInput = document.createElement('input')
@@ -2089,6 +2104,14 @@ onUnmounted(() => {
     window.removeEventListener('view-pdf', () => {})
     window.removeEventListener('memory-book-updated', () => {})
     document.removeEventListener('visibilitychange', () => {})
+    
+    // Restore body scroll on desktop when component unmounts
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 640
+      if (!isMobile) {
+        document.body.style.overflow = ''
+      }
+    }
   }
 })
 </script>
