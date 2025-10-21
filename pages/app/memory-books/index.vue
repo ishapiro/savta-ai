@@ -212,7 +212,7 @@
                 </div>
                 <button
                   data-testid="details-close-button"
-                  class="border-0 flex items-center justify-center gap-1 bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200"
+                  class="border-0 flex items-center justify-center gap-1 bg-brand-dialog-cancel text-white font-bold rounded px-3 py-2 text-xs shadow transition-all duration-200"
                   @click="showDetailsModal = false"
                 >
                   <i class="pi pi-times text-xs"></i>
@@ -258,7 +258,7 @@
                   <button
                     data-testid="details-unapprove-button"
                     v-if="selectedBook.status === 'approved'"
-                    class="flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-edit text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                    class="flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-edit text-white font-bold rounded px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
                     @click="unapproveBook(selectedBook.id)"
                   >
                     <i class="pi pi-undo text-xs sm:text-sm"></i>
@@ -267,7 +267,7 @@
                   </button>
                   <button
                     data-testid="details-close-button"
-                    class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-cancel text-white font-bold rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
+                    class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-cancel text-white font-bold rounded px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
                     @click="showDetailsModal = false"
                   >
                     <i class="pi pi-times text-xs sm:text-sm"></i>
@@ -464,7 +464,7 @@
                 </div>
                 <button
                   data-testid="download-memory-button"
-                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
+                  class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
                   @click="forceDownloadPDF(selectedBook)"
                 >
                   <i class="pi pi-download text-xs sm:text-sm"></i>
@@ -977,7 +977,7 @@
             <button
               data-testid="upload-dialog-close-button"
               v-if="!isUploading"
-              class="bg-brand-dialog-cancel text-white font-bold rounded-full px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto"
+              class="bg-brand-dialog-cancel text-white font-bold rounded px-3 py-2 text-xs shadow transition-all duration-200 w-full sm:w-auto"
               @click="showUploadDialog = false"
             >
               Close
@@ -985,7 +985,7 @@
             <button
               data-testid="start-upload-button"
               v-if="!isUploading && uploadedFiles.length === 0"
-              class="bg-brand-dialog-edit text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+              class="bg-brand-dialog-edit text-white font-bold rounded px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="selectFiles"
             >
               <i class="pi pi-sparkles mr-2"></i>
@@ -994,7 +994,7 @@
             <button
               data-testid="finish-upload-button"
               v-if="!isUploading && uploadedFiles.length > 0"
-              class="bg-brand-secondary text-white font-bold rounded-full px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
+              class="bg-brand-secondary text-white font-bold rounded px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="finishUpload"
             >
               <i class="pi pi-check mr-2"></i>

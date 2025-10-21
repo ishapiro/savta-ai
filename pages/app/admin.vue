@@ -661,7 +661,7 @@
             <Button
               label="View Analytics Analysis Dashboard"
               icon="pi pi-chart-line"
-              class="bg-brand-dialog-edit border-0 w-auto rounded-full px-6 py-2 shadow"
+              class="bg-brand-dialog-edit border-0 w-auto rounded px-6 py-2 shadow"
               @click="navigateTo('/app/analytics-dashboard')"
             />
           </div>
@@ -918,7 +918,7 @@
                   @click="loadThumbnailStats"
                   :loading="loadingThumbnailStats"
                   :disabled="backfillRunning"
-                  class="bg-brand-dialog-edit border-0 w-auto rounded-full px-6 py-2 shadow"
+                  class="bg-brand-dialog-edit border-0 w-auto rounded px-6 py-2 shadow"
                 />
                 <Button
                   v-if="!backfillRunning"
@@ -926,7 +926,7 @@
                   icon="pi pi-image"
                   @click="startThumbnailBackfill"
                   :disabled="thumbnailStats.withoutThumbnails === 0"
-                  class="bg-brand-dialog-edit border-0 w-auto rounded-full px-6 py-2 shadow"
+                  class="bg-brand-dialog-edit border-0 w-auto rounded px-6 py-2 shadow"
                 />
                 <Button
                   v-else
@@ -934,7 +934,7 @@
                   icon="pi pi-times"
                   @click="stopThumbnailBackfill"
                   :disabled="backfillStopping"
-                  class="bg-red-600 hover:bg-red-700 text-white border-0 w-auto rounded-full px-6 py-2 shadow"
+                  class="bg-red-600 hover:bg-red-700 text-white border-0 w-auto rounded px-6 py-2 shadow"
                 />
                 <div class="flex items-center gap-2">
                   <label for="backfillBatchSize" class="text-sm text-brand-primary/70 whitespace-nowrap">Batch size:</label>

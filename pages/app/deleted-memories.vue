@@ -16,19 +16,19 @@
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
           <button
-            class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded px-6 py-2 shadow transition-all duration-200 w-full sm:w-auto"
             @click="showEmptyTrashDialog = true"
             :disabled="deletedAssets.length === 0"
           >
-            <i class="pi pi-trash text-lg sm:text-xl"></i>
+            <i class="pi pi-trash"></i>
             <span class="hidden sm:inline">Empty the Trash</span>
             <span class="sm:hidden">Empty Trash</span>
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-primary font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-primary font-bold rounded px-6 py-2 shadow transition-all duration-200 w-full sm:w-auto"
             @click="navigateTo('/app/review')"
           >
-            <i class="pi pi-arrow-left text-lg sm:text-xl"></i>
+            <i class="pi pi-arrow-left"></i>
             <span class="hidden sm:inline">Back to Review</span>
             <span class="sm:hidden">Back</span>
           </button>
@@ -97,10 +97,10 @@
         <h3 class="text-lg font-semibold text-gray-800 mb-2">No Deleted Memories</h3>
         <p class="text-gray-600">You haven't deleted any memories yet.</p>
         <button
-          class="mt-4 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-6 py-3 text-lg shadow transition-all duration-200"
+          class="mt-4 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded px-6 py-2 shadow transition-all duration-200"
           @click="navigateTo('/app/review')"
         >
-          <i class="pi pi-arrow-left text-xl"></i>
+          <i class="pi pi-arrow-left"></i>
           Back to Review
         </button>
       </div>
@@ -253,17 +253,17 @@
         <div class="flex flex-col sm:flex-row gap-2 w-full">
           <button
             @click="showEmptyTrashDialog = false"
-            class="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full px-4 py-3 text-sm shadow transition-all duration-200"
+            class="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded px-4 py-2 shadow transition-all duration-200"
           >
-            <i class="pi pi-times text-lg"></i>
+            <i class="pi pi-times"></i>
             Cancel
           </button>
           <button
             @click="emptyTrash"
             :disabled="emptyingTrash"
-            class="flex-1 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed text-white font-bold rounded-full px-4 py-3 text-sm shadow transition-all duration-200"
+            class="flex-1 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed text-white font-bold rounded px-4 py-2 shadow transition-all duration-200"
           >
-            <i class="pi pi-trash text-lg" :class="{ 'animate-spin': emptyingTrash }"></i>
+            <i class="pi pi-trash" :class="{ 'animate-spin': emptyingTrash }"></i>
             {{ emptyingTrash ? 'Deleting...' : 'Empty Trash' }}
           </button>
         </div>

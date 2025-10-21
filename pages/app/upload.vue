@@ -16,10 +16,10 @@
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
           <button
-            class="flex items-center justify-center gap-2 bg-brand-secondary hover:bg-brand-header text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
+            class="flex items-center justify-center gap-2 bg-brand-secondary hover:bg-brand-header text-white font-bold rounded px-6 py-2 shadow transition-all duration-200 w-full sm:w-auto"
             @click="navigateTo('/app/review')"
           >
-            <i class="pi pi-list text-lg sm:text-2xl animate-bounce"></i>
+            <i class="pi pi-list animate-bounce"></i>
             <span class="hidden sm:inline">Review My Photos</span>
             <span class="sm:hidden">Review Photos</span>
           </button>
@@ -394,7 +394,7 @@
             <h3 class="text-xl font-bold text-gray-800 mb-2">🚀 Ready to Start Your Special Journey?</h3>
             <p class="text-gray-600 mb-4">Upload your first photos or post and watch the special moments unfold!</p>
             <button
-              class="bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
+              class="bg-gradient-to-r from-blue-500 to-brand-secondary hover:from-blue-600 hover:to-brand-secondary text-white font-bold rounded px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
               @click="showHelpModal = false"
             >
               <i class="pi pi-check mr-2"></i>

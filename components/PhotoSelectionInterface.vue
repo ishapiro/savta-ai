@@ -367,7 +367,7 @@
         <p class="text-sm text-gray-600 mb-2">Need more photos?</p>
         <button
           @click="$emit('upload-photos')"
-          class="bg-brand-dialog-edit text-white font-semibold rounded-full px-4 py-2 text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
+          class="bg-brand-dialog-edit text-white font-semibold rounded px-4 py-2 text-sm shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
           :disabled="isUploading"
         >
           <i class="pi pi-upload"></i>

@@ -18,7 +18,7 @@
                   <!-- Empty Trash Button -->
           <button
             v-if="deletedBooks.length > 0"
-            class="flex items-center gap-2 bg-brand-dialog-delete hover:bg-red-600 text-white font-bold rounded-full px-4 py-2 text-sm shadow-lg transition-all duration-200 border-0"
+            class="flex items-center gap-2 bg-brand-dialog-delete hover:bg-red-600 text-white font-bold rounded px-4 py-2 text-sm shadow-lg transition-all duration-200 border-0"
             @click="confirmEmptyTrash"
           >
             <i class="pi pi-trash text-sm"></i>
@@ -34,7 +34,7 @@
         <h2 class="text-xl font-semibold text-gray-600 mb-2">Trash is Empty</h2>
         <p class="text-gray-500 mb-6">No deleted memory books found.</p>
         <button
-          class="flex items-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-full px-6 py-2 text-sm shadow-lg transition-all duration-200 border-0"
+          class="flex items-center gap-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded px-6 py-2 text-sm shadow-lg transition-all duration-200 border-0"
           @click="navigateBack"
         >
           <i class="pi pi-arrow-left text-sm"></i>

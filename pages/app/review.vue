@@ -17,7 +17,7 @@
         <div class="flex flex-col sm:flex-row gap-3 sm:gap-2 w-full sm:w-auto">
           <button
             v-if="stats.pending > 0"
-            class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-6 py-2 shadow transition-all duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded px-6 py-2 shadow transition-all duration-200 w-full sm:w-auto"
             @click="approveAllPending"
             :disabled="approvingAll"
           >
@@ -727,7 +727,7 @@
             <h3 class="text-xl font-bold text-brand-primary mb-2">⭐ Ready to Curate Your Special Memories?</h3>
             <p class="text-brand-primary/70 mb-4">Start reviewing and organizing your precious memory moments!</p>
             <button
-              class="bg-gradient-to-r from-brand-highlight to-brand-secondary hover:from-brand-highlight/80 hover:to-brand-secondary/80 text-white font-bold rounded-full px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
+              class="bg-gradient-to-r from-brand-highlight to-brand-secondary hover:from-brand-highlight/80 hover:to-brand-secondary/80 text-white font-bold rounded px-8 py-3 text-base shadow-lg transition-all duration-200 transform hover:scale-105"
               @click="showHelpModal = false"
             >
               <i class="pi pi-check mr-2"></i>

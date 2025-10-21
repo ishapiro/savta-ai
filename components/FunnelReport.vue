@@ -23,7 +23,7 @@
           <Button
             label="View Full Funnel Report"
             icon="pi pi-external-link"
-            class="bg-brand-dialog-edit border-0 w-auto rounded-full px-6 py-2 shadow"
+            class="bg-brand-dialog-edit border-0 w-auto rounded px-6 py-2 shadow"
             @click="showFunnelReport = true"
           />
         </div>
