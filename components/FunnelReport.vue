@@ -495,7 +495,7 @@ onMounted(() => {
 
 <style scoped>
 .funnel-report-section {
-  background: linear-gradient(135deg, theme('colors.brand.surface-section') 0%, theme('colors.brand.surface-ground') 100%);
+  background: linear-gradient(135deg, theme('colors.brand.surface') 0%, theme('colors.brand.background') 100%);
 }
 
 /* Smooth transitions for all interactive elements */
