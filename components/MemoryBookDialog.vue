@@ -3,18 +3,33 @@
     v-model:visible="showDialog"
     modal
     :header="isEditing ? 'Edit Memory Recipe' : 'Create a New Memory Recipe'"
-    class="w-[95vw] max-w-4xl memory-book-dialog mt-3 sm:w-[95vw] sm:max-w-4xl sm:h-auto"
+    class="memory-book-dialog"
+    :class="isMobile ? 'w-screen h-screen m-0 rounded-none' : 'w-[95vw] max-w-4xl mt-3'"
     :style="{ 
       width: isMobile ? '100vw' : '95vw', 
       height: isMobile ? '100vh' : 'auto',
       maxWidth: isMobile ? '100vw' : '896px',
-      maxHeight: isMobile ? '100vh' : 'none',
+      maxHeight: isMobile ? '100vh' : '85vh',
       margin: isMobile ? '0' : 'auto',
       borderRadius: isMobile ? '0' : '8px'
     }"
     :pt="{
-      root: { class: isMobile ? 'touch-none' : '' },
-      mask: { class: isMobile ? 'touch-none' : '' }
+      root: { 
+        class: isMobile ? 'touch-none !m-0' : '',
+        style: isMobile ? { margin: '0', borderRadius: '0' } : {}
+      },
+      mask: { 
+        class: isMobile ? 'touch-none' : 'bg-black/40',
+        style: isMobile ? {} : { backgroundColor: 'rgba(0, 0, 0, 0.4)' }
+      },
+      content: { 
+        class: 'overflow-y-auto overflow-x-hidden',
+        style: { 
+          maxHeight: isMobile ? 'calc(100vh - 60px)' : 'calc(85vh - 120px)',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch'
+        }
+      }
     }"
     :closable="false"
   >
@@ -1028,6 +1043,15 @@ watch(() => props.visible, (isVisible) => {
   })
   console.log('🔍 [MemoryBookDialog] Current form.gridLayout when visibility changes:', form.value.gridLayout)
   
+  // Freeze underlying page scroll on desktop when dialog opens
+  if (typeof window !== 'undefined' && !isMobile.value) {
+    if (isVisible) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+  }
+  
   if (isVisible) {
     if (!props.isEditing) {
       // Only reset form if it's completely empty (first time opening)
@@ -1130,6 +1154,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateIsMobile)
+  // Restore body scroll on desktop when component unmounts
+  if (typeof window !== 'undefined' && !isMobile.value) {
+    document.body.style.overflow = ''
+  }
 })
 
 async function handleSubmit() {
