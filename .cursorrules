@@ -400,6 +400,24 @@ savta-ai/
 
 ## Testing and Validation
 
+### Database Testing with `susql`
+- **`susql` is a bash alias** for running PostgreSQL commands against the cloud Supabase database
+- **Usage**: `susql -c "SQL query"` or `susql -f script.sql`
+- **Test schema changes**:
+  ```bash
+  # Apply full schema (safe to rerun)
+  susql -f supabase/schema.sql
+  
+  # Run test queries
+  susql -c "SELECT column_name FROM information_schema.columns WHERE table_name = 'assets';"
+  
+  # Run test scripts
+  susql -f tests/schema-test.sql
+  ```
+- **Verify migrations**: Always test schema changes with `susql` before deploying
+- **Check database state**: Use `susql` to inspect data and verify operations
+- **Safe to use**: Schema files designed with `IF NOT EXISTS` checks for idempotency
+
 ### Pre-Commit Checklist
 - [ ] Run `read_lints` tool on all modified files
 - [ ] Test authentication flows
@@ -408,6 +426,7 @@ savta-ai/
 - [ ] Verify pagination works after data changes
 - [ ] Remove debugging console.logs
 - [ ] Check for memory leaks (event listeners, intervals)
+- [ ] Test schema changes with `susql` if database modified
 
 ### Common Testing Scenarios
 - **Soft delete**: Verify item disappears from display
@@ -415,6 +434,7 @@ savta-ai/
 - **Authentication**: Verify token is passed in headers
 - **Modals**: Verify they close after successful operations
 - **Pagination**: Verify page resets or updates correctly
+- **Schema changes**: Use `susql` to apply and verify database migrations
 
 ## Performance Considerations
 

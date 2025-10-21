@@ -467,32 +467,33 @@
           </div>
 
           <!-- Completion Dialog Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center">
+          <div class="flex flex-col sm:flex-row gap-3 justify-center items-stretch">
             <Button
               @click="showCompletionDialog = false"
-              class="bg-brand-dialog-save text-white border-0 px-8 py-3 rounded-full font-semibold hover:bg-brand-header/80 transition-all duration-200 shadow-lg whitespace-nowrap flex items-center justify-center"
-            >
-              <i class="pi pi-check mr-2"></i>
-              <span class="pr-2">Got it!</span>
-            </Button>
+              severity="success"
+              size="large"
+              icon="pi pi-check"
+              label="Got it"
+              class="min-w-[120px]"
+            />
             <Button
               v-if="successfulUploads > 0 && !isFromWizard"
               @click="navigateTo('/app/review')"
-              class="bg-brand-dialog-edit text-white border-0 px-4 py-3 rounded-full font-semibold hover:bg-brand-secondary/80 transition-all duration-200 flex items-center justify-center flex-1 sm:flex-initial"
-            >
-              <i class="pi pi-eye mr-2 flex-shrink-0"></i>
-              <span class="hidden sm:inline whitespace-nowrap">Review Photos in Savta's Drawer</span>
-              <span class="sm:hidden">Review</span>
-            </Button>
+              severity="info"
+              size="large"
+              icon="pi pi-eye"
+              label="Review Photos"
+              class="min-w-[160px]"
+            />
             <Button
               v-if="successfulUploads > 0 && isFromWizard"
               @click="navigateTo('/app/memory-books')"
-              class="bg-brand-dialog-edit text-white border-0 px-4 py-3 rounded-full font-semibold hover:bg-brand-secondary/80 transition-all duration-200 flex items-center justify-center flex-1 sm:flex-initial"
-            >
-              <i class="pi pi-arrow-left mr-2 flex-shrink-0"></i>
-              <span class="hidden sm:inline whitespace-nowrap">Back to Memory Books</span>
-              <span class="sm:hidden">Back</span>
-            </Button>
+              severity="info"
+              size="large"
+              icon="pi pi-arrow-left"
+              label="Back to Books"
+              class="min-w-[160px]"
+            />
           </div>
         </div>
       </Dialog>

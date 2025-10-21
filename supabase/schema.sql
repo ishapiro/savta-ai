@@ -75,6 +75,9 @@ create table if not exists assets (
   type text not null check (type in ('photo', 'text')),
   title text,
   storage_url text check (storage_url is null or length(storage_url) <= 1000),
+  thumbnail_url text check (thumbnail_url is null or length(thumbnail_url) <= 1000),
+  thumbnail_width integer default 400,
+  thumbnail_height integer,
   user_caption text,
   ai_caption text,
   ai_description text,
@@ -597,6 +600,49 @@ END $$;
 -- Add new columns for AI data (safe to rerun)
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS ai_objects jsonb DEFAULT '[]'::jsonb;
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS ai_raw jsonb;
+
+-- Add thumbnail fields to assets table (safe to rerun)
+DO $$
+BEGIN
+  -- Add thumbnail_url column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'assets' 
+      AND column_name = 'thumbnail_url'
+  ) THEN
+    ALTER TABLE assets ADD COLUMN thumbnail_url text CHECK (thumbnail_url IS NULL OR length(thumbnail_url) <= 1000);
+  END IF;
+  
+  -- Add thumbnail_width column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'assets' 
+      AND column_name = 'thumbnail_width'
+  ) THEN
+    ALTER TABLE assets ADD COLUMN thumbnail_width integer DEFAULT 400;
+  END IF;
+  
+  -- Add thumbnail_height column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+      AND table_name = 'assets' 
+      AND column_name = 'thumbnail_height'
+  ) THEN
+    ALTER TABLE assets ADD COLUMN thumbnail_height integer;
+  END IF;
+END $$;
+
+-- Add index for faster thumbnail queries (safe to rerun)
+CREATE INDEX IF NOT EXISTS idx_assets_thumbnail_url ON assets(thumbnail_url) WHERE thumbnail_url IS NOT NULL;
+
+-- Add comments for thumbnail fields
+COMMENT ON COLUMN assets.thumbnail_url IS 'URL to optimized thumbnail image (400px width, WebP format) for UI display. NULL for legacy assets.';
+COMMENT ON COLUMN assets.thumbnail_width IS 'Width of thumbnail in pixels (default 400px)';
+COMMENT ON COLUMN assets.thumbnail_height IS 'Height of thumbnail in pixels (calculated from aspect ratio)';
+COMMENT ON COLUMN assets.storage_url IS 'URL to full-resolution image. MUST be used for PDF generation to ensure print quality at 300 DPI.';
 
 -- Add missing columns to memory_books table (safe to rerun)
 DO $$

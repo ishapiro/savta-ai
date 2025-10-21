@@ -320,6 +320,10 @@ export const useDatabase = () => {
       }
       
       // Upload file to Supabase Storage if provided
+      let thumbnailUrl = null
+      let thumbnailWidth = null
+      let thumbnailHeight = null
+      
       if (fileToUpload) {
         // Use user-specific folder structure for organization
         const fileName = `${user.value.id}/${Date.now()}-${fileToUpload.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
@@ -339,12 +343,55 @@ export const useDatabase = () => {
           .getPublicUrl(fileName)
         
         storageUrl = urlData.publicUrl
+        
+        // Generate thumbnail for images (async, non-blocking)
+        if (file && file.type && file.type.startsWith('image/')) {
+          try {
+            console.log('🖼️ Generating thumbnail for uploaded image...')
+            
+            // Get auth token for API call
+            const { data: sessionData } = await supabase.auth.getSession()
+            const accessToken = sessionData.session?.access_token
+            
+            if (accessToken) {
+              const thumbnailResult = await $fetch('/api/images/generate-thumbnail', {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${accessToken}`
+                },
+                body: {
+                  imageUrl: storageUrl,
+                  userId: user.value.id,
+                  originalFileName: fileToUpload.name
+                }
+              })
+              
+              if (thumbnailResult.success) {
+                thumbnailUrl = thumbnailResult.thumbnailUrl
+                thumbnailWidth = thumbnailResult.thumbnailWidth
+                thumbnailHeight = thumbnailResult.thumbnailHeight
+                
+                console.log('✅ Thumbnail generated:', {
+                  url: thumbnailUrl,
+                  dimensions: `${thumbnailWidth}x${thumbnailHeight}`,
+                  compression: thumbnailResult.compressionRatio
+                })
+              }
+            }
+          } catch (thumbnailError) {
+            // Thumbnail generation is optional - don't fail the entire upload
+            console.warn('⚠️ Thumbnail generation failed (non-critical):', thumbnailError.message)
+          }
+        }
       }
       
       // Create asset record with photo metadata if available
       const assetRecord = {
         user_id: user.value.id,
         storage_url: storageUrl,
+        thumbnail_url: thumbnailUrl,
+        thumbnail_width: thumbnailWidth,
+        thumbnail_height: thumbnailHeight,
         approved: true, // Set photos to approved by default when uploaded
         ...assetData
       }
