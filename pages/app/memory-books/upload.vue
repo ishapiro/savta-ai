@@ -11,8 +11,8 @@
           <i class="pi pi-arrow-left text-lg text-brand-primary"></i>
         </button>
         <div>
-          <h1 class="text-2xl lg:text-3xl font-bold text-brand-primary">Add Photos to Your Photo Box</h1>
-          <p class="text-brand-text-muted">Build your secure collection of special photos for Savta to use in memory cards and books</p>
+          <h1 class="text-2xl lg:text-3xl font-bold text-brand-primary">Add Favorite Photos to Savta's Drawer</h1>
+          <p class="text-brand-text-muted">Build your secure collection of favorite photos for Savta to use in memory cards and books</p>
         </div>
       </div>
 
@@ -26,9 +26,9 @@
                 <i class="pi pi-cloud-upload text-2xl text-brand-highlight"></i>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-brand-primary mb-2">Add photos to your Photo Box</h3>
+                <h3 class="text-lg font-semibold text-brand-primary mb-2">Add favorite photos to Savta's Drawer</h3>
                 <p class="text-sm text-brand-text-muted mb-4">
-                  Upload JPG, PNG, or HEIC files to your secure collection. Savta will automatically caption and tag them for future memory cards and books.
+                  Upload only your favorite JPG, PNG, or HEIC files. Savta will automatically caption and tag them, then select the best ones for your memory cards and books.
                 </p>
                 <input
                   ref="fileInput"
@@ -55,10 +55,10 @@
                 <i class="pi pi-magic-wand text-white text-sm"></i>
               </div>
               <div>
-                <h4 class="font-semibold text-brand-secondary mb-1">Building Your Photo Collection</h4>
+                <h4 class="font-semibold text-brand-secondary mb-1">Building Your Favorite Photo Collection</h4>
                 <p class="text-sm text-brand-text-muted">
-                  These photos go into your secure Photo Box—a collection Savta uses to create memory cards and books. 
-                  Choose only your most special photos (not your entire camera roll) that you'd want to share with family and friends.
+                  These photos go into Savta's Drawer—a secure collection Savta uses to create memory cards and books. 
+                  Choose only your favorite photos (not your entire camera roll) that you'd want to share with family and friends.
                   <br />
                   <br />
                   Upload at least 6 photos for the best results. Savta will select the perfect photos for each memory based on your instructions.
@@ -182,7 +182,7 @@ const uploadFiles = async (files) => {
   uploadStatus.value = 'Preparing files...'
 
   try {
-    uploadStatus.value = 'Uploading to Photo Box...'
+    uploadStatus.value = 'Uploading to Savta\'s Drawer...'
     
     // Upload files one by one using the database composable
     for (let i = 0; i < files.length; i++) {
@@ -238,7 +238,7 @@ const uploadFiles = async (files) => {
       toast.add({
         severity: 'success',
         summary: 'Upload Complete',
-        detail: `Successfully uploaded ${uploadedFiles.value.length} photos to your Photo Box`,
+        detail: `Successfully uploaded ${uploadedFiles.value.length} favorite photos to Savta's Drawer`,
         life: 3000
       })
 

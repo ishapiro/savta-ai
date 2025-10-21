@@ -165,11 +165,11 @@
         </h3>
         <p class="text-xs sm:text-base text-gray-600 mb-2">
           {{ isRecreateMode 
-            ? 'You can keep the same photos or choose new ones. When you upload photos, they go into your Photo Box. Then I\'ll choose the best ones and write lovely captions for your card or booklet.' 
-            : 'When you upload photos, they go into your Photo Box. Then I\'ll choose the best ones and write lovely captions for your card or booklet. Choose how you\'d like me to pick photos from your Photo Box.' 
+            ? 'You can keep the same photos or choose new ones. When you upload your favorite photos, they go into Savta\'s Drawer. Then I\'ll choose the best ones and write lovely captions for your card or booklet.' 
+            : 'When you upload your favorite photos, they go into Savta\'s Drawer. Then I\'ll choose the best ones and write lovely captions for your card or booklet. Choose how you\'d like me to pick photos from Savta\'s Drawer.' 
           }}
         </p>
-        <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in your Photo Box</p>
+        <p class="text-xs text-brand-flash font-medium">📸 You have {{ photoSelection_availableAssets.length }} photo{{ photoSelection_availableAssets.length !== 1 ? 's' : '' }} in Savta's Drawer</p>
       </div>
       
       <!-- Photo Selection Interface Component -->
@@ -703,7 +703,7 @@ const handleNoPhotosFound = (data) => {
         message = 'No photos for that location. Try a nearby place or city.'
         break
       case 'photo_library':
-        message = 'Your Photo Box is empty. Upload photos to continue.'
+        message = 'Your Savta\'s Drawer is empty. Upload your favorite photos to continue.'
         break
       default:
         message = 'No matching photos found. Try adjusting your selections.'

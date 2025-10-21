@@ -24,7 +24,7 @@
               <!-- Hamburger Icon -->
               <button
                 @click="toggleDesktopMenu"
-                @mouseenter="showDesktopMenu = true"
+                v-tooltip.bottom="'Click for menu'"
                 class="relative w-10 h-10 flex flex-col justify-center items-center focus:outline-none focus:ring-2 focus:ring-brand-header focus:ring-offset-2 rounded-lg transition-all duration-200 bg-brand-background hover:bg-brand-highlight/20"
                 :class="desktopMenuOpen ? 'bg-brand-accent/20' : ''"
                 aria-label="Toggle navigation menu"
@@ -100,8 +100,8 @@
                           <i class="pi pi-upload text-white text-sm"></i>
                         </div>
                         <div class="flex-1">
-                          <div class="font-medium text-brand-secondary text-sm">Add Photos</div>
-                          <div class="text-xs text-brand-primary/70">Upload to Photo Box</div>
+                          <div class="font-medium text-brand-secondary text-sm">Add Favorite Photos</div>
+                          <div class="text-xs text-brand-primary/70">Upload to Savta's Drawer</div>
                         </div>
                       </NuxtLink>
 
@@ -111,7 +111,7 @@
                           <i class="pi pi-check-circle text-white text-sm"></i>
                         </div>
                         <div class="flex-1">
-                          <div class="font-medium text-brand-secondary text-sm">Photo Box</div>
+                          <div class="font-medium text-brand-secondary text-sm">Savta's Drawer</div>
                           <div class="text-xs text-brand-primary/70">Review & edit</div>
                         </div>
                       </NuxtLink>
@@ -286,8 +286,8 @@
                 <i class="pi pi-upload text-white text-sm"></i>
               </div>
               <div class="flex-1">
-                <div class="font-medium text-brand-secondary text-sm">Add Photos</div>
-                <div class="text-xs text-brand-primary/70">Upload & organize</div>
+                <div class="font-medium text-brand-secondary text-sm">Add Favorite Photos</div>
+                <div class="text-xs text-brand-primary/70">Upload to Savta's Drawer</div>
               </div>
             </NuxtLink>
 
@@ -297,7 +297,7 @@
                 <i class="pi pi-check-circle text-white text-sm"></i>
               </div>
               <div class="flex-1">
-                <div class="font-medium text-brand-secondary text-sm">Photo Box</div>
+                <div class="font-medium text-brand-secondary text-sm">Savta's Drawer</div>
                 <div class="text-xs text-brand-primary/70">Review & edit</div>
               </div>
             </NuxtLink>

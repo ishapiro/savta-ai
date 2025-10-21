@@ -1208,7 +1208,7 @@ const handleNoPhotosFound = (data) => {
         message = 'No photos found for this date range. Try a different date range or upload photos.'
         break
       case 'photo_library':
-        message = 'Your Photo Box is empty. Upload photos to continue.'
+        message = 'Your Savta\'s Drawer is empty. Upload your favorite photos to continue.'
         break
       default:
         message = 'No matching photos found. Try adjusting your selections.'
@@ -1224,7 +1224,7 @@ const handleNoPhotosFound = (data) => {
 
 const handlePhotoLibrarySelected = () => {
   console.log('🔍 [MemoryBookDialog] handlePhotoLibrarySelected called')
-  // Handle photo library selection - this is called when user selects photos from Photo Box
+  // Handle photo library selection - this is called when user selects photos from Savta's Drawer
   // The PhotoSelectionInterface component handles the selection internally
 }
 

@@ -47,9 +47,9 @@
             <h3 class="text-lg sm:text-xl font-semibold text-brand-secondary mb-2 font-serif">Upload Photos</h3>
             <ul class="text-sm sm:text-base text-brand-primary list-disc pl-5 text-left space-y-1 mx-auto max-w-[20rem]">
               <li>Gather photos from your phone, computer, and social media.</li>
-              <li>Your Savta.ai Photo Box is where favorites live.</li>
+              <li>Your Savta's Drawer is where your favorite photos live.</li>
               <li>Upload directly from your phone or computer.</li>
-              <li>Ask family to text favorites—I'll add them to your Photo Box.</li>
+              <li>Ask family to text favorites—I'll add them to Savta's Drawer.</li>
             </ul>
           </div>
           
@@ -170,7 +170,7 @@
       placement="center"
       :offset="0"
       heading="Hi, I'm Savta and I'm here to help you get started!"
-      text="Start by uploading just your favorite photos to your Photo Box—not your whole
+      text="Start by uploading just your favorite photos to Savta's Drawer—not your whole
       camera roll. 📸
       \n\nI'll use a little AI magic to pick photos that belong together, arrange them
       beautifully on each card, and write warm captions. ✨

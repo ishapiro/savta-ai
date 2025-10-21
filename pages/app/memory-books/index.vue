@@ -770,8 +770,8 @@
 
           <ol class="list-decimal pl-5 space-y-1">
             <li>Answer a couple of quick questions about the look.</li>
-            <li>Upload just your favorite photos to your Photo Box.</li>
-            <li>I’ll pick photos that belong together, arrange them beautifully, and write warm captions.</li>
+            <li>Upload just your favorite photos to Savta's Drawer.</li>
+            <li>I'll pick photos that belong together, arrange them beautifully, and write warm captions.</li>
           </ol>
 
           <p class="text-sm text-gray-600">

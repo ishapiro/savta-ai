@@ -74,8 +74,8 @@
             <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-secondary to-brand-flash rounded-full mx-auto mb-1 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
               <i class="pi pi-folder-open text-sm sm:text-lg text-white"></i>
             </div>
-            <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Photo Box</div>
-            <div class="text-xs text-gray-600">Choose exactly which photos you want from your Photo Box.</div>
+            <div class="text-sm sm:text-base font-bold text-gray-900 mb-1">Savta's Drawer</div>
+            <div class="text-xs text-gray-600">Choose exactly which photos you want from Savta's Drawer.</div>
                             <div v-if="methodValue === 'photo_library'" class="absolute top-1 right-1">
               <div class="w-5 h-5 bg-brand-flash rounded-full flex items-center justify-center shadow-lg">
                 <i class="pi pi-check text-white text-xs"></i>
@@ -277,7 +277,7 @@
           <button
             @click="closePhotoLibrary"
             class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-flash"
-            aria-label="Close Photo Box"
+            aria-label="Close Savta's Drawer"
           >
             <i class="pi pi-times text-gray-600"></i>
           </button>
@@ -356,7 +356,7 @@
       </button>
       <div class="text-center">
         <i class="pi pi-spin pi-spinner text-3xl text-brand-header mb-3"></i>
-        <p class="text-sm text-gray-600">Loading your Photo Box...</p>
+        <p class="text-sm text-gray-600">Loading Savta's Drawer...</p>
       </div>
     </div>
 

@@ -4,12 +4,12 @@
       <!-- Top Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Add Your Photos</h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Add Your Favorite Photos</h1>
           <button
             class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-brand-background transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
-            v-tooltip.top="'How to add photos'"
+            v-tooltip.top="'How to add favorite photos'"
             @click="showHelpModal = true"
-            aria-label="Information about adding photos"
+            aria-label="Information about adding favorite photos"
           >
             <i class="pi pi-info text-lg text-brand-highlight"></i>
           </button>
@@ -100,9 +100,25 @@
             <div class="space-y-6">
               <Card>
                 <template #title>
-                  <h2 class="text-xl font-semibold text-brand-primary">Upload Photos</h2>
+                  <h2 class="text-xl font-semibold text-brand-primary">Upload Your Favorite Photos</h2>
                 </template>
                 <template #content>
+                  <!-- Important Note -->
+                  <div class="mb-4 bg-gradient-to-r from-brand-highlight/10 to-brand-secondary/10 border border-brand-highlight/30 rounded-lg p-4">
+                    <div class="flex items-start gap-3">
+                      <div class="w-8 h-8 bg-brand-highlight rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i class="pi pi-star text-white text-sm"></i>
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-brand-secondary mb-1">📸 Upload Only Your Favorites</h4>
+                        <p class="text-sm text-brand-primary">
+                          Don't upload your entire camera roll! Choose only your favorite photos that you'd want to share with family and friends. 
+                          Savta will select the best ones from your favorites to create beautiful memory cards and books.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <!-- File Upload Area -->
                   <div
                     @drop.prevent="handleFileDrop"
@@ -223,7 +239,7 @@
         modal
         :closable="true"
         :dismissableMask="true"
-        header="✨ Your Special Upload Guide ✨"
+        header="✨ Adding Your Favorite Photos to Savta's Drawer ✨"
         class="w-full max-w-3xl"
       >
         <div class="space-y-6">
@@ -234,8 +250,8 @@
                 <i class="pi pi-magic text-brand-header text-xl"></i>
               </div>
               <div>
-                <h3 class="text-xl font-bold text-gray-800 mb-1">Welcome to Your Memory Workshop! 🎨</h3>
-                <p class="text-gray-600">This is where the special moments begin - upload your precious photos and posts and watch them transform into beautiful family stories!</p>
+                <h3 class="text-xl font-bold text-gray-800 mb-1">Welcome to Savta's Drawer! 🎨</h3>
+                <p class="text-gray-600">Upload only your favorite photos (not your entire camera roll). Savta will select the best ones from your favorites to create beautiful memory cards and books!</p>
               </div>
             </div>
           </div>
@@ -257,7 +273,7 @@
                   <i class="pi pi-image text-blue-500"></i>
                   <span class="font-semibold text-gray-800">Photo Memories</span>
                 </div>
-                <p class="text-sm text-gray-600">Add photos from your phone or computer. We'll store them in your Savta.ai Photo Box so you can use them anytime.</p>
+                <p class="text-sm text-gray-600">Add your favorite photos from your phone or computer. We'll store them in Savta's Drawer so you can use them to create beautiful memory cards and books anytime.</p>
               </div>
               <div class="bg-white rounded-xl p-4 border border-blue-100">
                 <div class="flex items-center gap-2 mb-2">
@@ -465,7 +481,7 @@
               class="bg-brand-dialog-edit text-white border-0 px-4 py-3 rounded-full font-semibold hover:bg-brand-secondary/80 transition-all duration-200 flex items-center justify-center flex-1 sm:flex-initial"
             >
               <i class="pi pi-eye mr-2 flex-shrink-0"></i>
-              <span class="hidden sm:inline whitespace-nowrap">Review Photos in Photo Box</span>
+              <span class="hidden sm:inline whitespace-nowrap">Review Photos in Savta's Drawer</span>
               <span class="sm:hidden">Review</span>
             </Button>
             <Button
