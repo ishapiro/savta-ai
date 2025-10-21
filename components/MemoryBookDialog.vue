@@ -3,7 +3,19 @@
     v-model:visible="showDialog"
     modal
     :header="isEditing ? 'Edit Memory Recipe' : 'Create a New Memory Recipe'"
-    class="w-[95vw] max-w-4xl memory-book-dialog mt-3"
+    class="w-[95vw] max-w-4xl memory-book-dialog mt-3 sm:w-[95vw] sm:max-w-4xl sm:h-auto"
+    :style="{ 
+      width: isMobile ? '100vw' : '95vw', 
+      height: isMobile ? '100vh' : 'auto',
+      maxWidth: isMobile ? '100vw' : '896px',
+      maxHeight: isMobile ? '100vh' : 'none',
+      margin: isMobile ? '0' : 'auto',
+      borderRadius: isMobile ? '0' : '8px'
+    }"
+    :pt="{
+      root: { class: isMobile ? 'touch-none' : '' },
+      mask: { class: isMobile ? 'touch-none' : '' }
+    }"
     :closable="false"
   >
     <form @submit.prevent="handleSubmit" class="space-y-6">
@@ -597,7 +609,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
 import PhotoReplacementModal from '~/components/PhotoReplacementModal.vue'
 import SavtaBubble from '~/components/SavtaBubble.vue'
@@ -644,6 +656,12 @@ const selectedAssets = ref([])
 
 // Info bubble state
 const showPagesInfoBubble = ref(false)
+
+// Mobile detection
+const isMobile = ref(false)
+const updateIsMobile = () => {
+  isMobile.value = window.innerWidth < 640
+}
 
 // Use the photo selection composable
 const {
@@ -1106,6 +1124,12 @@ const savePhotoSelection = () => {
 // Fetch themes when component mounts
 onMounted(() => {
   fetchThemes()
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateIsMobile)
 })
 
 async function handleSubmit() {

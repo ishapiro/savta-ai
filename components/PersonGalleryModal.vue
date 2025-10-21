@@ -98,13 +98,13 @@
 
             <!-- Load More Button -->
             <div v-if="hasMoreFaces" class="mt-4 sm:mt-6 text-center">
-                              <button
-                  @click="loadMoreFaces"
-                  :disabled="loadingMore"
-                  class="inline-flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-full border border-brand-primary/20 text-brand-primary bg-white hover:bg-brand-accent/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
+              <button
+                @click="loadMoreFaces"
+                :disabled="loadingMore"
+                class="inline-flex items-center border-0 px-6 py-2 bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-elevation-2 hover:shadow-elevation-3"
+              >
                 <i v-if="loadingMore" class="pi pi-spin pi-spinner mr-2"></i>
-                Load More Photos
+                LOAD MORE PHOTOS
               </button>
             </div>
           </div>
@@ -117,12 +117,12 @@
               {{ personFaces.length }} photos of {{ person?.display_name || person?.name }}
             </div>
             <div class="flex space-x-2">
-                              <button
-                  @click="exportPersonData"
-                  class="inline-flex items-center px-2 sm:px-3 py-1 text-xs font-bold rounded-full border border-brand-primary/20 text-brand-primary bg-white hover:bg-brand-accent/10 transition-all duration-200"
-                >
-                <i class="pi pi-download mr-1"></i>
-                Export
+              <button
+                @click="exportPersonData"
+                class="inline-flex items-center border-0 px-6 py-2 bg-brand-dialog-primary hover:bg-brand-dialog-primary-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
+              >
+                <i class="pi pi-download mr-2"></i>
+                EXPORT
               </button>
             </div>
           </div>

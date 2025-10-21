@@ -57,7 +57,19 @@
       :closable="true"
       :closeOnEscape="true"
       class="max-w-6xl"
-      :style="{ top: '20px' }"
+      :style="{ 
+        top: isMobile ? '0' : '20px',
+        width: isMobile ? '100vw' : 'auto',
+        height: isMobile ? '100vh' : 'auto',
+        maxWidth: isMobile ? '100vw' : '1280px',
+        maxHeight: isMobile ? '100vh' : 'none',
+        margin: isMobile ? '0' : 'auto',
+        borderRadius: isMobile ? '0' : '8px'
+      }"
+      :pt="{
+        root: { class: isMobile ? 'touch-none' : '' },
+        mask: { class: isMobile ? 'touch-none' : '' }
+      }"
     >
       <template #header>
         <div class="flex items-center space-x-3">
@@ -309,7 +321,19 @@
       :closable="true"
       :closeOnEscape="true"
       class="max-w-md"
-      :style="{ top: '20px' }"
+      :style="{ 
+        top: isMobile ? '0' : '20px',
+        width: isMobile ? '100vw' : 'auto',
+        height: isMobile ? '100vh' : 'auto',
+        maxWidth: isMobile ? '100vw' : '448px',
+        maxHeight: isMobile ? '100vh' : 'none',
+        margin: isMobile ? '0' : 'auto',
+        borderRadius: isMobile ? '0' : '8px'
+      }"
+      :pt="{
+        root: { class: isMobile ? 'touch-none' : '' },
+        mask: { class: isMobile ? 'touch-none' : '' }
+      }"
     >
       <template #header>
         <h3 class="text-lg font-semibold text-brand-primary">{{ currentInfoDialog.title }}</h3>
@@ -337,6 +361,21 @@ const funnelUserSuggestions = ref([])
 // Information dialog
 const showInfoDialogVisible = ref(false)
 const currentInfoDialog = ref({ title: '', content: '' })
+
+// Mobile detection
+const isMobile = ref(false)
+const updateIsMobile = () => {
+  isMobile.value = window.innerWidth < 640
+}
+
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateIsMobile)
+})
 
 // Funnel report options
 const funnelReportTypeOptions = [

@@ -5,6 +5,10 @@
     :closable="false"
     :dismissable-mask="false"
     :class="['w-full', 'h-full', 'max-w-none', 'max-h-screen', 'sm:w-[700px]', 'sm:max-w-[700px]', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl', 'mobile-app-dialog']"
+    :pt="{
+      root: { class: isMobile ? 'touch-none' : '' },
+      mask: { class: isMobile ? 'touch-none' : '' }
+    }"
   >
     <!-- Step 1: Title Input -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
@@ -376,7 +380,18 @@
     v-model:visible="showInsufficientPhotosDialog" 
     modal 
     header="Not Enough Photos Available" 
-    :style="{ width: '400px' }"
+    :style="{ 
+      width: isMobile ? '100vw' : '400px',
+      height: isMobile ? '100vh' : 'auto',
+      maxWidth: isMobile ? '100vw' : '400px',
+      maxHeight: isMobile ? '100vh' : 'none',
+      margin: isMobile ? '0' : 'auto',
+      borderRadius: isMobile ? '0' : '8px'
+    }"
+    :pt="{
+      root: { class: isMobile ? 'touch-none' : '' },
+      mask: { class: isMobile ? 'touch-none' : '' }
+    }"
     :closable="false"
   >
     <div class="flex flex-col gap-4">
@@ -412,7 +427,7 @@ import { useMemoryStudio } from '~/composables/useMemoryStudio'
 import PhotoSelectionInterface from '~/components/PhotoSelectionInterface.vue'
 import ProgressDialog from '~/components/ProgressDialog.vue'
 import { useToast } from 'primevue/usetoast'
-import { watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 
 // Use the wizard composable
 const {
@@ -533,8 +548,14 @@ watch(showMagicMemoryDialog, (isOpen) => {
 }, { immediate: true })
 
 // Cleanup on component unmount
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+})
+
 onUnmounted(() => {
   unblockBodyScroll()
+  window.removeEventListener('resize', updateIsMobile)
 })
 
 // Toast functionality
@@ -574,6 +595,12 @@ const handleGenerateMagicMemory = async () => {
 
 // Dialog state for insufficient photos
 const showInsufficientPhotosDialog = ref(false)
+
+// Mobile detection
+const isMobile = ref(false)
+const updateIsMobile = () => {
+  isMobile.value = window.innerWidth < 640
+}
 
 // Handle insufficient photos dialog actions
 const handleKeepSamePhotos = async () => {

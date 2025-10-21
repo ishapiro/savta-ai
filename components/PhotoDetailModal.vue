@@ -95,12 +95,12 @@
               Face ID: {{ face?.id?.substring(0, 8) }}...
             </div>
             <div class="flex space-x-2">
-                              <button
-                  @click="downloadPhoto"
-                  class="inline-flex items-center px-2 sm:px-3 py-1 text-xs font-bold rounded-full border border-brand-primary/20 text-brand-primary bg-white hover:bg-brand-accent/10 transition-all duration-200"
-                >
-                <i class="pi pi-download mr-1"></i>
-                Download
+              <button
+                @click="downloadPhoto"
+                class="inline-flex items-center border-0 px-6 py-2 bg-brand-dialog-primary hover:bg-brand-dialog-primary-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
+              >
+                <i class="pi pi-download mr-2"></i>
+                DOWNLOAD
               </button>
             </div>
           </div>

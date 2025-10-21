@@ -3,7 +3,18 @@
     :visible="visible"
     @update:visible="$emit('update:visible', $event)"
     modal
-    :style="{ width: '90vw', maxWidth: '600px' }"
+    :style="{ 
+      width: isMobile ? '100vw' : '90vw', 
+      height: isMobile ? '100vh' : 'auto',
+      maxWidth: isMobile ? '100vw' : '600px',
+      maxHeight: isMobile ? '100vh' : 'none',
+      margin: isMobile ? '0' : 'auto',
+      borderRadius: isMobile ? '0' : '8px'
+    }"
+    :pt="{
+      root: { class: isMobile ? 'touch-none' : '' },
+      mask: { class: isMobile ? 'touch-none' : '' }
+    }"
     :closable="false"
     :draggable="false"
     :resizable="false"
@@ -52,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import PhotoReplacementSelector from './PhotoReplacementSelector.vue'
 
 // Props
@@ -80,6 +91,21 @@ const emit = defineEmits(['update:visible', 'update:modelValue', 'save'])
 
 // Local state
 const localPhotosToReplace = ref([...props.modelValue])
+
+// Mobile detection
+const isMobile = ref(false)
+const updateIsMobile = () => {
+  isMobile.value = window.innerWidth < 640
+}
+
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateIsMobile)
+})
 
 // Watch for external changes to modelValue
 watch(() => props.modelValue, (newValue) => {

@@ -170,8 +170,8 @@
     </div>
 
     <!-- Instructions Dialog -->
-    <div v-if="showInstructionsDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 shadow-xl max-h-[80vh] overflow-y-auto">
+    <div v-if="showInstructionsDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" :class="{ 'touch-none': isMobile }">
+      <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 shadow-xl max-h-[80vh] overflow-y-auto sm:w-full sm:max-w-2xl sm:mx-4 sm:rounded-lg" :class="{ 'w-screen h-screen max-w-none mx-0 rounded-none max-h-none': isMobile }">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-brand-secondary">Layout Editor Instructions</h3>
           <button
@@ -222,9 +222,9 @@
         
         <div class="mt-6 flex justify-end">
           <Button
-            label="Got it!"
+            label="GOT IT!"
             @click="showInstructionsDialog = false"
-            class="bg-brand-secondary hover:bg-brand-secondary/80"
+            class="bg-brand-dialog-primary hover:bg-brand-dialog-primary-hover text-white border-0 px-6 py-2 text-sm font-medium tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
           />
         </div>
       </div>
@@ -233,8 +233,8 @@
     <!-- Password Dialog -->
 
     <!-- Password Dialog -->
-    <div v-if="showPasswordDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
+    <div v-if="showPasswordDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" :class="{ 'touch-none': isMobile }">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl sm:w-full sm:max-w-md sm:mx-4 sm:rounded-lg" :class="{ 'w-screen h-screen max-w-none mx-0 rounded-none': isMobile }">
         <h3 class="text-lg font-semibold text-brand-secondary mb-4">Editor Defaults Access</h3>
         <p class="text-brand-primary mb-4">Enter the password to edit default layouts:</p>
         <p class="text-sm text-gray-600 mb-4 italic">Hint: Think about education and innovation</p>
@@ -253,15 +253,14 @@
           <div class="flex gap-3">
             <Button
               type="button"
-              label="Cancel"
-              severity="secondary"
-              class="flex-1"
+              label="CANCEL"
+              class="flex-1 bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 px-6 py-2 text-sm font-medium tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
               @click="cancelPassword"
             />
             <Button
               type="submit"
-              label="Enter"
-              class="flex-1"
+              label="ENTER"
+              class="flex-1 bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-6 py-2 text-sm font-medium tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
               @click="checkPassword"
             />
           </div>
@@ -274,8 +273,8 @@
     </div>
 
     <!-- JSON Dialog -->
-    <div v-if="showJsonDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-5xl mx-4 shadow-xl border-2 border-gray-200 max-h-[90vh] overflow-y-auto">
+    <div v-if="showJsonDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" :class="{ 'touch-none': isMobile }">
+      <div class="bg-white rounded-lg p-6 w-full max-w-5xl mx-4 shadow-xl border-2 border-gray-200 max-h-[90vh] overflow-y-auto sm:w-full sm:max-w-5xl sm:mx-4 sm:rounded-lg sm:max-h-[90vh]" :class="{ 'w-screen h-screen max-w-none mx-0 rounded-none max-h-none': isMobile }">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-brand-secondary">Edit Layout JSON</h3>
           <button
@@ -309,29 +308,29 @@
         <div class="mt-6 flex justify-end gap-3">
           <button
             @click="cancelJsonEdit"
-            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+            class="border-0 px-6 py-2 bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
           >
-            Cancel
+            CANCEL
           </button>
           <button
             @click="copyJsonToClipboard"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+            class="border-0 px-6 py-2 bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
           >
-            Copy to Clipboard
+            COPY TO CLIPBOARD
           </button>
           <button
             @click="saveJsonChanges"
-            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
+            class="border-0 px-6 py-2 bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
           >
-            Save Changes
+            SAVE CHANGES
           </button>
         </div>
       </div>
     </div>
 
     <!-- Resize Dialog -->
-    <div v-if="showResizeDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl border-2 border-gray-200">
+    <div v-if="showResizeDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" :class="{ 'touch-none': isMobile }">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl border-2 border-gray-200 sm:w-full sm:max-w-md sm:mx-4 sm:rounded-lg" :class="{ 'w-screen h-screen max-w-none mx-0 rounded-none': isMobile }">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-brand-secondary">Resize Element</h3>
           <button
@@ -375,23 +374,23 @@
         <div class="mt-6 flex justify-end gap-3">
           <button
             @click="showResizeDialog = false"
-            class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+            class="border-0 px-6 py-2 bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
           >
-            Cancel
+            CANCEL
           </button>
           <button
             @click="applyResize"
-            class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+            class="border-0 px-6 py-2 bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
           >
-            Apply
+            APPLY
           </button>
         </div>
       </div>
     </div>
 
     <!-- Photo Properties Dialog -->
-    <div v-if="showPhotoPropertiesDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg p-4 w-full max-w-md shadow-xl border-2 border-gray-200 max-h-[85vh] overflow-y-auto">
+    <div v-if="showPhotoPropertiesDialog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 sm:p-4" :class="{ 'touch-none p-0': isMobile }">
+      <div class="bg-white rounded-lg p-4 w-full max-w-md shadow-xl border-2 border-gray-200 max-h-[85vh] overflow-y-auto sm:w-full sm:max-w-md sm:rounded-lg sm:max-h-[85vh]" :class="{ 'w-screen h-screen max-w-none rounded-none max-h-none': isMobile }">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-base font-semibold text-brand-secondary">Photo Properties</h3>
           <button
@@ -516,15 +515,15 @@
         <div class="mt-4 flex justify-end gap-2">
           <button
             @click="showPhotoPropertiesDialog = false"
-            class="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+            class="border-0 px-6 py-2 bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
           >
-            Cancel
+            CANCEL
           </button>
           <button
             @click="applyPhotoProperties"
-            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+            class="border-0 px-6 py-2 bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-sm font-medium text-white tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
           >
-            Apply
+            APPLY
           </button>
         </div>
       </div>
@@ -623,7 +622,18 @@
       modal
       :closable="true"
       class="new-layout-dialog"
-      style="max-width: 95vw; width: 600px;"
+      :style="{ 
+        width: isMobile ? '100vw' : '600px',
+        height: isMobile ? '100vh' : 'auto',
+        maxWidth: isMobile ? '100vw' : '95vw',
+        maxHeight: isMobile ? '100vh' : 'none',
+        margin: isMobile ? '0' : 'auto',
+        borderRadius: isMobile ? '0' : '8px'
+      }"
+      :pt="{
+        root: { class: isMobile ? 'touch-none' : '' },
+        mask: { class: isMobile ? 'touch-none' : '' }
+      }"
     >
       <div class="flex flex-col py-6 px-4">
         <div class="flex items-center justify-center mb-4">
@@ -679,15 +689,15 @@
         <!-- Action Buttons -->
         <div class="flex gap-3 mt-6 justify-center">
           <Button
-            label="Cancel"
+            label="CANCEL"
             @click="showNewLayoutDialog = false"
-            class="bg-gray-500 hover:bg-gray-600 text-white border-0 rounded-full px-6 py-2"
+            class="bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-white border-0 px-6 py-2 text-sm font-medium tracking-wider uppercase focus:outline-none rounded shadow-elevation-2 hover:shadow-elevation-3"
           />
           <Button
-            label="Apply Layout"
+            label="APPLY LAYOUT"
             :disabled="!selectedLayoutSize"
             @click="applySelectedLayout"
-            class="bg-purple-600 hover:bg-purple-700 text-white border-0 rounded-full px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-6 py-2 text-sm font-medium tracking-wider uppercase focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-elevation-2 hover:shadow-elevation-3"
           />
         </div>
       </div>
@@ -696,7 +706,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive, watch } from 'vue'
 // Temporarily use textarea instead of JsonEditor due to import issues
 // const JsonEditor = defineAsyncComponent({
 //   loader: () => import('vue-json-editor'),
@@ -992,6 +1002,12 @@ const selectedBoxRelativePositions = ref([])
 const isResizing = ref(false)
 const currentResizeId = ref(null)
 const resizeStart = ref({ x: 0, y: 0, width: 0, height: 0 })
+
+// Mobile detection
+const isMobile = ref(false)
+const updateIsMobile = () => {
+  isMobile.value = window.innerWidth < 640
+}
 
 // Reactive object for layout data - simplified
 const layoutData = reactive({
@@ -2275,6 +2291,14 @@ onMounted(async () => {
   } else {
     nextPhotoId.value = 1
   }
+  
+  // Initialize mobile detection
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateIsMobile)
 })
 
 // Function to open JSON dialog with populated content
