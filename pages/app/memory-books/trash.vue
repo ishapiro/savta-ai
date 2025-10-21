@@ -5,7 +5,7 @@
       <div class="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
         <div class="flex items-center gap-2 sm:gap-3">
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none"
+            class="w-8 h-8 flex items-center justify-center rounded bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none"
             @click="navigateBack"
             aria-label="Go back to memory books"
           >
@@ -105,7 +105,7 @@
             <template #body="{ data }">
               <div class="flex items-center gap-2">
                 <button
-                  class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-highlight hover:bg-brand-highlight/80 text-white shadow transition-all duration-200 border-0"
+                  class="w-8 h-8 flex items-center justify-center rounded bg-brand-highlight hover:bg-brand-highlight/80 text-white shadow transition-all duration-200 border-0"
                   @click="restoreBook(data)"
                   v-tooltip.top="'Restore'"
                   aria-label="Restore memory book"
@@ -113,7 +113,7 @@
                   <i class="pi pi-undo text-sm"></i>
                 </button>
                 <button
-                  class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-dialog-delete hover:bg-red-600 text-white shadow transition-all duration-200 border-0"
+                  class="w-8 h-8 flex items-center justify-center rounded bg-brand-dialog-delete hover:bg-red-600 text-white shadow transition-all duration-200 border-0"
                   @click="confirmPermanentDelete(data)"
                   v-tooltip.top="'Permanently Delete'"
                   aria-label="Permanently delete memory book"

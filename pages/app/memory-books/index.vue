@@ -8,7 +8,7 @@
           <button
             data-testid="info-button"
             data-savta="memory-books-info"
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-gray-50 transition-colors focus:outline-none"
+            class="w-8 h-8 flex items-center justify-center rounded bg-white shadow-sm hover:bg-gray-50 transition-colors focus:outline-none"
             @click="showMemoryBooksInfoBubble = true"
             aria-label="Information about memory cards and booklets"
             title="Ask Savta"
@@ -25,7 +25,7 @@
         
         <button
           data-testid="trash-button"
-          class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-accent shadow-sm hover:bg-brand-accent/80 transition-colors focus:outline-none self-end sm:self-auto"
+          class="w-8 h-8 flex items-center justify-center rounded bg-brand-accent shadow-sm hover:bg-brand-accent/80 transition-colors focus:outline-none self-end sm:self-auto"
           @click="navigateToTrash"
           aria-label="View trash"
           v-tooltip.top="'View Trash'"

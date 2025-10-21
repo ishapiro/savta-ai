@@ -276,7 +276,7 @@
           <h3 class="text-lg font-semibold text-gray-900">Select Photos from Your Library</h3>
           <button
             @click="closePhotoLibrary"
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-flash"
+            class="w-8 h-8 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-flash"
             aria-label="Close Savta's Drawer"
           >
             <i class="pi pi-times text-gray-600"></i>
@@ -350,7 +350,7 @@
       <!-- Close button for loading state -->
       <button
         @click="closePhotoLibrary"
-        class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-flash"
+        class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-flash"
         aria-label="Close Memory Box"
       >
         <i class="pi pi-times text-gray-600"></i>

@@ -6,7 +6,7 @@
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
           <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Review Family Photos</h1>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
+            class="w-8 h-8 flex items-center justify-center rounded bg-white shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0 min-h-[44px] sm:min-h-0"
             v-tooltip.top="'How to review family photos'"
             @click="showHelpModal = true"
             aria-label="Information about reviewing family photos"
@@ -17,25 +17,25 @@
         <div class="flex flex-col sm:flex-row gap-3 sm:gap-2 w-full sm:w-auto">
           <button
             v-if="stats.pending > 0"
-            class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
+            class="flex items-center justify-center gap-2 bg-brand-highlight hover:bg-brand-highlight/80 text-white font-bold rounded-full px-6 py-2 shadow transition-all duration-200 w-full sm:w-auto"
             @click="approveAllPending"
             :disabled="approvingAll"
           >
-            <i class="pi pi-check text-lg sm:text-2xl" :class="{ 'animate-spin': approvingAll }"></i>
+            <i class="pi pi-check" :class="{ 'animate-spin': approvingAll }"></i>
             <span class="hidden sm:inline">Approve All Photos ({{ stats.pending }})</span>
             <span class="sm:hidden">Approve All</span>
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full px-4 sm:px-6 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
+            class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded px-6 py-2 shadow transition-all duration-200 w-full sm:w-auto"
             @click="showRerunAIDialog = true"
             :disabled="rerunningAI"
           >
-            <i class="pi pi-refresh text-lg sm:text-2xl" :class="{ 'animate-spin': rerunningAI }"></i>
+            <i class="pi pi-refresh" :class="{ 'animate-spin': rerunningAI }"></i>
             <span class="hidden sm:inline">Rerun AI</span>
             <span class="sm:hidden">Rerun AI</span>
           </button>
           <button
-            class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded-full px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
+            class="flex items-center justify-center gap-2 bg-brand-header hover:bg-brand-secondary text-white font-bold rounded px-4 sm:px-8 py-3 text-sm sm:text-lg shadow transition-all duration-200 w-full sm:w-auto min-h-[48px] sm:min-h-0"
             @click="navigateTo('/app/deleted-memories')"
           >
             <i class="pi pi-trash text-lg sm:text-2xl animate-bounce"></i>
@@ -111,7 +111,7 @@
                 <button
                   v-if="tagFilter && tagFilter.length > 0"
                   @click="tagFilter = []"
-                  class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-800 transition-colors"
+                  class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-800 transition-colors"
                   v-tooltip.top="'Clear tag filters'"
                 >
                   <i class="pi pi-times text-xs"></i>
@@ -158,34 +158,34 @@
           <div class="rounded-b-xl sm:rounded-b-2xl bg-brand-navigation px-3 sm:px-4 py-3 sm:py-3 flex items-center justify-between gap-3 sm:gap-4 border-t border-brand-primary/20" style="flex-shrink: 0; margin-top: auto;">
             <div class="flex items-center gap-3 sm:gap-3 flex-1 justify-center">
               <div class="flex flex-col items-center cursor-pointer group" @click="openDetailsDialog(asset)" v-tooltip.top="'Details'">
-                <button class="bg-brand-dialog-edit text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full min-h-[40px] sm:min-h-0">
+                <button class="bg-brand-dialog-edit text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded min-h-[40px] sm:min-h-0">
                   <i class="pi pi-info-circle text-base sm:text-lg" title="Ask Savta"></i>
                 </button>
                 <span class="text-xs sm:text-[10px] text-brand-secondary mt-1 sm:mt-0.5">Details</span>
               </div>
               <div v-if="!asset.approved" class="flex flex-col items-center cursor-pointer group" @click="approveAsset(asset.id)" v-tooltip.top="'Approve'">
-                <button class="bg-brand-dialog-save text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full min-h-[40px] sm:min-h-0">
+                <button class="bg-brand-dialog-save text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded min-h-[40px] sm:min-h-0">
                   <i class="pi pi-check text-base sm:text-lg"></i>
                 </button>
                 <span class="text-xs sm:text-[10px] text-brand-highlight mt-1 sm:mt-0.5">Approve</span>
               </div>
               <div class="flex flex-col items-center cursor-pointer group" @click="openEditDialog(asset)" v-tooltip.top="'Edit'">
-                <button class="bg-brand-dialog-edit text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full min-h-[40px] sm:min-h-0">
+                <button class="bg-brand-dialog-edit text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded min-h-[40px] sm:min-h-0">
                   <i class="pi pi-pencil text-base sm:text-lg"></i>
                 </button>
                 <span class="text-xs sm:text-[10px] text-brand-secondary mt-1 sm:mt-0.5">Edit</span>
               </div>
               <div class="flex flex-col items-center cursor-pointer group" @click="deleteAsset(asset.id)" v-tooltip.top="'Trash'">
-                <button class="bg-brand-dialog-delete text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full min-h-[40px] sm:min-h-0">
+                <button class="bg-brand-dialog-delete text-white w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded min-h-[40px] sm:min-h-0">
                   <i class="pi pi-trash text-base sm:text-lg"></i>
                 </button>
                 <span class="text-xs sm:text-[10px] text-red-700 mt-1 sm:mt-0.5">Trash</span>
               </div>
             </div>
             <div>
-              <span v-if="!asset.approved && !asset.rejected" class="inline-block px-3 sm:px-3 py-1 rounded-full bg-yellow-200 text-yellow-800 font-semibold text-xs shadow">Pending</span>
-              <span v-else-if="asset.approved" class="inline-block px-3 sm:px-3 py-1 rounded-full bg-brand-highlight/20 text-brand-highlight font-semibold text-xs shadow">Approved</span>
-              <span v-else-if="asset.rejected" class="inline-block px-3 sm:px-3 py-1 rounded-full bg-red-200 text-red-800 font-semibold text-xs shadow">Rejected</span>
+              <span v-if="!asset.approved && !asset.rejected" class="inline-block px-3 sm:px-3 py-1 rounded bg-yellow-200 text-yellow-800 font-semibold text-xs shadow">Pending</span>
+              <span v-else-if="asset.approved" class="inline-block px-3 sm:px-3 py-1 rounded bg-brand-highlight/20 text-brand-highlight font-semibold text-xs shadow">Approved</span>
+              <span v-else-if="asset.rejected" class="inline-block px-3 sm:px-3 py-1 rounded bg-red-200 text-red-800 font-semibold text-xs shadow">Rejected</span>
             </div>
           </div>
         </div>
@@ -618,7 +618,7 @@
           <!-- Status Tags Section -->
           <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center shadow-lg">
+              <div class="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded flex items-center justify-center shadow-lg">
                 <i class="pi pi-tags text-amber-600 text-lg"></i>
               </div>
               <div>
