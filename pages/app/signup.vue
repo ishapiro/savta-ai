@@ -10,6 +10,18 @@
       <div class="absolute bottom-32 left-1/3 w-24 sm:w-40 h-24 sm:h-40 bg-brand-header/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 2s;"></div>
       <div class="absolute top-1/2 right-8 sm:right-20 w-12 sm:w-20 h-12 sm:h-20 bg-brand-accent/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 0.5s;"></div>
     </div>
+    <!-- Google OAuth Loading Overlay -->
+    <div v-if="showGoogleLoading" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="flex flex-col items-center gap-4">
+        <div class="relative w-16 h-16">
+          <svg class="animate-spin h-16 w-16 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+        <p class="text-white font-semibold text-lg">Connecting to Google...</p>
+      </div>
+    </div>
 
     <!-- Provider Selection Dialog -->
     <Dialog v-model:visible="providerSelectVisible" modal :closable="false" :dismissableMask="false" :style="{ width: '100vw', maxWidth: '400px', maxHeight: '100vh' }" class="z-30">
@@ -186,6 +198,7 @@ const confirmPassword = ref('')
 const agreeToTerms = ref(false)
 const emailLoading = ref(false)
 const googleLoading = ref(false)
+const showGoogleLoading = ref(false)
 const error = ref('')
 const emailError = ref('')
 const passwordError = ref('')
@@ -292,7 +305,11 @@ const handleEmailSignup = async () => {
 }
 
 const handleGoogleSignup = async () => {
-  googleLoading.value = true
+  // Hide dialogs and show loading spinner
+  providerSelectVisible.value = false
+  visible.value = false
+  showGoogleLoading.value = true
+  
   error.value = ''
   const config = useRuntimeConfig()
   const siteUrl = config.public.siteUrl
@@ -314,12 +331,16 @@ const handleGoogleSignup = async () => {
 
     if (authError) {
       error.value = authError.message
+      // Show dialogs again if there's an error
+      showGoogleLoading.value = false
+      providerSelectVisible.value = true
     }
   } catch (err) {
     error.value = 'An unexpected error occurred. Please try again.'
     console.error('Google signup error:', err)
-  } finally {
-    googleLoading.value = false
+    // Show dialogs again if there's an error
+    showGoogleLoading.value = false
+    providerSelectVisible.value = true
   }
 }
 
