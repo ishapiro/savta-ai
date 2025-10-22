@@ -102,6 +102,36 @@
           </div>
         </div>
 
+        <!-- Upload Results (Success and Failures) -->
+        <div v-if="!isUploading && (uploadedFiles.length > 0 || failedFiles.length > 0)" class="space-y-4">
+          <!-- Success Summary -->
+          <div v-if="uploadedFiles.length > 0" class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="pi pi-check-circle text-green-600"></i>
+              <h4 class="font-semibold text-green-800">Successfully Uploaded</h4>
+            </div>
+            <p class="text-sm text-green-700">{{ uploadedFiles.length }} photo{{ uploadedFiles.length !== 1 ? 's' : '' }} uploaded and processed</p>
+          </div>
+
+          <!-- Failure Summary -->
+          <div v-if="failedFiles.length > 0" class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="pi pi-times-circle text-red-600"></i>
+              <h4 class="font-semibold text-red-800">Upload Failed</h4>
+            </div>
+            <p class="text-sm text-red-700 mb-2">{{ failedFiles.length }} photo{{ failedFiles.length !== 1 ? 's' : '' }} failed to upload:</p>
+            <div class="space-y-1 max-h-32 overflow-y-auto">
+              <div 
+                v-for="file in failedFiles" 
+                :key="file.name"
+                class="text-xs text-red-600 pl-4"
+              >
+                • {{ file.name }}: {{ file.error }}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Action Buttons -->
         <div class="flex justify-between items-center pt-6 border-t border-gray-100">
           <button
@@ -109,14 +139,29 @@
             :disabled="isUploading"
             class="px-4 py-2 text-brand-text-muted hover:text-brand-primary transition-colors disabled:opacity-50"
           >
-            Cancel
+            {{ isUploading ? 'Cancel' : (shouldReturnToWizard ? 'Back to Wizard' : 'Cancel') }}
+          </button>
+          <!-- Show appropriate button based on upload state -->
+          <button
+            v-if="!isUploading && uploadedFiles.length > 0 && shouldReturnToWizard"
+            @click="returnToWizard"
+            class="bg-brand-highlight hover:bg-brand-highlight/90 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+          >
+            {{ failedFiles.length > 0 ? 'Continue with Uploaded Photos' : 'Continue to Wizard' }}
           </button>
           <button
-            v-if="!isUploading && uploadedFiles.length > 0"
+            v-else-if="!isUploading && uploadedFiles.length > 0 && !shouldReturnToWizard"
             @click="finishUpload"
             class="bg-brand-highlight hover:bg-brand-highlight/90 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
           >
-            Continue to Photo Selection
+            {{ failedFiles.length > 0 ? 'Continue with Uploaded Photos' : 'Continue to Photo Selection' }}
+          </button>
+          <button
+            v-else-if="!isUploading && uploadedFiles.length === 0 && (failedFiles.length > 0 || uploadStatus === 'Upload failed')"
+            @click="shouldReturnToWizard ? returnToWizard() : goBack()"
+            class="bg-brand-secondary hover:bg-brand-secondary/90 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+          >
+            {{ shouldReturnToWizard ? 'Return to Wizard' : 'Go Back' }}
           </button>
         </div>
       </div>
@@ -242,10 +287,16 @@ const uploadFiles = async (files) => {
         life: 3000
       })
 
-      // Auto-advance after a short delay
-      setTimeout(() => {
-        finishUpload()
-      }, 1500)
+      // Auto-advance after a short delay only if returning to wizard
+      if (shouldReturnToWizard.value) {
+        setTimeout(() => {
+          returnToWizard()
+        }, 1500)
+      } else {
+        setTimeout(() => {
+          finishUpload()
+        }, 1500)
+      }
     } else {
       throw new Error('No files were successfully uploaded')
     }
@@ -254,12 +305,22 @@ const uploadFiles = async (files) => {
     console.error('Upload error:', error)
     uploadStatus.value = 'Upload failed'
     
-    toast.add({
-      severity: 'error',
-      summary: 'Upload Failed',
-      detail: error.message || 'Please try again',
-      life: 5000
-    })
+    // If we have some successful uploads but overall failed, show partial success
+    if (uploadedFiles.value.length > 0) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Partial Upload',
+        detail: `Uploaded ${uploadedFiles.value.length} photos, but ${failedFiles.value.length} failed. You can continue or try uploading more.`,
+        life: 5000
+      })
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Upload Failed',
+        detail: error.message || 'No files were uploaded. Please try again.',
+        life: 5000
+      })
+    }
   } finally {
     isUploading.value = false
   }
@@ -281,6 +342,13 @@ const getMagicStatusText = (status) => {
     default:
       return status
   }
+}
+
+// Return to wizard after upload
+const returnToWizard = () => {
+  // Navigate directly back to memory-books page
+  // The wizard will be reopened by the parent component
+  router.push('/app/memory-books?reopenWizard=true')
 }
 
 // Finish upload and navigate
@@ -306,7 +374,8 @@ const finishUpload = () => {
 // Go back
 const goBack = () => {
   if (shouldReturnToWizard.value) {
-    router.push('/app/memory-books')
+    // Return to wizard if coming from wizard
+    returnToWizard()
   } else {
     router.push('/app/memory-books')
   }

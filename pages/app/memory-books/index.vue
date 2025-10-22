@@ -1998,6 +1998,23 @@ if (route.query.return === 'memory-book') {
   console.log('🔍 [Memory Books] Cleared query params')
 }
 
+// Check for reopenWizard parameter (returning from upload)
+if (route.query.reopenWizard === 'true') {
+  console.log('🔍 [Memory Books] Found reopenWizard=true, reopening wizard')
+  
+  // Open the magic memory wizard on the next tick to ensure page is loaded
+  nextTick(() => {
+    if (magicMemoryWizardRef.value) {
+      magicMemoryWizardRef.value.openMagicMemoryDialog('quick')
+      console.log('🔍 [Memory Books] Wizard reopened after upload')
+    }
+  })
+  
+  // Clear query params
+  router.replace({ query: {} })
+  console.log('🔍 [Memory Books] Cleared reopenWizard query param')
+}
+
 // Debug route changes
 watch(() => route, (newRoute) => {
   console.log('🔍 [Memory Books] Route changed:', newRoute.path, newRoute.query)
@@ -2008,6 +2025,25 @@ watch(() => route.query, (newQuery) => {
   console.log('🔍 [Memory Books] Route query changed:', newQuery)
   console.log('🔍 [Memory Books] Current route:', route.path)
   console.log('🔍 [Memory Books] Full route object:', route)
+  
+  // Handle reopenWizard parameter (returning from upload)
+  if (newQuery.reopenWizard === 'true') {
+    console.log('🔍 [Memory Books] Found reopenWizard=true in watch, reopening wizard')
+    
+    // Open the magic memory wizard
+    nextTick(() => {
+      if (magicMemoryWizardRef.value) {
+        magicMemoryWizardRef.value.openMagicMemoryDialog('quick')
+        console.log('🔍 [Memory Books] Wizard reopened after upload (from watch)')
+      }
+    })
+    
+    // Clear query params
+    router.replace({ query: {} })
+    console.log('🔍 [Memory Books] Cleared reopenWizard query param')
+    return
+  }
+  
   // Handle return from wizard photo selection
   if (newQuery.wizardStep === 'photos' && newQuery.selectedPhotos) {
     console.log('🔍 [Memory Books] Returning from photo selection to wizard')

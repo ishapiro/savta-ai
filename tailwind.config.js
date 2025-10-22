@@ -1,3 +1,5 @@
+import { Lightbulb } from 'lucide-vue-next'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
@@ -15,11 +17,11 @@ export default {
       colors: {
         // Material Design 3 Color System
         brand: {
-          // Primary - Material Blue
-          primary: '#1976D2',           // Material Blue 700
-          'primary-light': '#42A5F5',   // Material Blue 400
-          'primary-dark': '#1565C0',    // Material Blue 800
-          'primary-hover': '#1565C0',   // Darker on hover
+          // Primary - Material Dark Grey palette
+          primary: '#212121',           // Grey 900
+          'primary-light': '#616161',   // Grey 700
+          'primary-dark': '#424242',    // Grey 800
+          'primary-hover': '#424242',   // Use dark grey on hover
           'primary-contrast': '#FFFFFF', // White text on primary
           
           // Secondary - Material Teal

@@ -9,7 +9,7 @@
           <span class="block text-2xl sm:text-4xl lg:text-5xl text-brand-header">— automatically.</span>
         </h1>
       </div>
-      <h2 class="italic text-base sm:text-lg lg:text-xl text-brand-secondary font-medium mb-6 leading-snug">
+      <h2 class="italic text-base sm:text-lg lg:text-xl text-brand-primary font-medium mb-6 leading-snug">
         No more dragging photos into layouts. Our AI picks your best moments,<br />
         writes captions, and designs beautiful cards for you.<br />
         Just upload and we'll mail them to your loved ones or share them digitally.
