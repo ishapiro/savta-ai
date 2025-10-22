@@ -41,101 +41,92 @@
 
     <!-- Main Content -->
     <div class="relative z-10 w-full flex-1 flex flex-col justify-center" v-if="!showRestrictedOverlay">
-      <div class="w-full px-1 sm:px-[5px] lg:px-[8px]">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 items-center">
-          <!-- Left Column: Hero Content (2/3 width) -->
-          <div class="lg:col-span-2 space-y-8 animate-fade-in-left">
-            <!-- Main Headline -->
-            <div class="space-y-6">
-              <div class="space-y-4">
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand-secondary leading-tight tracking-tight">
-                  Craft special memories <span class="text-brand-highlight">without the fuss</span>
-                </h1>
-                <p class="text-xl text-brand-primary/80 leading-relaxed max-w-2xl">
-                  Savta.ai is not another photo printing service. We handle the creative work for you—no dragging, no dropping, no design skills needed. Upload photos, we write beautiful captions, design stunning cards, and mail them to your loved ones. It's that simple.
-                </p>
-              </div>
+      <div class="w-full px-1 sm:px-[5px] lg:px-[8px] py-4 sm:py-6 lg:py-8">
+        <!-- Compact Top Section: Logo + Headline -->
+        <div class="mb-4 sm:mb-6">
+          <!-- Logo -->
+          <div class="flex items-center justify-center mb-3 sm:mb-4 animate-fade-in">
+            <img src="/savta_image_only_color.svg" alt="Savta AI" class="h-12 sm:h-14 lg:h-16 w-auto" />
+          </div>
+          
+          <!-- Headline -->
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-center text-brand-secondary leading-tight tracking-tight animate-fade-in">
+            Craft special <br class="sm:hidden" />memories <span class="text-brand-highlight">without the fuss</span>
+          </h1>
+        </div>
 
-              <div class="inline-block">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-50 text-red-700 border border-red-200">
-                  <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
-                  Limited Early Access
-                </span>
-              </div>
-            </div>
+        <!-- Main Grid: Content + Card -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start">
+          <!-- Left Column: Description + CTA -->
+          <div class="space-y-3 sm:space-y-4 animate-fade-in-left">
+            <!-- Short Description -->
+            <p class="text-sm sm:text-base lg:text-lg text-brand-primary/80 leading-relaxed">
+              Savta.ai is not another photo printing service. We handle the creative work for you—no dragging, no dropping, no design skills needed. 
+            </p>
 
-            <!-- What Makes Us Different -->
-            <div class="space-y-4">
-              <h2 class="text-2xl font-bold text-brand-secondary">Why Savta is different</h2>
-              <div class="space-y-3">
-                <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-brand-highlight/20 flex items-center justify-center">
-                    <span class="text-lg">✨</span>
-                  </div>
-                  <div>
-                    <h3 class="font-semibold text-brand-secondary mb-1">AI Writes Your Story</h3>
-                    <p class="text-sm text-brand-primary/70">Savta writes heartwarming captions and stories about your photos—capturing the feeling, not just the moment</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-brand-secondary/20 flex items-center justify-center">
-                    <span class="text-lg">🎨</span>
-                  </div>
-                  <div>
-                    <h3 class="font-semibold text-brand-secondary mb-1">No Design Work</h3>
-                    <p class="text-sm text-brand-primary/70">Layouts, colors, and designs are all done for you. Zero dragging photos around</p>
-                  </div>
-                </div>
-                <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-brand-accent/20 flex items-center justify-center">
-                    <span class="text-lg">📬</span>
-                  </div>
-                  <div>
-                    <h3 class="font-semibold text-brand-secondary mb-1">Beautiful in Your Hands</h3>
-                    <p class="text-sm text-brand-primary/70">Professionally printed memory cards delivered to grandparents, parents, and loved ones who treasure them</p>
-                  </div>
-                </div>
+            <!-- Quick Benefits -->
+            <div class="space-y-2">
+              <div class="flex items-start gap-2">
+                <span class="text-brand-highlight font-bold text-lg mt-0.5">✨</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70">AI writes heartwarming captions and stories about your photos</p>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-brand-secondary font-bold text-lg mt-0.5">🎨</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70">We design everything - layouts, colors, everything</p>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-brand-accent font-bold text-lg mt-0.5">📬</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70">Premium cards delivered to loved ones</p>
               </div>
             </div>
 
-            <!-- CTA Button -->
-            <div>
+            <!-- CTA + Badge -->
+            <div class="flex flex-col sm:flex-row items-start gap-3 pt-2">
               <Button
                 label="Get Started"
-                class="bg-brand-header hover:bg-brand-secondary text-white rounded-lg py-4 px-8 text-lg font-semibold border-0 transition-colors"
+                class="bg-brand-header hover:bg-brand-secondary text-white rounded-lg py-2.5 px-6 text-sm font-semibold border-0 transition-colors"
                 @click="openMagicMemoryDialog('quick')"
               />
-              <p class="text-sm text-brand-primary/70 mt-3 flex items-center gap-2">
-                <span>Takes under 3 minutes</span>
-                <span>🤞</span>
-              </p>
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
+                Early Access
+              </span>
             </div>
           </div>
 
-          <!-- Right Column: Feature Highlight (1/3 width) -->
-          <div class="hidden lg:flex lg:flex-col gap-4 animate-fade-in-right" style="animation-delay: 0.2s;">
-            <!-- Feature Card 1 -->
-            <div class="bg-white/50 backdrop-blur-sm rounded-xl border border-brand-navigation/20 p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div class="text-3xl mb-3">📸</div>
-              <h3 class="font-semibold text-brand-secondary text-sm mb-2">Simple Upload</h3>
-              <p class="text-xs text-brand-primary/70 leading-relaxed">Share photos from your phone, computer, or cloud</p>
-            </div>
-
-            <!-- Feature Card 2 -->
-            <div class="bg-white/50 backdrop-blur-sm rounded-xl border border-brand-navigation/20 p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div class="text-3xl mb-3">✍️</div>
-              <h3 class="font-semibold text-brand-secondary text-sm mb-2">AI Creativity</h3>
-              <p class="text-xs text-brand-primary/70 leading-relaxed">We write captions, pick photos, and design everything</p>
-            </div>
-
-            <!-- Feature Card 3 -->
-            <div class="bg-white/50 backdrop-blur-sm rounded-xl border border-brand-navigation/20 p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div class="text-3xl mb-3">🎁</div>
-              <h3 class="font-semibold text-brand-secondary text-sm mb-2">Beautiful Delivery</h3>
-              <p class="text-xs text-brand-primary/70 leading-relaxed">Premium printed cards mailed to loved ones</p>
+          <!-- Right Column: Sample Memory Card Stack -->
+          <div class="hidden lg:flex lg:items-center lg:justify-center animate-fade-in-right" style="animation-delay: 0.2s;">
+            <!-- Stacked memory cards visual - 7:5 aspect ratio -->
+            <div class="relative" style="width: 280px; height: 200px;">
+              <!-- Back card -->
+              <div class="absolute top-4 left-2.5 bg-white rounded-lg shadow-lg border border-brand-navigation/10 transform -rotate-3 opacity-40 overflow-hidden" style="width: 256px; height: 183px;">
+                <img src="/sample-memory-card.jpg" alt="Memory card" class="w-full h-full object-contain bg-white" />
+              </div>
+              
+              <!-- Middle card -->
+              <div class="absolute top-2 left-1 bg-white rounded-lg shadow-xl border border-brand-navigation/10 transform -rotate-1 opacity-60 overflow-hidden" style="width: 256px; height: 183px;">
+                <img src="/sample-memory-card.jpg" alt="Memory card" class="w-full h-full object-contain bg-white" />
+              </div>
+              
+              <!-- Front card -->
+              <div class="absolute top-0 left-0 bg-white rounded-lg shadow-2xl border border-brand-navigation/20 overflow-hidden" style="width: 256px; height: 183px;">
+                <img src="/sample-memory-card.jpg" alt="Sample memory card created by Savta" class="w-full h-full object-contain bg-white" />
+              </div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    <!-- Loading Spinner Overlay -->
+    <div v-if="isLoading" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="flex flex-col items-center gap-4">
+        <div class="relative w-16 h-16">
+          <svg class="animate-spin h-16 w-16 text-brand-secondary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+        <p class="text-white font-semibold">Loading your memories...</p>
       </div>
     </div>
   </div>
@@ -151,6 +142,7 @@ definePageMeta({
 const showRestrictedOverlay = ref(false)
 const restrictedCode = ref('')
 const restrictedError = ref('')
+const isLoading = ref(false)
 
 // Check if restricted access should be shown
 const checkRestrictedAccess = async () => {
@@ -193,27 +185,21 @@ const handleRestrictedAccess = async () => {
   }
 }
 
-// Enhanced flow: Check if user is authenticated, then check for approved photos
+// Enhanced flow: Check if user is authenticated, then navigate
 const openMagicMemoryDialog = async (buttonType = 'quick') => {
+  isLoading.value = true
+  
   const { useSupabaseUser } = await import('~/composables/useSupabase')
   const user = useSupabaseUser()
   
   if (!user.value) {
     localStorage.setItem('auth_origin', 'home')
+    isLoading.value = false
     await navigateTo('/app/signup')
   } else {
-    try {
-      const { useDatabase } = await import('~/composables/useDatabase')
-      const db = useDatabase()
-      const books = await db.memoryBooks.getMemoryBooks()
-      if (books && books.length > 0) {
-        await navigateTo('/app/memory-books')
-      } else {
-        await navigateTo('/app/memory-books')
-      }
-    } catch (error) {
-      await navigateTo('/app/memory-books')
-    }
+    // Navigate immediately to memory-books page without waiting for data
+    // The memory-books page will lazy load the content
+    await navigateTo('/app/memory-books')
   }
 }
 
