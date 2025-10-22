@@ -67,7 +67,7 @@
                     <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Main</h4>
                     
                     <!-- Home -->
-                    <NuxtLink to="/app/home" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
+                    <NuxtLink to="/" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
                       <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
                         <i class="pi pi-home text-white text-sm"></i>
                       </div>
@@ -171,7 +171,7 @@
                     <div class="space-y-2">
                       <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Account</h4>
                       
-                      <NuxtLink :to="`/app/login?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
+                      <NuxtLink :to="`/app/login?origin=${route.path === '/' ? 'home' : 'dashboard'}`" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
                         <div class="w-8 h-8 bg-brand-header rounded-lg flex items-center justify-center">
                           <i class="pi pi-sign-in text-white text-sm"></i>
                         </div>
@@ -181,7 +181,7 @@
                         </div>
                       </NuxtLink>
 
-                      <NuxtLink :to="`/app/signup?origin=${route.path === '/app/home' ? 'home' : 'dashboard'}`" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
+                      <NuxtLink :to="`/app/signup?origin=${route.path === '/' ? 'home' : 'dashboard'}`" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
                         <div class="w-8 h-8 bg-brand-highlight rounded-lg flex items-center justify-center">
                           <i class="pi pi-user-plus text-white text-sm"></i>
                         </div>
@@ -266,7 +266,7 @@
           <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Main</h4>
           
           <!-- Home -->
-          <NuxtLink to="/app/home" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
+          <NuxtLink to="/" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
             <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
               <i class="pi pi-home text-white text-sm"></i>
             </div>
@@ -567,7 +567,7 @@ const breadcrumbItems = computed(() => {
     crumbs.push({ label: 'Home', to: '/app/home' })
     
     // Add Getting Started if not on home page
-    if (route.path !== '/app/home') {
+    if (route.path !== '/') {
       crumbs.push({ label: 'Getting Started', to: '/getting-started' })
     }
   } else {
@@ -575,7 +575,7 @@ const breadcrumbItems = computed(() => {
   }
   
   // Add current page if not home or getting started
-  if (route.path !== '/app/home' && route.path !== '/getting-started' && route.name && route.name !== 'index') {
+  if (route.path !== '/' && route.path !== '/getting-started' && route.name && route.name !== 'index') {
     // Convert route name to readable label
     let label = route.name.toString()
     if (label.includes('-')) {

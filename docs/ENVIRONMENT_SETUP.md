@@ -48,3 +48,35 @@ After setting up your environment variables:
 2. Try uploading a photo
 3. Check the console logs for any authentication errors
 4. The AI processing should now work correctly with the service role key 
+## Restricted Release Configuration
+
+### Overview
+
+Savta.ai includes a restricted release overlay that blocks access to the application until users enter an insider code. This is useful during early access phases.
+
+### Environment Variable
+
+```bash
+# Restricted Release (defaults to true - overlay enabled)
+NUXT_PUBLIC_ENABLE_RESTRICTED_RELEASE=false  # Set to 'false' to disable overlay for live release
+```
+
+### How It Works
+
+- **Default (enabled)**: When the environment variable is not set or set to `true`, visitors see a modal dialog asking for an insider code
+- **Disabled (live release)**: When set to `'false'`, the overlay is disabled and users can access the app freely
+- **Insider Code**: Uses the same `INSIDER_PASSWORD` or `NUXT_PUBLIC_INSIDERS_PASSWORD` for authentication
+- **Session Memory**: Once a user enters the correct code, access is stored in `sessionStorage` for the duration of their session
+
+### Enabling for Production
+
+When you're ready to go live and remove the restricted access:
+
+1. Set the environment variable:
+   ```bash
+   NUXT_PUBLIC_ENABLE_RESTRICTED_RELEASE=false
+   ```
+
+2. Deploy to your hosting platform (Railway, Vercel, etc.)
+
+3. The landing page will now be fully accessible without requiring an insider code

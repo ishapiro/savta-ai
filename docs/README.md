@@ -26,6 +26,7 @@ Complete documentation for the Savta.ai memory books and cards application.
 #### [`ENVIRONMENT_SETUP.md`](./ENVIRONMENT_SETUP.md)
 - Required environment variables configuration
 - API key setup (Supabase, OpenAI, AWS, SendGrid)
+- **Restricted release overlay configuration** - Enable/disable early access gating
 - Step-by-step setup instructions for new developers
 
 #### [`PRIMEVUE_SETUP.md`](./PRIMEVUE_SETUP.md)
