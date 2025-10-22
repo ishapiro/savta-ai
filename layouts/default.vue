@@ -87,6 +87,19 @@
                         <div class="text-xs text-brand-primary/70">How Savta.ai works</div>
                       </div>
                     </NuxtLink>
+
+                    <!-- My Account (in Main for signed-in users) -->
+                    <template v-if="user && userProfile && !userProfile.deleted">
+                      <NuxtLink to="/app/my-account" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
+                        <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                          <i class="pi pi-user text-white text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                          <div class="font-medium text-brand-secondary text-sm">My Account</div>
+                          <div class="text-xs text-brand-primary/70">View profile & stats</div>
+                        </div>
+                      </NuxtLink>
+                    </template>
                   </div>
 
                   <!-- User Actions -->
@@ -273,6 +286,17 @@
               <div class="text-xs text-brand-primary/70">How Savta.ai works</div>
             </div>
           </NuxtLink>
+
+          <!-- My Account -->
+          <NuxtLink to="/app/my-account" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
+            <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+              <i class="pi pi-user text-white text-sm"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-medium text-brand-secondary text-sm">My Account</div>
+              <div class="text-xs text-brand-primary/70">View profile & stats</div>
+            </div>
+          </NuxtLink>
         </div>
 
         <!-- User Actions -->
@@ -308,7 +332,7 @@
                 <i class="pi pi-book text-white text-sm"></i>
               </div>
               <div class="flex-1">
-                <div class="font-medium text-brand-secondary text-sm">Memories</div>
+                <div class="font-medium text-brand-secondary text-sm">Create Memories</div>
                 <div class="text-xs text-brand-primary/70">Create & manage</div>
               </div>
             </NuxtLink>

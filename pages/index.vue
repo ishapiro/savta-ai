@@ -26,17 +26,17 @@
             <h2 class="text-base sm:text-base font-semibold mb-2 sm:mb-1 text-brand-secondary drop-shadow-lg">
               Keep the memories that matter most, permanently.
             </h2>
-            <p class="text-sm sm:text-sm text-brand-secondary/90 leading-relaxed mb-2 sm:mb-0.5 drop-shadow-md">
+            <p class="text-sm sm:text-sm text-brand-primary leading-relaxed mb-2 sm:mb-0.5 drop-shadow-md">
               Savta.ai is a beautifully simple web app that helps families turn their everyday photos into 
               professionally printed, AI-enhanced 7x5 memory cards. With just a few clicks, users can upload pictures, 
               get instant captions and stories, and have them mailed to loved ones. 
             </p>
-            <p class="text-sm sm:text-sm text-brand-secondary/80 leading-relaxed drop-shadow-md">
+            <p class="text-sm sm:text-sm text-brand-primary leading-relaxed drop-shadow-md">
               These tangible cards offer lasting emotional value — a heartfelt way to keep grandparents, 
               parents, and relatives connected, especially those who may struggle with technology or 
               don’t use social media.
             </p>
-            <p class="text-sm sm:text-sm text-brand-secondary/80 leading-relaxed drop-shadow-md">
+            <p class="text-sm sm:text-sm text-brand-primary leading-relaxed drop-shadow-md">
               Think: Instagram meets Hallmark — but mailed, not scrolled.
             </p>
           </div>
@@ -46,7 +46,7 @@
         </div>
         <div class="flex flex-col items-center mt-4 sm:mt-1 animate-fade-in-up" style="animation-delay: 0.6s;">
           <div class="w-full flex flex-col items-center">
-            <div class="text-brand-secondary text-sm sm:text-sm mb-3 sm:mb-1 text-center">
+            <div class="text-brand-primary text-sm sm:text-sm mb-3 sm:mb-1 text-center">
               Be the first to bring Savta&apos;s magic to your family
             </div>
             <InputText

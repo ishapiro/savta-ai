@@ -232,12 +232,30 @@ export const useAnalytics = () => {
 
     eventBuffer.value.push(event)
 
-    // Flush if buffer is full
-    if (eventBuffer.value.length >= BATCH_SIZE) {
+    // Immediately flush important events (share, download, creation) to ensure timely tracking
+    const importantEvents = [
+      'pdf_download',
+      'image_download',
+      'pdf_share',
+      'pdf_share_fallback',
+      'memory_book_shared',
+      'memory_book_share_failed',
+      'memory_book_created',
+      'memory_book_generate_attempt',
+      'image_share',
+      'image_share_fallback'
+    ]
+
+    if (importantEvents.includes(action)) {
+      console.log('🔍 Analytics: Important event detected, flushing immediately', { action })
+      flushEvents()
+    } else if (eventBuffer.value.length >= BATCH_SIZE) {
+      // Flush if buffer is full
       console.log('🔍 Analytics: Buffer full, flushing events')
       flushEvents()
     }
   }
+
 
   // Flush events to server
   const flushEvents = async () => {

@@ -46,7 +46,7 @@ export default {
           // Legacy aliases for compatibility
           header: '#1976D2',            // Maps to primary
           navigation: '#F5F5F5',        // Maps to surface-variant
-          highlight: '#00796B',         // Maps to secondary
+          highlight: '#E91E63',         // Material Pink 500
           accent: '#FB8C00',            // Material Orange 600
           'accent-light': '#FFB74D',    // Material Orange 300
           card: '#FFFFFF',              // Pure white
@@ -77,7 +77,7 @@ export default {
           'info-dark': '#01579B',       // Material Light Blue 900
           
           // Action Colors
-          flash: '#1976D2',             // Primary blue
+          flash: '#E53935',             // Material Red 600
           
           // Dialog System
           'dialog-cancel': '#9E9E9E',          // Material Grey 500

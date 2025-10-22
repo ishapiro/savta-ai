@@ -42,6 +42,7 @@ import Column from 'primevue/column'
 import ColorPicker from 'primevue/colorpicker'
 import ProgressSpinner from 'primevue/progressspinner'
 import ProgressBar from 'primevue/progressbar'
+import Skeleton from 'primevue/skeleton'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // Install PrimeVue with configuration
@@ -89,6 +90,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     ColorPicker,
     ProgressSpinner,
     ProgressBar,
+    Skeleton,
   }
   
   // Register all components
