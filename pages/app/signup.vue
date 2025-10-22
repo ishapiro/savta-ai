@@ -204,15 +204,9 @@ console.log('[SIGNUP] Origin from localStorage:', origin)
 // Redirect if already logged in (this handles Google OAuth flow)
 watchEffect(() => {
   if (user.value) {
-    console.log('[SIGNUP] User authenticated, redirecting based on origin:', origin)
-    // For Google OAuth, user gets authenticated immediately and should go to confirm page
-    if (origin === 'home') {
-      console.log('[SIGNUP] Redirecting to confirm page (Google OAuth)')
-      navigateTo('/app/confirm')
-    } else {
-      console.log('[SIGNUP] Redirecting to memory books (Google OAuth)')
-      navigateTo('/app/memory-books')
-    }
+    console.log('[SIGNUP] User authenticated, redirecting to memory books')
+    // Always go straight to memory-books, skip confirm page
+    navigateTo('/app/memory-books')
   }
 })
 
@@ -264,7 +258,7 @@ const handleEmailSignup = async () => {
   console.log("SITE URL:", siteUrl)
 
   try {
-    const redirectUrl = `${config.public.siteUrl}/app/confirm`
+    const redirectUrl = `${config.public.siteUrl}/app/memory-books`
     console.log('[SIGNUP] Email redirect URL:', redirectUrl)
     
     const { error: authError } = await supabase.auth.signUp({
@@ -305,7 +299,7 @@ const handleGoogleSignup = async () => {
   console.log("SITE URL:", siteUrl)
 
   try {
-    const redirectUrl = `${config.public.siteUrl}/app/confirm`
+    const redirectUrl = `${config.public.siteUrl}/app/memory-books`
     console.log('[SIGNUP] OAuth redirect URL:', redirectUrl)
     
     const { error: authError } = await supabase.auth.signInWithOAuth({
@@ -335,12 +329,8 @@ const showEmailForm = () => {
 }
 
 const onDialogHide = () => {
-  // When dialog is closed, navigate based on origin
-  if (origin === 'home') {
-    navigateTo('/app/confirm')
-  } else {
-    navigateTo('/app/memory-books')
-  }
+  // When dialog is closed, navigate to memory-books
+  navigateTo('/app/memory-books')
 }
 
 onMounted(() => {

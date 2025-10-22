@@ -427,6 +427,6 @@ const handleSignOut = async () => {
   })
   
   await new Promise(resolve => setTimeout(resolve, 100))
-  navigateTo('/app/memory-books')
+  navigateTo('/')
 }
 </script>

@@ -310,12 +310,12 @@ const handleSignOut = async () => {
     clearInsidersAccess()
     await new Promise(resolve => setTimeout(resolve, 100))
     console.log('Navigating to memory books...')
-    navigateTo('/app/memory-books')
+    navigateTo('/')
   } catch (err) {
     console.error('Sign out error:', err)
     const { clearInsidersAccess } = useInsidersAccess()
     clearInsidersAccess()
-    navigateTo('/app/memory-books')
+    navigateTo('/')
   }
 }
 
@@ -345,7 +345,7 @@ function handleCardClick(cardType) {
   // Handle navigation for authenticated users
   switch (cardType) {
     case 'ai':
-      navigateTo('/app/memory-books')
+      navigateTo('/')
       break
     default:
       console.warn('Unknown card type:', cardType)

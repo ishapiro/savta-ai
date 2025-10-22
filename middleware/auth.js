@@ -104,18 +104,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return navigateTo('/app/login')
   }
   
-  // If user is authenticated and trying to access auth pages, redirect to getting started
-  // EXCEPT if they're coming from home page with origin in localStorage
+  // If user is authenticated and trying to access auth pages, redirect to memory books
   if (user.value && (to.path === '/app/login' || to.path === '/app/signup' || to.path === '/app/confirm')) {
-    // Allow authenticated users to access signup or confirm if they have origin=home in localStorage
-    if ((to.path === '/app/signup' || to.path === '/app/confirm') && 
-        process.client && localStorage.getItem('auth_origin') === 'home') {
-      return
-    }
-    // For login page, always redirect to memory books
-    if (to.path === '/app/login') {
-      return navigateTo('/app/memory-books')
-    }
+    // Always redirect authenticated users to memory books
+    // Skip confirm page entirely and go straight to memory-books
     return navigateTo('/app/memory-books')
   }
 }) 

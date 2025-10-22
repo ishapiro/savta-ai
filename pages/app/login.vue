@@ -238,7 +238,7 @@ const handleGoogleLogin = async () => {
   console.log("Debug:config.public.siteUrl", config.public.siteUrl)
 
   try {
-    const redirectUrl = `${config.public.siteUrl}/app/confirm`
+    const redirectUrl = `${config.public.siteUrl}/app/memory-books`
     console.log('[LOGIN] OAuth redirect URL:', redirectUrl)
     
     const { error: authError } = await supabase.auth.signInWithOAuth({
@@ -275,7 +275,7 @@ const showEmailForm = () => {
 const onDialogHide = () => {
   // When dialog is closed, navigate based on origin
   if (origin === 'home') {
-    navigateTo('/app/confirm')
+    navigateTo('/app/memory-books')
   } else {
     navigateTo('/app/memory-books')
   }
