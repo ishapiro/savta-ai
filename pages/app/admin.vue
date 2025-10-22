@@ -976,7 +976,9 @@
               <!-- Info Box -->
               <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div class="flex items-start gap-3">
-                  <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
+                  <div class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <i class="pi pi-info-circle text-brand-info-letter font-bold text-sm"></i>
+                  </div>
                   <div class="text-sm text-blue-900">
                     <strong>How it works:</strong> This utility generates 400px wide WebP thumbnails for photos that don't have them.
                     Full-resolution images are preserved for PDF generation. The process is safe and can be run multiple times.
@@ -2342,7 +2344,9 @@
             
             <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3">
               <div class="flex items-start gap-2">
-                <i class="pi pi-info-circle text-blue-500 mt-0.5" title="Ask Savta"></i>
+                <div class="w-5 h-5 rounded-full bg-white border border-brand-info-outline flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
+                </div>
                 <div class="text-sm">
                   <strong class="text-blue-600">✅ Safety Measure:</strong>
                   <p class="text-brand-primary/70 mt-1">

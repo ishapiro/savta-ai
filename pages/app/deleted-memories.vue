@@ -6,12 +6,12 @@
         <div class="flex-1 flex items-center gap-2 sm:gap-3">
           <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-primary">Deleted Memories</h1>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded bg-white shadow hover:bg-brand-background transition-colors focus:outline-none flex-shrink-0"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-brand-info-outline shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
             v-tooltip.top="'How to use this page'"
             @click="showHelpModal = true"
             aria-label="Information about deleted memories page"
           >
-            <i class="pi pi-info text-lg text-brand-highlight"></i>
+            <i class="pi pi-info text-lg text-brand-info-letter font-bold"></i>
           </button>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">

@@ -668,35 +668,29 @@ export const useDatabase = () => {
         return []
       }
       
-      
-      // If we have memory books with themes, fetch the theme data
-      if (data && data.length > 0) {
-        const booksWithThemes = data.filter(book => book.theme_id)
-        if (booksWithThemes.length > 0) {
-          const themeIds = [...new Set(booksWithThemes.map(book => book.theme_id))]
-          
-          const { data: themesData, error: themesError } = await supabase
-            .from('themes')
-            .select('id, name, description, background_color, header_font, body_font, signature_font, header_font_color, body_font_color, signature_font_color, layout_config, rounded, size')
-            .in('id', themeIds)
-          
-          if (!themesError && themesData) {
-            const themesMap = themesData.reduce((acc, theme) => {
-              acc[theme.id] = theme
-              return acc
-            }, {})
-            
-            // Attach theme data to memory books
-            data.forEach(book => {
-              if (book.theme_id && themesMap[book.theme_id]) {
-                book.theme = themesMap[book.theme_id]
-              }
-            })
-          }
-        }
-      }
+      // Performance optimization: Don't fetch theme data on initial load
+      // Themes are only displayed in detail dialog, so fetch them on-demand
+      // This reduces initial page load time significantly
       
       return data || []
+    },
+
+    // Fetch theme data for a specific book (on-demand loading for detail dialog)
+    getBookTheme: async (themeId) => {
+      if (!themeId) return null
+      
+      const { data, error } = await supabase
+        .from('themes')
+        .select('id, name, description, background_color, header_font, body_font, signature_font, header_font_color, body_font_color, signature_font_color, layout_config, rounded, size')
+        .eq('id', themeId)
+        .single()
+      
+      if (error) {
+        console.error('Error fetching theme:', error)
+        return null
+      }
+      
+      return data
     },
 
     // Create memory book

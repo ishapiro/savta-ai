@@ -15,10 +15,10 @@
         <div class="flex items-center space-x-3">
           <button 
             @click="showInfoDialog('funnelReport')"
-            class="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+            class="w-8 h-8 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
             title="Learn more about funnel reports"
           >
-            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+            <i class="pi pi-info-circle text-brand-info-letter font-bold text-sm" title="Ask Savta"></i>
           </button>
           <Button
             label="View Full Funnel Report"

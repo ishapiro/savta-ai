@@ -8,12 +8,12 @@
           <button
             data-testid="info-button"
             data-savta="memory-books-info"
-            class="w-8 h-8 flex items-center justify-center rounded bg-white shadow-sm hover:bg-gray-50 transition-colors focus:outline-none"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-brand-info-outline shadow-sm hover:bg-gray-50 transition-colors focus:outline-none"
             @click="showMemoryBooksInfoBubble = true"
             aria-label="Information about memory cards and booklets"
             title="Ask Savta"
           >
-            <i class="pi pi-info text-base text-brand-highlight"></i>
+            <i class="pi pi-info text-base text-brand-info-letter font-bold"></i>
           </button>
         </div>
         
@@ -124,8 +124,8 @@
       >
         <template #header>
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-brand-highlight rounded-full flex items-center justify-center">
-              <i class="pi pi-info text-white text-sm"></i>
+            <div class="w-8 h-8 bg-white border border-brand-info-outline rounded-full flex items-center justify-center">
+              <i class="pi pi-info text-brand-info-letter font-bold text-sm"></i>
             </div>
             <h3 class="text-lg font-semibold text-brand-primary">Memory Cards vs Memory Books</h3>
           </div>
@@ -188,6 +188,7 @@
         modal
         :closable="false"
         :dismissable-mask="true"
+        :block-scroll="true"
         :class="['w-full', 'h-full', 'max-w-none', 'max-h-screen', 'sm:max-h-[95%]', 'sm:w-[95vw]', 'sm:max-w-4xl', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl', 'mobile-app-dialog']"
       >
         <div v-if="selectedBook" class="sm:mb-5 bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen sm:min-h-[90%] flex flex-col sm:h-auto sm:overflow-hidden">
@@ -468,8 +469,8 @@
                   @click="forceDownloadPDF(selectedBook)"
                 >
                   <i class="pi pi-download text-xs sm:text-sm"></i>
-                  <span class="hidden sm:inline">Download {{ getFileTypeDisplay(selectedBook) }}</span>
-                  <span class="sm:hidden">Download {{ getFileTypeDisplay(selectedBook) }}</span>
+                  <span class="hidden sm:inline">Display/Share {{ getFileTypeDisplay(selectedBook) }}</span>
+                  <span class="sm:hidden">Display/Share {{ getFileTypeDisplay(selectedBook) }}</span>
                 </button>
               </div>
               <div class="border-0 bg-gradient-to-br from-brand-primary/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 mt-4">
@@ -758,23 +759,23 @@
         :dismissible="true"
         :show-avatar="true"
       >
-        <div class="space-y-3 text-gray-700">
-          <p class="text-base">
+        <div class="space-y-3">
+          <p class="text-base text-brand-highlight">
             Let’s create your first memory card.
           </p>
 
-          <p class="text-base text-brand-highlight font-semibold">
+          <p class="text-base text-brand-highlight">
             This isn’t another photo printing service. Savta’s little bit of AI magic selects and layouts your 
             photos into gorgeous multi‑photo cards—zero fuss. No more dragging photos into layouts.
           </p>
 
-          <ol class="list-decimal pl-5 space-y-1">
+          <ol class="text-base text-brand-highlight list-decimal pl-5 space-y-1">
             <li>Answer a couple of quick questions about the look.</li>
             <li>Upload just your favorite photos to Savta's Drawer.</li>
             <li>I'll pick photos that belong together, arrange them beautifully, and write warm captions.</li>
           </ol>
 
-          <p class="text-sm text-gray-600">
+          <p class="text-base text-brand-highlight">
             Tip: Share more favorites for better results. 📸
           </p>
         </div>
@@ -1797,17 +1798,17 @@ watch(showCreateModal, (newValue) => {
   }
 })
 
-// Watch for details modal to freeze/unfreeze scroll on desktop
+// Watch for details modal to freeze/unfreeze scroll on all devices
 watch(showDetailsModal, (isVisible) => {
   if (typeof window !== 'undefined') {
-    // Only apply scroll freeze on desktop (screens wider than 640px)
-    const isMobile = window.innerWidth < 640
-    if (!isMobile) {
-      if (isVisible) {
-        document.body.style.overflow = 'hidden'
-      } else {
-        document.body.style.overflow = ''
-      }
+    if (isVisible) {
+      // Freeze scroll on both html and body for better cross-browser support
+      document.documentElement.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden'
+    } else {
+      // Restore scroll when dialog closes
+      document.documentElement.style.overflow = ''
+      document.body.style.overflow = ''
     }
   }
 })
@@ -2105,12 +2106,10 @@ onUnmounted(() => {
     window.removeEventListener('memory-book-updated', () => {})
     document.removeEventListener('visibilitychange', () => {})
     
-    // Restore body scroll on desktop when component unmounts
+    // Restore scroll on all devices when component unmounts
     if (typeof window !== 'undefined') {
-      const isMobile = window.innerWidth < 640
-      if (!isMobile) {
-        document.body.style.overflow = ''
-      }
+      document.documentElement.style.overflow = ''
+      document.body.style.overflow = ''
     }
   }
 })

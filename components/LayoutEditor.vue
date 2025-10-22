@@ -8,9 +8,11 @@
         <div class="flex items-center gap-3">
           <button
             @click="showInstructionsDialog = true"
-            class="flex items-center gap-1.5 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-xs font-medium transition-colors"
+            class="flex items-center gap-1.5 px-2 py-1 bg-white border border-brand-info-outline hover:bg-gray-100 text-gray-700 rounded text-xs font-medium transition-colors"
           >
-            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+            <div class="w-4 h-4 rounded-full bg-white border border-brand-info-outline flex items-center justify-center">
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.6rem;" title="Ask Savta"></i>
+            </div>
             <span>Help</span>
           </button>
           

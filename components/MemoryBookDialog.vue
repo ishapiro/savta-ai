@@ -109,7 +109,9 @@
             />
             <div class="bg-brand-accent/10 rounded-lg p-3 mt-2">
               <div class="flex items-start gap-2">
-                <i class="pi pi-info-circle text-brand-accent text-sm mt-0.5" title="Ask Savta"></i>
+                <div class="w-5 h-5 rounded-full bg-white border border-brand-info-outline flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <i class="pi pi-info-circle text-brand-info-letter font-bold text-xs" title="Ask Savta"></i>
+                </div>
                 <div class="text-xs text-brand-primary/80">
                   <p class="font-medium mb-1">Theme layouts are always single page</p>
                   <p>Each theme has a fixed design with a specific number of photos. The theme determines the layout, size, and photo count automatically.</p>
@@ -187,12 +189,14 @@
           <div class="flex flex-col">
             <div class="flex items-center gap-2 mb-2">
               <label class="block text-sm font-medium text-brand-primary">Number of Pages</label>
-              <i 
-                class="pi pi-info-circle text-brand-secondary text-lg hover:text-brand-highlight transition-colors cursor-help"
+              <button 
+                class="w-5 h-5 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-50 transition-colors cursor-help"
                 data-savta="pages-info-icon"
                 title="Ask Savta"
                 @click="showPagesInfoBubble = true"
-              ></i>
+              >
+                <i class="pi pi-info-circle text-brand-info-letter font-bold text-xs"></i>
+              </button>
             </div>
             <div class="flex items-center gap-3">
               <InputNumber

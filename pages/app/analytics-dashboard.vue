@@ -13,10 +13,10 @@
           <label class="text-sm font-medium text-brand-primary">Time Range:</label>
           <button 
             @click="showInfoDialog('timeRange')"
-            class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+            class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
             title="Learn more about time ranges"
           >
-            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+            <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
           </button>
         </div>
         <Dropdown
@@ -38,7 +38,9 @@
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
       <div class="flex items-start">
         <div class="flex-shrink-0">
-          <i class="pi pi-info-circle text-blue-600 text-lg" title="Ask Savta"></i>
+          <div class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center">
+            <i class="pi pi-info-circle text-brand-info-letter font-bold text-sm" title="Ask Savta"></i>
+          </div>
         </div>
         <div class="ml-3">
           <h3 class="text-sm font-medium text-blue-800">Analytics Overview</h3>
@@ -79,10 +81,10 @@
             </div>
             <button 
               @click="showInfoDialog('uniqueUsers')"
-              class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+              class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
               title="Learn more about unique users"
             >
-              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
             </button>
           </div>
         </div>
@@ -100,10 +102,10 @@
             </div>
             <button 
               @click="showInfoDialog('pageViews')"
-              class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+              class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
               title="Learn more about page views"
             >
-              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
             </button>
           </div>
         </div>
@@ -121,10 +123,10 @@
             </div>
             <button 
               @click="showInfoDialog('sessionDuration')"
-              class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+              class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
               title="Learn more about session duration"
             >
-              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
             </button>
           </div>
         </div>
@@ -142,10 +144,10 @@
             </div>
             <button 
               @click="showInfoDialog('engagementScore')"
-              class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+              class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
               title="Learn more about engagement score"
             >
-              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
             </button>
           </div>
         </div>
@@ -159,10 +161,10 @@
             <h3 class="text-lg font-semibold text-brand-primary">Top Pages by Views</h3>
             <button 
               @click="showInfoDialog('topPages')"
-              class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+              class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
               title="Learn more about top pages"
             >
-              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
             </button>
           </div>
           <div class="space-y-3">
@@ -183,10 +185,10 @@
             <h3 class="text-lg font-semibold text-brand-primary">Geographic Distribution</h3>
             <button 
               @click="showInfoDialog('geographic')"
-              class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+              class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
               title="Learn more about geographic data"
             >
-              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
             </button>
           </div>
           <div class="space-y-3">
@@ -206,13 +208,13 @@
       <div class="bg-white rounded-lg shadow p-6 engagement-analysis-section">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-brand-primary">Page Engagement Analysis</h3>
-          <button 
-            @click="showInfoDialog('engagementAnalysis')"
-            class="text-brand-primary/60 hover:text-brand-primary transition-colors"
-            title="Learn more about engagement analysis"
-          >
-            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
-          </button>
+            <button 
+              @click="showInfoDialog('engagementAnalysis')"
+              class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
+              title="Learn more about engagement analysis"
+            >
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
+            </button>
         </div>
         <DataTable
           :value="analyticsData.userEngagement.engagementScores"
@@ -281,10 +283,10 @@
             <h3 class="text-lg font-semibold text-brand-primary">Device Types</h3>
             <button 
               @click="showInfoDialog('deviceTypes')"
-              class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+              class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
               title="Learn more about device types"
             >
-              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
             </button>
           </div>
           <div class="space-y-3">
@@ -305,10 +307,10 @@
             <h3 class="text-lg font-semibold text-brand-primary">Browsers</h3>
             <button 
               @click="showInfoDialog('browsers')"
-              class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+              class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
               title="Learn more about browsers"
             >
-              <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+              <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
             </button>
           </div>
           <div class="space-y-3">
@@ -330,10 +332,10 @@
           <h3 class="text-lg font-semibold text-brand-primary">Marketing Analytics</h3>
           <button 
             @click="showInfoDialog('marketingAnalytics')"
-            class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+            class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
             title="Learn more about marketing analytics"
           >
-            <i class="pi pi-info-circle text-sm" title="Ask Savta"></i>
+            <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.7rem;" title="Ask Savta"></i>
           </button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -343,10 +345,10 @@
               <h4 class="text-md font-medium text-brand-primary">Top Referrers</h4>
               <button 
                 @click="showInfoDialog('referrers')"
-                class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+                class="w-5 h-5 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
                 title="Learn more about referrers"
               >
-                <i class="pi pi-info-circle text-xs" title="Ask Savta"></i>
+                <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.6rem;" title="Ask Savta"></i>
               </button>
             </div>
             <div class="space-y-2">
@@ -367,10 +369,10 @@
               <h4 class="text-md font-medium text-brand-primary">UTM Sources</h4>
               <button 
                 @click="showInfoDialog('utmSources')"
-                class="text-brand-primary/60 hover:text-brand-primary transition-colors"
+                class="w-5 h-5 rounded-full bg-white border border-brand-info-outline flex items-center justify-center hover:bg-gray-100 transition-colors"
                 title="Learn more about UTM sources"
               >
-                <i class="pi pi-info-circle text-xs" title="Ask Savta"></i>
+                <i class="pi pi-info-circle text-brand-info-letter font-bold" style="font-size: 0.6rem;" title="Ask Savta"></i>
               </button>
             </div>
             <div class="space-y-2">

@@ -90,6 +90,10 @@ export default {
           'dialog-primary-hover': '#1565C0',   // Primary dark
           'dialog-secondary': '#00796B',       // Secondary
           'dialog-secondary-hover': '#00695C', // Secondary dark
+          
+          // Info/Help Button System
+          'info-letter': '#16A34A',            // Green 600 for "i" icon
+          'info-outline': '#16A34A',           // Green 600 for border
         },
         
         // Simplified primary scale for direct use
