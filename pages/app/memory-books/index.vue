@@ -191,16 +191,16 @@
         :block-scroll="true"
         :class="['w-full', 'h-full', 'max-w-none', 'max-h-screen', 'sm:max-h-[95%]', 'sm:w-[95vw]', 'sm:max-w-4xl', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl', 'mobile-app-dialog']"
       >
-        <div v-if="selectedBook" class="sm:mb-5 bg-gradient-to-br from-brand-navigation/10 via-brand-accent/5 to-brand-highlight/10 min-h-screen sm:min-h-[90%] flex flex-col sm:h-auto sm:overflow-hidden">
+        <div v-if="selectedBook" class="sm:mb-5 bg-white min-h-screen sm:min-h-[90%] flex flex-col sm:h-auto sm:overflow-hidden">
           <!-- Header + Content Area -->
           <div class="flex-1 sm:max-h-[calc(85vh-80px)] sm:overflow-y-auto pb-20 sm:pb-0">
             <!-- Header Section - Compact on mobile -->
-            <div class="bg-gradient-to-br from-white via-brand-navigation/5 to-brand-accent/10 rounded-t-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
+            <div class="bg-white rounded-t-2xl shadow-lg border border-gray-100 p-3 sm:p-6">
               <!-- Mobile: Compact header -->
             <div class="sm:hidden">
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center">
+                  <div class="w-8 h-8 bg-brand-secondary rounded-full flex items-center justify-center">
                     <i class="pi pi-gift text-white text-sm"></i>
                   </div>
                   <div class="min-w-0 flex-1">
@@ -241,7 +241,7 @@
             <div class="hidden sm:block">
               <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                  <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-secondary to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                  <div class="w-12 h-12 sm:w-16 sm:h-16 bg-brand-secondary rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
                     <i class="pi pi-gift text-white text-lg sm:text-2xl"></i>
                   </div>
                   <div class="min-w-0 flex-1">
@@ -369,7 +369,7 @@
               </div>
 
               <!-- Desktop: Review notes -->
-              <div v-if="selectedBook.review_notes" class="mt-4 bg-gradient-to-br from-brand-highlight/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-highlight/20">
+              <div v-if="selectedBook.review_notes" class="mt-4 bg-brand-highlight/10 rounded-xl p-3 sm:p-4 border border-brand-highlight/20">
                 <div class="flex items-center gap-2 mb-2">
                   <i class="pi pi-comment text-brand-highlight text-sm"></i>
                   <span class="text-sm font-semibold text-brand-highlight">Review Notes</span>
@@ -384,15 +384,15 @@
             <!-- Story Section (for Story-based Memories) -->
             <div v-if="selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
               <div class="flex items-center gap-3 mb-4">
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-highlight/20 to-brand-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-sparkles text-brand-highlight text-sm sm:text-base"></i>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-highlight rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-star text-white text-lg sm:text-xl"></i>
                 </div>
                 <div class="min-w-0 flex-1">
                   <h3 class="text-base sm:text-lg font-bold text-brand-primary">Special Story</h3>
                   <p class="text-xs sm:text-sm text-gray-600">The AI-generated story for your special memory</p>
                 </div>
               </div>
-              <div class="bg-gradient-to-br from-brand-highlight/10 to-brand-primary/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 text-brand-primary text-sm magic-story" style="word-break: break-word; line-height: 1.5;">
+              <div class="bg-brand-highlight/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 text-brand-primary text-sm magic-story" style="word-break: break-word; line-height: 1.5;">
                 {{ selectedBook.magic_story }}
               </div>
             </div>
@@ -400,15 +400,15 @@
             <!-- AI Photo Selection Reasoning Section -->
             <div v-if="selectedBook.ai_photo_selection_reasoning" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
               <div class="flex items-center gap-3 mb-4">
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent/20 to-brand-highlight/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-lightbulb text-brand-accent text-sm sm:text-base"></i>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-accent rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-bolt text-white text-lg sm:text-xl"></i>
                 </div>
                 <div class="min-w-0 flex-1">
                   <h3 class="text-base sm:text-lg font-bold text-brand-primary">Photo Selection Reasoning</h3>
                   <p class="text-xs sm:text-sm text-gray-600">Why these photos were chosen for your memory</p>
                 </div>
               </div>
-              <div class="bg-gradient-to-br from-brand-accent/10 to-brand-highlight/10 rounded-xl p-3 sm:p-4 border border-brand-accent/20 text-brand-primary text-sm" style="word-break: break-word; line-height: 1.5;">
+              <div class="bg-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-accent/20 text-brand-primary text-sm" style="word-break: break-word; line-height: 1.5;">
                 {{ selectedBook.ai_photo_selection_reasoning }}
               </div>
             </div>
@@ -416,8 +416,8 @@
             <!-- Memory Assets Section -->
             <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
               <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-accent/20 to-brand-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-images text-brand-accent text-sm sm:text-base"></i>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-accent rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-images text-white text-lg sm:text-xl"></i>
                 </div>
                 <div class="min-w-0 flex-1">
                   <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Assets</h3>
@@ -455,8 +455,8 @@
              <div v-if="selectedBook.pdf_url" class="mb-4 sm:mb-5 bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-primary/20 to-brand-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i :class="[getFileTypeIcon(selectedBook), getFileTypeColor(selectedBook), 'text-sm sm:text-base']"></i>
+                  <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-primary rounded-full flex items-center justify-center flex-shrink-0">
+                    <i :class="[getFileTypeIcon(selectedBook), 'text-white', 'text-lg sm:text-xl']"></i>
                   </div>
                   <div class="min-w-0 flex-1">
                     <h3 class="text-base sm:text-lg font-bold text-gray-900">Your Memory</h3>
@@ -473,7 +473,7 @@
                   <span class="sm:hidden">Display/Share {{ getFileTypeDisplay(selectedBook) }}</span>
                 </button>
               </div>
-              <div class="border-0 bg-gradient-to-br from-brand-primary/10 to-brand-accent/10 rounded-xl p-3 sm:p-4 border border-brand-primary/20 mt-4">
+              <div class="border-0 bg-brand-primary/5 rounded-xl p-3 sm:p-4 border border-brand-primary/20 mt-4">
                 <div class="flex items-start gap-2 text-xs sm:text-sm text-brand-primary">
                   <i class="pi pi-info-circle text-brand-primary text-xs sm:text-sm mt-0.5 flex-shrink-0" title="Ask Savta"></i>
                   <span>Click download to save your memory as a {{ getFileTypeDisplay(selectedBook) }} file to your device</span>
@@ -761,11 +761,11 @@
       >
         <div class="space-y-3">
           <p class="text-base text-brand-highlight">
-            Let’s create your first memory card.
+            Let's create your first memory card.
           </p>
 
           <p class="text-base text-brand-highlight">
-            This isn’t another photo printing service. Savta’s little bit of AI magic selects and layouts your 
+            This isn't another photo printing service. Savta's little bit of AI magic selects and layouts your 
             photos into gorgeous multi‑photo cards—zero fuss. No more dragging photos into layouts.
           </p>
 
