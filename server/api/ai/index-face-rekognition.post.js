@@ -88,18 +88,44 @@ export default defineEventHandler(async (event) => {
   console.log(`📸 Image URL: ${imageUrl}`)
   
   try {
-    // 1. Ensure user has a collection
+    // 1. Check if this asset already has faces indexed
+    const { data: existingFaces, error: checkError } = await supabase
+      .from('faces')
+      .select('id, rekognition_face_id')
+      .eq('asset_id', assetId)
+      .eq('deleted', false)
+    
+    if (checkError) {
+      console.error('❌ Error checking existing faces:', checkError)
+      throw checkError
+    }
+    
+    if (existingFaces && existingFaces.length > 0) {
+      console.log(`⏭️ Asset ${assetId} already has ${existingFaces.length} face(s) indexed - skipping reindexing`)
+      console.log(`   Existing face IDs: ${existingFaces.map(f => f.rekognition_face_id).join(', ')}`)
+      
+      // Return empty results to avoid duplicate processing
+      return {
+        success: true,
+        alreadyProcessed: true,
+        facesDetected: existingFaces.length,
+        autoAssigned: [],
+        needsUserInput: []
+      }
+    }
+    
+    // 2. Ensure user has a collection
     const { collectionId, arn, faceCount } = await ensureUserCollection(user.id)
     
-    // 2. Save/update collection in database
+    // 3. Save/update collection in database
     await saveCollectionToDb(supabase, user.id, collectionId, arn, faceCount)
     
-    // 3. Download image bytes
+    // 4. Download image bytes
     console.log(`📥 Downloading image...`)
     const imageBytes = await fetchImageBytes(imageUrl)
     
-    // 4. Call IndexFaces to detect and index faces
-    console.log(`🔍 Calling IndexFaces...`)
+    // 5. Call IndexFaces to detect and index faces with size threshold
+    console.log(`🔍 Calling IndexFaces with quality filter and face size threshold...`)
     const indexResult = await rekognitionClient.send(new IndexFacesCommand({
       CollectionId: collectionId,
       Image: { Bytes: imageBytes },
@@ -120,10 +146,44 @@ export default defineEventHandler(async (event) => {
       }
     }
     
-    // 5. For each indexed face, search for matches
+    // 6. Filter faces by minimum size threshold
+    // BoundingBox dimensions are in percentage (0.0 to 1.0)
+    // A face that's 5% of image width and 5% of image height = 0.0025 area
+    // We want faces that are at least 3% of image width OR 3% of image height
+    const MIN_FACE_WIDTH = 0.03  // 3% of image width
+    const MIN_FACE_HEIGHT = 0.03 // 3% of image height
+    
+    const filteredFaceRecords = indexResult.FaceRecords.filter(faceRecord => {
+      const bbox = faceRecord.Face.BoundingBox
+      const width = bbox.Width || 0
+      const height = bbox.Height || 0
+      
+      // Face must meet minimum width OR height threshold
+      const meetsThreshold = width >= MIN_FACE_WIDTH || height >= MIN_FACE_HEIGHT
+      
+      if (!meetsThreshold) {
+        console.log(`⏭️ Skipping tiny face ${faceRecord.Face.FaceId} (${(width * 100).toFixed(1)}% x ${(height * 100).toFixed(1)}% - too small)`)
+      }
+      
+      return meetsThreshold
+    })
+    
+    console.log(`✅ After size filtering: ${filteredFaceRecords.length} meaningful faces (filtered out ${indexResult.FaceRecords.length - filteredFaceRecords.length} tiny faces)`)
+    
+    if (filteredFaceRecords.length === 0) {
+      return {
+        success: true,
+        facesDetected: 0,
+        autoAssigned: [],
+        needsUserInput: [],
+        message: 'All detected faces were too small to be meaningful'
+      }
+    }
+    
+    // 7. For each indexed face, search for matches
     const facesWithMatches = []
     
-    for (const faceRecord of indexResult.FaceRecords) {
+    for (const faceRecord of filteredFaceRecords) {
       const faceId = faceRecord.Face.FaceId
       
       console.log(`🔎 Searching for matches for face ${faceId}...`)

@@ -25,7 +25,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:visible', 'assign', 'create-person', 'remove', 'skip'])
+const emit = defineEmits(['update:visible', 'assign', 'create-person', 'remove', 'skip', 'skip-permanently'])
 
 const supabase = useNuxtApp().$supabase
 
@@ -207,9 +207,15 @@ const createNewPerson = async () => {
   }
 }
 
-// Skip face
+// Skip face (temporary - face will appear again later)
 const skipFace = () => {
   emit('skip', currentFace.value.id)
+  nextFace()
+}
+
+// Skip face permanently (will never ask about this face again)
+const skipFacePermanently = () => {
+  emit('skip-permanently', currentFace.value.id)
   nextFace()
 }
 
@@ -325,13 +331,20 @@ const closeModal = () => {
           />
         </div>
 
-        <div class="flex justify-center">
+        <div class="flex justify-center gap-3">
           <Button
             @click="skipFace"
             :disabled="isProcessing"
             label="Skip for now"
             icon="pi pi-forward"
             class="bg-gray-200 hover:bg-gray-300 text-gray-700 border-0 px-6 py-2 rounded"
+          />
+          <Button
+            @click="skipFacePermanently"
+            :disabled="isProcessing"
+            label="Skip Permanently"
+            icon="pi pi-ban"
+            class="bg-red-100 hover:bg-red-200 text-red-700 border-0 px-6 py-2 rounded"
           />
         </div>
       </div>
@@ -372,13 +385,20 @@ const closeModal = () => {
           />
         </div>
 
-        <div class="flex justify-center">
+        <div class="flex justify-center gap-3">
           <Button
             @click="skipFace"
             :disabled="isProcessing"
             label="Skip for now"
             icon="pi pi-forward"
             class="bg-gray-200 hover:bg-gray-300 text-gray-700 border-0 px-6 py-2 rounded"
+          />
+          <Button
+            @click="skipFacePermanently"
+            :disabled="isProcessing"
+            label="Skip Permanently"
+            icon="pi pi-ban"
+            class="bg-red-100 hover:bg-red-200 text-red-700 border-0 px-6 py-2 rounded"
           />
         </div>
       </div>
@@ -444,13 +464,20 @@ const closeModal = () => {
           />
         </div>
 
-        <div class="flex justify-center">
+        <div class="flex justify-center gap-3">
           <Button
             @click="skipFace"
             :disabled="isProcessing"
             label="Skip for now"
             icon="pi pi-forward"
             class="bg-gray-200 hover:bg-gray-300 text-gray-700 border-0 px-6 py-2 rounded"
+          />
+          <Button
+            @click="skipFacePermanently"
+            :disabled="isProcessing"
+            label="Skip Permanently"
+            icon="pi pi-ban"
+            class="bg-red-100 hover:bg-red-200 text-red-700 border-0 px-6 py-2 rounded"
           />
         </div>
       </div>

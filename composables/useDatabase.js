@@ -470,13 +470,26 @@ export const useDatabase = () => {
     deleteAsset: async (assetId) => {
       if (!user.value) throw new Error('User not authenticated')
       
+      // Soft delete the asset
       const { error } = await supabase
         .from('assets')
-        .update({ deleted: true })
+        .update({ deleted: true, deleted_at: new Date().toISOString() })
         .eq('id', assetId)
         .eq('user_id', user.value.id)
       
       if (error) throw error
+      
+      // Also soft delete any faces associated with this asset
+      const { error: facesError } = await supabase
+        .from('faces')
+        .update({ deleted: true })
+        .eq('asset_id', assetId)
+        .eq('user_id', user.value.id)
+      
+      if (facesError) {
+        console.error('Error soft-deleting faces for asset:', facesError)
+        // Don't throw - asset deletion succeeded
+      }
       
       await logActivity('asset_deleted', { assetId })
     },
@@ -504,13 +517,26 @@ export const useDatabase = () => {
     restoreAsset: async (assetId) => {
       if (!user.value) throw new Error('User not authenticated')
       
+      // Restore the asset
       const { error } = await supabase
         .from('assets')
-        .update({ deleted: false })
+        .update({ deleted: false, deleted_at: null })
         .eq('id', assetId)
         .eq('user_id', user.value.id)
       
       if (error) throw error
+      
+      // Also restore any faces associated with this asset
+      const { error: facesError } = await supabase
+        .from('faces')
+        .update({ deleted: false })
+        .eq('asset_id', assetId)
+        .eq('user_id', user.value.id)
+      
+      if (facesError) {
+        console.error('Error restoring faces for asset:', facesError)
+        // Don't throw - asset restoration succeeded
+      }
       
       await logActivity('asset_restored', { assetId })
     },

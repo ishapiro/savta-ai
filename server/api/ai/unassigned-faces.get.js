@@ -48,6 +48,7 @@ export default defineEventHandler(async (event) => {
       .eq('user_id', user.id)
       .eq('deleted', false)
       .eq('needs_assignment', true)
+      .eq('skipped', false)
       .order('created_at', { ascending: false })
     
     if (facesError) {

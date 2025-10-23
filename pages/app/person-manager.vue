@@ -4,13 +4,32 @@
           <div class="bg-white shadow-sm border-b border-brand-highlight/20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900">People in Your Photos</h1>
-            <p class="mt-1 text-sm text-gray-500">
-              Identify and organize the people in your photo collection
-            </p>
+          <div class="flex items-center gap-3">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">People in Your Photos</h1>
+              <p class="mt-1 text-sm text-gray-500">
+                Identify and organize the people in your photo collection
+              </p>
+            </div>
+            <button
+              class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-brand-info-outline shadow hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0"
+              v-tooltip.top="'How to identify people'"
+              @click="showHelpModal = true"
+              aria-label="Information about identifying people in photos"
+            >
+              <i class="pi pi-info text-lg text-brand-info-letter font-bold"></i>
+            </button>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
+            <button
+              @click="searchSimilarFaces"
+              :disabled="isSearching || unassignedFaces.length === 0"
+              class="inline-flex items-center justify-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-full shadow transition-all duration-200 text-white bg-brand-accent hover:bg-brand-accent/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i v-if="isSearching" class="pi pi-spin pi-spinner mr-2"></i>
+              <i v-else class="pi pi-search mr-2"></i>
+              {{ isSearching ? 'Searching...' : 'Search Similar Faces' }}
+            </button>
             <button
               @click="showCreatePersonModal = true"
               class="inline-flex items-center justify-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-full shadow transition-all duration-200 text-white bg-brand-highlight hover:bg-brand-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight"
@@ -184,6 +203,7 @@
       @create-person="handleCreatePersonFromFace"
       @remove="handleRemoveFaceAssignment"
       @skip="handleSkipFace"
+      @skip-permanently="handleSkipFacePermanently"
     />
 
     <!-- Person Gallery Modal -->
@@ -228,6 +248,225 @@
         </button>
       </template>
     </Dialog>
+
+    <!-- Help Modal -->
+    <Dialog
+      v-model:visible="showHelpModal"
+      modal
+      :closable="true"
+      :dismissableMask="true"
+      header="✨ How to Identify People in Your Photos ✨"
+      class="w-full max-w-3xl"
+    >
+      <div class="space-y-6">
+        <!-- Welcome Section -->
+        <div class="bg-gradient-to-r from-brand-highlight/10 via-brand-secondary/10 to-brand-accent/10 rounded-2xl p-6 border border-brand-highlight/30">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-full bg-brand-highlight flex items-center justify-center flex-shrink-0">
+              <i class="pi pi-users text-white text-2xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">Welcome to Your Photo Collection!</h3>
+              <p class="text-gray-700 leading-relaxed">
+                You've uploaded your photos, and now it's time to identify the special people in them. 
+                This will help you create beautiful personalized memory books and find photos of specific family members instantly.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step-by-Step Guide -->
+        <div class="space-y-4">
+          <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+            Simple 3-Step Process
+          </h4>
+
+          <!-- Step 1 -->
+          <div class="flex gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-brand-highlight text-white flex items-center justify-center font-bold">
+              1
+            </div>
+            <div>
+              <h5 class="font-semibold text-gray-900 mb-2">Start with a Few Faces</h5>
+              <p class="text-gray-700 text-sm leading-relaxed mb-2">
+                Below, you'll see faces that our system detected in your photos. Click on 2-3 faces of each person 
+                to get started. For example:
+              </p>
+              <ul class="text-sm text-gray-600 space-y-1 ml-4">
+                <li>• Click on 2-3 clear photos of Grandma</li>
+                <li>• Then 2-3 photos of Grandpa</li>
+                <li>• Then 2-3 photos of each family member</li>
+              </ul>
+              <p class="text-gray-700 text-sm mt-2 italic">
+                💡 Tip: Choose photos where the person is clearly visible and facing the camera.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="flex gap-4 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-brand-highlight text-white flex items-center justify-center font-bold">
+              2
+            </div>
+            <div>
+              <h5 class="font-semibold text-gray-900 mb-2">Let Our System Find Similar Faces</h5>
+              <p class="text-gray-700 text-sm leading-relaxed mb-2">
+                After you've identified a few people, click the <strong>"Search Similar Faces"</strong> button at the top. 
+                Our smart system will:
+              </p>
+              <ul class="text-sm text-gray-600 space-y-1 ml-4">
+                <li>• Search all your photos for similar faces</li>
+                <li>• Automatically match faces it's confident about</li>
+                <li>• Ask you to confirm faces it's not sure about</li>
+              </ul>
+              <p class="text-gray-700 text-sm mt-2 italic">
+                💡 Tip: The more faces you identify first, the better the search works!
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="flex gap-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-brand-highlight text-white flex items-center justify-center font-bold">
+              3
+            </div>
+            <div>
+              <h5 class="font-semibold text-gray-900 mb-2">Review and Repeat</h5>
+              <p class="text-gray-700 text-sm leading-relaxed mb-2">
+                Review any faces the system wasn't sure about, then run "Search Similar Faces" again. 
+                Each time you do this:
+              </p>
+              <ul class="text-sm text-gray-600 space-y-1 ml-4">
+                <li>• The system gets smarter</li>
+                <li>• More faces get automatically identified</li>
+                <li>• Your collection becomes more organized</li>
+              </ul>
+              <p class="text-gray-700 text-sm mt-2 italic">
+                💡 Tip: You can run the search multiple times as you identify more faces!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Tips -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div class="flex items-start gap-3">
+            <i class="pi pi-lightbulb text-yellow-600 text-xl flex-shrink-0 mt-0.5"></i>
+            <div>
+              <h5 class="font-semibold text-gray-900 mb-2">Helpful Tips</h5>
+              <ul class="text-sm text-gray-700 space-y-1.5">
+                <li>• <strong>Not sure about a face?</strong> Click "Skip for now" and come back to it later</li>
+                <li>• <strong>Poor quality photo?</strong> Click "Skip Permanently" to hide it forever</li>
+                <li>• <strong>Made a mistake?</strong> Click on a person's name to see and manage all their photos</li>
+                <li>• <strong>Be patient:</strong> It may take a few rounds of searching to identify everyone</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="bg-gradient-to-r from-brand-highlight to-brand-secondary rounded-lg p-5 text-white">
+          <h5 class="font-bold text-lg mb-2">Ready to Get Started?</h5>
+          <p class="text-sm leading-relaxed">
+            Just scroll down and click on any face you recognize. Give them a name and relationship 
+            (like "Grandma" or "Uncle Bob"), then let our system do the rest!
+          </p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end">
+          <button
+            @click="showHelpModal = false"
+            class="px-6 py-2 text-sm font-medium text-white bg-brand-highlight border-0 rounded hover:bg-brand-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-highlight"
+          >
+            Got it, let's start!
+          </button>
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Search Progress Dialog -->
+    <Dialog
+      v-model:visible="showSearchProgressDialog"
+      modal
+      :closable="false"
+      :dismissableMask="false"
+      header="Searching for Similar Faces"
+      class="w-full max-w-lg mx-4"
+    >
+      <div class="p-6">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-gradient-to-br from-brand-accent to-brand-highlight rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="pi pi-search text-white text-2xl animate-pulse"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Searching Your Photos</h3>
+          <p class="text-gray-600">Finding faces that match the people you've identified...</p>
+        </div>
+
+        <!-- Progress Information -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm font-medium text-gray-700">Progress</span>
+            <span class="text-sm font-bold text-gray-800">{{ searchProgress.current }} of {{ searchProgress.total }}</span>
+          </div>
+          
+          <!-- Progress Bar -->
+          <div class="w-full bg-gray-200 rounded-full h-3 mb-3">
+            <div 
+              class="bg-gradient-to-r from-brand-accent to-brand-highlight h-3 rounded-full transition-all duration-500 ease-out" 
+              :style="{ width: searchProgress.total > 0 ? `${(searchProgress.current / searchProgress.total) * 100}%` : '0%' }"
+            ></div>
+          </div>
+          
+          <!-- Percentage -->
+          <div class="text-center">
+            <span class="text-lg font-bold text-brand-accent">
+              {{ searchProgress.total > 0 ? Math.round((searchProgress.current / searchProgress.total) * 100) : 0 }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+            <div class="text-2xl font-bold text-green-600">{{ searchProgress.autoAssigned }}</div>
+            <div class="text-xs text-green-700 mt-1">Auto-Assigned</div>
+          </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+            <div class="text-2xl font-bold text-blue-600">{{ searchProgress.needsReview }}</div>
+            <div class="text-xs text-blue-700 mt-1">Need Review</div>
+          </div>
+        </div>
+
+        <!-- Current Status -->
+        <div class="text-center">
+          <div v-if="!abortSearch" class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-full text-sm">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Searching face {{ searchProgress.current + 1 }}...</span>
+          </div>
+          <div v-else class="inline-flex items-center gap-2 bg-orange-50 text-orange-700 px-3 py-2 rounded-full text-sm">
+            <i class="pi pi-pause-circle"></i>
+            <span>Stopping after current face...</span>
+          </div>
+        </div>
+
+        <!-- Abort Button -->
+        <div class="mt-6 text-center">
+          <button
+            @click="abortSearch = true"
+            :disabled="abortSearch"
+            class="inline-flex items-center px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded shadow transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="pi pi-stop-circle mr-2"></i>
+            {{ abortSearch ? 'Stopping...' : 'Stop Search' }}
+          </button>
+          <p class="text-xs text-gray-500 mt-2">
+            Search will stop after the current face completes
+          </p>
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -259,6 +498,19 @@ const showCreatePersonModal = ref(false);
 const showEditPersonModal = ref(false);
 const showPersonGalleryModal = ref(false);
 const showClearConfirmDialog = ref(false); // New state for confirmation dialog
+const showHelpModal = ref(false);
+
+// Search similar faces state
+const isSearching = ref(false);
+const showSearchProgressDialog = ref(false);
+const searchProgress = ref({
+  current: 0,
+  total: 0,
+  currentFace: null,
+  autoAssigned: 0,
+  needsReview: 0
+});
+const abortSearch = ref(false);
 
 // Selected items
 const editingPerson = ref(null);
@@ -537,9 +789,206 @@ const handleRemoveFaceAssignment = async (faceId) => {
   }
 };
 
-// Handle skipping face
+// Handle skipping face temporarily (for now)
 const handleSkipFace = (faceId) => {
-  console.log('⏭️ Skipping face:', faceId);
-  // For now, just log it. Could add skip tracking in database if needed
+  console.log('⏭️ Skipping face temporarily:', faceId);
+  // Just log - face will appear again later
+};
+
+// Handle skipping face permanently
+const handleSkipFacePermanently = async (faceId) => {
+  try {
+    console.log('⏭️ Permanently skipping face:', faceId);
+    
+    // Get authentication token
+    const supabaseClient = useNuxtApp().$supabase;
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+    
+    // Call API to skip face
+    await $fetch('/api/ai/skip-face', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: {
+        faceId
+      }
+    });
+    
+    console.log('✅ Face permanently skipped');
+    
+    // Refresh unassigned faces to remove the skipped face
+    await fetchUnassignedFaces();
+  } catch (error) {
+    console.error('❌ Error skipping face:', error);
+    throw error;
+  }
+};
+
+// Search for similar faces using AWS Rekognition
+const searchSimilarFaces = async () => {
+  try {
+    isSearching.value = true;
+    abortSearch.value = false;
+    
+    // Initialize progress
+    searchProgress.value = {
+      current: 0,
+      total: unassignedFaces.value.length,
+      currentFace: null,
+      autoAssigned: 0,
+      needsReview: 0
+    };
+    
+    // Show progress dialog
+    showSearchProgressDialog.value = true;
+    
+    console.log('🔍 Starting similar face search for', unassignedFaces.value.length, 'faces');
+    
+    // Get authentication token
+    const supabaseClient = useNuxtApp().$supabase;
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+    
+    // Process each unassigned face
+    const facesNeedingUserInput = [];
+    
+    for (let i = 0; i < unassignedFaces.value.length; i++) {
+      // Check if user aborted
+      if (abortSearch.value) {
+        console.log('🛑 Search aborted by user');
+        break;
+      }
+      
+      const face = unassignedFaces.value[i];
+      
+      // Update progress
+      searchProgress.value.current = i + 1;
+      searchProgress.value.currentFace = face;
+      
+      try {
+        console.log(`🔍 Searching for matches for face ${face.id} (${i + 1}/${unassignedFaces.value.length})`);
+        
+        // Call the index-face-rekognition endpoint which will use SearchFaces
+        // to find similar faces and auto-assign high confidence matches
+        const result = await $fetch('/api/ai/index-face-rekognition', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: {
+            imageUrl: face.assets?.storage_url,
+            assetId: face.asset_id,
+            reprocessOptions: {
+              faces: true,
+              captions: false,
+              tags: false,
+              location: false
+            }
+          }
+        });
+        
+        // Check if face was auto-assigned or needs user input
+        if (result.autoAssigned && result.autoAssigned.length > 0) {
+          searchProgress.value.autoAssigned += result.autoAssigned.length;
+          console.log(`✅ Auto-assigned ${result.autoAssigned.length} face(s)`);
+        }
+        
+        if (result.needsUserInput && result.needsUserInput.length > 0) {
+          searchProgress.value.needsReview += result.needsUserInput.length;
+          facesNeedingUserInput.push(...result.needsUserInput);
+          console.log(`❓ ${result.needsUserInput.length} face(s) need user input`);
+        }
+      } catch (error) {
+        console.error(`❌ Error searching face ${face.id}:`, error);
+        // Continue with next face
+      }
+    }
+    
+    // Close progress dialog
+    showSearchProgressDialog.value = false;
+    
+    const wasAborted = abortSearch.value;
+    const processedCount = searchProgress.value.current;
+    
+    console.log(`${wasAborted ? '🛑 Search stopped' : '✅ Search complete'}: ${searchProgress.value.autoAssigned} auto-assigned, ${searchProgress.value.needsReview} need review (processed ${processedCount}/${unassignedFaces.value.length})`);
+    
+    // Refresh data
+    await Promise.all([
+      fetchPersonGroups(),
+      fetchUnassignedFaces()
+    ]);
+    
+    // If there are faces needing user input, open the assignment modal
+    if (facesNeedingUserInput.length > 0) {
+      facesToAssign.value = facesNeedingUserInput;
+      showNewFaceAssignmentModal.value = true;
+    }
+    
+    // Show result message
+    const toast = useToast();
+    if (toast) {
+      if (wasAborted) {
+        toast.add({
+          severity: 'warn',
+          summary: 'Search Stopped',
+          detail: `Stopped after processing ${processedCount} face(s). ${searchProgress.value.autoAssigned} auto-assigned, ${searchProgress.value.needsReview} need your review.`,
+          life: 5000
+        });
+      } else if (searchProgress.value.autoAssigned > 0 || searchProgress.value.needsReview > 0) {
+        toast.add({
+          severity: 'success',
+          summary: 'Search Complete',
+          detail: `Found ${searchProgress.value.autoAssigned + searchProgress.value.needsReview} match(es). ${searchProgress.value.autoAssigned} auto-assigned, ${searchProgress.value.needsReview} need your review.`,
+          life: 5000
+        });
+      } else {
+        toast.add({
+          severity: 'info',
+          summary: 'No Matches Found',
+          detail: 'No similar faces found. Try assigning more faces manually first.',
+          life: 5000
+        });
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error searching similar faces:', error);
+    
+    // Close progress dialog on error
+    showSearchProgressDialog.value = false;
+    
+    const toast = useToast();
+    if (toast) {
+      toast.add({
+        severity: 'error',
+        summary: 'Search Failed',
+        detail: 'Failed to search for similar faces. Please try again.',
+        life: 3000
+      });
+    }
+  } finally {
+    isSearching.value = false;
+    abortSearch.value = false;
+    
+    // Reset progress after a delay
+    setTimeout(() => {
+      searchProgress.value = {
+        current: 0,
+        total: 0,
+        currentFace: null,
+        autoAssigned: 0,
+        needsReview: 0
+      };
+    }, 1000);
+  }
 };
 </script>

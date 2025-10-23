@@ -495,6 +495,41 @@
               <span>{{ detailsAsset.face_detection_data.faceCount }} face{{ detailsAsset.face_detection_data.faceCount !== 1 ? 's' : '' }} detected</span>
             </div>
           </div>
+          
+          <!-- Faces Detected Count (Rekognition) -->
+          <div v-if="detailsAsset.faceCount !== undefined">
+            <label class="block text-sm font-semibold text-brand-primary mb-1">Faces Detected</label>
+            <div class="flex items-center gap-2 text-sm text-brand-primary/80 bg-brand-navigation/20 rounded p-2 border border-brand-primary/20">
+              <i class="pi pi-users text-brand-primary"></i>
+              <span>{{ detailsAsset.faceCount }} face{{ detailsAsset.faceCount !== 1 ? 's' : '' }} detected</span>
+            </div>
+          </div>
+          
+          <!-- Associated People -->
+          <div v-if="detailsAsset.associatedPeople && detailsAsset.associatedPeople.length > 0">
+            <label class="block text-sm font-semibold text-brand-primary mb-1">People in Photo</label>
+            <div class="space-y-2">
+              <div 
+                v-for="person in detailsAsset.associatedPeople" 
+                :key="person.id"
+                class="flex items-center justify-between bg-brand-navigation/20 rounded-lg p-3 border border-brand-primary/20"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                    <i class="pi pi-user text-brand-primary"></i>
+                  </div>
+                  <div>
+                    <div class="text-sm font-semibold text-brand-primary">{{ person.displayName }}</div>
+                    <div v-if="person.relationship" class="text-xs text-brand-primary/60">{{ person.relationship }}</div>
+                  </div>
+                </div>
+                <div class="text-xs text-brand-primary/50">
+                  {{ Math.round(person.confidence * 100) }}%
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <!-- EXIF Data Availability -->
           <div v-if="detailsAsset.has_exif_data !== undefined">
             <label class="block text-sm font-semibold text-brand-primary mb-1">EXIF Metadata</label>
@@ -844,10 +879,25 @@
 
           <!-- Processing Status -->
           <div class="mt-4 text-center">
-            <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-full text-sm">
+            <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-full text-sm mb-4">
               <i class="pi pi-cog animate-spin"></i>
               <span>AI Analysis in Progress...</span>
             </div>
+          </div>
+          
+          <!-- Stop Button -->
+          <div class="mt-6 text-center">
+            <button
+              @click="stopRerunAI"
+              :disabled="cancelRerunAI"
+              class="inline-flex items-center px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded shadow transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i class="pi pi-stop-circle mr-2"></i>
+              {{ cancelRerunAI ? 'Stopping...' : 'Stop Processing' }}
+            </button>
+            <p class="text-xs text-gray-500 mt-2">
+              Processing will stop after the current photo completes
+            </p>
           </div>
         </div>
       </Dialog>
@@ -879,6 +929,7 @@ const showHelpModal = ref(false)
 const showRerunAIDialog = ref(false)
 const showProgressDialog = ref(false)
 const rerunningAI = ref(false)
+const cancelRerunAI = ref(false)
 const rerunProgress = ref({
   current: 0,
   total: 0,
@@ -1578,10 +1629,16 @@ const rerunAIOnAllPhotos = async () => {
   }
 }
 
+// Stop AI reprocessing
+const stopRerunAI = () => {
+  cancelRerunAI.value = true
+}
+
 // New Rekognition-based AI reprocessing with options
 const handleRerunAIWithOptions = async (options) => {
   try {
     rerunningAI.value = true
+    cancelRerunAI.value = false
     reprocessOptions.value = options
     showProgressDialog.value = true
     
@@ -1632,6 +1689,12 @@ const handleRerunAIWithOptions = async (options) => {
     let skippedCount = 0
     
     for (let i = 0; i < assetsToProcess.length; i++) {
+      // Check if user cancelled
+      if (cancelRerunAI.value) {
+        console.log('🛑 AI reprocessing cancelled by user')
+        break
+      }
+      
       const asset = assetsToProcess[i]
       
       rerunProgress.value.current = i + 1
@@ -1719,23 +1782,34 @@ const handleRerunAIWithOptions = async (options) => {
     // Recalculate stats
     calculateStats()
     
-    // Show success toast
+    // Show success or cancellation toast
     const toast = useToast()
     if (toast) {
-      const processedMessage = options.onlyMissing 
-        ? `Processed ${assetsToProcess.length} of ${assets.value.length} photos (skipped ${assets.value.length - assetsToProcess.length} with existing data).`
-        : `Reprocessed ${assetsToProcess.length} photos.`
-      
-      const facesMessage = facesNeedingInput.length > 0 
-        ? ` ${facesNeedingInput.length} faces need your review.`
-        : ''
-      
-      toast.add({
-        severity: 'success',
-        summary: 'Processing Complete',
-        detail: processedMessage + facesMessage,
-        life: 5000
-      })
+      if (cancelRerunAI.value) {
+        // Cancelled by user
+        toast.add({
+          severity: 'warn',
+          summary: 'Processing Stopped',
+          detail: `Stopped after processing ${rerunProgress.value.current} of ${assetsToProcess.length} photos. ${facesNeedingInput.length} faces need your review.`,
+          life: 5000
+        })
+      } else {
+        // Completed successfully
+        const processedMessage = options.onlyMissing 
+          ? `Processed ${assetsToProcess.length} of ${assets.value.length} photos (skipped ${assets.value.length - assetsToProcess.length} with existing data).`
+          : `Reprocessed ${assetsToProcess.length} photos.`
+        
+        const facesMessage = facesNeedingInput.length > 0 
+          ? ` ${facesNeedingInput.length} faces need your review.`
+          : ''
+        
+        toast.add({
+          severity: 'success',
+          summary: 'Processing Complete',
+          detail: processedMessage + facesMessage,
+          life: 5000
+        })
+      }
     }
     
   } catch (error) {
@@ -1863,9 +1937,72 @@ const handleSkipFace = (faceId) => {
 }
 
 // Details dialog functions
-function openDetailsDialog(asset) {
+async function openDetailsDialog(asset) {
   detailsAsset.value = asset
   showDetailsDialog.value = true
+  
+  // Load face count and associated people
+  try {
+    const supabaseClient = useNuxtApp().$supabase
+    
+    // Get faces for this asset with associated person information
+    const { data: faces, error: facesError } = await supabaseClient
+      .from('faces')
+      .select(`
+        id,
+        confidence,
+        rekognition_face_id,
+        face_person_links!inner (
+          person_groups (
+            id,
+            name,
+            display_name,
+            relationship
+          )
+        )
+      `)
+      .eq('asset_id', asset.id)
+      .eq('deleted', false)
+    
+    if (!facesError && faces) {
+      // Extract unique people from faces
+      const peopleMap = new Map()
+      let totalFaces = 0
+      
+      // Also get total face count (including unassigned)
+      const { count: faceCount } = await supabaseClient
+        .from('faces')
+        .select('*', { count: 'exact', head: true })
+        .eq('asset_id', asset.id)
+        .eq('deleted', false)
+      
+      totalFaces = faceCount || 0
+      
+      faces.forEach(face => {
+        if (face.face_person_links && face.face_person_links.person_groups) {
+          const person = face.face_person_links.person_groups
+          if (person && !peopleMap.has(person.id)) {
+            peopleMap.set(person.id, {
+              id: person.id,
+              name: person.name,
+              displayName: person.display_name || person.name,
+              relationship: person.relationship,
+              confidence: face.confidence
+            })
+          }
+        }
+      })
+      
+      // Update detailsAsset with face and people data
+      detailsAsset.value = {
+        ...asset,
+        faceCount: totalFaces,
+        associatedPeople: Array.from(peopleMap.values())
+      }
+    }
+  } catch (error) {
+    console.error('Error loading face data:', error)
+  }
 }
 
 // Helper function to extract image name from storage URL

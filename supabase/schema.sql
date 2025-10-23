@@ -1045,6 +1045,9 @@ create table if not exists face_collections (
   deleted boolean default false
 );
 
+-- Index to ensure one collection per user
+CREATE UNIQUE INDEX IF NOT EXISTS unique_user_collection ON face_collections(user_id);
+
 -- Individual faces indexed in AWS Rekognition Collections
 create table if not exists faces (
   id uuid primary key default gen_random_uuid(),
@@ -1128,6 +1131,25 @@ CREATE POLICY "Admins can manage user backups" ON user_backups
       AND role = 'admin'
     )
   );
+
+-- Face Recognition Table Comments
+COMMENT ON TABLE face_collections IS 'AWS Rekognition face collections per user for face indexing';
+COMMENT ON TABLE faces IS 'Individual detected faces with AWS Rekognition FaceId and metadata';
+COMMENT ON TABLE person_groups IS 'Named people identified by users for face grouping';
+COMMENT ON TABLE face_person_links IS 'Links between detected faces and named people';
+COMMENT ON TABLE face_processing_queue IS 'Queue for background face processing tasks';
+
+-- Face Recognition Column Comments
+COMMENT ON COLUMN face_collections.rekognition_arn IS 'Full ARN of the AWS Rekognition collection';
+COMMENT ON COLUMN face_collections.face_count IS 'Number of faces currently indexed in the collection';
+COMMENT ON COLUMN face_collections.last_indexed_at IS 'Timestamp of most recent IndexFaces operation';
+COMMENT ON COLUMN faces.rekognition_face_id IS 'FaceId returned by AWS Rekognition IndexFaces';
+COMMENT ON COLUMN faces.rekognition_image_id IS 'External image ID used in IndexFaces (typically asset_id)';
+COMMENT ON COLUMN faces.bounding_box IS 'JSON with Left, Top, Width, Height coordinates (0-1 scale) - Used for image cropping';
+COMMENT ON COLUMN faces.confidence IS 'AWS confidence score for face detection (0-1)';
+COMMENT ON COLUMN faces.needs_assignment IS 'Face detected but not yet assigned to a person by user';
+COMMENT ON COLUMN faces.auto_assigned IS 'Face was automatically assigned based on high similarity match';
+COMMENT ON COLUMN faces.skipped IS 'User permanently skipped this face - will not appear in unassigned faces';
 
 -- Face Recognition RLS Policies and Triggers
 -- Enable RLS on face recognition tables
@@ -1243,6 +1265,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- OBSOLETE: Function removed during migration to AWS Rekognition Collections
+-- This function was part of the old local vector-based face recognition system
+/*
 -- Function to get person statistics
 CREATE OR REPLACE FUNCTION get_person_statistics(user_id_param UUID)
 RETURNS TABLE (
@@ -1273,7 +1298,12 @@ BEGIN
   ORDER BY face_count DESC;
 END;
 $$ LANGUAGE plpgsql;
+*/
 
+-- OBSOLETE: Function removed during migration to AWS Rekognition Collections
+-- Replaced by /api/ai/unassigned-faces API endpoint
+-- This function relied on local face_vector storage which no longer exists
+/*
 -- Function to find unassigned faces (includes face vectors for matching)
 CREATE OR REPLACE FUNCTION find_unassigned_faces(
   user_id_param UUID,
@@ -1314,6 +1344,7 @@ BEGIN
   LIMIT limit_count;
 END;
 $$ LANGUAGE plpgsql;
+*/
 
 -- Function to mark a face as skipped
 CREATE OR REPLACE FUNCTION skip_face(
@@ -1358,6 +1389,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- OBSOLETE: Function removed during migration to AWS Rekognition Collections
+-- Replaced by AWS Rekognition SearchFaces API in process-face-matches.js utility
+-- This function relied on face_similarities table which no longer exists
+/*
 -- Function to suggest person assignments based on similarity
 CREATE OR REPLACE FUNCTION suggest_person_assignments(
   user_id_param UUID,
@@ -1401,6 +1436,7 @@ BEGIN
   LIMIT limit_count;
 END;
 $$ LANGUAGE plpgsql;
+*/
 
 -- Function to clear all face assignments (for testing/debugging)
 CREATE OR REPLACE FUNCTION clear_all_face_assignments(user_id_param UUID DEFAULT NULL)
@@ -1436,26 +1472,16 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Grant execute permissions on face recognition functions
-GRANT EXECUTE ON FUNCTION find_similar_faces(UUID, DECIMAL, INTEGER) TO authenticated;
+-- (Active functions only - obsolete functions have been commented out above)
 GRANT EXECUTE ON FUNCTION find_faces_by_person(UUID, INTEGER) TO authenticated;
-GRANT EXECUTE ON FUNCTION get_person_statistics(UUID) TO authenticated;
-GRANT EXECUTE ON FUNCTION find_unassigned_faces(UUID, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_face_detection_stats(UUID) TO authenticated;
-GRANT EXECUTE ON FUNCTION suggest_person_assignments(UUID, DECIMAL, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION skip_face(UUID) TO authenticated;
-
--- Grant execute permission for clear_all_face_assignments (admin only)
 GRANT EXECUTE ON FUNCTION clear_all_face_assignments(UUID) TO authenticated;
 
 -- Add comments for face recognition functions
-COMMENT ON FUNCTION find_similar_faces(UUID, DECIMAL, INTEGER) IS 'Find faces similar to a given face using vector similarity search';
-COMMENT ON FUNCTION find_faces_by_person(UUID, INTEGER) IS 'Find all faces assigned to a specific person';
-COMMENT ON FUNCTION get_person_statistics(UUID) IS 'Get statistics for all people in a user account';
-COMMENT ON FUNCTION find_unassigned_faces(UUID, INTEGER) IS 'Find faces that have not been assigned to any person';
+-- (Active functions only - obsolete functions have been removed)
+COMMENT ON FUNCTION find_faces_by_person(UUID, INTEGER) IS 'Find all faces assigned to a specific person (AWS Rekognition-based)';
 COMMENT ON FUNCTION get_face_detection_stats(UUID) IS 'Get overall face detection statistics for a user';
-COMMENT ON FUNCTION suggest_person_assignments(UUID, DECIMAL, INTEGER) IS 'Suggest person assignments for unassigned faces based on similarity';
 COMMENT ON FUNCTION skip_face(UUID) IS 'Mark a face as skipped so it will not appear in unassigned faces again'; 
-
--- Comment for clear_all_face_assignments function
 COMMENT ON FUNCTION clear_all_face_assignments(UUID) IS 'Soft-delete all face-to-person assignments for testing and debugging purposes'; 
 

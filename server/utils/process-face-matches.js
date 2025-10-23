@@ -153,7 +153,15 @@ async function storeFaceInDb(face, assetId, userId, collectionId, needsAssignmen
       needs_assignment: needsAssignment,
       auto_assigned: autoAssigned
     })
-    .select()
+    .select(`
+      *,
+      assets (
+        id,
+        storage_url,
+        thumbnail_url,
+        title
+      )
+    `)
     .single()
     
   if (error) {
