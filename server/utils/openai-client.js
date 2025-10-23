@@ -1090,6 +1090,13 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
     }
   });
 
+  // DEBUG: Log people data in assets
+  const assetsWithPeople = assetData.filter(a => a.people && a.people.length > 0)
+  console.log(`👥 [selectPhotosByAttributes] Assets with people for AI: ${assetsWithPeople.length}/${assetData.length}`)
+  if (assetsWithPeople.length > 0) {
+    console.log(`👥 [selectPhotosByAttributes] Sample photos with people:`, assetsWithPeople.slice(0, 3).map(a => `Photo ${a.number}: ${a.people}`))
+  }
+
   const payload = {
     model: 'gpt-4o',
     instructions: 'You are a warm, caring grandmother selecting meaningful family photos based on their attributes and a specific prompt. Return ONLY JSON that matches the schema.',

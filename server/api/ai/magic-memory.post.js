@@ -129,7 +129,7 @@ export default defineEventHandler(async (event) => {
       .from('faces')
       .select(`
         asset_id,
-        face_person_links!inner (
+        face_person_links (
           person_groups (
             id,
             name,
@@ -150,20 +150,27 @@ export default defineEventHandler(async (event) => {
     const assetPeopleMap = {}
     if (assetFaces) {
       assetFaces.forEach(face => {
-        if (face.face_person_links && face.face_person_links.person_groups) {
+        // Each face can have multiple face_person_links
+        if (face.face_person_links && Array.isArray(face.face_person_links) && face.face_person_links.length > 0) {
           if (!assetPeopleMap[face.asset_id]) {
             assetPeopleMap[face.asset_id] = []
           }
-          const person = face.face_person_links.person_groups
-          // Only add if not already present
-          if (!assetPeopleMap[face.asset_id].some(p => p.id === person.id)) {
-            assetPeopleMap[face.asset_id].push({
-              id: person.id,
-              name: person.name,
-              display_name: person.display_name,
-              relationship: person.relationship
-            })
-          }
+          
+          // Process each link (a face can be linked to multiple people)
+          face.face_person_links.forEach(link => {
+            if (link.person_groups) {
+              const person = link.person_groups
+              // Only add if not already present
+              if (!assetPeopleMap[face.asset_id].some(p => p.id === person.id)) {
+                assetPeopleMap[face.asset_id].push({
+                  id: person.id,
+                  name: person.name,
+                  display_name: person.display_name,
+                  relationship: person.relationship
+                })
+              }
+            }
+          })
         }
       })
     }
@@ -174,6 +181,18 @@ export default defineEventHandler(async (event) => {
         asset.people = assetPeopleMap[asset.id]
       }
     })
+    
+    // DEBUG: Log people data attachment
+    const assetsWithPeople = assets.filter(a => a.people && a.people.length > 0)
+    console.log(`👥 Assets with people data: ${assetsWithPeople.length}/${assets.length}`)
+    if (assetsWithPeople.length > 0) {
+      console.log(`👥 Sample people data:`, assetsWithPeople.slice(0, 3).map(a => ({
+        assetId: a.id.slice(0, 8),
+        people: a.people.map(p => `${p.display_name || p.name}${p.relationship ? ` (${p.relationship})` : ''}`)
+      })))
+    } else {
+      console.log(`⚠️ No assets have assigned people. Please assign faces to people in the Person Manager first.`)
+    }
     
     // Step 3: Handle photo selection based on method
     let selectedAssets
