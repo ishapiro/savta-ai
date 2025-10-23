@@ -243,11 +243,38 @@ export default defineEventHandler(async (event) => {
     } else if (memoryBook.photo_selection_method === 'photo_library') {
       // Manual selection - use the photos in the pool directly
       console.log('📸 Manual photo selection detected, using selected photos directly')
-      selectedAssets = assets
+      
+      // CRITICAL: Deduplicate photos to prevent same photo appearing twice
+      const uniqueAssetIds = [...new Set(memoryBook.photo_selection_pool)]
+      const duplicateCount = memoryBook.photo_selection_pool.length - uniqueAssetIds.length
+      
+      if (duplicateCount > 0) {
+        console.warn(`⚠️ Duplicate photos detected in selection pool: ${duplicateCount} duplicates removed`)
+        console.log(`📸 Original count: ${memoryBook.photo_selection_pool.length}, Unique count: ${uniqueAssetIds.length}`)
+      }
+      
+      // Fetch only the unique assets
+      const { data: uniqueAssets, error: uniqueError } = await supabase
+        .from('assets')
+        .select('*')
+        .in('id', uniqueAssetIds)
+        .eq('user_id', userId)
+        .eq('approved', true)
+        .eq('deleted', false)
+      
+      if (uniqueError || !uniqueAssets || uniqueAssets.length === 0) {
+        console.error('❌ Error fetching unique assets:', uniqueError)
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Error processing manually selected photos'
+        })
+      }
+      
+      selectedAssets = uniqueAssets
       
       // Create a simple reasoning for manual selection
       photoSelectionResult = {
-        reasoning: `You manually selected ${selectedAssets.length} photos for this memory book.`
+        reasoning: `You manually selected ${selectedAssets.length} unique photos for this memory book.`
       }
       
       await updatePdfStatus(supabase, memoryBookId, userId, `📸 Using your manually selected ${selectedAssets.length} photos...`)
@@ -310,6 +337,17 @@ export default defineEventHandler(async (event) => {
     } else {
       // For normal selection, selectedAssets is an array of asset objects
       selectedAssetIds = selectedAssets.map(asset => asset.id)
+    }
+    
+    // FINAL SAFETY CHECK: Ensure absolutely no duplicate asset IDs before saving
+    const uniqueAssetIds = [...new Set(selectedAssetIds)]
+    const duplicateCountFinal = selectedAssetIds.length - uniqueAssetIds.length
+    
+    if (duplicateCountFinal > 0) {
+      console.warn(`🚨 FINAL SAFETY CHECK: Duplicate asset IDs detected before save: ${selectedAssetIds.length} -> ${uniqueAssetIds.length} (removed ${duplicateCountFinal} duplicates)`)
+      console.log(`🚨 Original IDs: [${selectedAssetIds.join(', ')}]`)
+      console.log(`🚨 Unique IDs: [${uniqueAssetIds.join(', ')}]`)
+      selectedAssetIds = uniqueAssetIds
     }
     
     // Step 5: Update the memory book with selected photos

@@ -180,10 +180,15 @@ export const usePhotoSelection = () => {
   const photoSelection_toggleMemorySelection = (assetId) => {
     const index = photoSelection_selectedMemories.value.indexOf(assetId)
     if (index > -1) {
+      // Photo is already selected, remove it (toggle off)
       photoSelection_selectedMemories.value.splice(index, 1)
     } else {
+      // Photo is not selected, add it (toggle on) if under limit
       if (photoSelection_selectedMemories.value.length < 12) {
-        photoSelection_selectedMemories.value.push(assetId)
+        // Prevent duplicate selections by ensuring assetId is not already in the array
+        if (!photoSelection_selectedMemories.value.includes(assetId)) {
+          photoSelection_selectedMemories.value.push(assetId)
+        }
       }
     }
   }

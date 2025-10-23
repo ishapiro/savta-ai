@@ -1288,6 +1288,92 @@ Return ONLY JSON with the selected photo numbers and your reasoning.`
   console.log(`✅ Selected photos: ${finalSelectedIndices.join(', ')}`);
   console.log(`📝 Reasoning: ${result.reasoning}`);
   
+  // CRITICAL: Deduplicate indices to ensure no photo appears twice
+  const uniqueIndices = [...new Set(finalSelectedIndices)];
+  const duplicateCount = finalSelectedIndices.length - uniqueIndices.length;
+  
+  if (duplicateCount > 0) {
+    console.warn(`⚠️ DUPLICATE INDICES DETECTED: ${finalSelectedIndices.length} -> ${uniqueIndices.length} (${duplicateCount} duplicates removed)`);
+    console.log(`⚠️ Original indices: [${finalSelectedIndices.join(', ')}]`);
+    console.log(`⚠️ Unique indices: [${uniqueIndices.join(', ')}]`);
+    finalSelectedIndices = uniqueIndices;
+    
+    // If we lost photos due to deduplication and need more, ask AI to select additional complementary photos
+    if (finalSelectedIndices.length < targetCount) {
+      const selectedSet = new Set(uniqueIndices);
+      const unselectedIndices = Array.from({ length: availableAssets.length }, (_, i) => i)
+        .filter(i => !selectedSet.has(i));
+      
+      const needed = targetCount - finalSelectedIndices.length;
+      console.log(`🎯 Deduplication left us short: have ${finalSelectedIndices.length}, need ${targetCount} (need ${needed} more)`);
+      console.log(`🎯 ${unselectedIndices.length} unselected photos available to choose from`);
+      
+      if (unselectedIndices.length > 0) {
+        // Build assets for unselected photos
+        const unselectedAssets = unselectedIndices.map(idx => availableAssets[idx]);
+        const selectedAssets = uniqueIndices.map(idx => availableAssets[idx]);
+        
+        console.log(`🎯 Asking AI to select ${needed} complementary photo(s) from ${unselectedIndices.length} available...`);
+        
+        // Create a complementary prompt that provides context about already-selected photos
+        const selectedCaptions = selectedAssets.map(a => a.ai_caption || a.title || 'Photo').join(', ');
+        const complementaryPrompt = `I already selected these ${selectedAssets.length} photos: ${selectedCaptions}. 
+        
+From the remaining photos, please select ${needed} more that would complement and enhance this selection to tell a more complete story. Prioritize photos with:
+1. Similar themes, time periods, or locations as the already-selected photos
+2. Different perspectives that add depth to the narrative
+3. Natural narrative flow that works well together`;
+        
+        try {
+          console.log(`🎯 Reusing photo selection logic for complementary selection...`);
+          
+          // Reuse the existing selectPhotosByAttributes function with unselected photos
+          // This gives us all the sophisticated logic: location hierarchy, priority matching, etc.
+          const complementaryResult = await selectPhotosByAttributes(
+            unselectedAssets,
+            complementaryPrompt,
+            needed,
+            []  // Don't exclude previously used assets for this call
+          );
+          
+          if (complementaryResult && complementaryResult.selected_photo_numbers) {
+            // Convert selected indices back to original indices
+            // complementaryResult returns indices based on unselectedAssets array
+            const complementaryIndices = complementaryResult.selected_photo_numbers.map(idx => 
+              unselectedIndices[idx]  // idx is already 0-based from selectPhotosByAttributes
+            ).filter(idx => idx !== undefined);
+            
+            console.log(`🎯 AI selected ${complementaryIndices.length} complementary photos`);
+            console.log(`🎯 Complementary reasoning: ${complementaryResult.reasoning}`);
+            
+            if (complementaryIndices.length > 0) {
+              finalSelectedIndices.push(...complementaryIndices);
+              result.reasoning += ` (Deduplication reduced selection to ${uniqueIndices.length}. AI then selected ${complementaryIndices.length} complementary photo(s) to reach required ${targetCount}: ${complementaryResult.reasoning})`;
+            }
+          } else {
+            // Fallback: if selection fails, use sequential approach
+            console.log(`⚠️ Complementary photo selection returned invalid result, using sequential fallback`);
+            const additionalIndices = unselectedIndices.slice(0, needed);
+            if (additionalIndices.length > 0) {
+              finalSelectedIndices.push(...additionalIndices);
+              result.reasoning += ` (Deduplication reduced selection. Filled remaining slots sequentially to reach ${targetCount} photos)`;
+            }
+          }
+        } catch (aiError) {
+          console.error(`⚠️ Error during complementary photo selection:`, aiError.message);
+          // Fallback: use sequential approach
+          const additionalIndices = unselectedIndices.slice(0, needed);
+          if (additionalIndices.length > 0) {
+            finalSelectedIndices.push(...additionalIndices);
+            result.reasoning += ` (Deduplication reduced selection. Filled remaining slots to reach ${targetCount} photos)`;
+          }
+        }
+      } else {
+        console.warn(`⚠️ Deduplication left us with too few photos and no additional photos available to fill gaps`);
+      }
+    }
+  }
+  
   // Add note about previously used photos if applicable
   if (!excludedPreviouslyUsed && previouslyUsedAssetIds && previouslyUsedAssetIds.length > 0) {
     result.reasoning += ` (Included previously used photos to ensure sufficient variety - had ${assets.length} total photos available)`;
