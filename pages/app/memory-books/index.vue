@@ -413,6 +413,22 @@
               </div>
             </div>
 
+            <!-- AI Creation Prompt Section -->
+            <div v-if="selectedBook.ai_supplemental_prompt" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-pen-to-square text-white text-lg sm:text-xl"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-base sm:text-lg font-bold text-brand-primary">Creation Prompt</h3>
+                  <p class="text-xs sm:text-sm text-gray-600">The theme used to create this memory book</p>
+                </div>
+              </div>
+              <div class="bg-brand-secondary/10 rounded-xl p-3 sm:p-4 border border-brand-secondary/20 text-brand-primary text-sm" style="word-break: break-word; line-height: 1.5;">
+                {{ selectedBook.ai_supplemental_prompt }}
+              </div>
+            </div>
+
             <!-- Memory Assets Section -->
             <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
               <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">

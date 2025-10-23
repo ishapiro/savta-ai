@@ -100,17 +100,17 @@
             <div class="relative" style="width: 280px; height: 200px;">
               <!-- Back card -->
               <div class="absolute top-4 left-2.5 bg-white rounded-lg shadow-lg border border-brand-navigation/10 transform -rotate-3 opacity-40 overflow-hidden" style="width: 256px; height: 183px;">
-                <img src="/sample-memory-card.jpg" alt="Memory card" class="w-full h-full object-contain bg-white" />
+                <img src="/sample-memory-card-v2.jpg" alt="Memory card" class="w-full h-full object-contain bg-white" />
               </div>
               
               <!-- Middle card -->
               <div class="absolute top-2 left-1 bg-white rounded-lg shadow-xl border border-brand-navigation/10 transform -rotate-1 opacity-60 overflow-hidden" style="width: 256px; height: 183px;">
-                <img src="/sample-memory-card.jpg" alt="Memory card" class="w-full h-full object-contain bg-white" />
+                <img src="/sample-memory-card-v2.jpg" alt="Memory card" class="w-full h-full object-contain bg-white" />
               </div>
               
               <!-- Front card -->
               <div class="absolute top-0 left-0 bg-white rounded-lg shadow-2xl border border-brand-navigation/20 overflow-hidden" style="width: 256px; height: 183px;">
-                <img src="/sample-memory-card.jpg" alt="Sample memory card created by Savta" class="w-full h-full object-contain bg-white" />
+                <img src="/sample-memory-card-v2.jpg" alt="Sample memory card created by Savta" class="w-full h-full object-contain bg-white" />
               </div>
             </div>
           </div>

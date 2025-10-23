@@ -122,6 +122,58 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'No approved photos found in selection pool'
       })
     }
+
+// ENHANCED: Also fetch person information for each asset (for AI prompt enhancement)
+    // This allows the AI to select photos by person names mentioned in the prompt
+    const { data: assetFaces, error: facesError } = await supabase
+      .from('faces')
+      .select(`
+        asset_id,
+        face_person_links!inner (
+          person_groups (
+            id,
+            name,
+            display_name,
+            relationship
+          )
+        )
+      `)
+      .in('asset_id', memoryBook.photo_selection_pool)
+      .eq('deleted', false)
+    
+    if (facesError) {
+      console.warn('⚠️ Warning fetching face data for photo selection:', facesError)
+      // Continue without face data - it's optional
+    }
+    
+    // Build a map of asset IDs to their associated people
+    const assetPeopleMap = {}
+    if (assetFaces) {
+      assetFaces.forEach(face => {
+        if (face.face_person_links && face.face_person_links.person_groups) {
+          if (!assetPeopleMap[face.asset_id]) {
+            assetPeopleMap[face.asset_id] = []
+          }
+          const person = face.face_person_links.person_groups
+          // Only add if not already present
+          if (!assetPeopleMap[face.asset_id].some(p => p.id === person.id)) {
+            assetPeopleMap[face.asset_id].push({
+              id: person.id,
+              name: person.name,
+              display_name: person.display_name,
+              relationship: person.relationship
+            })
+          }
+        }
+      })
+    }
+    
+    // Attach people data to assets
+    assets.forEach(asset => {
+      if (assetPeopleMap[asset.id]) {
+        asset.people = assetPeopleMap[asset.id]
+      }
+    })
     
     // Step 3: Handle photo selection based on method
     let selectedAssets

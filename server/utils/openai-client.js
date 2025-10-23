@@ -1058,22 +1058,37 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
   console.log('🎯 DEBUG - Starting photo selection at:', new Date().toISOString());
 
   // Prepare asset data for AI analysis
-  const assetData = availableAssets.map((asset, index) => ({
-    number: index + 1,
-    id: asset.id,
-    title: asset.title || '',
-    ai_caption: asset.ai_caption || '',
-    ai_description: asset.ai_description || '',
-    user_caption: asset.user_caption || '',
-    tags: Array.isArray(asset.tags) ? asset.tags.join(', ') : '',
-    user_tags: Array.isArray(asset.user_tags) ? asset.user_tags.join(', ') : '',
-    user_people: Array.isArray(asset.user_people) ? asset.user_people.join(', ') : '',
-    city: asset.city || '',
-    state: asset.state || '',
-    country: asset.country || '',
-    asset_date: asset.asset_date ? new Date(asset.asset_date).toLocaleDateString() : '',
-    location: asset.location || ''
-  }));
+  const assetData = availableAssets.map((asset, index) => {
+    // Format people with both full name and display name
+    let peopleFormatted = ''
+    if (asset.people && Array.isArray(asset.people) && asset.people.length > 0) {
+      peopleFormatted = asset.people.map(person => {
+        // Include display_name (if different from name), relationship, and name in parentheses
+        const displayName = person.display_name || person.name
+        const relationship = person.relationship ? ` (${person.relationship})` : ''
+        const fullNameNote = person.display_name && person.display_name !== person.name ? ` (${person.name})` : ''
+        return `${displayName}${fullNameNote}${relationship}`
+      }).join(', ')
+    }
+    
+    return {
+      number: index + 1,
+      id: asset.id,
+      title: asset.title || '',
+      ai_caption: asset.ai_caption || '',
+      ai_description: asset.ai_description || '',
+      user_caption: asset.user_caption || '',
+      tags: Array.isArray(asset.tags) ? asset.tags.join(', ') : '',
+      user_tags: Array.isArray(asset.user_tags) ? asset.user_tags.join(', ') : '',
+      user_people: Array.isArray(asset.user_people) ? asset.user_people.join(', ') : '',
+      people: peopleFormatted,
+      city: asset.city || '',
+      state: asset.state || '',
+      country: asset.country || '',
+      asset_date: asset.asset_date ? new Date(asset.asset_date).toLocaleDateString() : '',
+      location: asset.location || ''
+    }
+  });
 
   const payload = {
     model: 'gpt-4o',
@@ -1119,20 +1134,22 @@ For each photo, I have the following information:
 - AI-generated description (comprehensive details about the photo)
 - User caption
 - Tags (AI and user-generated)
-- People identified
+- People identified (with relationships)
 - Location (city, state, country)
 - Date taken
 
 CRITICAL SELECTION PRIORITY (in order of importance):
-1. **LOCATION MATCH**: If the prompt mentions a specific location (city, state, or country), prioritize photos from that exact location first. For example, if the prompt says "Chicago Vacation", look for photos from Chicago, Illinois, or the greater Chicago area first.
+1. **PEOPLE MATCH**: If the prompt mentions specific people by name, prioritize photos containing those people. Look for exact name matches or relationships mentioned. Examples: "Sarah (Grandmother)", "Michael", "Uncle Tom", etc.
 
-2. **DATE MATCH**: If the prompt mentions a specific date or time period, prioritize photos with dates close to that time.
+2. **LOCATION MATCH**: If the prompt mentions a specific location (city, state, or country), prioritize photos from that exact location first. For example, if the prompt says "Chicago Vacation", look for photos from Chicago, Illinois, or the greater Chicago area first.
 
-3. **THEMATIC CONTENT**: Choose photos that tell a cohesive story together and relate to the theme.
+3. **DATE MATCH**: If the prompt mentions a specific date or time period, prioritize photos with dates close to that time.
 
-4. **PEOPLE & EVENTS**: Consider the people, places, and events mentioned in the prompt.
+4. **THEMATIC CONTENT**: Choose photos that tell a cohesive story together and relate to the theme.
 
-5. **RELEVANT TAGS/CAPTIONS**: Look for photos with meaningful captions or tags that relate to the prompt.
+5. **PEOPLE & EVENTS**: Consider the people, places, and events mentioned in the prompt.
+
+6. **RELEVANT TAGS/CAPTIONS**: Look for photos with meaningful captions or tags that relate to the prompt.
 
 LOCATION MATCHING HIERARCHY (in order of priority):
 1. **EXACT CITY MATCH**: Match exact city name (e.g., "Chicago" matches "Chicago, Illinois")
@@ -1153,7 +1170,7 @@ Photo ${asset.number}:
 - User Caption: ${asset.user_caption}
 - Tags: ${asset.tags}
 - User Tags: ${asset.user_tags}
-- People: ${asset.user_people}
+- Identified People: ${asset.people || asset.user_people || 'No people identified'}
 - Location: ${asset.city}${asset.state ? ', ' + asset.state : ''}${asset.country ? ', ' + asset.country : ''}
 - Date: ${asset.asset_date}
 `).join('\n')}
@@ -1161,6 +1178,13 @@ Photo ${asset.number}:
 Select exactly ${targetCount} photos that best match the theme "${aiSupplementalPrompt}". 
 
 CRITICAL: You MUST select exactly ${targetCount} photos - never fewer, never more.
+
+PEOPLE PRIORITY RULES:
+- If the prompt mentions a specific person's name, look for photos containing that person
+- Match both full names (in parentheses) and display names when searching for people
+- Consider relationship context: if prompt mentions "Grandmother", look for photos tagged with Grandmother relationship
+- If multiple people are mentioned, prioritize photos containing the primary person first
+- If insufficient photos with the mentioned people exist, fill remaining slots with photos containing other family members
 
 LOCATION PRIORITY RULES:
 - If the prompt mentions a specific location, prioritize photos from that location first
