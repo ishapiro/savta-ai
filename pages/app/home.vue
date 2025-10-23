@@ -9,10 +9,10 @@
 
     <!-- Main Content -->
     <div class="relative z-10 w-full flex-1 flex flex-col justify-center">
-      <div class="w-full px-2 sm:px-[10px] lg:px-[15px]">
+      <div class="w-full px-4 sm:px-[10px] lg:px-[15px] py-6 sm:py-6 lg:py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 items-center">
           <!-- Left Column: Hero Content (2/3 width) -->
-          <div class="lg:col-span-2 space-y-8 animate-fade-in-left">
+          <div class="lg:col-span-2 space-y-6 sm:space-y-8 animate-fade-in-left">
             <!-- Main Headline -->
             <div class="space-y-6">
               <div class="space-y-3">
@@ -60,10 +60,10 @@
             </div>
 
             <!-- CTA Button -->
-            <div>
+            <div class="flex flex-col items-center sm:items-start">
               <Button
                 label="Get Started"
-                class="bg-brand-header hover:bg-brand-secondary text-white rounded-lg py-4 px-8 text-lg font-semibold border-0 transition-colors"
+                class="bg-brand-header hover:bg-brand-secondary text-white rounded-lg py-4 px-8 text-lg font-semibold border-0 transition-colors w-full sm:w-auto"
                 @click="openMagicMemoryDialog('quick')"
               />
               <p class="text-sm text-brand-primary/70 mt-3 flex items-center gap-2">

@@ -15,11 +15,11 @@
     }"
     :pt="{
       root: { 
-        class: isMobile ? 'touch-none !m-0' : '',
+        class: isMobile ? 'touch-pan-y !m-0' : '',
         style: isMobile ? { margin: '0', borderRadius: '0' } : {}
       },
       mask: { 
-        class: isMobile ? 'touch-none' : 'bg-black/40',
+        class: isMobile ? 'touch-pan-y' : 'bg-black/40',
         style: isMobile ? {} : { backgroundColor: 'rgba(0, 0, 0, 0.4)' }
       },
       content: { 

@@ -6,13 +6,13 @@
     :dismissable-mask="false"
     :class="['w-full', 'h-full', 'max-w-none', 'max-h-screen', 'sm:w-[700px]', 'sm:max-w-[700px]', 'sm:h-auto', 'm-0', 'rounded-none', 'sm:rounded-2xl', 'mobile-app-dialog']"
     :pt="{
-      root: { class: isMobile ? 'touch-none' : '' },
-      mask: { class: isMobile ? 'touch-none' : '' }
+      root: { class: isMobile ? 'touch-pan-y' : '' },
+      mask: { class: isMobile ? 'touch-pan-y' : '' }
     }"
   >
     <!-- Step 1: Title Input -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.TITLE && currentButtonConfig?.steps.includes(MAGIC_STEPS.TITLE)"
-      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden overflow-y-auto sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -55,7 +55,7 @@
 
     <!-- Step 2: Theme Selection -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.THEME && currentButtonConfig?.steps.includes(MAGIC_STEPS.THEME)"
-      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden overflow-y-auto sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -94,7 +94,7 @@
 
     <!-- Step 3: Background Selection -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.BACKGROUND && currentButtonConfig?.steps.includes(MAGIC_STEPS.BACKGROUND)"
-      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden overflow-y-auto sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -146,7 +146,7 @@
 
     <!-- Step 3: Photo Selection Method -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTOS && currentButtonConfig?.steps.includes(MAGIC_STEPS.PHOTOS)"
-      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden overflow-y-auto sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -201,7 +201,7 @@
 
     <!-- Step 4: Photo Replacement Selection (for replace_selected method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.PHOTO_REPLACEMENT && photoSelection_method === 'replace_selected'"
-      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden overflow-y-auto sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -222,7 +222,7 @@
 
     <!-- Step 5: Photo Library Selection (MANUAL step for photo_library method) -->
     <div v-if="magicMemoryStep === MAGIC_STEPS.MANUAL && photoSelection_method === 'photo_library'"
-      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
+      class="h-full min-h-[calc(100vh-120px)] m-0 rounded-none flex flex-col items-center pt-2 px-4 py-4 pb-4 sm:pb-4 bg-white overflow-x-hidden overflow-y-auto sm:w-auto sm:h-auto sm:min-h-0 sm:rounded-2xl sm:px-6 sm:py-6">
       <!-- Edit Mode Button -->
       <div v-if="isRecreateMode" class="flex justify-center mb-4">
         <Button
@@ -756,7 +756,8 @@ defineExpose({
     margin: 0 !important;
     height: 100vh !important;
     max-height: 100vh !important;
-    overflow: hidden !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
   
   .mobile-app-dialog .p-dialog-mask {

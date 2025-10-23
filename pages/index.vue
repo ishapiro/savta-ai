@@ -41,7 +41,7 @@
 
     <!-- Main Content -->
     <div class="relative z-10 w-full flex-1 flex flex-col justify-center" v-if="!showRestrictedOverlay">
-      <div class="w-full px-1 sm:px-[5px] lg:px-[8px] py-4 sm:py-6 lg:py-8">
+      <div class="w-full px-4 sm:px-[5px] lg:px-[8px] py-6 sm:py-6 lg:py-8">
         <!-- Compact Top Section: Logo + Headline -->
         <div class="mb-4 sm:mb-6">
           <!-- Logo -->
@@ -58,7 +58,7 @@
         <!-- Main Grid: Content + Card -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start">
           <!-- Left Column: Description + CTA -->
-          <div class="space-y-3 sm:space-y-4 animate-fade-in-left">
+          <div class="space-y-4 sm:space-y-4 animate-fade-in-left">
             <!-- Short Description -->
             <p class="text-sm sm:text-base lg:text-lg text-brand-primary/80 leading-relaxed">
               Savta.ai is not another photo printing service. We handle the creative work for you—no dragging, no dropping, no design skills needed. 
@@ -81,10 +81,10 @@
             </div>
 
             <!-- CTA + Badge -->
-            <div class="flex flex-col sm:flex-row items-start gap-3 pt-2">
+            <div class="flex flex-col items-center sm:items-start gap-3 pt-2">
               <Button
                 label="Get Started"
-                class="bg-brand-header hover:bg-brand-secondary text-white rounded-lg py-2.5 px-6 text-sm font-semibold border-0 transition-colors"
+                class="bg-brand-header hover:bg-brand-secondary text-white rounded-lg py-3 px-8 text-base font-semibold border-0 transition-colors w-full sm:w-auto"
                 @click="openMagicMemoryDialog('quick')"
               />
               <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">

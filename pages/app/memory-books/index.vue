@@ -2222,7 +2222,8 @@ onUnmounted(() => {
     margin: 0 !important;
     height: 100vh !important;
     max-height: 100vh !important;
-    overflow: hidden !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
   
   .mobile-app-dialog .p-dialog-mask {
