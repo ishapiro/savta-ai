@@ -13,7 +13,7 @@
             aria-label="Information about memory cards and booklets"
             title="Ask Savta"
           >
-            <i class="pi pi-info text-base text-brand-info-letter font-bold"></i>
+            <Info class="w-4 h-4 text-brand-info-letter font-bold" />
           </button>
         </div>
         
@@ -30,7 +30,7 @@
           aria-label="View trash"
           v-tooltip.top="'View Trash'"
         >
-          <i class="pi pi-trash text-base text-white"></i>
+          <Trash2 class="w-4 h-4 text-white" />
         </button>
       </div>
 
@@ -55,7 +55,7 @@
         <!-- Loading State -->
         <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-12">
           <div class="text-center">
-            <i class="pi pi-spin pi-spinner text-3xl mb-4 text-brand-highlight"></i>
+            <Loader2 class="w-8 h-8 mb-4 text-brand-highlight animate-spin" />
             <p class="text-base text-brand-text-muted">
               Loading {{ activeView === 'cards' ? 'memory cards' : 'memory books' }}...
             </p>
@@ -125,7 +125,7 @@
         <template #header>
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-white border border-brand-info-outline rounded-full flex items-center justify-center">
-              <i class="pi pi-info text-brand-info-letter font-bold text-sm"></i>
+              <Info class="w-3 h-3 sm:w-4 sm:h-4 text-brand-info-letter font-bold" />
             </div>
             <h3 class="text-lg font-semibold text-brand-primary">Memory Cards vs Memory Books</h3>
           </div>
@@ -135,7 +135,7 @@
           <div class="p-4 bg-brand-secondary/10 rounded-lg border border-brand-secondary/20">
             <div class="flex items-center gap-2 mb-2">
               <div class="w-6 h-6 bg-brand-secondary rounded-full flex items-center justify-center">
-                <i class="pi pi-magic-wand text-white text-xs"></i>
+                <Wand2 class="w-3 h-3 text-white" />
               </div>
               <h4 class="font-semibold text-brand-secondary">Memory Cards</h4>
             </div>
@@ -148,7 +148,7 @@
           <div class="p-4 bg-brand-highlight/10 rounded-lg border border-brand-highlight/20">
             <div class="flex items-center gap-2 mb-2">
               <div class="w-6 h-6 bg-brand-highlight rounded-full flex items-center justify-center">
-                <i class="pi pi-book text-white text-xs"></i>
+                <FileText class="w-3 h-3 text-white" />
               </div>
               <h4 class="font-semibold text-brand-highlight">Memory Books</h4>
             </div>
@@ -201,7 +201,7 @@
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
                   <div class="w-8 h-8 bg-brand-secondary rounded-full flex items-center justify-center">
-                    <i class="pi pi-gift text-white text-sm"></i>
+                    <Gift class="w-4 h-4 text-white" />
                   </div>
                   <div class="min-w-0 flex-1">
                     <h2 class="text-base font-bold text-gray-900 truncate">{{ selectedBook.ai_supplemental_prompt || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
@@ -216,7 +216,7 @@
                   class="border-0 flex items-center justify-center gap-1 bg-brand-dialog-cancel text-white font-bold rounded px-3 py-2 text-xs shadow transition-all duration-200"
                   @click="showDetailsModal = false"
                 >
-                  <i class="pi pi-times text-xs"></i>
+                  <X class="w-3 h-3" />
                   <span>Close</span>
                 </button>
               </div>
@@ -242,7 +242,7 @@
               <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                   <div class="w-12 h-12 sm:w-16 sm:h-16 bg-brand-secondary rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4">
-                    <i class="pi pi-gift text-white text-lg sm:text-2xl"></i>
+                    <Gift class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                   </div>
                   <div class="min-w-0 flex-1">
                     <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-1 truncate">{{ selectedBook.ai_supplemental_prompt || ('Memory Book #' + selectedBook.id.slice(-6)) }}</h2>
@@ -262,16 +262,15 @@
                     class="flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-edit text-white font-bold rounded px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
                     @click="unapproveBook(selectedBook.id)"
                   >
-                    <i class="pi pi-undo text-xs sm:text-sm"></i>
+                    <Clock class="w-3 h-3 sm:w-4 sm:h-4" />
                     <span class="hidden sm:inline">Unapprove</span>
-                    <span class="sm:hidden">Unapprove</span>
                   </button>
                   <button
                     data-testid="details-close-button"
                     class="border-0 flex items-center justify-center gap-1 sm:gap-2 bg-brand-dialog-cancel text-white font-bold rounded px-3 sm:px-4 py-2 text-xs sm:text-sm shadow transition-all duration-200"
                     @click="showDetailsModal = false"
                   >
-                    <i class="pi pi-times text-xs sm:text-sm"></i>
+                    <X class="w-3 h-3" />
                     <span class="hidden sm:inline">Close</span>
                     <span class="sm:hidden">Close</span>
                   </button>
@@ -282,28 +281,28 @@
               <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-3 mt-4">
                 <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-calendar text-brand-primary text-xs sm:text-sm"></i>
+                    <Calendar class="w-3 h-3 sm:w-4 sm:h-4 text-brand-primary" />
                     <span class="text-xs font-medium text-gray-600">Created</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.created_at) }}</p>
                 </div>
                 <div v-if="selectedBook.generated_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-magic-wand text-brand-primary text-xs sm:text-sm"></i>
+                    <Wand2 class="w-3 h-3 sm:w-4 sm:h-4 text-brand-primary" />
                     <span class="text-xs font-medium text-gray-600">Generated</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.generated_at) }}</p>
                 </div>
                 <div v-if="selectedBook.approved_at" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-check-circle text-brand-accent text-xs sm:text-sm"></i>
+                    <Check class="w-3 h-3 sm:w-4 sm:h-4 text-brand-accent" />
                     <span class="text-xs font-medium text-gray-600">Approved</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ formatDate(selectedBook.approved_at) }}</p>
                 </div>
                 <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-images text-brand-accent text-xs sm:text-sm"></i>
+                    <Images class="w-3 h-3 sm:w-4 sm:h-4 text-brand-accent" />
                     <span class="text-xs font-medium text-gray-600">Assets</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">
@@ -315,21 +314,21 @@
                 </div>
                 <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-th-large text-brand-primary text-xs sm:text-sm"></i>
+                    <ThLarge class="w-3 h-3 sm:w-4 sm:h-4 text-brand-primary" />
                     <span class="text-xs font-medium text-gray-600">Layout</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.layout_type || 'grid' }}</p>
                 </div>
                 <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-file text-brand-secondary text-xs sm:text-sm"></i>
+                    <File class="w-3 h-3 sm:w-4 sm:h-4 text-brand-secondary" />
                     <span class="text-xs font-medium text-gray-600">Format</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.format || 'book' }}</p>
                 </div>
                 <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-calendar-plus text-brand-highlight text-xs sm:text-sm"></i>
+                    <CalendarPlus class="w-3 h-3 sm:w-4 sm:h-4 text-brand-highlight" />
                     <span class="text-xs font-medium text-gray-600">Event</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_event || 'N/A' }}</p>
@@ -340,28 +339,28 @@
               <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mt-2">
                 <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-palette text-brand-primary text-xs sm:text-sm"></i>
+                    <Palette class="w-3 h-3 sm:w-4 sm:h-4 text-brand-primary" />
                     <span class="text-xs font-medium text-gray-600">Theme</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.theme?.name || 'Default' }}</p>
                 </div>
                 <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-circle text-brand-accent text-xs sm:text-sm"></i>
+                    <Circle class="w-3 h-3 sm:w-4 sm:h-4 text-brand-accent" />
                     <span class="text-xs font-medium text-gray-600">Shape</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.memory_shape || 'original' }}</p>
                 </div>
                 <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-table text-brand-highlight text-xs sm:text-sm"></i>
+                    <Table class="w-3 h-3 sm:w-4 sm:h-4 text-brand-highlight" />
                     <span class="text-xs font-medium text-gray-600">Grid</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ selectedBook.grid_layout || '2x2' }}</p>
                 </div>
                 <div class="bg-white/80 rounded-xl p-2 sm:p-3 border border-gray-200">
                   <div class="flex items-center gap-1 sm:gap-2 mb-1">
-                    <i class="pi pi-file-edit text-brand-primary text-xs sm:text-sm"></i>
+                    <FileEdit class="w-3 h-3 sm:w-4 sm:h-4 text-brand-primary" />
                     <span class="text-xs font-medium text-gray-600">Title</span>
                   </div>
                   <p class="text-xs sm:text-sm font-semibold text-gray-900 truncate">{{ selectedBook.ai_supplemental_prompt || 'Untitled' }}</p>
@@ -371,7 +370,7 @@
               <!-- Desktop: Review notes -->
               <div v-if="selectedBook.review_notes" class="mt-4 bg-brand-highlight/10 rounded-xl p-3 sm:p-4 border border-brand-highlight/20">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-comment text-brand-highlight text-sm"></i>
+                  <Comment class="w-3 h-3 sm:w-4 sm:h-4 text-brand-highlight" />
                   <span class="text-sm font-semibold text-brand-highlight">Review Notes</span>
                 </div>
                 <p class="text-xs sm:text-sm text-brand-highlight italic">{{ selectedBook.review_notes }}</p>
@@ -381,11 +380,28 @@
             
             <!-- Content Section -->
             <div class="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-20 sm:pb-4 sm:mb-0">
+            
+            <!-- AI Creation Prompt Section - MOVED TO TOP -->
+            <div v-if="selectedBook.ai_supplemental_prompt" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                  <MessageCircle class="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-base sm:text-lg font-bold text-brand-primary">Creation Prompt</h3>
+                  <p class="text-xs sm:text-sm text-gray-600">The theme used to create this memory book</p>
+                </div>
+              </div>
+              <div class="bg-brand-secondary/10 rounded-xl p-3 sm:p-4 border border-brand-secondary/20 text-brand-primary text-sm" style="word-break: break-word; line-height: 1.5;">
+                {{ selectedBook.ai_supplemental_prompt }}
+              </div>
+            </div>
+            
             <!-- Story Section (for Story-based Memories) -->
             <div v-if="selectedBook.magic_story" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
               <div class="flex items-center gap-3 mb-4">
                 <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-highlight rounded-full flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-star text-white text-lg sm:text-xl"></i>
+                  <Star class="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div class="min-w-0 flex-1">
                   <h3 class="text-base sm:text-lg font-bold text-brand-primary">Special Story</h3>
@@ -401,7 +417,7 @@
             <div v-if="selectedBook.ai_photo_selection_reasoning" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
               <div class="flex items-center gap-3 mb-4">
                 <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-accent rounded-full flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-bolt text-white text-lg sm:text-xl"></i>
+                  <Bolt class="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div class="min-w-0 flex-1">
                   <h3 class="text-base sm:text-lg font-bold text-brand-primary">Photo Selection Reasoning</h3>
@@ -413,27 +429,11 @@
               </div>
             </div>
 
-            <!-- AI Creation Prompt Section -->
-            <div v-if="selectedBook.ai_supplemental_prompt" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 text-xs">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-secondary rounded-full flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-pen-to-square text-white text-lg sm:text-xl"></i>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <h3 class="text-base sm:text-lg font-bold text-brand-primary">Creation Prompt</h3>
-                  <p class="text-xs sm:text-sm text-gray-600">The theme used to create this memory book</p>
-                </div>
-              </div>
-              <div class="bg-brand-secondary/10 rounded-xl p-3 sm:p-4 border border-brand-secondary/20 text-brand-primary text-sm" style="word-break: break-word; line-height: 1.5;">
-                {{ selectedBook.ai_supplemental_prompt }}
-              </div>
-            </div>
-
             <!-- Memory Assets Section -->
             <div v-if="selectedBook.created_from_assets && selectedBook.created_from_assets.length > 0" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
               <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
                 <div class="w-8 h-8 sm:w-10 sm:h-10 bg-brand-accent rounded-full flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-images text-white text-lg sm:text-xl"></i>
+                  <Images class="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div class="min-w-0 flex-1">
                   <h3 class="text-base sm:text-lg font-bold text-gray-900">Memory Assets</h3>
@@ -458,7 +458,7 @@
                     class="w-full h-full object-contain"
                   />
                   <div v-else class="w-full h-full flex items-center justify-center bg-gray-100">
-                    <i class="pi pi-image text-gray-400 text-xs sm:text-sm"></i>
+                    <Image class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                   </div>
                 </div>
                 <div v-if="selectedBook.created_from_assets.length > 24" class="aspect-square bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-xs sm:text-sm text-gray-500 font-medium">
@@ -484,14 +484,14 @@
                   class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save text-white font-bold rounded px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-lg transition-all duration-200 w-full sm:w-auto"
                   @click="forceDownloadPDF(selectedBook)"
                 >
-                  <i class="pi pi-download text-xs sm:text-sm"></i>
+                  <Download class="w-3 h-3 sm:w-4 sm:h-4" />
                   <span class="hidden sm:inline">Display/Share {{ getFileTypeDisplay(selectedBook) }}</span>
                   <span class="sm:hidden">Display/Share {{ getFileTypeDisplay(selectedBook) }}</span>
                 </button>
               </div>
               <div class="border-0 bg-brand-primary/5 rounded-xl p-3 sm:p-4 border border-brand-primary/20 mt-4">
                 <div class="flex items-start gap-2 text-xs sm:text-sm text-brand-primary">
-                  <i class="pi pi-info-circle text-brand-primary text-xs sm:text-sm mt-0.5 flex-shrink-0" title="Ask Savta"></i>
+                  <InfoCircle class="w-3 h-3 sm:w-4 sm:h-4 text-brand-primary mt-0.5 flex-shrink-0" title="Ask Savta" />
                   <span>Click download to save your memory as a {{ getFileTypeDisplay(selectedBook) }} file to your device</span>
                 </div>
               </div>
@@ -510,7 +510,7 @@
                 class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
               >
                 <div class="w-6 h-6 flex items-center justify-center">
-                  <i class="pi pi-times text-gray-600 text-lg"></i>
+                  <Times class="w-4 h-4 text-gray-600" />
                 </div>
                 <span class="text-xs text-gray-600 font-medium">Close</span>
               </button>
@@ -523,7 +523,7 @@
                 class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
               >
                 <div class="w-6 h-6 flex items-center justify-center">
-                  <i class="pi pi-magic-wand text-brand-secondary text-lg"></i>
+                  <Wand2 class="w-4 h-4 text-brand-secondary" />
                 </div>
                 <span class="text-xs text-brand-secondary font-medium">Create</span>
               </button>
@@ -537,8 +537,8 @@
                 class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200 disabled:opacity-50"
               >
                 <div class="w-6 h-6 flex items-center justify-center">
-                  <i v-if="selectedBook.status !== 'background_ready'" class="pi pi-refresh text-brand-secondary text-lg"></i>
-                  <i v-else class="pi pi-spin pi-spinner text-brand-secondary text-lg"></i>
+                  <RefreshCw v-if="selectedBook.status !== 'background_ready'" class="w-4 h-4 text-brand-secondary" />
+                  <Loader2 v-else class="w-4 h-4 text-brand-secondary animate-spin" />
                 </div>
                 <span class="text-xs text-brand-secondary font-medium">{{ selectedBook.status === 'background_ready' ? 'Processing' : 'Edit' }}</span>
               </button>
@@ -551,7 +551,7 @@
                 class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
               >
                 <div class="w-6 h-6 flex items-center justify-center">
-                  <i class="pi pi-check text-brand-secondary text-lg"></i>
+                  <Check class="w-4 h-4 text-brand-secondary" />
                 </div>
                 <span class="text-xs text-brand-secondary font-medium">Approve</span>
               </button>
@@ -564,7 +564,7 @@
                 class="flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200"
               >
                 <div class="w-6 h-6 flex items-center justify-center">
-                  <i class="pi pi-trash text-red-600 text-lg"></i>
+                  <Trash2 class="w-4 h-4 text-red-600" />
                 </div>
                 <span class="text-xs text-red-600 font-medium">Trash</span>
               </button>
@@ -579,7 +579,7 @@
                   class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white font-bold uppercase tracking-wider rounded px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-elevation-2 hover:shadow-elevation-3 w-auto sm:min-w-[120px]"
                   @click="onGenerateClick(selectedBook)"
                 >
-                  <i class="pi pi-magic-wand text-xs sm:text-sm"></i>
+                  <Wand2 class="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>CREATE MEMORY</span>
                 </button>
                 <button
@@ -589,7 +589,7 @@
                   @click="onRegenerateClick(selectedBook)"
                   :class="{ 'opacity-50': selectedBook.status === 'background_ready' }"
                 >
-                  <i class="pi pi-refresh text-xs sm:text-sm"></i>
+                  <RefreshCw class="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>{{ selectedBook.status === 'background_ready' ? 'PROCESSING ...' : 'EDIT/REVISE' }}</span>
                 </button>
                 <button
@@ -599,7 +599,7 @@
                   @click="approveBook(selectedBook.id)"
                   v-tooltip.top="'Approve this Book and I\'ll Send it Out For You'"
                 >
-                  <i class="pi pi-check text-xs sm:text-sm"></i>
+                  <Check class="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>APPROVE</span>
                 </button>
                 <button
@@ -608,7 +608,7 @@
                   class="border-0 flex items-center justify-center gap-2 bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white font-bold uppercase tracking-wider rounded px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm shadow-elevation-2 hover:shadow-elevation-3 w-auto sm:min-w-[120px]"
                   @click="confirmDeleteBook(selectedBook)"
                 >
-                  <i class="pi pi-trash text-xs sm:text-sm"></i>
+                  <Trash2 class="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>TRASH</span>
                 </button>
               </div>
@@ -696,7 +696,7 @@
         <template #header>
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-brand-flash rounded-full flex items-center justify-center">
-              <i class="pi pi-check text-white text-sm"></i>
+              <Check class="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
             <h3 class="text-lg font-semibold text-brand-primary">Approve Memory Book</h3>
           </div>
@@ -735,7 +735,7 @@
         <template #header>
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-              <i class="pi pi-trash text-white text-sm"></i>
+              <Trash2 class="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
             <h3 class="text-lg font-semibold text-brand-primary">Delete Memory Book</h3>
           </div>
@@ -822,7 +822,7 @@
           <div class="flex items-center justify-between w-full">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-brand-secondary rounded-full flex items-center justify-center">
-                <i class="pi pi-file-pdf text-white text-sm"></i>
+                <FilePdf class="w-3 h-3 sm:w-4 sm:h-4 text-white" />
               </div>
               <h3 class="text-lg font-semibold text-brand-primary">
                 {{ selectedBook?.ai_supplemental_prompt || 'Memory Book' }}
@@ -837,7 +837,7 @@
             <ClientOnly>
               <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
               <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
-                <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
+                <FilePdf class="h-[80%] w-auto text-3xl sm:text-4xl text-gray-400" />
                 <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
               </div>
             </ClientOnly>
@@ -848,7 +848,7 @@
             <ClientOnly>
               <PdfViewer v-if="pdfBlobUrl" :src="pdfBlobUrl" :style="pdfViewerStyle" />
               <div v-else class="text-center py-8 flex-1 flex items-center justify-center">
-                <i class="h-[80%] pi pi-file-pdf text-3xl sm:text-4xl text-gray-400"></i>
+                <FilePdf class="h-[80%] w-auto text-3xl sm:text-4xl text-gray-400" />
                 <p class="text-sm sm:text-base text-gray-600 mt-2">No PDF available for preview.</p>
               </div>
             </ClientOnly>
@@ -902,7 +902,7 @@
               <!-- Special recommendation for new users -->
               <div v-if="showSpecialUploadMessaging" class="mt-4 p-3 bg-brand-highlight/10 rounded-lg border border-brand-highlight/20">
                 <div class="flex items-center gap-2 mb-2">
-                  <i class="pi pi-lightbulb text-brand-highlight text-lg"></i>
+                  <Lightbulb class="w-4 h-4 sm:w-5 sm:h-5 text-brand-highlight" />
                   <span class="font-semibold text-brand-highlight font-architects-daughter">💡 A little tip from Savta</span>
                 </div>
                 <p class="text-sm text-brand-primary">
@@ -962,7 +962,7 @@
           <div v-if="failedFiles.length > 0" class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border-2 border-red-200 shadow-lg">
             <div class="flex items-center gap-3 mb-4">
               <div class="w-12 h-12 bg-gradient-to-br from-red-100 to-orange-100 rounded-full flex items-center justify-center shadow-lg">
-                <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
+                <AlertTriangle class="w-5 h-5 text-red-600" />
               </div>
               <div>
                 <h4 class="text-xl font-bold text-red-800">😔 Preparation Failed</h4>
@@ -976,7 +976,7 @@
                   :key="file.name"
                   class="flex items-center gap-2 text-sm text-red-700"
                 >
-                  <i class="pi pi-times text-red-600"></i>
+                  <Times class="w-4 h-4 text-red-600" />
                   <span class="font-medium">{{ file.name }}</span>
                   <span class="text-xs text-red-500">({{ file.error }})</span>
                 </div>
@@ -1005,7 +1005,7 @@
               class="bg-brand-dialog-edit text-white font-bold rounded px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="selectFiles"
             >
-              <i class="pi pi-sparkles mr-2"></i>
+              <SparklesIcon class="w-4 h-4 mr-2" />
               🌸 Choose Photos 🌸
             </button>
             <button
@@ -1014,7 +1014,7 @@
               class="bg-brand-secondary text-white font-bold rounded px-3 py-2 text-xs shadow-lg transition-all duration-200 w-full sm:w-auto"
               @click="finishUpload"
             >
-              <i class="pi pi-check mr-2"></i>
+              <Check class="w-4 h-4 mr-2" />
               <span v-if="shouldOpenWizardAfterUpload">Continue to Magic Memory</span>
               <span v-else>Continue</span>
             </button>

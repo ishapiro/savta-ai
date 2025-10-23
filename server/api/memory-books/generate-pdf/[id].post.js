@@ -4,6 +4,7 @@
 import { PDFDocument, rgb, degrees } from 'pdf-lib'
 import sharp from 'sharp'
 import smartcropGm from 'smartcrop-gm'
+import { promises as fs } from 'fs'
 
 import { generateFingerprintsForAssets } from '../../../utils/generate-fingerprint.js'
 import { renderTextToImage, getPdfFallbackConfig, createCaptionImage } from '../../../utils/text-renderer.js'
@@ -893,6 +894,43 @@ export default defineEventHandler(async (event) => {
       return false
     }
 
+    // Helper function to calculate maximum crop dimensions that fit target aspect ratio
+    // This consolidates the duplicate aspect ratio calculation logic
+    const calculateMaxCrop = (imageWidth, imageHeight, targetAspectRatio, aspectRatioDifference) => {
+      let maxCropWidth, maxCropHeight
+      const imageAspectRatio = imageWidth / imageHeight
+      
+      if (aspectRatioDifference > 0.3) {
+        // Aspect ratios are very different (>30% difference) - use conservative cropping
+        // Prioritize preserving the entire image over perfect aspect ratio matching
+        console.log(`🔄 Large aspect ratio difference detected (${(aspectRatioDifference * 100).toFixed(1)}%) - using conservative cropping`)
+        
+        if (imageAspectRatio > targetAspectRatio) {
+          // Image is wider than target - crop width conservatively
+          maxCropHeight = imageHeight
+          maxCropWidth = Math.min(imageWidth, maxCropHeight * targetAspectRatio * 1.2) // 20% more lenient
+        } else {
+          // Image is taller than target - crop height conservatively
+          maxCropWidth = imageWidth
+          maxCropHeight = Math.min(imageHeight, maxCropWidth / targetAspectRatio * 1.2) // 20% more lenient
+        }
+      } else {
+        // Aspect ratios are similar - use standard cropping
+        console.log(`🔄 Similar aspect ratios - using standard cropping`)
+        if (imageAspectRatio > targetAspectRatio) {
+          // Image is wider than target - use full height
+          maxCropHeight = imageHeight
+          maxCropWidth = maxCropHeight * targetAspectRatio
+        } else {
+          // Image is taller than target - use full width
+          maxCropWidth = imageWidth
+          maxCropHeight = maxCropWidth / targetAspectRatio
+        }
+      }
+      
+      return { maxCropWidth, maxCropHeight }
+    }
+
     // Helper function to perform smart cropping
     async function smartCropImage(imageBuffer, targetWidth, targetHeight, storageUrl = null, photoIndex = null, totalPhotos = null, assetId = null, userId = null) {
       try {
@@ -984,8 +1022,18 @@ export default defineEventHandler(async (event) => {
                 } else if (facesData && facesData.length > 0) {
                   console.log(`✅ Database: Found ${facesData.length} faces for cropping`)
                   
+                  // IMPROVEMENT: Filter faces by confidence threshold to avoid low-confidence detections
+                  const confidenceThreshold = 0.80 // Only include faces with ≥80% confidence
+                  const highConfidenceFaces = facesData.filter(face => 
+                    face.confidence >= confidenceThreshold
+                  )
+                  
+                  if (highConfidenceFaces.length < facesData.length) {
+                    console.log(`🔍 Confidence filtering: ${facesData.length} faces → ${highConfidenceFaces.length} high-confidence faces (threshold: ${(confidenceThreshold * 100).toFixed(0)}%)`)
+                  }
+                  
                   // Convert database bounding boxes to smartcrop-gm boost format with padding
-                  faceBoosts = facesData.map(face => {
+                  faceBoosts = highConfidenceFaces.map(face => {
                     const box = face.bounding_box
                     
                     // Add padding around the face bounding box to prevent cutting off heads
@@ -1101,6 +1149,14 @@ export default defineEventHandler(async (event) => {
               if (allFacesInTopHalf) {
                 topBuffer = Math.max(topBuffer * 1.5, 150) // Increase buffer by 50% or minimum 150px
                 console.log(`🔄 All faces in top half detected - increasing top buffer from ${Math.max(faceHeight * 0.5, 100)} to ${topBuffer}px`)
+              }
+              
+              // IMPROVEMENT: Add maximum buffer cap to prevent over-preservation
+              // This prevents extremely large buffers on large faces from dominating the crop
+              const maxBufferCap = Math.max(processedMetadata.height * 0.2, 200) // 20% of image height or 200px, whichever is larger
+              if (topBuffer > maxBufferCap) {
+                console.log(`🔄 Buffer cap applied: ${topBuffer}px → ${maxBufferCap}px to maintain useful crop area`)
+                topBuffer = maxBufferCap
               }
               
               const maxAllowedY = Math.max(0, highestFacePixelY - topBuffer)
@@ -1367,9 +1423,13 @@ export default defineEventHandler(async (event) => {
             // Clean up temporary files
             try {
               await sharp(tempInputPath).metadata() // Check if file exists
-              await sharp(tempInputPath).toFile('/dev/null') // Delete by overwriting
+              await fs.unlink(tempInputPath) // Properly delete the temporary file
+              console.log(`🧹 Temporary file cleaned up: ${tempInputPath}`)
             } catch (e) {
-              // File might already be deleted
+              // File might already be deleted or permission error - this is okay
+              if (e.code !== 'ENOENT') {
+                console.warn(`⚠️ Could not delete temporary file ${tempInputPath}:`, e.message)
+              }
             }
           } else {
             throw new Error('Smartcrop-gm failed to return valid crop area')
