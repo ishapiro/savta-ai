@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-brand-background p-4 no-zoom mobile-no-pan">
+  <div class="min-h-screen bg-brand-background p-4 no-zoom">
     <div class="max-w-7xl mx-auto">
       <!-- Clean Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -1818,13 +1818,22 @@ watch(showCreateModal, (newValue) => {
 watch(showDetailsModal, (isVisible) => {
   if (typeof window !== 'undefined') {
     if (isVisible) {
-      // Freeze scroll on both html and body for better cross-browser support
-      document.documentElement.style.overflow = 'hidden'
+      // Store current scroll position
+      const scrollY = window.scrollY
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
       document.body.style.overflow = 'hidden'
     } else {
-      // Restore scroll when dialog closes
-      document.documentElement.style.overflow = ''
+      // Restore scroll position and remove fixed positioning
+      const scrollY = document.body.style.top
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
       document.body.style.overflow = ''
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1)
+      }
     }
   }
 })
@@ -2160,8 +2169,16 @@ onUnmounted(() => {
     
     // Restore scroll on all devices when component unmounts
     if (typeof window !== 'undefined') {
-      document.documentElement.style.overflow = ''
+      // Restore scroll position and remove any fixed positioning
+      const scrollY = document.body.style.top
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
       document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1)
+      }
     }
   }
 })
@@ -2175,35 +2192,37 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #fef9c3 0%, #f3e8ff 100%);
 }
 
-/* Mobile-specific styles to disable side-by-side panning */
+/* Mobile-specific styles to prevent horizontal scrolling and fix touch issues */
 @media (max-width: 640px) {
-  .mobile-no-pan {
-    touch-action: pan-y !important;
-    -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior: contain !important;
+  body {
+    overflow-x: hidden;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
   
-  .mobile-no-pan * {
-    touch-action: pan-y !important;
+  /* Ensure all elements allow touch events to bubble up */
+  * {
+    touch-action: pan-y;
   }
   
-  /* Ensure modals and dialogs are not affected by panning */
-  .mobile-no-pan .p-dialog,
-  .mobile-no-pan .p-dialog-mask,
-  .mobile-no-pan .p-dialog-content {
-    touch-action: auto !important;
-    overscroll-behavior: auto !important;
+  /* Ensure modals and dialogs work properly */
+  .p-dialog,
+  .p-dialog-mask,
+  .p-dialog-content {
+    touch-action: auto;
+    overscroll-behavior: auto;
   }
   
-  /* Prevent horizontal scrolling on the main container */
-  .mobile-no-pan {
-    overflow-x: hidden !important;
+  /* Fix for elements that might be blocking touch events */
+  button, input, select, textarea {
+    touch-action: manipulation;
   }
   
-  /* Allow vertical scrolling in specific areas only */
-  .mobile-no-pan .overflow-y-auto {
-    touch-action: pan-y !important;
-    -webkit-overflow-scrolling: touch !important;
+  /* Ensure scrollable areas work properly */
+  .overflow-y-auto,
+  .overflow-auto {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

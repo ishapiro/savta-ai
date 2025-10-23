@@ -10,8 +10,7 @@
           class="w-full h-full relative"
           :class="[
             shouldPositionAtTop ? 'flex items-start justify-center' : 'flex items-center justify-center',
-            isPanningAvailable ? 'cursor-grab active:cursor-grabbing' : 'cursor-default',
-            { 'touch-none': isPanningAvailable && isMobile }
+            isPanningAvailable ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
           ]"
           @vue:mounted="logPositioningClasses"
           @mousedown="startPan"
@@ -27,8 +26,12 @@
           <!-- JPG Image Display -->
           <div v-if="isJpgImage"
                ref="imageContainer"
-               class="w-full h-full flex items-center justify-center pt-5"
-               :class="{ 'mb-4': !isMobile }"
+               class="w-full h-full flex items-center justify-center"
+               :class="{ 
+                 'pt-5': !isMobile,
+                 'pt-2': isMobile,
+                 'mb-4': !isMobile 
+               }"
           >
             <img 
               :src="props.src"
@@ -47,7 +50,7 @@
           <!-- PDF Document Display -->
           <div v-else
                ref="pdfContainer"
-               class="flex"
+               class="flex w-full h-full"
                :class="{ 'mb-4': !isMobile }"
                :style="pdfContainerStyle"
           >
@@ -275,7 +278,11 @@ const canShare = computed(() => {
 
 // Check if device is mobile
 const isMobile = computed(() => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  if (process.client) {
+    // Use more reliable mobile detection
+    return window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  }
+  return false
 })
 
 // Check if panning is available (content larger than container)
@@ -316,12 +323,12 @@ const pdfContainerStyle = computed(() => {
   
   // Use a fixed base size that doesn't change with scale
   // The scale will be applied to the PDF content inside, not the container
-  const baseWidth = 750 // Increased from 600 to 750 (25% larger)
+  const baseWidth = isMobile.value ? 600 : 750 // Smaller base size for mobile
   const baseHeight = baseWidth / targetAspectRatio // Maintain 8.5:11 ratio
   
   // Ensure minimum and maximum sizes
-  const minWidth = 400
-  const maxWidth = 1200
+  const minWidth = isMobile.value ? 300 : 400
+  const maxWidth = isMobile.value ? 800 : 1200
   const minHeight = minWidth / targetAspectRatio
   const maxHeight = maxWidth / targetAspectRatio
   
@@ -388,8 +395,16 @@ function onImageLoaded(event) {
   console.log('🔍 Image loaded:', {
     dimensions: `${actualWidth}x${actualHeight}px`,
     physicalSize: `${(actualWidth/300).toFixed(1)}" x ${(actualHeight/300).toFixed(1)}"`,
-    note: 'CSS object-fit: contain handles the fitting automatically'
+    note: 'CSS object-fit: contain handles the fitting automatically',
+    isMobile: isMobile.value,
+    containerSize: imageContainer.value ? imageContainer.value.getBoundingClientRect() : 'no container'
   })
+  
+  // Ensure proper scaling on mobile
+  if (isMobile.value) {
+    scale.value = 1.0
+    defaultScale.value = 1.0
+  }
 }
 
 // Note: calculateImageScale function removed - no longer needed!
@@ -453,10 +468,10 @@ function calculateInitialScale() {
   
   // Actual usable content area within the dialog (accounting for all chrome)
   // Reduced to allow PDFs to display larger
-  const DIALOG_HEADER = 40
-  const DIALOG_CONTROLS = 60
-  const DIALOG_PADDING = 20 // Total padding top and bottom
-  const SIDE_MARGIN = 10 // Additional margin for spacing
+  const DIALOG_HEADER = isMobile.value ? 20 : 40
+  const DIALOG_CONTROLS = isMobile.value ? 40 : 60
+  const DIALOG_PADDING = isMobile.value ? 10 : 20 // Total padding top and bottom
+  const SIDE_MARGIN = isMobile.value ? 5 : 10 // Additional margin for spacing
   
   const availableWidth = (windowWidth * 0.95) - SIDE_MARGIN
   const availableHeight = (windowHeight * 0.95) - DIALOG_HEADER - DIALOG_CONTROLS - DIALOG_PADDING
@@ -483,7 +498,12 @@ function calculateInitialScale() {
   
   // For JPG images, CSS object-fit: contain handles fitting automatically
   if (isJpgImage.value) {
-    console.log('🔍 JPG: Using CSS object-fit for natural fitting (scale = 1.0)')
+    console.log('🔍 JPG: Using CSS object-fit for natural fitting')
+    // On mobile, ensure the image fits properly
+    if (isMobile.value) {
+      scale.value = 1.0
+      defaultScale.value = 1.0
+    }
     return
   }
   
@@ -1206,5 +1226,24 @@ img, div {
   -ms-user-select: none !important;
   user-select: none !important;
   -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Mobile-specific fixes for PDF/image display */
+@media (max-width: 767px) {
+  .w-full.h-full {
+    min-height: 50vh !important;
+  }
+  
+  img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+  }
+  
+  .vue-pdf-embed {
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
 }
 </style>
