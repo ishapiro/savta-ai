@@ -472,6 +472,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { useToast } from 'primevue/usetoast';
 // Using PrimeVue icons instead of Heroicons
 
 // Use the person management composable
@@ -492,6 +493,9 @@ const user = useSupabaseUser();
 
 // Get Supabase client
 const supabase = useNuxtApp().$supabase;
+
+// Get toast instance at component setup level
+const toast = useToast();
 
 // Modal states
 const showCreatePersonModal = ref(false);
@@ -701,6 +705,9 @@ const handleFaceAssignment = async ({ faceId, personGroupId, confidence }) => {
     
     console.log('✅ Face assigned successfully');
     
+    // Remove the assigned face from the modal's array
+    facesToAssign.value = facesToAssign.value.filter(face => face.id !== faceId);
+    
     // Refresh data
     await Promise.all([
       fetchPersonGroups(),
@@ -740,6 +747,9 @@ const handleCreatePersonFromFace = async ({ faceId, personName, displayName, rel
     });
     
     console.log('✅ Person created and face assigned successfully');
+    
+    // Remove the assigned face from the modal's array
+    facesToAssign.value = facesToAssign.value.filter(face => face.id !== faceId);
     
     // Refresh data
     await Promise.all([
@@ -822,6 +832,9 @@ const handleSkipFacePermanently = async (faceId) => {
     
     console.log('✅ Face permanently skipped');
     
+    // Remove the skipped face from the modal's array
+    facesToAssign.value = facesToAssign.value.filter(face => face.id !== faceId);
+    
     // Refresh unassigned faces to remove the skipped face
     await fetchUnassignedFaces();
   } catch (error) {
@@ -876,24 +889,18 @@ const searchSimilarFaces = async () => {
       searchProgress.value.currentFace = face;
       
       try {
-        console.log(`🔍 Searching for matches for face ${face.id} (${i + 1}/${unassignedFaces.value.length})`);
+        console.log(`🔍 Searching for matches for face ${face.id} (Rekognition ID: ${face.rekognition_face_id}) (${i + 1}/${unassignedFaces.value.length})`);
         
-        // Call the index-face-rekognition endpoint which will use SearchFaces
-        // to find similar faces and auto-assign high confidence matches
-        const result = await $fetch('/api/ai/index-face-rekognition', {
+        // Call the search-face-matches endpoint to find similar faces
+        // This searches Rekognition for matches to this already-indexed face
+        const result = await $fetch('/api/ai/search-face-matches', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${accessToken}`
           },
           body: {
-            imageUrl: face.assets?.storage_url,
-            assetId: face.asset_id,
-            reprocessOptions: {
-              faces: true,
-              captions: false,
-              tags: false,
-              location: false
-            }
+            faceId: face.id,
+            rekognitionFaceId: face.rekognition_face_id
           }
         });
         
@@ -935,7 +942,6 @@ const searchSimilarFaces = async () => {
     }
     
     // Show result message
-    const toast = useToast();
     if (toast) {
       if (wasAborted) {
         toast.add({
@@ -944,19 +950,31 @@ const searchSimilarFaces = async () => {
           detail: `Stopped after processing ${processedCount} face(s). ${searchProgress.value.autoAssigned} auto-assigned, ${searchProgress.value.needsReview} need your review.`,
           life: 5000
         });
-      } else if (searchProgress.value.autoAssigned > 0 || searchProgress.value.needsReview > 0) {
+      } else if (searchProgress.value.autoAssigned > 0) {
+        // Some were auto-assigned
         toast.add({
           severity: 'success',
           summary: 'Search Complete',
-          detail: `Found ${searchProgress.value.autoAssigned + searchProgress.value.needsReview} match(es). ${searchProgress.value.autoAssigned} auto-assigned, ${searchProgress.value.needsReview} need your review.`,
+          detail: `${searchProgress.value.autoAssigned} face(s) auto-assigned! ${searchProgress.value.needsReview > 0 ? `${searchProgress.value.needsReview} need your review.` : ''}`,
+          life: 5000
+        });
+      } else if (searchProgress.value.needsReview > 0) {
+        // Found matches but need confirmation
+        toast.add({
+          severity: 'info',
+          summary: 'Matches Found',
+          detail: `Found ${searchProgress.value.needsReview} potential match(es) that need your confirmation.`,
           life: 5000
         });
       } else {
+        // No matches at all - likely no faces assigned yet
         toast.add({
           severity: 'info',
           summary: 'No Matches Found',
-          detail: 'No similar faces found. Try assigning more faces manually first.',
-          life: 5000
+          detail: personGroups.value.length === 0 
+            ? 'Please assign a few faces to people first, then search again.' 
+            : 'No similar faces found in your collection yet.',
+          life: 6000
         });
       }
     }
@@ -966,7 +984,6 @@ const searchSimilarFaces = async () => {
     // Close progress dialog on error
     showSearchProgressDialog.value = false;
     
-    const toast = useToast();
     if (toast) {
       toast.add({
         severity: 'error',

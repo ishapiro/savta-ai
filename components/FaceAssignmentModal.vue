@@ -108,6 +108,20 @@ watch(() => props.visible, (newVal) => {
   }
 })
 
+// Watch for faces array changes - if current face is removed, we're already on next face
+watch(() => props.faces.length, (newLength, oldLength) => {
+  if (newLength < oldLength && newLength === 0) {
+    // All faces processed - close modal
+    emit('update:visible', false)
+  } else if (newLength < oldLength) {
+    // A face was removed (processed), currentIndex now points to next face
+    // Just reset the mode and selection for the new current face
+    assignmentMode.value = hasSuggestions.value ? 'suggest' : 'create'
+    selectedPersonId.value = null
+    errorMessage.value = ''
+  }
+})
+
 // Navigate to next face
 const nextFace = () => {
   if (currentIndex.value < props.faces.length - 1) {
@@ -131,11 +145,11 @@ const confirmSuggestion = async () => {
   try {
     await emit('assign', {
       faceId: currentFace.value.id,
-      personGroupId: bestSuggestion.value.person.id,
+      personGroupId: bestSuggestion.value.personId,
       confidence: bestSuggestion.value.similarity / 100
     })
     
-    nextFace()
+    // Parent will remove this face from array, watcher will handle UI update
   } catch (error) {
     console.error('Error confirming suggestion:', error)
     errorMessage.value = 'Failed to assign face. Please try again.'
@@ -166,7 +180,7 @@ const assignToSelectedPerson = async () => {
       confidence: 1.0
     })
     
-    nextFace()
+    // Parent will remove this face from array, watcher will handle UI update
   } catch (error) {
     console.error('Error assigning to person:', error)
     errorMessage.value = 'Failed to assign face. Please try again.'
@@ -198,7 +212,7 @@ const createNewPerson = async () => {
     newPersonDisplayName.value = ''
     newPersonRelationship.value = ''
     
-    nextFace()
+    // Parent will remove this face from array, watcher will handle UI update
   } catch (error) {
     console.error('Error creating person:', error)
     errorMessage.value = 'Failed to create person. Please try again.'
@@ -210,13 +224,14 @@ const createNewPerson = async () => {
 // Skip face (temporary - face will appear again later)
 const skipFace = () => {
   emit('skip', currentFace.value.id)
+  // For temporary skip, manually advance since face stays in array
   nextFace()
 }
 
 // Skip face permanently (will never ask about this face again)
 const skipFacePermanently = () => {
   emit('skip-permanently', currentFace.value.id)
-  nextFace()
+  // Parent will remove this face from array, watcher will handle UI update
 }
 
 // Remove assignment (for 'change' mode)
@@ -295,13 +310,18 @@ const closeModal = () => {
           <div class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded z-10">
             {{ Math.round(currentFace.confidence * 100) }}% confidence
           </div>
+          
+          <!-- Debug Info: Asset ID -->
+          <div class="absolute bottom-2 left-2 bg-blue-900 bg-opacity-75 text-white text-xs px-2 py-1 rounded font-mono z-10" style="font-size: 10px;">
+            Asset: {{ currentFace.asset_id || currentFace.assets?.id || 'N/A' }}
+          </div>
         </div>
       </div>
 
       <!-- Suggestion Mode -->
       <div v-if="assignmentMode === 'suggest' && hasSuggestions" class="space-y-4">
         <div class="text-center">
-          <h4 class="text-lg font-semibold text-gray-900 mb-2">Is this {{ bestSuggestion.person.name }}?</h4>
+          <h4 class="text-lg font-semibold text-gray-900 mb-2">Is this {{ bestSuggestion.name }}?</h4>
           <p class="text-sm text-gray-600">
             {{ Math.round(bestSuggestion.similarity) }}% match confidence
           </p>
