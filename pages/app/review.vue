@@ -448,6 +448,21 @@
             <img v-if="detailsAsset.thumbnail_url || detailsAsset.storage_url" :src="detailsAsset.thumbnail_url || detailsAsset.storage_url" :alt="detailsAsset.user_caption || 'Family photo'" class="w-full max-w-xs rounded-xl mb-4" loading="lazy" />
             <i v-else class="pi pi-image text-4xl text-brand-primary/40 flex items-center justify-center h-48"></i>
           </div>
+          <!-- Asset ID - Debug Info -->
+          <div class="bg-gray-100 rounded-lg p-3 border border-gray-300">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Asset ID</label>
+            <div class="text-xs font-mono text-gray-800 break-all">{{ detailsAsset.id }}</div>
+          </div>
+          <!-- Face Vector - Debug Info -->
+          <div v-if="detailsAsset.face_vector" class="bg-gray-100 rounded-lg p-3 border border-gray-300">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Face Vector (128-D embedding)</label>
+            <div class="text-xs font-mono text-gray-800 break-all max-h-24 overflow-y-auto bg-white p-2 rounded">
+              {{ Array.isArray(detailsAsset.face_vector) ? JSON.stringify(detailsAsset.face_vector.slice(0, 10)) + '...' : String(detailsAsset.face_vector).substring(0, 100) + '...' }}
+            </div>
+            <div class="text-xs text-gray-500 mt-1">
+              Vector length: {{ Array.isArray(detailsAsset.face_vector) ? detailsAsset.face_vector.length : 'unknown' }}
+            </div>
+          </div>
           <div v-if="detailsAsset.ai_caption">
             <label class="block text-sm font-semibold text-brand-primary mb-1">AI Caption</label>
             <div class="italic text-sm text-brand-primary/70 bg-brand-navigation/20 rounded p-2 border border-brand-primary/20">"{{ detailsAsset.ai_caption }}"</div>
@@ -737,39 +752,23 @@
         </div>
       </Dialog>
 
-      <!-- Rerun AI Dialog -->
-      <Dialog v-model:visible="showRerunAIDialog" modal :closable="true" :dismissableMask="true" header="Rerun AI Processing" class="w-full max-w-md mx-4">
-        <div class="p-4">
-          <div class="mb-4">
-            <i class="pi pi-exclamation-triangle text-orange-500 text-2xl mb-2"></i>
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">Rerun AI on All Photos</h3>
-            <p class="text-gray-600 mb-4">
-              This will reprocess all photos with the latest AI analysis, including improved location detection and caption generation.
-            </p>
-            <p class="text-sm text-gray-500 mb-4">
-              <strong>Estimated time:</strong> About 10 seconds per image. You have {{ stats.total }} photos to process.
-            </p>
-          </div>
+      <!-- Rerun AI Options Dialog (New) -->
+      <RerunAIOptionsDialog
+        v-model:visible="showRerunAIDialog"
+        :totalPhotos="stats.total"
+        @start="handleRerunAIWithOptions"
+      />
 
-          <div class="flex justify-end gap-2">
-            <button
-              class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-              @click="showRerunAIDialog = false"
-              :disabled="rerunningAI"
-            >
-              Cancel
-            </button>
-            <button
-              class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors"
-              @click="rerunAIOnAllPhotos"
-              :disabled="rerunningAI"
-            >
-              <i class="pi pi-refresh mr-2" :class="{ 'animate-spin': rerunningAI }"></i>
-              Start Processing
-            </button>
-          </div>
-        </div>
-      </Dialog>
+      <!-- Face Assignment Modal -->
+      <FaceAssignmentModal
+        v-model:visible="showFaceAssignmentModal"
+        :faces="facesNeedingAssignment"
+        :existingPeople="personGroups"
+        @assign="handleFaceAssignment"
+        @create-person="handleCreatePersonFromFace"
+        @remove="handleRemoveFaceAssignment"
+        @skip="handleSkipFace"
+      />
 
       <!-- AI Processing Progress Dialog -->
       <Dialog 
@@ -866,6 +865,7 @@ import { useToast } from 'primevue/usetoast'
 
 const toast = useToast()
 const db = useDatabase()
+const user = useSupabaseUser()
 
 // Reactive data
 const assets = ref([])
@@ -885,6 +885,12 @@ const rerunProgress = ref({
   currentAsset: null
 })
 const startTime = ref(null)
+
+// Face assignment state (New Rekognition-based)
+const showFaceAssignmentModal = ref(false)
+const facesNeedingAssignment = ref([])
+const personGroups = ref([])
+const reprocessOptions = ref({})
 
 // Edit dialog data
 const showEditDialog = ref(false)
@@ -1570,6 +1576,290 @@ const rerunAIOnAllPhotos = async () => {
     }
     startTime.value = null
   }
+}
+
+// New Rekognition-based AI reprocessing with options
+const handleRerunAIWithOptions = async (options) => {
+  try {
+    rerunningAI.value = true
+    reprocessOptions.value = options
+    showProgressDialog.value = true
+    
+    // Filter assets based on onlyMissing option
+    let assetsToProcess = assets.value
+    
+    if (options.onlyMissing) {
+      assetsToProcess = assets.value.filter(asset => {
+        let needsProcessing = false
+        
+        // Check if faces are selected and asset has no faces detected
+        if (options.faces) {
+          // Asset needs face processing if it has no faces table entry or no face assignments
+          // We'll check this during processing, so include all for now
+          needsProcessing = true
+        }
+        
+        // Check if captions are selected and asset has no AI caption
+        if (options.captions && (!asset.ai_caption || asset.ai_caption.trim() === '')) {
+          needsProcessing = true
+        }
+        
+        // Check if tags are selected and asset has no tags
+        if (options.tags && (!asset.tags || asset.tags.length === 0)) {
+          needsProcessing = true
+        }
+        
+        // Check if location is selected and asset has no location data
+        if (options.location && (!asset.city && !asset.state && !asset.country)) {
+          needsProcessing = true
+        }
+        
+        return needsProcessing
+      })
+      
+      console.log(`Filtering: ${assetsToProcess.length} of ${assets.value.length} photos need processing`)
+    }
+    
+    // Initialize progress
+    rerunProgress.value = {
+      current: 0,
+      total: assetsToProcess.length,
+      currentAsset: null
+    }
+    startTime.value = Date.now()
+    
+    let facesNeedingInput = []
+    let skippedCount = 0
+    
+    for (let i = 0; i < assetsToProcess.length; i++) {
+      const asset = assetsToProcess[i]
+      
+      rerunProgress.value.current = i + 1
+      rerunProgress.value.currentAsset = asset.file_name
+      
+      try {
+        console.log(`Processing asset ${i + 1}/${assetsToProcess.length}: ${asset.id}`)
+        
+        // Check if this specific asset needs face processing when onlyMissing is true
+        let shouldProcessFaces = options.faces
+        if (options.onlyMissing && options.faces) {
+          // Check if asset already has face data (we'll let the API handle this check)
+          shouldProcessFaces = true
+        }
+        
+        // Call the appropriate reprocessing based on options
+        if (shouldProcessFaces) {
+          // Call new index-face-rekognition endpoint
+          const supabaseClient = useNuxtApp().$supabase
+          const { data: sessionData } = await supabaseClient.auth.getSession()
+          const accessToken = sessionData.session?.access_token
+          
+          if (accessToken) {
+            const result = await $fetch('/api/ai/index-face-rekognition', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${accessToken}`
+              },
+              body: {
+                imageUrl: asset.storage_url,
+                assetId: asset.id,
+                reprocessOptions: options
+              }
+            })
+            
+            // Collect faces that need user input
+            if (result.needsUserInput && result.needsUserInput.length > 0) {
+              facesNeedingInput.push(...result.needsUserInput)
+            }
+          }
+        }
+        
+        // Handle other reprocessing options (captions, tags, location)
+        if (options.captions || options.tags || options.location) {
+          await db.assets.rerunAI(asset.id)
+        }
+        
+        // Get updated asset
+        const { data: updatedAsset, error } = await useNuxtApp().$supabase
+          .from('assets')
+          .select('*')
+          .eq('id', asset.id)
+          .single()
+        
+        if (!error && updatedAsset) {
+          const index = assets.value.findIndex(a => a.id === asset.id)
+          if (index !== -1) {
+            assets.value[index] = updatedAsset
+          }
+        }
+        
+      } catch (error) {
+        console.error(`Error processing asset ${asset.id}:`, error)
+      }
+    }
+    
+    // Close progress dialog
+    showProgressDialog.value = false
+    
+    // If there are faces needing assignment, show the modal
+    if (facesNeedingInput.length > 0) {
+      // Load person groups
+      const supabaseClient = useNuxtApp().$supabase
+      const { data: people } = await supabaseClient
+        .from('person_groups')
+        .select('*')
+        .eq('user_id', user.value?.id)
+        .eq('deleted', false)
+      
+      personGroups.value = people || []
+      facesNeedingAssignment.value = facesNeedingInput
+      showFaceAssignmentModal.value = true
+    }
+    
+    // Recalculate stats
+    calculateStats()
+    
+    // Show success toast
+    const toast = useToast()
+    if (toast) {
+      const processedMessage = options.onlyMissing 
+        ? `Processed ${assetsToProcess.length} of ${assets.value.length} photos (skipped ${assets.value.length - assetsToProcess.length} with existing data).`
+        : `Reprocessed ${assetsToProcess.length} photos.`
+      
+      const facesMessage = facesNeedingInput.length > 0 
+        ? ` ${facesNeedingInput.length} faces need your review.`
+        : ''
+      
+      toast.add({
+        severity: 'success',
+        summary: 'Processing Complete',
+        detail: processedMessage + facesMessage,
+        life: 5000
+      })
+    }
+    
+  } catch (error) {
+    console.error('Error in AI reprocessing:', error)
+    showProgressDialog.value = false
+    
+    const toast = useToast()
+    if (toast) {
+      toast.add({
+        severity: 'error',
+        summary: 'Processing Error',
+        detail: 'Failed to reprocess photos',
+        life: 3000
+      })
+    }
+  } finally {
+    rerunningAI.value = false
+    rerunProgress.value = {
+      current: 0,
+      total: 0,
+      currentAsset: null
+    }
+    startTime.value = null
+  }
+}
+
+// Handle face assignment to existing person
+const handleFaceAssignment = async ({ faceId, personGroupId, confidence }) => {
+  try {
+    const supabaseClient = useNuxtApp().$supabase
+    const { data: sessionData } = await supabaseClient.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+    
+    if (!accessToken) {
+      throw new Error('No access token available')
+    }
+    
+    await $fetch('/api/ai/assign-face-to-person', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: {
+        faceId,
+        personGroupId,
+        confidence
+      }
+    })
+    
+    console.log('✅ Face assigned successfully')
+  } catch (error) {
+    console.error('❌ Error assigning face:', error)
+    throw error
+  }
+}
+
+// Handle creating new person from face
+const handleCreatePersonFromFace = async ({ faceId, personName, displayName, relationship }) => {
+  try {
+    const supabaseClient = useNuxtApp().$supabase
+    const { data: sessionData } = await supabaseClient.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+    
+    if (!accessToken) {
+      throw new Error('No access token available')
+    }
+    
+    const result = await $fetch('/api/ai/create-person-from-face', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: {
+        faceId,
+        personName,
+        displayName,
+        relationship
+      }
+    })
+    
+    // Add new person to local list
+    if (result.person) {
+      personGroups.value.push(result.person)
+    }
+    
+    console.log('✅ Person created and face assigned successfully')
+  } catch (error) {
+    console.error('❌ Error creating person from face:', error)
+    throw error
+  }
+}
+
+// Handle removing face assignment
+const handleRemoveFaceAssignment = async (faceId) => {
+  try {
+    const supabaseClient = useNuxtApp().$supabase
+    const { data: sessionData } = await supabaseClient.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+    
+    if (!accessToken) {
+      throw new Error('No access token available')
+    }
+    
+    await $fetch('/api/ai/remove-face-assignment', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: {
+        faceId
+      }
+    })
+    
+    console.log('✅ Face assignment removed successfully')
+  } catch (error) {
+    console.error('❌ Error removing face assignment:', error)
+    throw error
+  }
+}
+
+// Handle skipping face
+const handleSkipFace = (faceId) => {
+  console.log('⏭️ Skipping face:', faceId)
+  // For now, just log it
 }
 
 // Details dialog functions

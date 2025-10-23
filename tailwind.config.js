@@ -18,109 +18,109 @@ export default {
         // Material Design 3 Color System
         brand: {
           // Primary - Material Dark Grey palette
-          primary: '#212121',           // Grey 900
-          'primary-light': '#616161',   // Grey 700
-          'primary-dark': '#424242',    // Grey 800
-          'primary-hover': '#424242',   // Use dark grey on hover
-          'primary-contrast': '#FFFFFF', // White text on primary
+          primary: '#212121',           // Very dark charcoal grey (Grey 900)
+          'primary-light': '#616161',   // Medium grey (Grey 700)
+          'primary-dark': '#424242',    // Dark charcoal grey (Grey 800)
+          'primary-hover': '#424242',   // Dark charcoal grey on hover
+          'primary-contrast': '#FFFFFF', // Pure white text on primary
           
           // Secondary - Material Teal
-          secondary: '#00796B',         // Material Teal 700
-          'secondary-light': '#26A69A', // Material Teal 400
-          'secondary-dark': '#00695C',  // Material Teal 800
-          'secondary-hover': '#00695C', // Darker on hover
-          'secondary-contrast': '#FFFFFF', // White text on secondary
+          secondary: '#00796B',         // Dark teal/cyan green (Teal 700)
+          'secondary-light': '#26A69A', // Medium teal/aqua (Teal 400)
+          'secondary-dark': '#00695C',  // Very dark teal (Teal 800)
+          'secondary-hover': '#00695C', // Very dark teal on hover
+          'secondary-contrast': '#FFFFFF', // Pure white text on secondary
           
           // Tertiary - Material Purple
-          tertiary: '#7B1FA2',          // Material Purple 700
-          'tertiary-light': '#AB47BC',  // Material Purple 400
-          'tertiary-dark': '#6A1B9A',   // Material Purple 800
+          tertiary: '#7B1FA2',          // Deep purple (Purple 700)
+          'tertiary-light': '#AB47BC',  // Medium bright purple (Purple 400)
+          'tertiary-dark': '#6A1B9A',   // Very dark purple (Purple 800)
           
           // Surface System
-          background: '#FAFAFA',        // Material Grey 50
+          background: '#FAFAFA',        // Very light grey, almost white (Grey 50)
           surface: '#FFFFFF',           // Pure white
-          'surface-variant': '#F5F5F5', // Material Grey 100
-          'surface-hover': '#F5F5F5',   // Light gray on hover
-          'surface-border': '#E0E0E0',  // Material Grey 300
+          'surface-variant': '#F5F5F5', // Very light grey (Grey 100)
+          'surface-hover': '#F5F5F5',   // Very light grey on hover
+          'surface-border': '#E0E0E0',  // Light grey border (Grey 300)
           
           // Legacy aliases for compatibility
-          header: '#1976D2',            // Maps to primary
-          navigation: '#F5F5F5',        // Maps to surface-variant
-          highlight: '#E91E63',         // Material Pink 500
-          accent: '#FB8C00',            // Material Orange 600
-          'accent-light': '#FFB74D',    // Material Orange 300
+          header: '#1976D2',            // Medium blue (Blue 700) - maps to primary
+          navigation: '#F5F5F5',        // Very light grey - maps to surface-variant
+          highlight: '#E91E63',         // Vibrant pink (Pink 500)
+          accent: '#FB8C00',            // Bright orange (Orange 600)
+          'accent-light': '#FFB74D',    // Light peachy orange (Orange 300)
           card: '#FFFFFF',              // Pure white
           
           // Text System
-          'text-primary': '#212121',    // Material Grey 900
-          'text-secondary': '#757575',  // Material Grey 600
-          'text-disabled': '#9E9E9E',   // Material Grey 500
-          'text-hint': '#BDBDBD',       // Material Grey 400
-          'text-color': '#212121',      // Legacy alias
-          'text-muted': '#757575',      // Legacy alias
+          'text-primary': '#212121',    // Very dark charcoal grey (Grey 900)
+          'text-secondary': '#757575',  // Medium grey (Grey 600)
+          'text-disabled': '#9E9E9E',   // Light grey (Grey 500)
+          'text-hint': '#BDBDBD',       // Very light grey (Grey 400)
+          'text-color': '#212121',      // Very dark charcoal grey - legacy alias
+          'text-muted': '#757575',      // Medium grey - legacy alias
           
           // Semantic Colors
-          error: '#D32F2F',             // Material Red 700
-          'error-light': '#EF5350',     // Material Red 400
-          'error-dark': '#C62828',      // Material Red 800
+          error: '#D32F2F',             // Dark red (Red 700)
+          'error-light': '#EF5350',     // Medium bright red (Red 400)
+          'error-dark': '#C62828',      // Very dark red (Red 800)
           
-          warning: '#F57C00',           // Material Orange 700
-          'warning-light': '#FF9800',   // Material Orange 500
-          'warning-dark': '#E65100',    // Material Orange 900
+          warning: '#F57C00',           // Dark orange (Orange 700)
+          'warning-light': '#FF9800',   // Bright orange (Orange 500)
+          'warning-dark': '#E65100',    // Very dark orange/burnt orange (Orange 900)
           
-          success: '#388E3C',           // Material Green 700
-          'success-light': '#66BB6A',   // Material Green 400
-          'success-dark': '#2E7D32',    // Material Green 800
+          success: '#388E3C',           // Dark green (Green 700)
+          'success-light': '#66BB6A',   // Medium bright green (Green 400)
+          'success-dark': '#2E7D32',    // Very dark green (Green 800)
           
-          info: '#0288D1',              // Material Light Blue 700
-          'info-light': '#29B6F6',      // Material Light Blue 400
-          'info-dark': '#01579B',       // Material Light Blue 900
+          info: '#0288D1',              // Medium blue (Light Blue 700)
+          'info-light': '#29B6F6',      // Bright sky blue (Light Blue 400)
+          'info-dark': '#01579B',       // Very dark blue (Light Blue 900)
           
           // Action Colors
-          flash: '#E53935',             // Material Red 600
+          flash: '#E53935',             // Vibrant red (Red 600)
           
           // Dialog System
-          'dialog-cancel': '#9E9E9E',          // Material Grey 500
-          'dialog-cancel-hover': '#757575',    // Material Grey 600
-          'dialog-edit': '#1976D2',            // Primary
-          'dialog-edit-hover': '#1565C0',      // Primary dark
-          'dialog-save': '#388E3C',            // Success
-          'dialog-save-hover': '#2E7D32',      // Success dark
-          'dialog-delete': '#D32F2F',          // Error
-          'dialog-delete-hover': '#C62828',    // Error dark
-          'dialog-primary': '#1976D2',         // Primary
-          'dialog-primary-hover': '#1565C0',   // Primary dark
-          'dialog-secondary': '#00796B',       // Secondary
-          'dialog-secondary-hover': '#00695C', // Secondary dark
+          'dialog-cancel': '#9E9E9E',          // Light grey (Grey 500)
+          'dialog-cancel-hover': '#757575',    // Medium grey on hover (Grey 600)
+          'dialog-edit': '#1976D2',            // Medium blue (Blue 700)
+          'dialog-edit-hover': '#1565C0',      // Dark blue on hover (Blue 800)
+          'dialog-save': '#388E3C',            // Dark green (Green 700)
+          'dialog-save-hover': '#2E7D32',      // Very dark green on hover (Green 800)
+          'dialog-delete': '#D32F2F',          // Dark red (Red 700)
+          'dialog-delete-hover': '#C62828',    // Very dark red on hover (Red 800)
+          'dialog-primary': '#1976D2',         // Medium blue (Blue 700)
+          'dialog-primary-hover': '#1565C0',   // Dark blue on hover (Blue 800)
+          'dialog-secondary': '#00796B',       // Dark teal/cyan green (Teal 700)
+          'dialog-secondary-hover': '#00695C', // Very dark teal on hover (Teal 800)
           
           // Info/Help Button System
-          'info-letter': '#16A34A',            // Green 600 for "i" icon
-          'info-outline': '#16A34A',           // Green 600 for border
+          'info-letter': '#16A34A',            // Medium green (Green 600) for "i" icon
+          'info-outline': '#16A34A',           // Medium green (Green 600) for border
         },
         
         // Simplified primary scale for direct use
         primary: {
-          DEFAULT: '#1976D2',   // Material Blue 700
-          50: '#E3F2FD',        // Material Blue 50
-          100: '#BBDEFB',       // Material Blue 100
-          200: '#90CAF9',       // Material Blue 200
-          300: '#64B5F6',       // Material Blue 300
-          400: '#42A5F5',       // Material Blue 400
-          500: '#2196F3',       // Material Blue 500
-          600: '#1E88E5',       // Material Blue 600
-          700: '#1976D2',       // Material Blue 700
-          800: '#1565C0',       // Material Blue 800
-          900: '#0D47A1',       // Material Blue 900
-          hover: '#1565C0',     // Alias for hover state (800)
+          DEFAULT: '#1976D2',   // Medium blue (Blue 700)
+          50: '#E3F2FD',        // Very pale blue, almost white (Blue 50)
+          100: '#BBDEFB',       // Pale sky blue (Blue 100)
+          200: '#90CAF9',       // Light sky blue (Blue 200)
+          300: '#64B5F6',       // Light blue (Blue 300)
+          400: '#42A5F5',       // Medium bright blue (Blue 400)
+          500: '#2196F3',       // Bright blue (Blue 500)
+          600: '#1E88E5',       // Medium blue, slightly darker (Blue 600)
+          700: '#1976D2',       // Medium blue (Blue 700)
+          800: '#1565C0',       // Dark blue (Blue 800)
+          900: '#0D47A1',       // Very dark blue (Blue 900)
+          hover: '#1565C0',     // Dark blue on hover - alias for 800
         },
         
         // Surface scale
         surface: {
-          DEFAULT: '#FFFFFF',   // White
-          card: '#FFFFFF',      // White cards
-          variant: '#F5F5F5',   // Grey 100
-          hover: '#F5F5F5',     // Grey 100
-          border: '#E0E0E0',    // Grey 300
+          DEFAULT: '#FFFFFF',   // Pure white
+          card: '#FFFFFF',      // Pure white for cards
+          variant: '#F5F5F5',   // Very light grey (Grey 100)
+          hover: '#F5F5F5',     // Very light grey on hover (Grey 100)
+          border: '#E0E0E0',    // Light grey for borders (Grey 300)
         }
       },
       fontFamily: {

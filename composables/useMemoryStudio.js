@@ -344,10 +344,15 @@ export const useMemoryStudio = () => {
     watchersInitialized = true
     
     // Watch for user changes to load memory books
+    // Use a small delay to ensure navigation data (userProfile) loads first
     watch(user, (newUser) => {
       if (newUser?.id) {
-        console.log('📚 [useMemoryStudio] User changed, loading memory books')
-        loadMemoryBooks()
+        console.log('📚 [useMemoryStudio] User changed, scheduling memory books load')
+        // Defer loading to next tick to allow navigation data to load first
+        setTimeout(() => {
+          console.log('📚 [useMemoryStudio] Loading memory books after navigation data')
+          loadMemoryBooks()
+        }, 100)
       }
     }, { immediate: true })
 

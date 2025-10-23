@@ -1,8 +1,8 @@
 import { getHeader, createError } from 'h3'
 
 /**
- * Assign a face to an existing person
- * Called when user confirms or selects a person for a face
+ * Remove face assignment from a person
+ * Marks the face as needing assignment again
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -27,22 +27,22 @@ export default defineEventHandler(async (event) => {
   
   // Get request body
   const body = await readBody(event)
-  const { faceId, personGroupId, confidence = 1.0 } = body
+  const { faceId } = body
   
-  if (!faceId || !personGroupId) {
+  if (!faceId) {
     throw createError({ 
       statusCode: 400, 
-      statusMessage: 'Missing required parameters: faceId, personGroupId' 
+      statusMessage: 'Missing required parameter: faceId' 
     })
   }
   
-  console.log(`🔗 Assigning face ${faceId} to person ${personGroupId}`)
+  console.log(`🔓 Removing assignment for face ${faceId}`)
   
   try {
     // 1. Verify face belongs to user
     const { data: face, error: faceError } = await supabase
       .from('faces')
-      .select('id, user_id, asset_id')
+      .select('id, user_id')
       .eq('id', faceId)
       .eq('user_id', user.id)
       .eq('deleted', false)
@@ -52,71 +52,53 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Face not found' })
     }
     
-    // 2. Verify person group belongs to user
-    const { data: personGroup, error: personError } = await supabase
-      .from('person_groups')
-      .select('id, name')
-      .eq('id', personGroupId)
-      .eq('user_id', user.id)
-      .eq('deleted', false)
-      .single()
-    
-    if (personError || !personGroup) {
-      throw createError({ statusCode: 404, statusMessage: 'Person not found' })
-    }
-    
-    // 3. Create face-person link
-    const { data: link, error: linkError } = await supabase
+    // 2. Soft delete the face-person link
+    const { error: linkError } = await supabase
       .from('face_person_links')
-      .insert({
-        face_id: faceId,
-        person_group_id: personGroupId,
-        confidence,
-        assigned_by: 'user',
-        assigned_at: new Date().toISOString()
+      .update({ 
+        deleted: true,
+        updated_at: new Date().toISOString()
       })
-      .select()
-      .single()
+      .eq('face_id', faceId)
+      .eq('deleted', false)
     
     if (linkError) {
-      console.error('❌ Error creating face-person link:', linkError)
+      console.error('❌ Error removing face assignment:', linkError)
       throw createError({ 
         statusCode: 500, 
-        statusMessage: `Failed to assign face: ${linkError.message}` 
+        statusMessage: `Failed to remove assignment: ${linkError.message}` 
       })
     }
     
-    // 4. Update face to mark as no longer needing assignment
+    // 3. Mark face as needing assignment again
     await supabase
       .from('faces')
       .update({ 
-        needs_assignment: false,
+        needs_assignment: true,
+        auto_assigned: false,
         updated_at: new Date().toISOString()
       })
       .eq('id', faceId)
     
-    console.log(`✅ Face ${faceId} assigned to ${personGroup.name}`)
+    console.log(`✅ Assignment removed for face ${faceId}`)
     
     return {
       success: true,
-      assignment: {
-        faceId,
-        personGroupId,
-        personName: personGroup.name,
-        linkId: link.id
-      }
+      faceId,
+      message: 'Face assignment removed successfully'
     }
     
   } catch (error) {
-    console.error('❌ Error assigning face to person:', error)
+    console.error('❌ Error removing face assignment:', error)
     
     if (error.statusCode) {
-      throw error // Re-throw createError errors
+      throw error
     }
     
     throw createError({ 
       statusCode: 500, 
-      statusMessage: `Assignment failed: ${error.message}` 
+      statusMessage: `Failed to remove assignment: ${error.message}` 
     })
   }
 })
+

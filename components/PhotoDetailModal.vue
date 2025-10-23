@@ -36,12 +36,12 @@
         <div class="bg-white px-4 sm:px-6 py-4">
           <!-- Photo -->
                       <div class="mb-4">
-              <div class="aspect-square bg-brand-card rounded-lg overflow-hidden">
+              <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
               <img
                 v-if="face?.asset_url"
                 :src="face.asset_url"
                 :alt="`Photo of ${person?.display_name || person?.name}`"
-                class="w-full h-full object-cover"
+                class="w-full h-full object-contain"
               />
                                 <div v-else class="w-full h-full flex items-center justify-center">
                     <i class="pi pi-image text-brand-primary/40 text-3xl sm:text-4xl"></i>

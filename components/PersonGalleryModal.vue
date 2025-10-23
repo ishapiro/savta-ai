@@ -68,12 +68,12 @@
                 class="relative group cursor-pointer"
                 @click="viewPhoto(face)"
               >
-                <div class="aspect-square bg-brand-card rounded-lg overflow-hidden">
+                <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                   <img
                     v-if="face.asset_url"
                     :src="face.asset_url"
                     :alt="`Photo of ${person?.display_name || person?.name}`"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
                   />
                   <div v-else class="w-full h-full flex items-center justify-center">
                     <i class="pi pi-image text-brand-primary/40 text-lg sm:text-xl"></i>

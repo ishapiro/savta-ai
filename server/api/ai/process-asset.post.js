@@ -139,32 +139,35 @@ export default defineEventHandler(async (event) => {
       console.log('🌍 Enhanced location data:', enhancedLocationData);
     }
     
-    // STEP 3: Run face detection for image assets (only after successful AI analysis)
+    // STEP 3: Run face detection for image assets using new Rekognition Collections system
     if ((assetType === 'image' || assetType === 'photo') && assetId) {
-      console.log('🔍 Running face detection as part of AI rerun...');
+      console.log('🔍 Running face indexing with Rekognition Collections...');
       try {
         const config = useRuntimeConfig();
-        const faceDetectionResponse = await fetch(`${config.public.siteUrl}/api/ai/detect-faces-rekognition`, {
+        const faceIndexResponse = await fetch(`${config.public.siteUrl}/api/ai/index-face-rekognition`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${config.supabaseServiceRoleKey}`,
+            'X-User-Id': finalUserId
+          },
           body: JSON.stringify({ 
             imageUrl: finalAssetUrl,
             assetId: assetId,
-            userId: finalUserId, // Pass user ID directly to avoid auth issues
-            forceRefresh: true // Always fresh since we just invalidated cache
+            reprocessOptions: { faces: true }
           })
         });
         
-        if (faceDetectionResponse.ok) {
-          const faceData = await faceDetectionResponse.json();
-          console.log(`✅ Face detection completed: ${faceData.faceCount} faces detected`);
+        if (faceIndexResponse.ok) {
+          const faceData = await faceIndexResponse.json();
+          console.log(`✅ Face indexing completed: ${faceData.facesDetected} faces detected, ${faceData.autoAssigned?.length || 0} auto-assigned`);
         } else {
-          const errorText = await faceDetectionResponse.text();
-          console.warn('⚠️ Face detection failed during AI rerun:', errorText);
+          const errorText = await faceIndexResponse.text();
+          console.warn('⚠️ Face indexing failed during AI rerun:', errorText);
         }
       } catch (faceError) {
-        console.warn('⚠️ Face detection error during AI rerun:', faceError.message);
-        // Continue with AI processing even if face detection fails
+        console.warn('⚠️ Face indexing error during AI rerun:', faceError.message);
+        // Continue with AI processing even if face indexing fails
       }
     }
     

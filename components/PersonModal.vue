@@ -73,19 +73,13 @@
               v-model="form.relationship"
               class="mt-1 block w-full border-brand-primary/20 rounded-md shadow-sm focus:ring-brand-highlight focus:border-brand-highlight text-sm"
             >
-              <option value="">Select relationship...</option>
-              <option value="Grandmother">Grandmother</option>
-              <option value="Grandfather">Grandfather</option>
-              <option value="Mother">Mother</option>
-              <option value="Father">Father</option>
-              <option value="Sister">Sister</option>
-              <option value="Brother">Brother</option>
-              <option value="Daughter">Daughter</option>
-              <option value="Son">Son</option>
-              <option value="Wife">Wife</option>
-              <option value="Husband">Husband</option>
-              <option value="Friend">Friend</option>
-              <option value="Other">Other</option>
+              <option
+                v-for="option in relationshipOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
             </select>
           </div>
 
@@ -145,7 +139,11 @@
 
 <script setup>
 import { ref, reactive, watch } from 'vue';
+import { useRelationshipOptions } from '~/composables/useRelationshipOptions';
 // Using PrimeVue icons instead of Heroicons
+
+// Get shared relationship options
+const { relationshipOptions } = useRelationshipOptions();
 
 // Props
 const props = defineProps({

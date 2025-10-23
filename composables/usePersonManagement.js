@@ -196,19 +196,29 @@ export const usePersonManagement = () => {
       
       console.log('User ID:', user.value.id);
       
-      const { data, error: dbError } = await supabase
-        .rpc('find_unassigned_faces', {
-          user_id_param: user.value.id,
-          limit_count: limit
-        });
+      // Get authentication token
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
       
-      if (dbError) {
-        throw dbError;
+      if (!accessToken) {
+        throw new Error('No access token available');
       }
       
-      console.log('Unassigned faces data:', data);
-      unassignedFaces.value = data || [];
-      return data;
+      // Call the new unassigned-faces API endpoint
+      const response = await $fetch('/api/ai/unassigned-faces', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to fetch unassigned faces');
+      }
+      
+      console.log('Unassigned faces data:', response.faces);
+      unassignedFaces.value = response.faces || [];
+      return response.faces;
     } catch (err) {
       error.value = err.message || 'Failed to fetch unassigned faces';
       console.error('Error fetching unassigned faces:', err);

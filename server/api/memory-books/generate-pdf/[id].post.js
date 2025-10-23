@@ -968,37 +968,34 @@ export default defineEventHandler(async (event) => {
           let faceBoosts = []
           if (storageUrl) {
             try {
-              vlog('🔍 AWS Rekognition: Detecting faces for smartcrop-gm boost...')
+              vlog('🔍 Querying face data from database for smartcrop-gm boost...')
               
-              const rekognitionResponse = await fetch(`${config.public.siteUrl}/api/ai/detect-faces-rekognition`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                  imageUrl: storageUrl,
-                  assetId: assetId, // Pass asset ID for caching
-                  userId: userId, // Pass user ID directly to avoid auth issues
-                  forceRefresh: false // Use cache if available
-                })
-              })
-              
-              if (rekognitionResponse.ok) {
-                const rekognitionData = await rekognitionResponse.json()
+              // Query faces from database (Rekognition Collections migration)
+              // This replaces the old detect-faces-rekognition API call
+              if (assetId) {
+                const { data: facesData, error: facesError } = await supabase
+                  .from('faces')
+                  .select('bounding_box, confidence')
+                  .eq('asset_id', assetId)
+                  .eq('deleted', false)
                 
-                if (rekognitionData.success && rekognitionData.faces && rekognitionData.faces.length > 0) {
-                  console.log(`✅ AWS Rekognition: Found ${rekognitionData.faces.length} faces`)
+                if (facesError) {
+                  console.warn('⚠️ Error querying faces from database:', facesError.message)
+                } else if (facesData && facesData.length > 0) {
+                  console.log(`✅ Database: Found ${facesData.length} faces for cropping`)
                   
-                  // Convert Rekognition bounding boxes to smartcrop-gm boost format with padding
-                  faceBoosts = rekognitionData.faces.map(face => {
+                  // Convert database bounding boxes to smartcrop-gm boost format with padding
+                  faceBoosts = facesData.map(face => {
+                    const box = face.bounding_box
+                    
                     // Add padding around the face bounding box to prevent cutting off heads
                     const paddingFactor = 0.3 // 30% padding around the face
                     
                     // Calculate padded bounding box
-                    const paddedLeft = Math.max(0, face.box.Left - (face.box.Width * paddingFactor))
-                    const paddedTop = Math.max(0, face.box.Top - (face.box.Height * paddingFactor))
-                    const paddedWidth = Math.min(1 - paddedLeft, face.box.Width + (face.box.Width * paddingFactor * 2))
-                    const paddedHeight = Math.min(1 - paddedTop, face.box.Height + (face.box.Height * paddingFactor * 2))
+                    const paddedLeft = Math.max(0, box.Left - (box.Width * paddingFactor))
+                    const paddedTop = Math.max(0, box.Top - (box.Height * paddingFactor))
+                    const paddedWidth = Math.min(1 - paddedLeft, box.Width + (box.Width * paddingFactor * 2))
+                    const paddedHeight = Math.min(1 - paddedTop, box.Height + (box.Height * paddingFactor * 2))
                     
                     // Convert from [0,1] relative coordinates to pixel coordinates
                     const pixelX = Math.floor(paddedLeft * processedMetadata.width)
@@ -1012,7 +1009,7 @@ export default defineEventHandler(async (event) => {
                     const boostWidth = pixelWidth / processedMetadata.width
                     const boostHeight = pixelHeight / processedMetadata.height
                     
-                    console.log(`🎯 Face boost with padding: original=(${face.box.Left.toFixed(3)}, ${face.box.Top.toFixed(3)}, ${face.box.Width.toFixed(3)}, ${face.box.Height.toFixed(3)}) padded=(${boostX.toFixed(3)}, ${boostY.toFixed(3)}, ${boostWidth.toFixed(3)}, ${boostHeight.toFixed(3)}) paddingFactor=${paddingFactor}`)
+                    console.log(`🎯 Face boost with padding: original=(${box.Left.toFixed(3)}, ${box.Top.toFixed(3)}, ${box.Width.toFixed(3)}, ${box.Height.toFixed(3)}) padded=(${boostX.toFixed(3)}, ${boostY.toFixed(3)}, ${boostWidth.toFixed(3)}, ${boostHeight.toFixed(3)}) paddingFactor=${paddingFactor}`)
                     
                     return {
                       x: boostX,
@@ -1025,13 +1022,13 @@ export default defineEventHandler(async (event) => {
                   
                   console.log('🎯 Face boosts for smartcrop-gm:', faceBoosts)
                 } else {
-                  console.log('👥 AWS Rekognition: No faces detected')
+                  console.log('👥 Database: No faces found for this asset')
                 }
               } else {
-                console.log('⚠️ AWS Rekognition failed, proceeding without face detection')
+                console.log('⚠️ No assetId provided, cannot query face data')
               }
-                      } catch (rekognitionError) {
-            console.log('⚠️ AWS Rekognition error, proceeding without face detection:', rekognitionError.message)
+                      } catch (faceQueryError) {
+            console.log('⚠️ Face data query error, proceeding without face detection:', faceQueryError.message)
             // Continue with smartcrop-gm without face boosts
           }
           }

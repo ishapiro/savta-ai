@@ -988,6 +988,147 @@
                 </div>
               </div>
             </div>
+
+            <!-- Rekognition Collections Backfill Utility -->
+            <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-brand-primary mb-2">Face Recognition Backfill</h3>
+                  <p class="text-sm text-brand-primary/70">
+                    Reindex all photos with AWS Rekognition Collections for face detection and automatic matching. 
+                    This is a one-time migration to populate face data for existing photos.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Stats Display -->
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-brand-navigation/10 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-brand-primary">{{ rekognitionStats.totalUsers }}</div>
+                  <div class="text-sm text-brand-primary/70">Total Users</div>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-blue-600">{{ rekognitionStats.totalAssets }}</div>
+                  <div class="text-sm text-gray-600">Total Photos</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-green-600">{{ rekognitionStats.processed }}</div>
+                  <div class="text-sm text-gray-600">Processed</div>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-orange-600">{{ rekognitionStats.pending }}</div>
+                  <div class="text-sm text-gray-600">Pending</div>
+                </div>
+              </div>
+
+              <!-- Control Panel -->
+              <div class="flex flex-wrap items-center gap-3 mb-4">
+                <Button
+                  label="Check Status"
+                  icon="pi pi-refresh"
+                  @click="loadRekognitionStats"
+                  :loading="loadingRekognitionStats"
+                  :disabled="rekognitionBackfillRunning"
+                  class="bg-brand-dialog-edit border-0 w-auto rounded px-6 py-2 shadow"
+                />
+                <Button
+                  v-if="!rekognitionBackfillRunning"
+                  label="Preview (Dry Run)"
+                  icon="pi pi-eye"
+                  @click="startRekognitionBackfill(true)"
+                  :disabled="rekognitionStats.pending === 0"
+                  class="bg-blue-600 hover:bg-blue-700 text-white border-0 w-auto rounded px-6 py-2 shadow"
+                />
+                <Button
+                  v-if="!rekognitionBackfillRunning"
+                  label="Start Backfill"
+                  icon="pi pi-sync"
+                  @click="confirmRekognitionBackfill"
+                  :disabled="rekognitionStats.pending === 0"
+                  class="bg-brand-dialog-edit border-0 w-auto rounded px-6 py-2 shadow"
+                />
+                <Button
+                  v-else
+                  :label="rekognitionBackfillStopping ? 'Stopping...' : 'Stop'"
+                  icon="pi pi-times"
+                  @click="stopRekognitionBackfill"
+                  :disabled="rekognitionBackfillStopping"
+                  class="bg-red-600 hover:bg-red-700 text-white border-0 w-auto rounded px-6 py-2 shadow"
+                />
+              </div>
+
+              <!-- Progress Display -->
+              <div v-if="rekognitionProgress.show" class="mt-4 p-4 bg-brand-navigation/10 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-medium text-brand-primary">
+                    {{ rekognitionProgress.isDryRun ? 'Preview Mode (No Changes)' : 'Processing Face Recognition...' }}
+                  </span>
+                  <span class="text-sm text-brand-primary/70">
+                    {{ rekognitionProgress.processed }} / {{ rekognitionProgress.total }}
+                  </span>
+                </div>
+                <ProgressBar :value="rekognitionProgress.percentage" class="mb-2" />
+                <div class="text-xs text-brand-primary/70 mb-2">
+                  ✅ {{ rekognitionProgress.successful }} successful &nbsp;|&nbsp;
+                  ❌ {{ rekognitionProgress.failed }} failed &nbsp;|&nbsp;
+                  👥 {{ rekognitionProgress.facesDetected }} faces detected &nbsp;|&nbsp;
+                  🤖 {{ rekognitionProgress.autoAssigned }} auto-assigned
+                </div>
+                <div v-if="rekognitionBackfillRunning" class="text-xs text-brand-primary/60 mb-2 flex items-center gap-2">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>{{ rekognitionProgress.currentAsset || 'Processing...' }}</span>
+                </div>
+                <div v-if="rekognitionProgress.message" class="text-sm text-brand-primary">
+                  {{ rekognitionProgress.message }}
+                </div>
+              </div>
+
+              <!-- Cost Estimate -->
+              <div v-if="rekognitionStats.pending > 0" class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-white border border-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <i class="pi pi-dollar text-yellow-600 font-bold text-sm"></i>
+                  </div>
+                  <div class="text-sm text-yellow-900">
+                    <strong>Estimated AWS Cost:</strong> ~${{ estimatedRekognitionCost.toFixed(2) }}
+                    <br>
+                    <span class="text-xs">
+                      ({{ rekognitionStats.pending }} photos × $0.001 IndexFaces + ~{{ rekognitionStats.pending * 2 }} faces × $0.001 SearchFaces)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info Box -->
+              <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-white border border-brand-info-outline flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <i class="pi pi-info-circle text-brand-info-letter font-bold text-sm"></i>
+                  </div>
+                  <div class="text-sm text-blue-900">
+                    <strong>How it works:</strong> This utility indexes all photos using AWS Rekognition Collections (IndexFaces + SearchFaces).
+                    Faces with ≥95% similarity are auto-assigned. Faces with 80-94% similarity or no matches are flagged for user review.
+                    <br><br>
+                    <strong>One-time cost:</strong> AWS charges $0.001 per IndexFaces call and $0.001 per SearchFaces call.
+                    After backfill, only new uploads incur costs. This process is safe and idempotent (can be run multiple times).
+                    <br><br>
+                    <strong>Preview mode:</strong> Use "Preview (Dry Run)" to see what would be processed without making changes or incurring AWS costs.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Documentation Link -->
+              <div class="mt-4">
+                <a 
+                  href="https://github.com/yourusername/savta-ai/blob/main/docs/BACKFILL_REKOGNITION_COLLECTIONS.md" 
+                  target="_blank"
+                  class="text-sm text-brand-secondary hover:underline inline-flex items-center gap-1"
+                >
+                  <i class="pi pi-external-link text-xs"></i>
+                  View full documentation
+                </a>
+              </div>
+            </div>
           </div>
         </TabPanel>
       </TabView>
@@ -3570,6 +3711,38 @@ const backfillProgress = ref({
   percentage: 0,
   message: '',
   currentPhoto: 0
+})
+
+// Rekognition Collections backfill variables
+const rekognitionStats = ref({
+  totalUsers: 0,
+  totalAssets: 0,
+  processed: 0,
+  pending: 0
+})
+const loadingRekognitionStats = ref(false)
+const rekognitionBackfillRunning = ref(false)
+const rekognitionBackfillStopping = ref(false)
+const rekognitionProgress = ref({
+  show: false,
+  processed: 0,
+  total: 0,
+  successful: 0,
+  failed: 0,
+  facesDetected: 0,
+  autoAssigned: 0,
+  percentage: 0,
+  message: '',
+  currentAsset: '',
+  isDryRun: false
+})
+
+const estimatedRekognitionCost = computed(() => {
+  // IndexFaces: $0.001 per photo
+  // SearchFaces: ~$0.001 per face (avg 2 faces per photo)
+  const indexCost = rekognitionStats.value.pending * 0.001
+  const searchCost = rekognitionStats.value.pending * 2 * 0.001
+  return indexCost + searchCost
 })
 
 // User management options
@@ -6319,9 +6492,229 @@ const startThumbnailBackfill = async () => {
   }
 }
 
+// Rekognition Collections backfill functions
+const loadRekognitionStats = async () => {
+  try {
+    loadingRekognitionStats.value = true
+    
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+    
+    if (!accessToken) {
+      throw new Error('No access token available')
+    }
+    
+    // Query total users
+    const { count: totalUsers } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('deleted', false)
+    
+    // Query total image assets
+    const { count: totalAssets } = await supabase
+      .from('assets')
+      .select('*', { count: 'exact', head: true })
+      .eq('deleted', false)
+      .eq('approved', true)
+      .like('mime_type', 'image/%')
+      .not('storage_url', 'is', null)
+    
+    // Query processed assets (those with face detection data)
+    const { count: processedAssets } = await supabase
+      .from('assets')
+      .select('*', { count: 'exact', head: true })
+      .eq('deleted', false)
+      .eq('approved', true)
+      .like('mime_type', 'image/%')
+      .not('storage_url', 'is', null)
+      .not('face_detection_data', 'is', null)
+    
+    rekognitionStats.value = {
+      totalUsers: totalUsers || 0,
+      totalAssets: totalAssets || 0,
+      processed: processedAssets || 0,
+      pending: (totalAssets || 0) - (processedAssets || 0)
+    }
+    
+  } catch (error) {
+    console.error('❌ Load Rekognition stats error:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Load Stats Failed',
+      detail: error.message || 'Failed to load Rekognition stats',
+      life: 5000
+    })
+  } finally {
+    loadingRekognitionStats.value = false
+  }
+}
+
+const confirmRekognitionBackfill = () => {
+  const confirmed = confirm(
+    `This will reindex ${rekognitionStats.value.pending} photos with AWS Rekognition Collections.\n\n` +
+    `Estimated cost: ~$${estimatedRekognitionCost.value.toFixed(2)}\n\n` +
+    `This process:\n` +
+    `• Calls IndexFaces for each photo ($0.001 each)\n` +
+    `• Calls SearchFaces for each detected face ($0.001 each)\n` +
+    `• Auto-assigns faces with ≥95% similarity\n` +
+    `• Flags lower confidence faces for user review\n\n` +
+    `Are you sure you want to continue?`
+  )
+  
+  if (confirmed) {
+    startRekognitionBackfill(false)
+  }
+}
+
+const startRekognitionBackfill = async (dryRun = false) => {
+  try {
+    rekognitionBackfillRunning.value = true
+    rekognitionBackfillStopping.value = false
+    
+    rekognitionProgress.value = {
+      show: true,
+      processed: 0,
+      total: 0,
+      successful: 0,
+      failed: 0,
+      facesDetected: 0,
+      autoAssigned: 0,
+      percentage: 0,
+      message: dryRun ? 'Starting preview (no changes will be made)...' : 'Starting backfill...',
+      currentAsset: '',
+      isDryRun: dryRun
+    }
+    
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+    
+    if (!accessToken) {
+      throw new Error('No access token available')
+    }
+    
+    // Fetch all users
+    const { data: users, error: usersError } = await supabase
+      .from('profiles')
+      .select('user_id, email')
+      .eq('deleted', false)
+    
+    if (usersError) throw usersError
+    
+    // Process each user
+    for (const user of users || []) {
+      if (rekognitionBackfillStopping.value) {
+        rekognitionProgress.value.message = '⏹️ Stopped by user'
+        break
+      }
+      
+      // Fetch user's assets
+      const { data: assets, error: assetsError } = await supabase
+        .from('assets')
+        .select('id, storage_url, file_name')
+        .eq('user_id', user.user_id)
+        .eq('deleted', false)
+        .eq('approved', true)
+        .like('mime_type', 'image/%')
+        .not('storage_url', 'is', null)
+      
+      if (assetsError) {
+        console.error(`Error fetching assets for user ${user.email}:`, assetsError)
+        continue
+      }
+      
+      rekognitionProgress.value.total += (assets || []).length
+      
+      // Process each asset
+      for (const asset of assets || []) {
+        if (rekognitionBackfillStopping.value) {
+          break
+        }
+        
+        rekognitionProgress.value.currentAsset = `${user.email}: ${asset.file_name}`
+        
+        if (dryRun) {
+          // In dry run mode, just increment counters
+          rekognitionProgress.value.processed++
+          rekognitionProgress.value.successful++
+          rekognitionProgress.value.percentage = Math.round((rekognitionProgress.value.processed / rekognitionProgress.value.total) * 100)
+          await new Promise(resolve => setTimeout(resolve, 10)) // Small delay for UI
+          continue
+        }
+        
+        try {
+          // Call the index-face-rekognition endpoint
+          const response = await $fetch('/api/ai/index-face-rekognition', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'X-User-Id': user.user_id
+            },
+            body: {
+              imageUrl: asset.storage_url,
+              assetId: asset.id,
+              reprocessOptions: { faces: true }
+            }
+          })
+          
+          rekognitionProgress.value.successful++
+          rekognitionProgress.value.facesDetected += response.facesDetected || 0
+          rekognitionProgress.value.autoAssigned += response.autoAssigned?.length || 0
+          
+        } catch (error) {
+          console.error(`Error processing asset ${asset.id}:`, error)
+          rekognitionProgress.value.failed++
+        }
+        
+        rekognitionProgress.value.processed++
+        rekognitionProgress.value.percentage = Math.round((rekognitionProgress.value.processed / rekognitionProgress.value.total) * 100)
+      }
+    }
+    
+    // Completion message
+    if (rekognitionBackfillStopping.value) {
+      rekognitionProgress.value.message = `⏹️ Stopped. Processed ${rekognitionProgress.value.processed}/${rekognitionProgress.value.total} photos.`
+    } else if (dryRun) {
+      rekognitionProgress.value.message = `✅ Preview complete. Would process ${rekognitionProgress.value.total} photos across ${users.length} users.`
+    } else {
+      rekognitionProgress.value.message = `✅ Backfill complete! Processed ${rekognitionProgress.value.successful} photos, detected ${rekognitionProgress.value.facesDetected} faces, auto-assigned ${rekognitionProgress.value.autoAssigned}.`
+      
+      // Show success toast
+      toast.add({
+        severity: 'success',
+        summary: 'Face Recognition Backfill Complete',
+        detail: `Processed ${rekognitionProgress.value.successful} photos, detected ${rekognitionProgress.value.facesDetected} faces`,
+        life: 10000
+      })
+    }
+    
+    // Reload stats
+    await loadRekognitionStats()
+    
+  } catch (error) {
+    console.error('❌ Rekognition backfill error:', error)
+    rekognitionProgress.value.message = `❌ Error: ${error.message}`
+    
+    toast.add({
+      severity: 'error',
+      summary: 'Backfill Failed',
+      detail: error.message || 'Face recognition backfill failed',
+      life: 5000
+    })
+  } finally {
+    rekognitionBackfillRunning.value = false
+    rekognitionBackfillStopping.value = false
+  }
+}
+
+const stopRekognitionBackfill = () => {
+  rekognitionBackfillStopping.value = true
+  rekognitionProgress.value.message = '⏹️ Stopping after current photo...'
+}
+
 // Load thumbnail stats on mount
 onMounted(() => {
   loadThumbnailStats()
+  loadRekognitionStats()
 })
 </script>
 

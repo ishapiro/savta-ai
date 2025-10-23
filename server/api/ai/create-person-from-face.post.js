@@ -1,8 +1,8 @@
 import { getHeader, createError } from 'h3'
 
 /**
- * Assign a face to an existing person
- * Called when user confirms or selects a person for a face
+ * Create a new person and assign a face to them
+ * Called when user identifies a new person in a photo
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -27,19 +27,19 @@ export default defineEventHandler(async (event) => {
   
   // Get request body
   const body = await readBody(event)
-  const { faceId, personGroupId, confidence = 1.0 } = body
+  const { faceId, personName, displayName, relationship } = body
   
-  if (!faceId || !personGroupId) {
+  if (!faceId || !personName) {
     throw createError({ 
       statusCode: 400, 
-      statusMessage: 'Missing required parameters: faceId, personGroupId' 
+      statusMessage: 'Missing required parameters: faceId, personName' 
     })
   }
   
-  console.log(`🔗 Assigning face ${faceId} to person ${personGroupId}`)
+  console.log(`👤 Creating new person "${personName}" and assigning face ${faceId}`)
   
   try {
-    // 1. Verify face belongs to user
+    // 1. Verify face belongs to user and is not already assigned
     const { data: face, error: faceError } = await supabase
       .from('faces')
       .select('id, user_id, asset_id')
@@ -52,26 +52,36 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Face not found' })
     }
     
-    // 2. Verify person group belongs to user
+    // 2. Create new person group
     const { data: personGroup, error: personError } = await supabase
       .from('person_groups')
-      .select('id, name')
-      .eq('id', personGroupId)
-      .eq('user_id', user.id)
-      .eq('deleted', false)
+      .insert({
+        user_id: user.id,
+        name: personName,
+        display_name: displayName || personName,
+        relationship: relationship || null,
+        is_primary_person: false
+      })
+      .select()
       .single()
     
-    if (personError || !personGroup) {
-      throw createError({ statusCode: 404, statusMessage: 'Person not found' })
+    if (personError) {
+      console.error('❌ Error creating person group:', personError)
+      throw createError({ 
+        statusCode: 500, 
+        statusMessage: `Failed to create person: ${personError.message}` 
+      })
     }
     
-    // 3. Create face-person link
+    console.log(`✅ Created person group: ${personGroup.id} (${personName})`)
+    
+    // 3. Assign face to new person
     const { data: link, error: linkError } = await supabase
       .from('face_person_links')
       .insert({
         face_id: faceId,
-        person_group_id: personGroupId,
-        confidence,
+        person_group_id: personGroup.id,
+        confidence: 1.0, // User-assigned, full confidence
         assigned_by: 'user',
         assigned_at: new Date().toISOString()
       })
@@ -80,6 +90,12 @@ export default defineEventHandler(async (event) => {
     
     if (linkError) {
       console.error('❌ Error creating face-person link:', linkError)
+      // Try to clean up person group
+      await supabase
+        .from('person_groups')
+        .update({ deleted: true })
+        .eq('id', personGroup.id)
+      
       throw createError({ 
         statusCode: 500, 
         statusMessage: `Failed to assign face: ${linkError.message}` 
@@ -95,20 +111,31 @@ export default defineEventHandler(async (event) => {
       })
       .eq('id', faceId)
     
-    console.log(`✅ Face ${faceId} assigned to ${personGroup.name}`)
+    // 5. Set this face as the avatar for the person group
+    await supabase
+      .from('person_groups')
+      .update({ avatar_face_id: faceId })
+      .eq('id', personGroup.id)
+    
+    console.log(`✅ Face ${faceId} assigned to new person ${personName}`)
     
     return {
       success: true,
+      person: {
+        id: personGroup.id,
+        name: personGroup.name,
+        displayName: personGroup.display_name,
+        relationship: personGroup.relationship
+      },
       assignment: {
         faceId,
-        personGroupId,
-        personName: personGroup.name,
+        personGroupId: personGroup.id,
         linkId: link.id
       }
     }
     
   } catch (error) {
-    console.error('❌ Error assigning face to person:', error)
+    console.error('❌ Error creating person from face:', error)
     
     if (error.statusCode) {
       throw error // Re-throw createError errors
@@ -116,7 +143,8 @@ export default defineEventHandler(async (event) => {
     
     throw createError({ 
       statusCode: 500, 
-      statusMessage: `Assignment failed: ${error.message}` 
+      statusMessage: `Failed to create person: ${error.message}` 
     })
   }
 })
+

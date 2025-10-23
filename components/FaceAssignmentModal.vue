@@ -1,374 +1,484 @@
-<template>
-  <div class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <!-- Background overlay -->
-      <div class="fixed inset-0 bg-brand-primary bg-opacity-75 transition-opacity" @click="$emit('close')"></div>
-
-      <!-- Modal panel -->
-      <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
-        <div class="absolute top-0 right-0 pt-4 pr-4">
-          <button
-            @click="$emit('close')"
-            class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <span class="sr-only">Close</span>
-            <i class="pi pi-times text-xl"></i>
-          </button>
-        </div>
-
-        <div class="sm:flex sm:items-start">
-          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-brand-accent sm:mx-0">
-            <i class="pi pi-user text-brand-secondary text-lg sm:text-xl"></i>
-          </div>
-          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">
-              Assign Face to Person
-            </h3>
-            <p class="mt-2 text-sm text-gray-500">
-              Choose which person this face belongs to, or create a new person.
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-4 sm:mt-6">
-          <!-- Face Preview -->
-          <div class="mb-4 sm:mb-6">
-            <h4 class="text-sm font-medium text-gray-900 mb-3">Face to Assign</h4>
-            <div class="flex flex-col items-center space-y-4 sm:flex-row sm:items-start sm:space-y-0 sm:space-x-6">
-              <div class="w-full max-w-xs h-48 sm:w-48 sm:h-64 bg-brand-card rounded-lg overflow-hidden flex-shrink-0 relative">
-                <img
-                  v-if="face?.asset_url"
-                  :src="face.asset_url"
-                  :alt="`Photo with Face ${faceNumber}`"
-                  class="w-full h-full object-contain"
-                />
-                <div v-else class="w-full h-full flex items-center justify-center">
-                  <i class="pi pi-user text-brand-primary/40 text-lg sm:text-xl"></i>
-                </div>
-                
-                <!-- Face Bounding Box Overlay -->
-                <div 
-                  v-if="face?.bounding_box"
-                  class="absolute border-2 border-brand-highlight rounded"
-                  :style="boundingBoxStyle"
-                >
-                  <!-- Face Number Badge in Center of Bounding Box -->
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="bg-brand-highlight text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border-2 border-white">
-                      {{ faceNumber }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="text-center sm:text-left">
-                <p class="text-sm text-gray-600">
-                  <strong>Confidence:</strong> {{ Math.round((face?.confidence || 0) * 100) }}%
-                </p>
-                <p class="text-sm text-gray-600">
-                  <strong>Detected:</strong> {{ formatDate(face?.created_at) }}
-                </p>
-                <p class="text-sm text-gray-600 mt-2">
-                  <strong>Face Number:</strong> {{ faceNumber }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Assignment Options -->
-          <div class="space-y-3 sm:space-y-4">
-            <!-- Existing People -->
-            <div v-if="personGroups.length > 0">
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Assign to Existing Person</h4>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div
-                  v-for="person in personGroups"
-                  :key="person.id"
-                  class="relative border border-brand-primary/20 rounded-lg p-3 cursor-pointer hover:border-brand-highlight hover:bg-brand-accent/10 transition-colors"
-                  :class="{ 'border-brand-highlight bg-brand-accent/20': selectedPersonId === person.id }"
-                  @click="selectPerson(person.id)"
-                >
-                  <div class="flex items-center space-x-3">
-                    <div class="flex-shrink-0">
-                                          <div class="w-8 h-8 bg-brand-accent rounded-full flex items-center justify-center">
-                      <i class="pi pi-user text-brand-secondary"></i>
-                    </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-gray-900 truncate">
-                        {{ person.display_name || person.name }}
-                      </p>
-                      <p class="text-xs text-gray-500">
-                        {{ person.face_count || 0 }} photos
-                      </p>
-                    </div>
-                    <div v-if="selectedPersonId === person.id" class="flex-shrink-0">
-                      <i class="pi pi-check text-brand-highlight"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Create New Person -->
-            <div class="border-t border-brand-primary/20 pt-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Or Create New Person</h4>
-              <div class="space-y-3">
-                <input
-                  v-model="newPersonName"
-                  type="text"
-                  placeholder="Enter person's name..."
-                  class="block w-full border-brand-primary/20 rounded-md shadow-sm focus:ring-brand-highlight focus:border-brand-highlight text-sm"
-                />
-                <div class="flex items-center space-x-3">
-                  <input
-                    v-model="createNewPerson"
-                    type="checkbox"
-                    class="h-4 w-4 text-brand-highlight focus:ring-brand-highlight border-brand-primary/20 rounded"
-                  />
-                  <label class="text-sm text-gray-700">
-                    Create new person: "{{ newPersonName || 'Enter name' }}"
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Confidence Slider -->
-            <div class="border-t border-brand-primary/20 pt-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Assignment Confidence</h4>
-              <div class="space-y-2">
-                <div class="flex justify-between text-sm text-gray-600">
-                  <span>Low</span>
-                  <span>{{ Math.round(assignmentConfidence * 100) }}%</span>
-                  <span>High</span>
-                </div>
-                <input
-                  v-model="assignmentConfidence"
-                  type="range"
-                  min="0.1"
-                  max="1"
-                  step="0.1"
-                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-                <p class="text-xs text-gray-500">
-                  Higher confidence means you're more certain this face belongs to the selected person.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-4 sm:mt-6 sm:flex sm:flex-row-reverse">
-          <button
-            type="button"
-            @click="handleAssign"
-            :disabled="!canAssign || assigning"
-            class="w-full inline-flex justify-center border-0 px-4 sm:px-6 py-2 bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-xs sm:text-sm font-medium text-white tracking-wider uppercase focus:outline-none sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-elevation-2 hover:shadow-elevation-3"
-          >
-            <i v-if="assigning" class="pi pi-spin pi-spinner mr-2"></i>
-            {{ createNewPerson ? 'CREATE & ASSIGN' : 'ASSIGN FACE' }}
-          </button>
-          
-          <button
-            type="button"
-            @click="handleSkip"
-            :disabled="assigning"
-            class="w-full inline-flex justify-center border-0 px-4 sm:px-6 py-2 bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-xs sm:text-sm font-medium text-white tracking-wider uppercase focus:outline-none sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-elevation-2 hover:shadow-elevation-3"
-          >
-            <i class="pi pi-forward mr-2"></i>
-            SKIP FACE
-          </button>
-          
-          <button
-            type="button"
-            @click="$emit('close')"
-            class="mt-3 w-full inline-flex justify-center border-0 px-4 sm:px-6 py-2 bg-brand-dialog-cancel hover:bg-brand-dialog-cancel-hover text-xs sm:text-sm font-medium text-white tracking-wider uppercase focus:outline-none sm:mt-0 sm:w-auto rounded shadow-elevation-2 hover:shadow-elevation-3"
-          >
-            CANCEL
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, computed, watch } from 'vue';
-// Using PrimeVue icons instead of Heroicons
+import { ref, computed, watch } from 'vue'
+import { useRelationshipOptions } from '~/composables/useRelationshipOptions'
 
-// Props
+// Get shared relationship options
+const { relationshipOptions } = useRelationshipOptions()
+
 const props = defineProps({
-  face: {
-    type: Object,
+  visible: {
+    type: Boolean,
     required: true
   },
-  personGroups: {
+  faces: {
     type: Array,
     default: () => []
   },
-  faceNumber: {
-    type: Number,
-    default: null
+  existingPeople: {
+    type: Array,
+    default: () => []
+  },
+  mode: {
+    type: String,
+    default: 'assign', // 'assign' or 'change'
+    validator: (value) => ['assign', 'change'].includes(value)
   }
-});
+})
 
-// Emits
-const emit = defineEmits(['close', 'assign', 'create-person-and-assign', 'skip']);
+const emit = defineEmits(['update:visible', 'assign', 'create-person', 'remove', 'skip'])
 
-// Form state
-const selectedPersonId = ref('');
-const createNewPerson = ref(false);
-const newPersonName = ref('');
-const assignmentConfidence = ref(0.9);
-const assigning = ref(false);
+const supabase = useNuxtApp().$supabase
 
-// Computed
-const canAssign = computed(() => {
-  if (createNewPerson.value) {
-    return newPersonName.value.trim().length > 0;
-  }
-  return selectedPersonId.value !== '';
-});
+// Current face being processed
+const currentIndex = ref(0)
+const currentFace = computed(() => props.faces[currentIndex.value])
 
-// Compute the bounding box overlay style for the face preview
+// Assignment UI state
+const assignmentMode = ref('suggest') // 'suggest', 'select', 'create'
+const selectedPersonId = ref(null)
+const newPersonName = ref('')
+const newPersonDisplayName = ref('')
+const newPersonRelationship = ref('')
+const isProcessing = ref(false)
+const errorMessage = ref('')
+
+// Face image URL
+const faceImageUrl = computed(() => {
+  if (!currentFace.value) return null
+  return currentFace.value.assets?.thumbnail_url || currentFace.value.assets?.storage_url
+})
+
+// Calculate bounding box position for object-contain images
 const boundingBoxStyle = computed(() => {
-  if (!props.face?.bounding_box) return {};
+  if (!currentFace.value?.bounding_box) return null
   
-  const box = props.face.bounding_box;
+  const box = currentFace.value.bounding_box
   
   // AWS Rekognition bounding box coordinates are normalized (0-1)
-  // Convert to percentages for CSS positioning
-  const left = (box.Left || 0) * 100;
-  const top = (box.Top || 0) * 100;
-  const width = (box.Width || 0) * 100;
-  const height = (box.Height || 0) * 100;
+  // These are relative to the actual image dimensions
+  // When using object-contain, we need to account for letterboxing/pillarboxing
   
-  // Position the bounding box overlay
+  // Add padding around the bounding box (expand by 15% on each side)
+  const padding = 0.15
+  const left = Math.max(0, (box.Left || 0) - (box.Width || 0) * padding) * 100
+  const top = Math.max(0, (box.Top || 0) - (box.Height || 0) * padding) * 100
+  const width = Math.min(1, (box.Width || 0) * (1 + padding * 2)) * 100
+  const height = Math.min(1, (box.Height || 0) * (1 + padding * 2)) * 100
+  
   return {
     left: `${left}%`,
     top: `${top}%`,
     width: `${width}%`,
     height: `${height}%`
-  };
-});
-
-// Format date
-const formatDate = (dateString) => {
-  if (!dateString) return 'Unknown';
-  return new Date(dateString).toLocaleDateString();
-};
-
-// Handle assignment
-const handleAssign = async () => {
-  if (!canAssign.value) return;
-
-  assigning.value = true;
-
-  try {
-    // Extract reactive variables to local variables for better reliability
-    const face = props.face;
-    const faceId = face?.face_id; // Fixed: use face_id instead of id
-    const personId = selectedPersonId.value;
-    const confidence = assignmentConfidence.value;
-    const createNew = createNewPerson.value;
-    const personName = newPersonName.value.trim();
-    
-    console.log('handleAssign - extracted values:', {
-      face,
-      faceId,
-      personId,
-      confidence,
-      createNew,
-      personName
-    });
-    console.log('handleAssign - face object keys:', Object.keys(face || {}));
-    console.log('handleAssign - face object values:', Object.entries(face || {}).map(([key, value]) => `${key}: ${value}`));
-    
-    if (createNew) {
-      // Emit special event for creating new person and assigning face
-      emit('create-person-and-assign', {
-        faceId: faceId,
-        personName: personName,
-        confidence: confidence
-      });
-    } else {
-      // Assign to existing person
-      if (!personId) {
-        throw new Error('No person selected for assignment');
-      }
-      console.log('Emitting assign with:', {
-        faceId: faceId,
-        personId: personId,
-        confidence: confidence
-      });
-      emit('assign', faceId, personId, confidence);
-    }
-  } catch (error) {
-    console.error('Error assigning face:', error);
-  } finally {
-    assigning.value = false;
   }
-};
+})
 
-// Person selection
-const selectPerson = (personId) => {
-  console.log('selectPerson called with:', personId);
-  selectedPersonId.value = personId;
-  console.log('selectedPersonId set to:', selectedPersonId.value);
-};
+// Suggestions for current face
+const suggestions = computed(() => {
+  return currentFace.value?.suggestions || []
+})
 
-// Handle skip
-const handleSkip = async () => {
-  try {
-    assigning.value = true;
-    
-    // Extract reactive variables to local variables for better reliability
-    const face = props.face;
-    const faceId = face?.face_id;
-    
-    console.log('handleSkip - extracted values:', {
-      face,
-      faceId
-    });
-    
-    // Emit skip event
-    emit('skip', faceId);
-  } catch (error) {
-    console.error('Error skipping face:', error);
-  } finally {
-    assigning.value = false;
+// Has suggestions
+const hasSuggestions = computed(() => {
+  return suggestions.value && suggestions.value.length > 0
+})
+
+// Best suggestion (highest similarity)
+const bestSuggestion = computed(() => {
+  if (!hasSuggestions.value) return null
+  return suggestions.value[0]
+})
+
+// Progress
+const progress = computed(() => {
+  if (props.faces.length === 0) return 0
+  return Math.round(((currentIndex.value + 1) / props.faces.length) * 100)
+})
+
+// Reset state when modal opens
+watch(() => props.visible, (newVal) => {
+  if (newVal) {
+    currentIndex.value = 0
+    assignmentMode.value = hasSuggestions.value ? 'suggest' : 'create'
+    selectedPersonId.value = null
+    newPersonName.value = ''
+    newPersonDisplayName.value = ''
+    newPersonRelationship.value = ''
+    errorMessage.value = ''
   }
-};
+})
 
-// Watch for changes
-watch(createNewPerson, (newValue) => {
-  if (newValue) {
-    selectedPersonId.value = '';
+// Navigate to next face
+const nextFace = () => {
+  if (currentIndex.value < props.faces.length - 1) {
+    currentIndex.value++
+    assignmentMode.value = hasSuggestions.value ? 'suggest' : 'create'
+    selectedPersonId.value = null
+    errorMessage.value = ''
+  } else {
+    // All faces processed
+    emit('update:visible', false)
   }
-});
-
-watch(selectedPersonId, (newValue) => {
-  if (newValue) {
-    createNewPerson.value = false;
-  }
-});
-</script>
-
-<style scoped>
-.slider::-webkit-slider-thumb {
-  appearance: none;
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  background: theme('colors.brand.highlight');
-  cursor: pointer;
 }
 
-.slider::-moz-range-thumb {
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  background: theme('colors.brand.highlight');
-  cursor: pointer;
-  border: none;
+// Confirm suggestion
+const confirmSuggestion = async () => {
+  if (!bestSuggestion.value) return
+  
+  isProcessing.value = true
+  errorMessage.value = ''
+  
+  try {
+    await emit('assign', {
+      faceId: currentFace.value.id,
+      personGroupId: bestSuggestion.value.person.id,
+      confidence: bestSuggestion.value.similarity / 100
+    })
+    
+    nextFace()
+  } catch (error) {
+    console.error('Error confirming suggestion:', error)
+    errorMessage.value = 'Failed to assign face. Please try again.'
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+// Reject suggestion - show person selector
+const rejectSuggestion = () => {
+  assignmentMode.value = 'select'
+}
+
+// Assign to selected person
+const assignToSelectedPerson = async () => {
+  if (!selectedPersonId.value) {
+    errorMessage.value = 'Please select a person'
+    return
+  }
+  
+  isProcessing.value = true
+  errorMessage.value = ''
+  
+  try {
+    await emit('assign', {
+      faceId: currentFace.value.id,
+      personGroupId: selectedPersonId.value,
+      confidence: 1.0
+    })
+    
+    nextFace()
+  } catch (error) {
+    console.error('Error assigning to person:', error)
+    errorMessage.value = 'Failed to assign face. Please try again.'
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+// Create new person
+const createNewPerson = async () => {
+  if (!newPersonName.value.trim()) {
+    errorMessage.value = 'Please enter a person name'
+    return
+  }
+  
+  isProcessing.value = true
+  errorMessage.value = ''
+  
+  try {
+    await emit('create-person', {
+      faceId: currentFace.value.id,
+      personName: newPersonName.value.trim(),
+      displayName: newPersonDisplayName.value.trim() || newPersonName.value.trim(),
+      relationship: newPersonRelationship.value.trim() || null
+    })
+    
+    // Reset form
+    newPersonName.value = ''
+    newPersonDisplayName.value = ''
+    newPersonRelationship.value = ''
+    
+    nextFace()
+  } catch (error) {
+    console.error('Error creating person:', error)
+    errorMessage.value = 'Failed to create person. Please try again.'
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+// Skip face
+const skipFace = () => {
+  emit('skip', currentFace.value.id)
+  nextFace()
+}
+
+// Remove assignment (for 'change' mode)
+const removeAssignment = async () => {
+  isProcessing.value = true
+  errorMessage.value = ''
+  
+  try {
+    await emit('remove', currentFace.value.id)
+    emit('update:visible', false)
+  } catch (error) {
+    console.error('Error removing assignment:', error)
+    errorMessage.value = 'Failed to remove assignment. Please try again.'
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+// Close modal
+const closeModal = () => {
+  emit('update:visible', false)
+}
+</script>
+
+<template>
+  <Dialog
+    :visible="visible"
+    @update:visible="$emit('update:visible', $event)"
+    modal
+    :closable="!isProcessing"
+    class="w-[95vw] max-w-2xl"
+  >
+    <template #header>
+      <div class="flex items-center justify-between w-full pr-8">
+        <h3 class="text-xl font-bold text-gray-900">
+          {{ mode === 'assign' ? 'Assign Faces to People' : 'Change Face Assignment' }}
+        </h3>
+        <div v-if="mode === 'assign'" class="text-sm text-gray-600">
+          {{ currentIndex + 1 }} of {{ faces.length }}
+        </div>
+      </div>
+    </template>
+
+    <div v-if="currentFace" class="space-y-6">
+      <!-- Progress Bar -->
+      <div v-if="mode === 'assign' && faces.length > 1" class="w-full bg-gray-200 rounded-full h-2">
+        <div
+          class="bg-brand-primary h-2 rounded-full transition-all duration-300"
+          :style="{ width: `${progress}%` }"
+        ></div>
+      </div>
+
+      <!-- Error Message -->
+      <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Face Image -->
+      <div class="flex justify-center">
+        <div class="relative inline-block">
+          <img
+            :src="faceImageUrl"
+            alt="Detected face"
+            class="max-w-full max-h-64 rounded-lg shadow-lg border-4 border-gray-200 object-contain bg-gray-50"
+            style="min-height: 256px;"
+          />
+          
+          <!-- Face Bounding Box Overlay -->
+          <div 
+            v-if="boundingBoxStyle"
+            class="absolute border-2 border-brand-highlight rounded-lg pointer-events-none"
+            :style="boundingBoxStyle"
+          >
+          </div>
+          
+          <div class="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded z-10">
+            {{ Math.round(currentFace.confidence * 100) }}% confidence
+          </div>
+        </div>
+      </div>
+
+      <!-- Suggestion Mode -->
+      <div v-if="assignmentMode === 'suggest' && hasSuggestions" class="space-y-4">
+        <div class="text-center">
+          <h4 class="text-lg font-semibold text-gray-900 mb-2">Is this {{ bestSuggestion.person.name }}?</h4>
+          <p class="text-sm text-gray-600">
+            {{ Math.round(bestSuggestion.similarity) }}% match confidence
+          </p>
+        </div>
+
+        <div class="flex gap-3 justify-center">
+          <Button
+            @click="confirmSuggestion"
+            :disabled="isProcessing"
+            label="Yes, that's them"
+            icon="pi pi-check"
+            class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-6 py-2 rounded"
+          />
+          <Button
+            @click="rejectSuggestion"
+            :disabled="isProcessing"
+            label="No, select different person"
+            icon="pi pi-times"
+            class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-6 py-2 rounded"
+          />
+          <Button
+            @click="assignmentMode = 'create'"
+            :disabled="isProcessing"
+            label="Create new person"
+            icon="pi pi-user-plus"
+            class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 px-6 py-2 rounded"
+          />
+        </div>
+
+        <div class="flex justify-center">
+          <Button
+            @click="skipFace"
+            :disabled="isProcessing"
+            label="Skip for now"
+            icon="pi pi-forward"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 border-0 px-6 py-2 rounded"
+          />
+        </div>
+      </div>
+
+      <!-- Select Person Mode -->
+      <div v-if="assignmentMode === 'select'" class="space-y-4">
+        <div class="text-center">
+          <h4 class="text-lg font-semibold text-gray-900 mb-4">Who is this person?</h4>
+        </div>
+
+        <div class="space-y-3">
+          <label class="block text-sm font-medium text-gray-700">Select existing person:</label>
+          <Dropdown
+            v-model="selectedPersonId"
+            :options="existingPeople"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Choose a person..."
+            class="w-full"
+            filter
+          />
+        </div>
+
+        <div class="flex gap-3 justify-center">
+          <Button
+            @click="assignToSelectedPerson"
+            :disabled="isProcessing || !selectedPersonId"
+            label="Assign"
+            icon="pi pi-check"
+            class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-6 py-2 rounded"
+          />
+          <Button
+            @click="assignmentMode = 'create'"
+            :disabled="isProcessing"
+            label="Create new person instead"
+            icon="pi pi-user-plus"
+            class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-6 py-2 rounded"
+          />
+        </div>
+
+        <div class="flex justify-center">
+          <Button
+            @click="skipFace"
+            :disabled="isProcessing"
+            label="Skip for now"
+            icon="pi pi-forward"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 border-0 px-6 py-2 rounded"
+          />
+        </div>
+      </div>
+
+      <!-- Create Person Mode -->
+      <div v-if="assignmentMode === 'create'" class="space-y-4">
+        <div class="text-center">
+          <h4 class="text-lg font-semibold text-gray-900 mb-4">Create a new person</h4>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Person's name *</label>
+            <InputText
+              v-model="newPersonName"
+              placeholder="e.g., Grandma Sarah"
+              class="w-full"
+              :disabled="isProcessing"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Display name (optional)</label>
+            <InputText
+              v-model="newPersonDisplayName"
+              placeholder="e.g., Sarah"
+              class="w-full"
+              :disabled="isProcessing"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Relationship (optional)</label>
+            <Dropdown
+              v-model="newPersonRelationship"
+              :options="relationshipOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select relationship..."
+              class="w-full"
+              :disabled="isProcessing"
+              :filter="true"
+              filterPlaceholder="Search relationships..."
+            />
+          </div>
+        </div>
+
+        <div class="flex gap-3 justify-center">
+          <Button
+            @click="createNewPerson"
+            :disabled="isProcessing || !newPersonName.trim()"
+            label="Create & Assign"
+            icon="pi pi-check"
+            class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-6 py-2 rounded"
+          />
+          <Button
+            v-if="existingPeople.length > 0"
+            @click="assignmentMode = 'select'"
+            :disabled="isProcessing"
+            label="Select existing instead"
+            icon="pi pi-users"
+            class="bg-brand-dialog-secondary hover:bg-brand-dialog-secondary-hover text-brand-primary border-0 px-6 py-2 rounded"
+          />
+        </div>
+
+        <div class="flex justify-center">
+          <Button
+            @click="skipFace"
+            :disabled="isProcessing"
+            label="Skip for now"
+            icon="pi pi-forward"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 border-0 px-6 py-2 rounded"
+          />
+        </div>
+      </div>
+
+      <!-- Remove Assignment (Change Mode) -->
+      <div v-if="mode === 'change'" class="flex justify-center pt-4 border-t">
+        <Button
+          @click="removeAssignment"
+          :disabled="isProcessing"
+          label="Remove this face assignment"
+          icon="pi pi-trash"
+          class="bg-brand-dialog-delete hover:bg-brand-dialog-delete-hover text-white border-0 px-6 py-2 rounded"
+        />
+      </div>
+    </div>
+
+    <div v-else class="text-center py-8 text-gray-600">
+      No faces to assign
+    </div>
+  </Dialog>
+</template>
+
+<style scoped>
+.p-dialog-header {
+  padding: 1.5rem;
+}
+
+.p-dialog-content {
+  padding: 1.5rem;
 }
 </style>

@@ -963,13 +963,12 @@ BEGIN
   END IF;
 END $$;
 
--- Face Recognition Indexes and Constraints
--- Vector similarity search using pgvector
-CREATE INDEX IF NOT EXISTS idx_faces_face_vector ON faces USING ivfflat (face_vector vector_cosine_ops);
-
+-- Face Recognition Indexes
 -- User-specific queries
 CREATE INDEX IF NOT EXISTS idx_faces_user_id ON faces(user_id);
 CREATE INDEX IF NOT EXISTS idx_faces_asset_id ON faces(asset_id);
+CREATE INDEX IF NOT EXISTS idx_faces_rekognition_face_id ON faces(rekognition_face_id);
+CREATE INDEX IF NOT EXISTS idx_faces_needs_assignment ON faces(needs_assignment) WHERE needs_assignment = true;
 CREATE INDEX IF NOT EXISTS idx_faces_created_at ON faces(created_at);
 CREATE INDEX IF NOT EXISTS idx_faces_confidence ON faces(confidence);
 
@@ -981,11 +980,6 @@ CREATE INDEX IF NOT EXISTS idx_person_groups_name ON person_groups(name);
 CREATE INDEX IF NOT EXISTS idx_face_person_links_face_id ON face_person_links(face_id);
 CREATE INDEX IF NOT EXISTS idx_face_person_links_person_group_id ON face_person_links(person_group_id);
 CREATE INDEX IF NOT EXISTS idx_face_person_links_confidence ON face_person_links(confidence);
-
--- Similarity cache queries
-CREATE INDEX IF NOT EXISTS idx_face_similarities_face1_id ON face_similarities(face1_id);
-CREATE INDEX IF NOT EXISTS idx_face_similarities_face2_id ON face_similarities(face2_id);
-CREATE INDEX IF NOT EXISTS idx_face_similarities_score ON face_similarities(similarity_score);
 
 -- Processing queue queries
 CREATE INDEX IF NOT EXISTS idx_face_processing_queue_status ON face_processing_queue(status);
@@ -1038,34 +1032,31 @@ COMMENT ON COLUMN assets.face_detection_processed_at IS 'Timestamp when face det
 COMMENT ON COLUMN assets.has_exif_data IS 'Indicates if EXIF metadata (including GPS coordinates) was available in the original photo';
 
 -- Face Recognition Tables
--- Face collections per user (links to AWS Rekognition collections)
+-- Face collections per user (AWS Rekognition Collections API)
 create table if not exists face_collections (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references profiles(user_id) on delete cascade,
   aws_collection_id text unique not null,
-  is_fallback boolean default false,
+  rekognition_arn text,
+  face_count integer default 0,
+  last_indexed_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false
 );
 
--- Individual faces with vectors from AWS Rekognition
+-- Individual faces indexed in AWS Rekognition Collections
 create table if not exists faces (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references profiles(user_id) on delete cascade,
   asset_id uuid not null references assets(id) on delete cascade,
-  aws_face_id text not null,
-  face_vector vector(128) null,
-  bounding_box jsonb not null, -- {Left, Top, Width, Height, Confidence}
+  rekognition_face_id text not null, -- FaceId from IndexFaces
+  rekognition_image_id text, -- External image ID used in IndexFaces
+  bounding_box jsonb not null, -- {Left, Top, Width, Height} - Used for cropping
   confidence decimal(5,4) not null check (confidence >= 0 and confidence <= 1),
-  age_range jsonb, -- {Low, High} from AWS
-  gender jsonb, -- {Value, Confidence} from AWS
-  emotions jsonb, -- Array of emotions with confidence scores
-  pose jsonb, -- Pose information from AWS
-  quality jsonb, -- Quality metrics from AWS
-  landmarks jsonb, -- Facial landmarks from AWS
-  is_fallback boolean default false,
-  skipped boolean default false,
+  needs_assignment boolean default true, -- Face awaiting user assignment
+  auto_assigned boolean default false, -- Face was auto-matched
+  skipped boolean default false, -- User manually skipped this face
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
   deleted boolean default false
@@ -1096,21 +1087,14 @@ create table if not exists face_person_links (
   assigned_at timestamp with time zone default timezone('utc'::text, now()),
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now()),
-  deleted boolean default false,
-  unique(face_id, person_group_id)
+  deleted boolean default false
 );
 
--- Face similarity cache for performance optimization
-create table if not exists face_similarities (
-  id uuid primary key default gen_random_uuid(),
-  face1_id uuid not null references faces(id) on delete cascade,
-  face2_id uuid not null references faces(id) on delete cascade,
-  similarity_score decimal(5,4) not null check (similarity_score >= 0 and similarity_score <= 1),
-  similarity_type text default 'cosine' check (similarity_type in ('cosine', 'euclidean', 'l2')),
-  calculated_at timestamp with time zone default timezone('utc'::text, now()),
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  unique(face1_id, face2_id)
-);
+-- Create partial unique index that only applies to non-deleted records
+-- This allows soft-deleted assignments to be replaced without unique constraint violations
+create unique index if not exists idx_face_person_links_unique_active 
+  on face_person_links(face_id, person_group_id) 
+  where deleted = false;
 
 -- Face processing queue for background processing
 create table if not exists face_processing_queue (
@@ -1151,7 +1135,6 @@ ALTER TABLE face_collections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE faces ENABLE ROW LEVEL SECURITY;
 ALTER TABLE person_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE face_person_links ENABLE ROW LEVEL SECURITY;
-ALTER TABLE face_similarities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE face_processing_queue ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for face_collections
@@ -1177,17 +1160,6 @@ CREATE POLICY "Users can manage their own person groups" ON person_groups
 DROP POLICY IF EXISTS "Users can manage their own face-person links" ON face_person_links;
 CREATE POLICY "Users can manage their own face-person links" ON face_person_links
     FOR ALL USING (true) WITH CHECK (true);
-
--- RLS Policies for face_similarities
-DROP POLICY IF EXISTS "Users can view their own face similarities" ON face_similarities;
-CREATE POLICY "Users can view their own face similarities" ON face_similarities
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM faces f 
-            WHERE f.id = face_similarities.face1_id 
-            AND f.user_id = (SELECT auth.uid())
-        )
-    );
 
 -- RLS Policies for face_processing_queue
 DROP POLICY IF EXISTS "Users can manage their own processing queue" ON face_processing_queue;
@@ -1223,51 +1195,19 @@ CREATE TRIGGER update_face_processing_queue_updated_at
 
 -- Add comments for face recognition tables
 COMMENT ON TABLE face_collections IS 'AWS Rekognition face collections per user for face indexing';
-COMMENT ON TABLE faces IS 'Individual detected faces with 128-dimensional vectors from AWS Rekognition';
+COMMENT ON TABLE faces IS 'Individual faces indexed in AWS Rekognition Collections';
 COMMENT ON TABLE person_groups IS 'Named people identified by users for organizing photos';
 COMMENT ON TABLE face_person_links IS 'Links between detected faces and named people';
-COMMENT ON TABLE face_similarities IS 'Cached similarity scores between faces for performance';
 COMMENT ON TABLE face_processing_queue IS 'Queue for background face processing tasks';
 
-COMMENT ON COLUMN faces.face_vector IS '128-dimensional face embedding vector from AWS Rekognition';
-COMMENT ON COLUMN faces.bounding_box IS 'JSON with Left, Top, Width, Height coordinates (0-1 scale)';
+COMMENT ON COLUMN faces.rekognition_face_id IS 'FaceId returned by AWS Rekognition IndexFaces';
+COMMENT ON COLUMN faces.rekognition_image_id IS 'External image ID used in IndexFaces (typically asset_id)';
+COMMENT ON COLUMN faces.bounding_box IS 'JSON with Left, Top, Width, Height coordinates (0-1 scale) - Used for cropping';
 COMMENT ON COLUMN faces.confidence IS 'AWS confidence score for face detection (0-1)';
-COMMENT ON COLUMN face_similarities.similarity_score IS 'Similarity score between two faces (0-1, higher = more similar)';
+COMMENT ON COLUMN faces.needs_assignment IS 'Face detected but not yet assigned to a person by user';
+COMMENT ON COLUMN faces.auto_assigned IS 'Face was automatically assigned based on high similarity match';
 
 -- Face Recognition Database Functions
--- These functions provide optimized vector similarity search using pgvector
-
--- Function to find similar faces using vector similarity
-CREATE OR REPLACE FUNCTION find_similar_faces(
-  source_face_id UUID,
-  similarity_threshold DECIMAL DEFAULT 0.8,
-  max_results INTEGER DEFAULT 10
-)
-RETURNS TABLE (
-  face_id UUID,
-  similarity_score DECIMAL
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT 
-    f.id as face_id,
-    (f.face_vector <=> (
-      SELECT face_vector 
-      FROM faces 
-      WHERE id = source_face_id
-    )) as similarity_score
-  FROM faces f
-  WHERE f.id != source_face_id
-    AND f.deleted = false
-    AND (f.face_vector <=> (
-      SELECT face_vector 
-      FROM faces 
-      WHERE id = source_face_id
-    )) >= similarity_threshold
-  ORDER BY similarity_score DESC
-  LIMIT max_results;
-END;
-$$ LANGUAGE plpgsql;
 
 -- Function to find faces by person group
 CREATE OR REPLACE FUNCTION find_faces_by_person(
@@ -1334,7 +1274,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to find unassigned faces
+-- Function to find unassigned faces (includes face vectors for matching)
 CREATE OR REPLACE FUNCTION find_unassigned_faces(
   user_id_param UUID,
   limit_count INTEGER DEFAULT 20
@@ -1345,6 +1285,7 @@ RETURNS TABLE (
   asset_url TEXT,
   confidence DECIMAL,
   bounding_box JSONB,
+  face_vector vector,
   created_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
@@ -1355,6 +1296,7 @@ BEGIN
     a.storage_url as asset_url,
     f.confidence,
     f.bounding_box,
+    f.face_vector,
     f.created_at
   FROM faces f
   INNER JOIN assets a ON f.asset_id = a.id
@@ -1460,6 +1402,39 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to clear all face assignments (for testing/debugging)
+CREATE OR REPLACE FUNCTION clear_all_face_assignments(user_id_param UUID DEFAULT NULL)
+RETURNS TABLE (
+  cleared_count BIGINT,
+  message TEXT
+) AS $$
+DECLARE
+  affected_count BIGINT;
+BEGIN
+  -- If user_id is provided, only clear assignments for that user
+  -- Otherwise clear all assignments
+  IF user_id_param IS NOT NULL THEN
+    UPDATE face_person_links fpl
+    SET deleted = true, updated_at = NOW()
+    FROM person_groups pg
+    WHERE fpl.person_group_id = pg.id
+      AND pg.user_id = user_id_param
+      AND fpl.deleted = false;
+  ELSE
+    UPDATE face_person_links
+    SET deleted = true, updated_at = NOW()
+    WHERE deleted = false;
+  END IF;
+
+  affected_count := FOUND::int;
+
+  RETURN QUERY
+  SELECT 
+    affected_count as cleared_count,
+    'Successfully cleared ' || affected_count || ' face assignments' as message;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Grant execute permissions on face recognition functions
 GRANT EXECUTE ON FUNCTION find_similar_faces(UUID, DECIMAL, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION find_faces_by_person(UUID, INTEGER) TO authenticated;
@@ -1469,6 +1444,9 @@ GRANT EXECUTE ON FUNCTION get_face_detection_stats(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION suggest_person_assignments(UUID, DECIMAL, INTEGER) TO authenticated;
 GRANT EXECUTE ON FUNCTION skip_face(UUID) TO authenticated;
 
+-- Grant execute permission for clear_all_face_assignments (admin only)
+GRANT EXECUTE ON FUNCTION clear_all_face_assignments(UUID) TO authenticated;
+
 -- Add comments for face recognition functions
 COMMENT ON FUNCTION find_similar_faces(UUID, DECIMAL, INTEGER) IS 'Find faces similar to a given face using vector similarity search';
 COMMENT ON FUNCTION find_faces_by_person(UUID, INTEGER) IS 'Find all faces assigned to a specific person';
@@ -1477,4 +1455,7 @@ COMMENT ON FUNCTION find_unassigned_faces(UUID, INTEGER) IS 'Find faces that hav
 COMMENT ON FUNCTION get_face_detection_stats(UUID) IS 'Get overall face detection statistics for a user';
 COMMENT ON FUNCTION suggest_person_assignments(UUID, DECIMAL, INTEGER) IS 'Suggest person assignments for unassigned faces based on similarity';
 COMMENT ON FUNCTION skip_face(UUID) IS 'Mark a face as skipped so it will not appear in unassigned faces again'; 
+
+-- Comment for clear_all_face_assignments function
+COMMENT ON FUNCTION clear_all_face_assignments(UUID) IS 'Soft-delete all face-to-person assignments for testing and debugging purposes'; 
 
