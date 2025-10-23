@@ -1271,31 +1271,22 @@ export default defineEventHandler(async (event) => {
               if (needsExtension.top || needsExtension.bottom || needsExtension.left || needsExtension.right) {
                 console.log(`🔄 Image extension needed:`, needsExtension)
                 
-                // Calculate the final image dimensions and offsets
-                const finalWidth = Math.floor(maxCropWidth)
-                const finalHeight = Math.floor(maxCropHeight)
-                const sourceX = Math.max(0, Math.floor(cropX))
-                const sourceY = Math.max(0, Math.floor(cropY))
-                const sourceWidth = Math.min(processedMetadata.width - sourceX, finalWidth)
-                const sourceHeight = Math.min(processedMetadata.height - sourceY, finalHeight)
+                // Instead of extending with black fill, clamp the crop to image boundaries
+                // This prevents visual distortion on edges while preserving as much of the face as possible
+                const clampedCropX = Math.max(0, Math.min(cropX, processedMetadata.width - maxCropWidth))
+                const clampedCropY = Math.max(0, Math.min(cropY, processedMetadata.height - maxCropHeight))
+                const clampedWidth = Math.min(maxCropWidth, processedMetadata.width - clampedCropX)
+                const clampedHeight = Math.min(maxCropHeight, processedMetadata.height - clampedCropY)
                 
-                // Calculate where to place the source image in the final canvas
-                const destX = Math.max(0, -Math.floor(cropX))
-                const destY = Math.max(0, -Math.floor(cropY))
+                console.log(`🔄 Extension details: clamped to (${clampedCropX},${clampedCropY},${clampedWidth}x${clampedHeight})`)
                 
-                console.log(`🔄 Extension details: source(${sourceX},${sourceY},${sourceWidth}x${sourceHeight}) -> dest(${destX},${destY}) in ${finalWidth}x${finalHeight} canvas`)
-                
-                // Store extension info for later processing
+                // Use clamped dimensions without extension
                 smartcropArea = {
-                  x: sourceX,
-                  y: sourceY,
-                  width: sourceWidth,
-                  height: sourceHeight,
-                  needsExtension: true,
-                  finalWidth: finalWidth,
-                  finalHeight: finalHeight,
-                  destX: destX,
-                  destY: destY
+                  x: Math.floor(clampedCropX),
+                  y: Math.floor(clampedCropY),
+                  width: Math.floor(clampedWidth),
+                  height: Math.floor(clampedHeight),
+                  needsExtension: false
                 }
               } else {
                 // Normal crop without extension
