@@ -3,6 +3,24 @@
 <template>
   <ClientOnly>
     <div class="relative w-full h-full bg-brand-navigation">
+      <!-- Loading Spinner Overlay -->
+      <div 
+        v-if="!isLoaded" 
+        class="absolute inset-0 flex items-center justify-center bg-brand-navigation z-50"
+      >
+        <div class="flex flex-col items-center gap-4">
+          <ProgressSpinner 
+            style="width: 60px; height: 60px"
+            strokeWidth="4"
+            fill="transparent"
+            animationDuration="1s"
+          />
+          <p class="text-brand-primary text-sm font-medium">
+            Loading {{ isJpgImage ? 'image' : 'PDF' }}...
+          </p>
+        </div>
+      </div>
+
       <!-- Document/Image Container -->
       <div class="w-full h-full overflow-hidden scrollbar-hide" :class="{ 'pb-16 sm:pb-20': true }">
         <div 
@@ -215,6 +233,7 @@
 <script setup>
 import { ref, watch, computed, nextTick, onMounted } from 'vue'
 import VuePdfEmbed from 'vue-pdf-embed'
+import ProgressSpinner from 'primevue/progressspinner'
 import 'vue-pdf-embed/dist/styles/annotationLayer.css'
 import 'vue-pdf-embed/dist/styles/textLayer.css'
 import { useAnalytics } from '~/composables/useAnalytics'

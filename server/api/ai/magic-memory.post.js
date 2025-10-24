@@ -241,16 +241,46 @@ export default defineEventHandler(async (event) => {
 
       // Ask AI to select exactly the number of replacements from candidate pool
       const replacementCount = photosToReplace.length
+      
+      // Get info about photos being kept to help AI select complementary replacements
+      const keptAssets = assets.filter(a => photosToKeep.includes(a.id))
+      const keptPhotosInfo = keptAssets.map(a => ({
+        title: a.title || 'Untitled',
+        caption: a.ai_caption || a.user_caption || '',
+        tags: Array.isArray(a.tags) ? a.tags.join(', ') : '',
+        people: Array.isArray(a.people) ? a.people.map(p => p.display_name || p.name).join(', ') : '',
+        location: `${a.city || ''}${a.state ? ', ' + a.state : ''}${a.country ? ', ' + a.country : ''}`.trim()
+      })).filter(info => info.title || info.caption) // Only include if we have some info
+      
+      // Enhance prompt with replacement context
+      let enhancedPrompt = memoryBook.ai_supplemental_prompt
+      
+      if (keptPhotosInfo.length > 0) {
+        const keptPhotosSummary = keptPhotosInfo.map((info, idx) => 
+          `${idx + 1}. ${info.title}${info.caption ? ' - ' + info.caption : ''}${info.tags ? ' [' + info.tags + ']' : ''}`
+        ).join('\n')
+        
+        enhancedPrompt = `${memoryBook.ai_supplemental_prompt}
+
+CONTEXT: You are selecting ${replacementCount} replacement photo(s) to enhance this memory book. ${keptAssets.length} photo(s) will be kept:
+
+${keptPhotosSummary}
+
+Select ${replacementCount} photo(s) that complement these existing photos and maintain the overall story and theme. The new photos should work well with what's being kept while adding variety and depth to the narrative.`
+      }
+      
       console.log('🔄 DEBUG - About to call selectPhotosByAttributes with:', {
         candidateCount: candidateAssets.length,
         replacementCount,
-        prompt: memoryBook.ai_supplemental_prompt?.substring(0, 100) + '...'
+        originalPrompt: memoryBook.ai_supplemental_prompt?.substring(0, 100) + '...',
+        enhancedPrompt: enhancedPrompt?.substring(0, 150) + '...',
+        keptPhotosCount: keptAssets.length
       })
       console.log('🔄 DEBUG - Starting OpenAI API call at:', new Date().toISOString())
       
       const replacementSelectionResult = await selectPhotosByAttributes(
         candidateAssets,
-        memoryBook.ai_supplemental_prompt,
+        enhancedPrompt,
         replacementCount,
         []
       )
