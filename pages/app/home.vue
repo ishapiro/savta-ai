@@ -31,11 +31,20 @@
               <div class="space-y-3">
                 <div class="flex items-start gap-4">
                   <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-brand-highlight/20 flex items-center justify-center">
+                    <span class="text-lg">📱</span>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-brand-secondary mb-1">Collect via Text Messages</h3>
+                    <p class="text-sm text-brand-primary/70">Your family texts photos to a shared number. They arrive instantly, ready to turn into memories.</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-4">
+                  <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-brand-highlight/20 flex items-center justify-center">
                     <span class="text-lg">🎯</span>
                   </div>
                   <div>
                     <h3 class="font-semibold text-brand-secondary mb-1">Upload & Select</h3>
-                    <p class="text-sm text-brand-primary/70">Share photos from your phone, computer, or cloud storage</p>
+                    <p class="text-sm text-brand-primary/70">Add photos from your phone, computer, cloud storage—or get them straight from text messages</p>
                   </div>
                 </div>
                 <div class="flex items-start gap-4">
@@ -75,25 +84,26 @@
 
           <!-- Right Column: Feature Cards (1/3 width) -->
           <div class="hidden lg:flex lg:flex-col gap-4 animate-fade-in-right" style="animation-delay: 0.2s;">
+            <!-- Feature Card: SMS Collection (HERO) -->
+            <div class="bg-gradient-to-br from-brand-highlight/30 to-brand-highlight/10 backdrop-blur-sm rounded-xl border border-brand-highlight/50 p-5 shadow-md hover:shadow-lg transition-all hover:scale-105">
+              <div class="text-4xl mb-3">💬</div>
+              <h3 class="font-bold text-brand-secondary text-base mb-2">Text Message Photos</h3>
+              <p class="text-xs text-brand-primary/70 leading-relaxed font-medium">Your whole family texts photos to one number. No app needed, no tech required.</p>
+              <div class="mt-3 pt-3 border-t border-brand-highlight/30 text-xs text-brand-primary/80 font-semibold">✨ The Easy Way to Collect Family Moments</div>
+            </div>
+
             <!-- Feature Card 1 -->
             <div class="bg-white/50 backdrop-blur-sm rounded-xl border border-brand-navigation/20 p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div class="text-3xl mb-3">📱</div>
-              <h3 class="font-semibold text-brand-secondary text-sm mb-2">Photos Everywhere</h3>
-              <p class="text-xs text-brand-primary/70 leading-relaxed">Find your best moments from phone, computer & cloud</p>
+              <div class="text-3xl mb-3">🤖</div>
+              <h3 class="font-semibold text-brand-secondary text-sm mb-2">AI Does the Work</h3>
+              <p class="text-xs text-brand-primary/70 leading-relaxed">Selects best photos, writes captions, designs everything</p>
             </div>
 
             <!-- Feature Card 2 -->
             <div class="bg-white/50 backdrop-blur-sm rounded-xl border border-brand-navigation/20 p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div class="text-3xl mb-3">🎨</div>
-              <h3 class="font-semibold text-brand-secondary text-sm mb-2">Design Auto-Done</h3>
-              <p class="text-xs text-brand-primary/70 leading-relaxed">Beautiful layouts created automatically for you</p>
-            </div>
-
-            <!-- Feature Card 3 -->
-            <div class="bg-white/50 backdrop-blur-sm rounded-xl border border-brand-navigation/20 p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div class="text-3xl mb-3">✍️</div>
-              <h3 class="font-semibold text-brand-secondary text-sm mb-2">Captions Included</h3>
-              <p class="text-xs text-brand-primary/70 leading-relaxed">AI writes heartwarming captions that tell your story</p>
+              <div class="text-3xl mb-3">🎁</div>
+              <h3 class="font-semibold text-brand-secondary text-sm mb-2">Print & Mail</h3>
+              <p class="text-xs text-brand-primary/70 leading-relaxed">Send physical cards to grandparents with a click</p>
             </div>
           </div>
         </div>

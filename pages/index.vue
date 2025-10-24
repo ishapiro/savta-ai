@@ -67,6 +67,10 @@
             <!-- Quick Benefits -->
             <div class="space-y-2">
               <div class="flex items-start gap-2">
+                <span class="text-brand-highlight font-bold text-lg mt-0.5">💬</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70"><strong>Collect photos via text</strong> — Your family texts pictures to one number, no app needed</p>
+              </div>
+              <div class="flex items-start gap-2">
                 <span class="text-brand-highlight font-bold text-lg mt-0.5">✨</span>
                 <p class="text-xs sm:text-sm text-brand-primary/70">AI writes heartwarming captions and stories about your photos</p>
               </div>
