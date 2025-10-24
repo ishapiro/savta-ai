@@ -1131,6 +1131,15 @@ export default defineEventHandler(async (event) => {
               const highestFacePixelY = Math.floor(highestFace.y * processedMetadata.height)
               const faceHeight = Math.floor(highestFace.height * processedMetadata.height)
               
+              // CRITICAL: AWS Rekognition's face box only includes facial features (eyes, nose, mouth)
+              // but NOT the full head (hair, forehead, top of head). We need to account for this!
+              // Assume the actual top of the head is 30% of face height above the detected face box
+              const headExtensionFactor = 0.30 // 30% of face height for hair/forehead above detected face
+              const headExtensionPixels = Math.floor(faceHeight * headExtensionFactor)
+              const estimatedHeadTopPixelY = Math.max(0, highestFacePixelY - headExtensionPixels)
+              
+              console.log(`🔄 Head extension: Face box top=${highestFacePixelY}px, extension=${headExtensionPixels}px (${headExtensionFactor * 100}% of face), estimated head top=${estimatedHeadTopPixelY}px`)
+              
               // Check if all faces are in the top half of the image
               const imageMidpoint = processedMetadata.height / 2
               const allFacesInTopHalf = faceBoosts.every(face => {
@@ -1143,25 +1152,27 @@ export default defineEventHandler(async (event) => {
               
               // CRITICAL: Prioritize keeping tops of heads - be extremely conservative
               // Always prefer keeping the top of faces over the bottom
-              let topBuffer = Math.max(faceHeight * 0.5, 100) // 50% of face height or 100px, whichever is larger
+              let topBuffer = Math.max(faceHeight * 0.6, 120) // 60% of face height or 120px, whichever is larger (increased from 50%/100px for more headroom)
               
               // If all faces are in the top half, increase top padding significantly
               if (allFacesInTopHalf) {
-                topBuffer = Math.max(topBuffer * 1.5, 150) // Increase buffer by 50% or minimum 150px
-                console.log(`🔄 All faces in top half detected - increasing top buffer from ${Math.max(faceHeight * 0.5, 100)} to ${topBuffer}px`)
+                topBuffer = Math.max(topBuffer * 1.8, 180) // Increase buffer by 80% or minimum 180px (increased from 50%/150px)
+                console.log(`🔄 All faces in top half detected - increasing top buffer from ${Math.max(faceHeight * 0.6, 120)} to ${topBuffer}px`)
               }
               
               // IMPROVEMENT: Add maximum buffer cap to prevent over-preservation
               // This prevents extremely large buffers on large faces from dominating the crop
-              const maxBufferCap = Math.max(processedMetadata.height * 0.2, 200) // 20% of image height or 200px, whichever is larger
+              const maxBufferCap = Math.max(processedMetadata.height * 0.25, 250) // 25% of image height or 250px, whichever is larger (increased from 20%/200px for more headroom)
               if (topBuffer > maxBufferCap) {
                 console.log(`🔄 Buffer cap applied: ${topBuffer}px → ${maxBufferCap}px to maintain useful crop area`)
                 topBuffer = maxBufferCap
               }
               
-              const maxAllowedY = Math.max(0, highestFacePixelY - topBuffer)
+              // CRITICAL: Use estimated head top (not face box top) for buffer calculation
+              // This ensures we're protecting the ACTUAL top of the head, not just the detected face
+              const maxAllowedY = Math.max(0, estimatedHeadTopPixelY - topBuffer)
               
-              console.log(`🔄 Face analysis: Highest face at Y=${highestFacePixelY}px, face height=${faceHeight}px, top buffer=${topBuffer}px, max allowed Y=${maxAllowedY}px`)
+              console.log(`🔄 Face analysis: Face box top=${highestFacePixelY}px, estimated head top=${estimatedHeadTopPixelY}px, face height=${faceHeight}px, top buffer=${topBuffer}px, max allowed Y=${maxAllowedY}px`)
               
               if (smartcropArea.y > maxAllowedY) {
                 const originalY = smartcropArea.y
@@ -1190,7 +1201,13 @@ export default defineEventHandler(async (event) => {
                 bottom: Math.floor(faceBoundingBox.bottom * processedMetadata.height)
               }
               
-              console.log(`🔄 Face bounding box: ${faceBoxPixels.left},${faceBoxPixels.top} to ${faceBoxPixels.right},${faceBoxPixels.bottom}`)
+              // CRITICAL: Apply head extension to the top of the bounding box
+              // This accounts for hair/forehead above the detected face box
+              const avgFaceHeightInBox = faceBoxPixels.bottom - faceBoxPixels.top
+              const headExtensionForBox = Math.floor(avgFaceHeightInBox * headExtensionFactor)
+              faceBoxPixels.top = Math.max(0, faceBoxPixels.top - headExtensionForBox)
+              
+              console.log(`🔄 Face bounding box: ${faceBoxPixels.left},${faceBoxPixels.top} to ${faceBoxPixels.right},${faceBoxPixels.bottom} (with ${headExtensionForBox}px head extension applied)`)
               
               // Calculate the maximum possible crop for this aspect ratio
               const targetAspectRatio = targetWidth / targetHeight
@@ -1270,6 +1287,7 @@ export default defineEventHandler(async (event) => {
                 
                 // Position crop to ensure NO faces are cut off - PRIORITIZE TOPS OF HEADS
                 // Calculate the minimum crop area that includes ALL faces with proper buffers
+                // NOTE: faceBoxPixels.top already includes head extension factor, so this is protecting the FULL head
                 const faceTopWithBuffer = Math.max(0, faceBoxPixels.top - topBuffer)
                 const faceBottomWithBuffer = Math.min(processedMetadata.height, faceBoxPixels.bottom + Math.min(topBuffer, 50))
                 const faceLeftWithBuffer = Math.max(0, faceBoxPixels.left - Math.min(topBuffer, 50))
