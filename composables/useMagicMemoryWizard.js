@@ -116,6 +116,11 @@ export const useMagicMemoryWizard = () => {
   
   // Track which photos are marked for replacement
   const photosToReplace = ref([])
+  
+  // Track original prompt for detecting changes
+  const originalPromptForRecreation = ref('')
+  const showPromptChangedDialog = ref(false)
+  const wantsToStartFresh = ref(false)
 
   // Computed properties - use the photo selection composable's filtered assets
   const magicFilteredAssets = computed(() => {
@@ -198,6 +203,17 @@ export const useMagicMemoryWizard = () => {
       console.error('Title is required')
       return
     }
+    
+    // Check if user changed the prompt during recreation
+    if (magicMemoryStep.value === MAGIC_STEPS.TITLE && 
+        isRecreateMode.value && 
+        originalPromptForRecreation.value && 
+        magicMemoryTitle.value.trim() !== originalPromptForRecreation.value.trim()) {
+      // Prompt was changed - ask if they want to start fresh
+      console.log('🔄 [nextMagicMemoryStep] Prompt changed from "' + originalPromptForRecreation.value + '" to "' + magicMemoryTitle.value + '"')
+      showPromptChangedDialog.value = true
+      return // Don't proceed until user confirms
+    }
 
     if (magicMemoryStep.value === MAGIC_STEPS.PHOTOS && photoSelection_method.value === 'geo_code' && !photoSelection_selectedLocation.value) {
       console.error('Location is required for geo_code method')
@@ -277,6 +293,44 @@ export const useMagicMemoryWizard = () => {
       magicMemoryStep.value = currentButtonConfig.value.steps[prevIndex]
     }
   }
+  
+  // Handler for when user wants to start fresh with new prompt
+  const confirmStartFresh = async () => {
+    console.log('🔄 [confirmStartFresh] User chose to start fresh with new prompt')
+    showPromptChangedDialog.value = false
+    wantsToStartFresh.value = true
+    
+    // Treat this like a new memory - skip photo replacement step
+    // Reset to create a completely new memory book
+    existingBookForRecreation.value = null
+    photosToReplace.value = []
+    
+    // Switch to a new memory creation flow
+    currentButtonConfig.value = buttonConfigs.quick
+    
+    // Continue to next step normally
+    const nextIndex = currentStepIndex.value + 1
+    if (nextIndex < currentButtonConfig.value.steps.length) {
+      currentStepIndex.value = nextIndex
+      magicMemoryStep.value = currentButtonConfig.value.steps[nextIndex]
+    }
+  }
+  
+  // Handler for when user wants to keep existing photos with new prompt
+  const confirmKeepExistingFlow = async () => {
+    console.log('🔄 [confirmKeepExistingFlow] User chose to keep existing recreation flow')
+    showPromptChangedDialog.value = false
+    
+    // Update the original prompt to the new one (so we don't ask again)
+    originalPromptForRecreation.value = magicMemoryTitle.value
+    
+    // Continue to next step normally (keep/replace dialog will still show)
+    const nextIndex = currentStepIndex.value + 1
+    if (nextIndex < currentButtonConfig.value.steps.length) {
+      currentStepIndex.value = nextIndex
+      magicMemoryStep.value = currentButtonConfig.value.steps[nextIndex]
+    }
+  }
 
   const openMagicMemoryDialog = async (buttonType = 'full', existingBook = null) => {
     console.log('🔍 [openMagicMemoryDialog] Opening dialog with buttonType:', buttonType, 'existingBook:', existingBook)
@@ -308,6 +362,7 @@ export const useMagicMemoryWizard = () => {
       
       // Preload title from AI supplemental prompt or title
       magicMemoryTitle.value = existingBook.ai_supplemental_prompt || existingBook.title || ''
+      originalPromptForRecreation.value = magicMemoryTitle.value
       
       // Preload theme if available
       magicSelectedTheme.value = existingBook.theme_id || null
@@ -785,6 +840,9 @@ export const useMagicMemoryWizard = () => {
     existingBookForRecreation,
     isRecreateMode,
     photosToReplace,
+    originalPromptForRecreation,
+    showPromptChangedDialog,
+    wantsToStartFresh,
     
     // Photo selection state (from composable)
     photoSelection_method,
@@ -829,6 +887,8 @@ export const useMagicMemoryWizard = () => {
     getNextButtonLabel,
     nextMagicMemoryStep,
     previousMagicMemoryStep,
+    confirmStartFresh,
+    confirmKeepExistingFlow,
     openMagicMemoryDialog,
     closeMagicMemoryDialog,
     generateMagicMemory,

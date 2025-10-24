@@ -3,7 +3,7 @@
     <!-- Card Header -->
     <div class="relative flex items-center justify-between h-14 px-4 bg-gray-50 border-b border-gray-200">
       <!-- Icon and Title -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 min-w-0 flex-1 mr-2">
         <Wand2 class="w-5 h-5 text-brand-secondary flex-shrink-0" />
         <span class="text-sm font-medium text-gray-900 truncate">
           {{ card.ai_supplemental_prompt || 'Memory Card' }}
@@ -11,7 +11,7 @@
       </div>
       
       <!-- Status Badge -->
-      <div :class="getStatusBadgeClass(card.status)" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium">
+      <div :class="getStatusBadgeClass(card.status)" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium flex-shrink-0">
         <i :class="getStatusIcon(card.status)" class="text-xs"></i>
         <span class="hidden sm:inline">{{ getStatusText(card.status) }}</span>
       </div>

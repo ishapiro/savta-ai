@@ -89,7 +89,7 @@
                     </NuxtLink>
 
                     <!-- My Account (in Main for signed-in users) -->
-                    <template v-if="user && userProfile && !userProfile.deleted">
+                    <template v-if="user">
                       <NuxtLink to="/app/my-account" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeDesktopMenu">
                         <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
                           <i class="pi pi-user text-white text-sm"></i>
@@ -103,7 +103,7 @@
                   </div>
 
                   <!-- User Actions -->
-                  <template v-if="user && userProfile && !userProfile.deleted">
+                  <template v-if="user">
                     <div class="space-y-2">
                       <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Manage</h4>
                       
@@ -194,7 +194,7 @@
                   </template>
 
                   <!-- Sign Out - Full Width on Desktop -->
-                  <template v-if="user && userProfile && !userProfile.deleted">
+                  <template v-if="user">
                     <div class="border-t border-brand-highlight/30 pt-3 lg:col-span-2">
                       <button @click="handleSignOut" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group w-full text-left">
                         <div class="w-8 h-8 bg-brand-background border border-brand-highlight/30 rounded-lg flex items-center justify-center">
@@ -288,19 +288,21 @@
           </NuxtLink>
 
           <!-- My Account -->
-          <NuxtLink to="/app/my-account" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
-            <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-              <i class="pi pi-user text-white text-sm"></i>
-            </div>
-            <div class="flex-1">
-              <div class="font-medium text-brand-secondary text-sm">My Account</div>
-              <div class="text-xs text-brand-primary/70">View profile & stats</div>
-            </div>
-          </NuxtLink>
+          <template v-if="user">
+            <NuxtLink to="/app/my-account" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group" @click="closeMobileMenu">
+              <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                <i class="pi pi-user text-white text-sm"></i>
+              </div>
+              <div class="flex-1">
+                <div class="font-medium text-brand-secondary text-sm">My Account</div>
+                <div class="text-xs text-brand-primary/70">View profile & stats</div>
+              </div>
+            </NuxtLink>
+          </template>
         </div>
 
         <!-- User Actions -->
-        <template v-if="user && userProfile && !userProfile.deleted">
+        <template v-if="user">
           <div class="space-y-2">
             <h4 class="text-sm font-medium text-brand-primary/70 uppercase tracking-wide mb-3">Manage</h4>
             
@@ -391,7 +393,7 @@
         </template>
 
         <!-- Sign Out -->
-        <template v-if="user && userProfile && !userProfile.deleted">
+        <template v-if="user">
           <div class="border-t border-brand-highlight/30 pt-3">
             <button @click="handleSignOut" class="flex items-center gap-3 p-3 hover:bg-brand-highlight/20 transition rounded-lg group w-full text-left">
               <div class="w-8 h-8 bg-brand-background border border-brand-highlight/30 rounded-lg flex items-center justify-center">

@@ -29,24 +29,24 @@
         </div>
         <h3 class="text-xl font-bold text-gray-900 mb-3 leading-tight">✨ Tell us about the memory you'd like to create ✨</h3>
         <section class="memory-instructions text-left max-w-lg mx-auto" aria-labelledby="memory-title">
-          <p class="text-sm text-gray-600 mb-3 leading-relaxed">I'll use your description to find the best photos and create a beautiful story.</p>
+          <p class="text-sm text-gray-600 mb-3 leading-relaxed">I'll use your prompt to find the best photos and create a beautiful story.</p>
           <ul class="text-left space-y-2 text-xs sm:text-sm text-gray-600 leading-relaxed list-disc pl-5">
             <li>Share details like <em class="text-gray-700 font-medium">who was there, where it happened, or when it was</em></li>
-            <li>Or describe a theme like <em class="text-gray-700 font-medium">"Our family trip to Paris"</em> or <em class="text-gray-700 font-medium">"Birthday celebrations"</em></li>
-            <li>Feel free to include a specific date or location if you'd like.</li>
+            <li>Or describe a theme like <em class="text-gray-700 font-medium">"Our family trip to Paris with Jean and Sarah"</em> or <em class="text-gray-700 font-medium">"Birthday celebrations with my friends"</em></li>
+            <li>Feel free to include a specific date, location, or person name if you'd like.</li>
           </ul>
         </section>
       </div>
       <div class="field w-full max-w-md mx-auto sm:max-w-[520px] sm:mx-auto mt-1">
-        <label class="block text-lg font-bold text-gray-900 mb-2 text-left">Describe your memory</label>
+        <label class="block text-lg font-bold text-gray-900 mb-2 text-left">Photo Selection Prompt</label>
         <InputText
           data-testid="memory-title-input"
           v-model="magicMemoryTitle"
-          :placeholder="'e.g. Special Trip with Karen and Sam, Summer 2023'"
+          :placeholder="'e.g. Special Trip to London with Karen and Sam, Summer 2023'"
           class="w-full text-base px-4 py-4 sm:py-3 rounded-xl focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
           maxlength="80"
           show-clear
-          aria-label="Memory Subject"
+          aria-label="Phot Selection Prompt"
           required
         />
         <small class="text-gray-500 text-sm mt-1 block leading-relaxed">I'll use this to find your best photos and create a beautiful story.</small>
@@ -419,6 +419,62 @@
     </div>
   </Dialog>
 
+  <!-- Prompt Changed Confirmation Dialog -->
+  <Dialog 
+    v-model:visible="showPromptChangedDialog" 
+    modal 
+    header="Prompt Changed - Start Fresh?" 
+    :style="{ 
+      width: isMobile ? '100vw' : '500px',
+      height: isMobile ? '100vh' : 'auto',
+      maxWidth: isMobile ? '100vw' : '500px',
+      maxHeight: isMobile ? '100vh' : 'none',
+      margin: isMobile ? '0' : 'auto',
+      borderRadius: isMobile ? '0' : '8px'
+    }"
+    :pt="{
+      root: { class: isMobile ? 'touch-none' : '' },
+      mask: { class: isMobile ? 'touch-none' : '' }
+    }"
+    :closable="false"
+  >
+    <div class="flex flex-col gap-4">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-question-circle text-brand-secondary text-2xl mt-1"></i>
+        <div class="flex flex-col gap-2">
+          <p class="text-gray-900 font-semibold text-base">
+            You've changed your memory description!
+          </p>
+          <p class="text-gray-700 text-sm leading-relaxed">
+            <strong>Original:</strong> "{{ originalPromptForRecreation }}"
+          </p>
+          <p class="text-gray-700 text-sm leading-relaxed">
+            <strong>New:</strong> "{{ magicMemoryTitle }}"
+          </p>
+          <p class="text-gray-600 text-sm leading-relaxed mt-2">
+            Would you like to start fresh with all new photos that match your new description? 
+            Or keep the option to select which photos to replace?
+          </p>
+        </div>
+      </div>
+      
+      <div class="flex flex-col gap-2 mt-2">
+        <Button 
+          label="START FRESH WITH NEW PHOTOS" 
+          icon="pi pi-refresh" 
+          @click="confirmStartFresh"
+          class="bg-brand-dialog-save hover:bg-brand-dialog-save-hover text-white border-0 px-3 sm:px-4 py-2 sm:py-3 font-bold text-xs sm:text-sm tracking-wider flex items-center justify-center w-full rounded shadow-elevation-2 hover:shadow-elevation-3"
+        />
+        <Button 
+          label="KEEP PHOTO SELECTION OPTIONS" 
+          icon="pi pi-images" 
+          @click="confirmKeepExistingFlow"
+          class="bg-brand-dialog-edit hover:bg-brand-dialog-edit-hover text-white border-0 px-3 sm:px-4 py-2 sm:py-3 font-bold text-xs sm:text-sm tracking-wider flex items-center justify-center w-full rounded shadow-elevation-2 hover:shadow-elevation-3"
+        />
+      </div>
+    </div>
+  </Dialog>
+
 </template>
 
 <script setup>
@@ -470,6 +526,9 @@ const {
   existingBookForRecreation,
   isRecreateMode,
   photosToReplace,
+  originalPromptForRecreation,
+  showPromptChangedDialog,
+  wantsToStartFresh,
   
   // Progress dialog state
   showProgressDialog,
@@ -495,6 +554,8 @@ const {
   getNextButtonLabel,
   nextMagicMemoryStep,
   previousMagicMemoryStep,
+  confirmStartFresh,
+  confirmKeepExistingFlow,
   openMagicMemoryDialog,
   closeMagicMemoryDialog,
   generateMagicMemory,

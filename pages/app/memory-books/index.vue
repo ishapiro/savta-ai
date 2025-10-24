@@ -47,15 +47,12 @@
           <h2 class="text-2xl font-semibold text-brand-primary">
             {{ activeView === 'cards' ? 'Your Memory Cards' : 'Your Memory Books' }}
           </h2>
-          <div class="text-sm text-brand-text-muted">
-            {{ currentItems.length }} {{ activeView === 'cards' ? 'card' : 'book' }}{{ currentItems.length !== 1 ? 's' : '' }}
-          </div>
         </div>
         
         <!-- Loading State -->
         <div v-if="loadingMemoryBooks" class="flex justify-center items-center py-12">
           <div class="text-center">
-            <Loader2 class="w-8 h-8 mb-4 text-brand-highlight animate-spin" />
+            <Loader2 class="w-8 h-8 mb-4 mx-auto text-brand-highlight animate-spin" />
             <p class="text-base text-brand-text-muted">
               Loading {{ activeView === 'cards' ? 'memory cards' : 'memory books' }}...
             </p>
