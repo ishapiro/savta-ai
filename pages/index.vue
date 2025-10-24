@@ -68,19 +68,23 @@
             <div class="space-y-2">
               <div class="flex items-start gap-2">
                 <span class="text-brand-highlight font-bold text-lg mt-0.5">💬</span>
-                <p class="text-xs sm:text-sm text-brand-primary/70"><strong>Collect photos via text</strong> — Your family texts pictures to one number, no app needed</p>
+                <p class="text-xs sm:text-sm text-brand-primary/70"><strong>Two easy ways to collect photos:</strong> Family texts them, or you upload yours</p>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-brand-highlight font-bold text-lg mt-0.5">✨</span>
-                <p class="text-xs sm:text-sm text-brand-primary/70">AI writes heartwarming captions and stories about your photos</p>
+                <span class="text-brand-highlight font-bold text-lg mt-0.5">📱</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70">Share via text messages — No app needed, just texting</p>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-brand-secondary font-bold text-lg mt-0.5">🎨</span>
-                <p class="text-xs sm:text-sm text-brand-primary/70">We design everything - layouts, colors, everything</p>
+                <span class="text-brand-highlight font-bold text-lg mt-0.5">📤</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70">Upload from phone, computer, or cloud storage</p>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-brand-secondary font-bold text-lg mt-0.5">✨</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70">AI writes heartwarming captions and stories</p>
               </div>
               <div class="flex items-start gap-2">
                 <span class="text-brand-accent font-bold text-lg mt-0.5">📬</span>
-                <p class="text-xs sm:text-sm text-brand-primary/70">Premium cards delivered to loved ones</p>
+                <p class="text-xs sm:text-sm text-brand-primary/70">Beautiful cards delivered to loved ones</p>
               </div>
             </div>
 
