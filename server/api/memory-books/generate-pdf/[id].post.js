@@ -1133,8 +1133,8 @@ export default defineEventHandler(async (event) => {
               
               // CRITICAL: AWS Rekognition's face box only includes facial features (eyes, nose, mouth)
               // but NOT the full head (hair, forehead, top of head). We need to account for this!
-              // Assume the actual top of the head is 30% of face height above the detected face box
-              const headExtensionFactor = 0.30 // 30% of face height for hair/forehead above detected face
+              // Assume the actual top of the head is 40% of face height above the detected face box
+              const headExtensionFactor = 0.40 // 40% of face height for hair/forehead above detected face
               const headExtensionPixels = Math.floor(faceHeight * headExtensionFactor)
               const estimatedHeadTopPixelY = Math.max(0, highestFacePixelY - headExtensionPixels)
               
