@@ -17,7 +17,7 @@ The AI acknowledged that the photos don't show NYC but still included it in the 
 
 **File**: `server/utils/openai-client.js`
 
-**Function**: `generateStoryFromAttributes()` and `generateStory()`
+**Function**: `generateStoryFromAttributes()`
 
 **Added Location Rules**:
 ```javascript
@@ -53,12 +53,7 @@ LOCATION RULES:
 - **Enhanced prompt** with explicit location rules
 - **Location-aware instructions** to prevent fictional content
 - **Focus on actual photo attributes** rather than user prompt suggestions
-
-### Legacy Function: `generateStory()`
-
-- **Updated with location awareness** for backward compatibility
-- **Same location rules** applied to maintain consistency
-- **Enhanced instructions** for image-based analysis
+- **Attribute-based approach** using photo metadata instead of image URLs
 
 ### Location Data Structure
 
@@ -89,9 +84,9 @@ The system uses the following location fields from assets:
 - Better alignment between photos and narrative
 
 ### 4. **Consistency**
-- Both story generation functions use the same rules
-- Consistent behavior across different use cases
+- Story generation uses consistent location-aware logic
 - Reliable and predictable output
+- Attribute-based approach ensures quality
 
 ## Example Before/After
 
@@ -120,13 +115,13 @@ The story generation prompts now include explicit location rules that:
 
 ### Error Prevention
 - **Validation**: Location rules prevent fictional content
-- **Consistency**: Both functions use the same location-aware logic
+- **Consistency**: Story generation uses location-aware logic
 - **Reliability**: Stories are always based on actual photo data
 
-### Future Considerations
-- **Location Confidence**: Could add confidence scores for location detection
-- **Geographic Context**: Could provide regional context for better stories
-- **User Preferences**: Could allow users to specify location preferences
+### Performance Improvement
+- **Legacy Removed**: Old image URL-based story generation removed
+- **Faster Processing**: Uses pre-analyzed photo metadata instead of image URLs
+- **Better Context**: Leverages existing AI analysis from photo upload
 
 ## Testing
 

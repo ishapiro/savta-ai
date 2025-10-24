@@ -319,6 +319,22 @@ When adding new documentation:
 3. ✅ Verify consistency with [`technical.md`](./technical.md)
 4. ✅ Update deployment notes if needed
 
+## Recent Changes
+
+### March 2025 - Legacy Code Cleanup
+
+**Removed Legacy Functions** from `server/utils/openai-client.js`:
+- `selectPhotos()` - Replaced by `selectPhotosByAttributes()` (faster, more efficient)
+- `generateStory()` - Replaced by `generateStoryFromAttributes()` (attribute-based instead of URL-based)
+- `ai-prompts.js` - Deleted unused file (never imported anywhere)
+
+**Impact**:
+- 🧹 Reduced `openai-client.js` from 1691 lines to 1499 lines (-192 lines)
+- ✅ Improved performance by removing unnecessary image URL analysis
+- 📚 Better code quality with no dead code
+
+**See Also**: [`docs/FUNCTION_API_AUDIT.md`](FUNCTION_API_AUDIT.md) for complete details on all functions and their status.
+
 ---
 
 **Last Updated**: 2025-01-10  

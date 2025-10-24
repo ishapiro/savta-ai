@@ -12,6 +12,238 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_BASE_URL = 'https://api.openai.com/v1';
 
 /**
+ * Centralized AI Prompts for maintainability
+ * All prompts are organized by function and can be easily updated
+ */
+const AI_PROMPTS = {
+  CROP_RECOMMENDATION: {
+    instruction: 'You are an expert image cropping specialist. Analyze the image and recommend the optimal crop area that prioritizes important subjects while maintaining good composition. Return ONLY JSON that matches the schema.',
+    userPrompt: (targetWidth, targetHeight) => `Analyze this image and recommend the optimal crop area to fit dimensions ${targetWidth}x${targetHeight}. 
+
+PRIORITY ORDER (most important first):
+1. NEVER cut off faces - faces are the most important subjects
+2. Avoid cutting off people - include full bodies when possible
+3. Preserve animals - include complete animals when present
+4. Maintain good composition - follow rule of thirds, avoid awkward crops
+
+CROP GUIDELINES:
+- The crop_area should maintain the target aspect ratio of ${targetWidth}:${targetHeight}
+- Use normalized [0..1] coordinates with origin at top-left
+- Include the most visually important parts of the image
+- Center on faces if present, otherwise on the main subject
+- Avoid cutting off important elements at the edges
+- Consider the overall composition and visual balance
+
+Return a detailed analysis including:
+- The recommended crop area coordinates
+- List of priority subjects found (faces, people, animals, objects)
+- Reasoning for the crop decision
+- Confidence level in the recommendation`
+  },
+
+  PHOTO_SHAPE_ANALYSIS: {
+    instruction: 'You are a precise image analysis tool. Return ONLY JSON that matches the schema.',
+    userPrompt: 'Analyze this photo for optimal shape and cropping. Consider the composition, subject placement, and how it would look in different shapes (original, square, round, oval). Return ONLY JSON with the analysis.'
+  },
+
+  IMAGE_ANALYSIS: {
+    instruction: 'You are a hip grandmother with precise image analysis skills. Return ONLY JSON that matches the schema.',
+    userPrompt: (exifDataString) => `Analyze this image and provide a caption, comprehensive description, tags, detected people, objects, location information, and EXIF metadata.
+            Return ONLY JSON with the analysis.
+            
+            PRE-EXTRACTED EXIF DATA (use this exact data):
+            ${exifDataString}
+            
+            The caption should be one to two sentences that describes the image in a fun, playful way.
+            The ai_description should be a comprehensive 2-4 sentence description that captures all the key elements of the image including people, objects, setting, activities, emotions, and context. This should be detailed enough to give someone who hasn't seen the image a complete understanding of what's happening.
+            The people_detected should be a list of people detected in the image.
+            The objects should be a list of objects detected in the image.
+            The location should be the location of the image including the city, state, country and key landmarks. 
+            
+            CRITICAL LOCATION INSTRUCTIONS:
+            - Use the PRE-EXTRACTED GPS coordinates above to determine the actual geographic location
+            - Use the GPS coordinates to identify the city, state/province, and country where the photo was taken
+            - Do NOT return "Unknown location" if GPS coordinates are available in the pre-extracted data
+            - Only return "Unknown location" if no GPS coordinates are present AND no location is visible in the image
+            
+            Examples:
+            - If GPS shows 42.0139, -87.7158, return "Evanston, Illinois, United States"
+            - If GPS shows 40.7128, -74.006, return "New York City, New York, United States"
+            - If GPS shows 51.5074, -0.1278, return "London, England, United Kingdom"
+            
+            For the exif_data field, use the PRE-EXTRACTED values from above.
+            
+            IMPORTANT: Use the exact GPS coordinates from the pre-extracted EXIF data for location determination.`
+  },
+
+  TEXT_ANALYSIS: {
+    instruction: 'You are a precise text analysis tool. Return ONLY JSON that matches the schema.',
+    userPrompt: (text) => `Analyze this text and provide a caption and relevant tags: "${text}". Return ONLY JSON with the analysis.`
+  },
+
+  STORY_GENERATION: {
+    instruction: 'You are a warm, caring grandmother. Return ONLY JSON that matches the schema.',
+    userPrompt: (selectedAssetsCount, aiSupplementalPrompt, photoSelectionReasoning, assetData) => `Based on the following ${selectedAssetsCount} photos and the memory book theme "${aiSupplementalPrompt}", generate a concise, engaging, and creative caption (max 2-3 sentences) that tells a story about these photos. The caption should be based ONLY on the provided photo attributes and should not invent details. Focus on creating a cohesive narrative that ties the photos together.
+
+${photoSelectionReasoning ? `PHOTO SELECTION REASONING: ${photoSelectionReasoning}
+
+This reasoning explains why these specific photos were chosen for your memory book. Use this context to help create a more meaningful and connected story.` : ''}
+
+CRITICAL REQUIREMENTS:
+- Keep it SHORT: 2-3 sentences maximum
+- Make it personal and touching, like something a grandmother would write
+- The caption can be funny but not sarcastic
+- Make it meaningful and create a beautiful narrative
+- Use an 8th grade reading level
+- Use modern language
+- Use simple grammar
+- The prose can be sentimental or nostalgic but not sappy
+- The prose can be happy but not cheesy
+- Shorter is better than longer
+- Focus on the people, places, and moments shown in the photos
+- Connect the photos into a cohesive story
+- Base the story on the memory book theme: "${aiSupplementalPrompt}"
+${photoSelectionReasoning ? '- Consider the photo selection reasoning when crafting your story' : ''}
+
+LOCATION RULES:
+- ONLY mention specific cities, states, or countries that are actually shown in the photo locations
+- If photos show "Unknown location" or no specific location, do NOT invent or assume locations
+- If the user prompt mentions a city but the photos don't show that city, do NOT include that city name in the story
+- Use generic terms like "our special day" or "this beautiful moment" instead of specific locations when photos don't show them
+- The story should be based on what the photos actually show, not what the user prompt suggests
+
+Here are the selected photos:
+
+${assetData}
+
+Return ONLY JSON with the story.`
+  },
+
+  PHOTO_SELECTION: {
+    instruction: 'You are an expert photo curator and visual storyteller who specializes in creating emotionally resonant narratives from family moments. You have the technical eye of a film director and the heart of someone who deeply understands what makes memories precious. Select photos that flow together visually and touch the heart. Return ONLY JSON that matches the schema.',
+    userPrompt: (availableAssetsCount, targetCount, aiSupplementalPrompt, assetData) => {
+      const intro = `I want to create a memory book with the theme: "${aiSupplementalPrompt}"
+
+I have ${availableAssetsCount} photos to choose from. Please select exactly ${targetCount} photos that create a compelling, cohesive STORY.
+
+Your PRIMARY goal is to select photos that flow together naturally and create an emotional narrative arc. Consider the selection criteria below IN SERVICE OF THE STORY - a photo that perfectly matches one criterion but breaks the story flow is worse than a photo that loosely matches but enhances the narrative.`;
+
+      const photoInfo = `
+For each photo, I have the following information:
+- Title
+- AI-generated caption
+- AI-generated description (comprehensive details about the photo)
+- User caption
+- Tags (AI and user-generated) - **IMPORTANT: Tags reveal what each photo is actually about and should be strongly considered when matching themes**
+- People identified (with relationships)
+- Location (city, state, country, zip code)
+- Date taken`;
+
+      const storyStructure = `
+STORY STRUCTURE PRINCIPLES:
+1. **Narrative Arc**: Select photos that create a beginning, middle, and end
+   - Opening: Set the scene or introduce the moment
+   - Middle: Show the action, emotion, or key moments
+   - Closing: Provide resolution or a meaningful conclusion
+
+2. **Visual Variety**: Avoid selecting multiple photos of the same moment or pose
+   - Mix close-ups with wider shots when possible
+   - Include different activities or settings
+   - Show progression of time or emotion
+   - Don't select photos that look like sequential shots of the same scene
+
+3. **Emotional Coherence**: Photos should share an emotional thread
+   - Happy vacation photos work together
+   - Milestone moments should build on each other
+   - Maintain consistent tone unless the theme calls for emotional progression
+
+4. **Temporal Flow**: When possible, arrange by natural time progression
+   - Photos from the same event should follow chronological order
+   - Multiple events should follow logical time sequence
+
+5. **Location Adjacency**: When selecting from the same location or trip
+   - Photos taken at nearby places tell a more cohesive story
+   - Geographic progression enhances narrative (e.g., arrival → exploring → departure)
+   - Photos from the same city/region create better visual and thematic unity`;
+
+      const selectionCriteria = `
+SELECTION CRITERIA (Use as guidelines in service of the story, not absolute rules):
+
+**Highest Priority:**
+- STORY COHERENCE: Do the photos tell a cohesive, touching narrative together?
+- THEME ALIGNMENT: Do the photos authentically relate to "${aiSupplementalPrompt}"?
+  → **Check the TAGS first** - they reveal what each photo is actually about
+  → Tags like "birthday", "beach", "graduation", "family dinner" show the photo's focus
+  → Match tags to theme keywords for strongest alignment
+
+**Strong Considerations:**
+- PEOPLE: Photos containing people mentioned in the theme
+  → If theme mentions "Sarah's graduation", strongly prioritize Sarah
+  → If multiple people mentioned, try to include all while maintaining story flow
+  → Photos with all mentioned people together are ideal
+  → Remember: 3 photos that tell Sarah's story > 3 random photos that just show Sarah
+  
+- LOCATION: Photos from locations mentioned in the theme
+  → If theme says "Chicago trip", prioritize Chicago photos
+  → Photos from nearby locations (same neighborhood, same landmark) create better story flow
+  → Geographic adjacency strengthens narrative cohesion
+  → Balance: 3 great story photos (1 Chicago + 2 elsewhere) > 3 mediocre Chicago photos
+  
+- TIME PERIOD: Photos from dates/periods mentioned in theme
+  → Photos from same event or timeframe tell better stories
+  → Chronological progression enhances narrative
+
+**Supporting Factors:**
+- Visual variety (different moments, avoid duplicates)
+- Emotional consistency or intentional emotional arc
+- Natural narrative progression
+- Complementary compositions`;
+
+      const photoList = `
+Here are the available photos:
+
+${JSON.stringify(assetData, null, 2)}`;
+
+      const selectionGuidance = `
+GOOD SELECTION EXAMPLES:
+
+Example 1 - Location Adjacency:
+Theme: "Chicago vacation"
+BEST: Navy Pier arrival → Millennium Park exploring → Chicago River dinner
+(Geographic progression tells the journey)
+WORSE: Navy Pier → Random park in suburbs → Navy Pier again
+(Jumps around, no flow, duplicates location)
+
+Example 2 - People Priority with Story:
+Theme: "Grandmother's 80th birthday"
+BEST: Grandmother with birthday cake → Family gathering around her → Joyful group photo
+(Shows the celebration arc with grandmother as focal point)
+WORSE: Grandmother alone from different years with no connection to birthday
+(Matches person but misses the story)
+
+Example 3 - Balancing Criteria:
+Theme: "Family beach day"
+BEST: 2 beach photos (building sandcastles, swimming) + 1 ice cream shop
+(Complete narrative: activity → activity → reward, tells the day's story)
+WORSE: 3 similar photos of kids standing on beach in same spot
+(Technically matches but no story, no variety)`;
+
+      const finalRequirements = `
+FINAL REQUIREMENTS:
+- Select exactly ${targetCount} photos that create the BEST STORY for the theme
+- Prioritize narrative coherence over perfect criterion matching
+- Ensure visual variety - no duplicate moments or nearly identical photos
+- Consider location adjacency when photos are from the same area
+- Create an emotional connection through photo selection
+
+Return ONLY JSON with exactly ${targetCount} photo numbers and your reasoning explaining the story these photos tell together.`;
+
+      return intro + photoInfo + storyStructure + selectionCriteria + photoList + selectionGuidance + finalRequirements;
+    }
+  }
+};
+
+/**
  * Make a request to OpenAI's Responses API with retry logic for timeout errors
  * @param {Object} payload - The API payload
  * @param {number} attempt - Current attempt number (for internal use)
@@ -164,7 +396,7 @@ async function aiCropRecommendation(imageUrl, targetWidth, targetHeight) {
   
   const payload = {
     model: 'gpt-4o',
-    instructions: 'You are an expert image cropping specialist. Analyze the image and recommend the optimal crop area that prioritizes important subjects while maintaining good composition. Return ONLY JSON that matches the schema.',
+    instructions: AI_PROMPTS.CROP_RECOMMENDATION.instruction,
     text: {
       format: {
         type: 'json_schema',
@@ -229,27 +461,7 @@ async function aiCropRecommendation(imageUrl, targetWidth, targetHeight) {
         content: [
           {
             type: 'input_text',
-            text: `Analyze this image and recommend the optimal crop area to fit dimensions ${targetWidth}x${targetHeight}. 
-
-PRIORITY ORDER (most important first):
-1. NEVER cut off faces - faces are the most important subjects
-2. Avoid cutting off people - include full bodies when possible
-3. Preserve animals - include complete animals when present
-4. Maintain good composition - follow rule of thirds, avoid awkward crops
-
-CROP GUIDELINES:
-- The crop_area should maintain the target aspect ratio of ${targetWidth}:${targetHeight}
-- Use normalized [0..1] coordinates with origin at top-left
-- Include the most visually important parts of the image
-- Center on faces if present, otherwise on the main subject
-- Avoid cutting off important elements at the edges
-- Consider the overall composition and visual balance
-
-Return a detailed analysis including:
-- The recommended crop area coordinates
-- List of priority subjects found (faces, people, animals, objects)
-- Reasoning for the crop decision
-- Confidence level in the recommendation`
+            text: AI_PROMPTS.CROP_RECOMMENDATION.userPrompt(targetWidth, targetHeight)
           },
           {
             type: 'input_image',
@@ -327,110 +539,6 @@ async function validateImageUrl(imageUrl) {
 }
 
 /**
- * Create a photo selection request
- * @param {Array} photoUrls - Array of photo URLs or photo objects
- * @returns {Promise<Object>} The photo selection results
- */
-async function selectPhotos(photoUrls, photoCount = null) {
-  // Handle both URL strings and photo objects with URLs
-  const validPhotos = [];
-  const photoInputs = [];
-  
-  for (let i = 0; i < photoUrls.length; i++) {
-    const photo = photoUrls[i];
-    const imageUrl = typeof photo === 'string' ? photo : photo.storage_url || photo.asset_url || photo.url;
-    
-    // Validate the image URL before adding it
-    const isValid = await validateImageUrl(imageUrl);
-    if (isValid) {
-      validPhotos.push(photo);
-      photoInputs.push({
-        type: 'input_image',
-        image_url: imageUrl
-      });
-    } else {
-      console.warn(`⚠️ Skipping invalid image URL: ${imageUrl}`);
-    }
-  }
-  
-  if (validPhotos.length === 0) {
-    throw new Error('No valid image URLs found. Please check that your images are accessible.');
-  }
-  
-  console.log(`✅ Validated ${validPhotos.length} out of ${photoUrls.length} images`);
-
-  // Determine how many photos to select
-  const targetCount = photoCount || Math.min(3, validPhotos.length);
-
-  const payload = {
-    model: 'gpt-4o',
-    instructions: 'You are a warm, caring grandmother selecting meaningful family photos. Return ONLY JSON that matches the schema.',
-    text: {
-      format: {
-        type: 'json_schema',
-        name: 'photo_selection',
-        schema: {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            selected_photo_numbers: {
-              type: 'array',
-              items: {
-                type: 'integer',
-                minimum: 1
-              },
-              description: `Array of exactly ${targetCount} photo numbers (1, 2, 3, etc.) selected from the provided pool`
-            }
-          },
-          required: ['selected_photo_numbers']
-        }
-      }
-    },
-    input: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'input_text',
-            text: `Select exactly ${targetCount} of the most meaningful and visually appealing photos from this collection of ${validPhotos.length} family photos. Choose photos that tell a story together and would make a beautiful memory book. You must select exactly ${targetCount} photos. Return ONLY JSON with the selected photo numbers.`
-          },
-          ...photoInputs
-        ]
-      }
-    ],
-    max_output_tokens: 50000
-  };
-
-  const response = await makeOpenAIRequest(payload);
-  const result = parseOpenAIResponse(response);
-  
-  // Map the selected photo numbers back to the original photo array indices
-  if (result && result.selected_photo_numbers) {
-    // Create a mapping from valid photos back to original indices
-    const originalIndices = [];
-    for (let i = 0; i < photoUrls.length; i++) {
-      const photo = photoUrls[i];
-      const imageUrl = typeof photo === 'string' ? photo : photo.storage_url || photo.asset_url || photo.url;
-      
-      // Find this URL in the valid photos
-      const validIndex = validPhotos.findIndex(validPhoto => {
-        const validUrl = typeof validPhoto === 'string' ? validPhoto : validPhoto.storage_url || validPhoto.asset_url || validPhoto.url;
-        return validUrl === imageUrl;
-      });
-      
-      if (validIndex !== -1) {
-        originalIndices[validIndex] = i;
-      }
-    }
-    
-    // Convert selected photo numbers to original indices (0-based)
-    result.selected_photo_numbers = result.selected_photo_numbers.map(num => originalIndices[num - 1]);
-  }
-  
-  return result;
-}
-
-/**
  * Create a story generation request based on asset attributes
  * @param {Array} selectedAssets - Array of selected asset objects with attributes
  * @param {string} aiSupplementalPrompt - The memory book's AI supplemental prompt
@@ -462,13 +570,13 @@ Photo ${index + 1}:
 - Tags: ${asset.tags || 'No tags'}
 - User Tags: ${asset.user_tags || 'No user tags'}
 - People: ${asset.user_people || 'No people identified'}
-- Location: ${asset.city}${asset.state ? ', ' + asset.state : ''}${asset.country ? ', ' + asset.country : ''}
+- Location: ${asset.city}${asset.state ? ', ' + asset.state : ''}${asset.country ? ', ' + asset.country : ''}${asset.zip_code ? ' (' + asset.zip_code + ')' : ''}
 - Date: ${asset.asset_date || 'No date'}
 `).join('\n');
 
   const payload = {
     model: 'gpt-4o',
-    instructions: 'You are a warm, caring grandmother. Return ONLY JSON that matches the schema.',
+    instructions: AI_PROMPTS.STORY_GENERATION.instruction,
     text: {
       format: {
         type: 'json_schema',
@@ -492,40 +600,7 @@ Photo ${index + 1}:
         content: [
           {
             type: 'input_text',
-            text: `Based on the following ${selectedAssets.length} photos and the memory book theme "${aiSupplementalPrompt}", generate a concise, engaging, and creative caption (max 2-3 sentences) that tells a story about these photos. The caption should be based ONLY on the provided photo attributes and should not invent details. Focus on creating a cohesive narrative that ties the photos together.
-
-${photoSelectionReasoning ? `PHOTO SELECTION REASONING: ${photoSelectionReasoning}
-
-This reasoning explains why these specific photos were chosen for your memory book. Use this context to help create a more meaningful and connected story.` : ''}
-
-CRITICAL REQUIREMENTS:
-- Keep it SHORT: 2-3 sentences maximum
-- Make it personal and touching, like something a grandmother would write
-- The caption can be funny but not sarcastic
-- Make it meaningful and create a beautiful narrative
-- Use an 8th grade reading level
-- Use modern language
-- Use simple grammar
-- The prose can be sentimental or nostalgic but not sappy
-- The prose can be happy but not cheesy
-- Shorter is better than longer
-- Focus on the people, places, and moments shown in the photos
-- Connect the photos into a cohesive story
-- Base the story on the memory book theme: "${aiSupplementalPrompt}"
-${photoSelectionReasoning ? '- Consider the photo selection reasoning when crafting your story' : ''}
-
-LOCATION RULES:
-- ONLY mention specific cities, states, or countries that are actually shown in the photo locations
-- If photos show "Unknown location" or no specific location, do NOT invent or assume locations
-- If the user prompt mentions a city but the photos don't show that city, do NOT include that city name in the story
-- Use generic terms like "our special day" or "this beautiful moment" instead of specific locations when photos don't show them
-- The story should be based on what the photos actually show, not what the user prompt suggests
-
-Here are the selected photos:
-
-${assetData}
-
-Return ONLY JSON with the story.`
+            text: AI_PROMPTS.STORY_GENERATION.userPrompt(selectedAssets.length, aiSupplementalPrompt, photoSelectionReasoning, assetData)
           }
         ]
       }
@@ -544,92 +619,6 @@ Return ONLY JSON with the story.`
 }
 
 /**
- * Create a story generation request (legacy function for backward compatibility)
- * @param {Array} selectedPhotoUrls - Array of selected photo URLs
- * @returns {Promise<Object>} The story generation results
- */
-async function generateStory(selectedPhotoUrls) {
-  // Validate all photo URLs before sending to OpenAI
-  const validPhotoInputs = [];
-  
-  for (const url of selectedPhotoUrls) {
-    const imageUrl = typeof url === 'string' ? url : url.storage_url || url.asset_url || url.url;
-    
-    const isValid = await validateImageUrl(imageUrl);
-    if (isValid) {
-      validPhotoInputs.push({
-        type: 'input_image',
-        image_url: imageUrl
-      });
-    } else {
-      console.warn(`⚠️ Skipping invalid image URL in story generation: ${imageUrl}`);
-    }
-  }
-  
-  if (validPhotoInputs.length === 0) {
-    throw new Error('No valid image URLs found for story generation. Please check that your images are accessible.');
-  }
-  
-  console.log(`✅ Using ${validPhotoInputs.length} valid images for story generation`);
-
-  const payload = {
-    model: 'gpt-5',
-    instructions: 'You are a warm, caring grandmother. Return ONLY JSON that matches the schema.',
-    text: {
-      format: {
-        type: 'json_schema',
-        name: 'story_response',
-        schema: {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            story: {
-              type: 'string',
-              description: 'A 1-2 sentence story that connects the selected photos into a cohesive narrative'
-            }
-          },
-          required: ['story']
-        }
-      }
-    },
-    input: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'input_text',
-            text: `Create a warm, 1-2 sentence, funny, and meaningful caption that connects these family 
-            photos into a beautiful narrative. 
-            Make it personal and touching, like something a grandmother would write. 
-            The caption can be funny but not sarcastic.
-            Use an 8th grade reading level. 
-            Use modern language.  
-            Use simple grammar.
-            The prose can be sentimental or nostalgic but not sappy.
-            The prose can be happy but not cheesy. 
-            Shorter is better than longer.
-            
-            LOCATION RULES:
-            - ONLY mention specific cities, states, or countries that are actually visible in the photos
-            - If you cannot see specific locations in the photos, do NOT invent or assume locations
-            - If the user prompt mentions a city but the photos don't show that city, do NOT include that city name in the story
-            - Use generic terms like "our special day" or "this beautiful moment" instead of specific locations
-            - The story should be based on what the photos actually show, not assumptions
-            
-            Return ONLY JSON with the story.`
-          },
-          ...validPhotoInputs
-        ]
-      }
-    ],
-    max_output_tokens: 50000
-  };
-
-  const response = await makeOpenAIRequest(payload);
-  return parseOpenAIResponse(response);
-}
-
-/**
  * Create a photo analysis request for shape optimization
  * @param {string} imageUrl - The URL of the image to analyze
  * @returns {Promise<Object>} The photo analysis results
@@ -643,7 +632,7 @@ async function analyzePhotoShape(imageUrl) {
   
   const payload = {
     model: 'gpt-4o',
-    instructions: 'You are a precise image analysis tool. Return ONLY JSON that matches the schema.',
+    instructions: AI_PROMPTS.PHOTO_SHAPE_ANALYSIS.instruction,
     text: {
       format: {
         type: 'json_schema',
@@ -711,7 +700,7 @@ async function analyzePhotoShape(imageUrl) {
         content: [
           {
             type: 'input_text',
-            text: 'Analyze this photo for optimal shape and cropping. Consider the composition, subject placement, and how it would look in different shapes (original, square, round, oval). Return ONLY JSON with the analysis.'
+            text: AI_PROMPTS.PHOTO_SHAPE_ANALYSIS.userPrompt
           },
           {
             type: 'input_image',
@@ -827,7 +816,7 @@ async function analyzeImage(imageUrl) {
   
   const payload = {
     model: 'gpt-4o',
-    instructions: 'You are a hip grandmother with precise image analysis skills. Return ONLY JSON that matches the schema.',
+    instructions: AI_PROMPTS.IMAGE_ANALYSIS.instruction,
     text: {
       format: {
         type: 'json_schema',
@@ -889,44 +878,7 @@ async function analyzeImage(imageUrl) {
         content: [
           {
             type: 'input_text',
-            text: `Analyze this image and provide a caption, comprehensive description, tags, detected people, objects, location information, and EXIF metadata.
-            Return ONLY JSON with the analysis.
-            
-            PRE-EXTRACTED EXIF DATA (use this exact data):
-            - GPS Coordinates: ${exifData.gps_latitude}, ${exifData.gps_longitude}
-            - Date Taken: ${exifData.date_taken}
-            - Camera: ${exifData.camera_make} ${exifData.camera_model}
-            - Dimensions: ${exifData.original_width} x ${exifData.original_height}
-            - Has EXIF: ${exifData.has_exif}
-            
-            The caption should be one to two sentences that describes the image in a fun, playful way.
-            The ai_description should be a comprehensive 2-4 sentence description that captures all the key elements of the image including people, objects, setting, activities, emotions, and context. This should be detailed enough to give someone who hasn't seen the image a complete understanding of what's happening.
-            The people_detected should be a list of people detected in the image.
-            The objects should be a list of objects detected in the image.
-            The location should be the location of the image including the city, state, country and key landmarks. 
-            
-            CRITICAL LOCATION INSTRUCTIONS:
-            - Use the PRE-EXTRACTED GPS coordinates above to determine the actual geographic location
-            - Use the GPS coordinates to identify the city, state/province, and country where the photo was taken
-            - Do NOT return "Unknown location" if GPS coordinates are available in the pre-extracted data
-            - Only return "Unknown location" if no GPS coordinates are present AND no location is visible in the image
-            
-            Examples:
-            - If GPS shows 42.0139, -87.7158, return "Evanston, Illinois, United States"
-            - If GPS shows 40.7128, -74.006, return "New York City, New York, United States"
-            - If GPS shows 51.5074, -0.1278, return "London, England, United Kingdom"
-            
-            For the exif_data field, use the PRE-EXTRACTED values:
-            - gps_latitude: ${exifData.gps_latitude}
-            - gps_longitude: ${exifData.gps_longitude}
-            - date_taken: ${exifData.date_taken}
-            - camera_make: ${exifData.camera_make}
-            - camera_model: ${exifData.camera_model}
-            - original_width: ${exifData.original_width}
-            - original_height: ${exifData.original_height}
-            
-            IMPORTANT: Use the exact GPS coordinates from the pre-extracted EXIF data for location determination.
-            `
+            text: AI_PROMPTS.IMAGE_ANALYSIS.userPrompt(JSON.stringify(exifData, null, 2))
           },
           {
             type: 'input_image',
@@ -950,7 +902,7 @@ async function analyzeImage(imageUrl) {
 async function analyzeText(text) {
   const payload = {
     model: 'gpt-5',
-    instructions: 'You are a precise text analysis tool. Return ONLY JSON that matches the schema.',
+    instructions: AI_PROMPTS.TEXT_ANALYSIS.instruction,
     text: {
       format: {
         type: 'json_schema',
@@ -979,7 +931,7 @@ async function analyzeText(text) {
         content: [
           {
             type: 'input_text',
-            text: `Analyze this text and provide a caption and relevant tags: "${text}". Return ONLY JSON with the analysis.`
+            text: AI_PROMPTS.TEXT_ANALYSIS.userPrompt(text)
           }
         ]
       }
@@ -1085,6 +1037,7 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
       city: asset.city || '',
       state: asset.state || '',
       country: asset.country || '',
+      zip_code: asset.zip_code || '',
       asset_date: asset.asset_date ? new Date(asset.asset_date).toLocaleDateString() : '',
       location: asset.location || ''
     }
@@ -1099,7 +1052,7 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
 
   const payload = {
     model: 'gpt-4o',
-    instructions: 'You are a warm, caring grandmother selecting meaningful family photos based on their attributes and a specific prompt. Return ONLY JSON that matches the schema.',
+    instructions: AI_PROMPTS.PHOTO_SELECTION.instruction,
     text: {
       format: {
         type: 'json_schema',
@@ -1131,80 +1084,7 @@ async function selectPhotosByAttributes(assets, aiSupplementalPrompt, targetCoun
         content: [
           {
             type: 'input_text',
-            text: `I want to create a memory book with the theme: "${aiSupplementalPrompt}"
-
-I have ${availableAssets.length} photos to choose from. Please select exactly ${targetCount} photos that would work best together to tell a story for this memory book.
-
-For each photo, I have the following information:
-- Title
-- AI-generated caption
-- AI-generated description (comprehensive details about the photo)
-- User caption
-- Tags (AI and user-generated)
-- People identified (with relationships)
-- Location (city, state, country)
-- Date taken
-
-CRITICAL SELECTION PRIORITY (in order of importance):
-1. **PEOPLE MATCH**: If the prompt mentions specific people by name, prioritize photos containing those people. Look for exact name matches or relationships mentioned. Examples: "Sarah (Grandmother)", "Michael", "Uncle Tom", etc.
-
-2. **LOCATION MATCH**: If the prompt mentions a specific location (city, state, or country), prioritize photos from that exact location first. For example, if the prompt says "Chicago Vacation", look for photos from Chicago, Illinois, or the greater Chicago area first.
-
-3. **DATE MATCH**: If the prompt mentions a specific date or time period, prioritize photos with dates close to that time.
-
-4. **THEMATIC CONTENT**: Choose photos that tell a cohesive story together and relate to the theme.
-
-5. **PEOPLE & EVENTS**: Consider the people, places, and events mentioned in the prompt.
-
-6. **RELEVANT TAGS/CAPTIONS**: Look for photos with meaningful captions or tags that relate to the prompt.
-
-LOCATION MATCHING HIERARCHY (in order of priority):
-1. **EXACT CITY MATCH**: Match exact city name (e.g., "Chicago" matches "Chicago, Illinois")
-2. **WITHIN 100 MILES**: Photos from zip codes within 100 miles of the target city's zip code
-3. **STATE MATCH**: Photos from the same state as the target location
-4. **COUNTRY MATCH**: Photos from the same country as the target location
-5. **THEMATIC FALLBACK**: If no location matches found, select photos based on theme relevance
-
-**IMPORTANT**: If no location-specific photos exist, you MUST still select photos from other locations to meet the required count
-
-Here are the available photos:
-
-${assetData.map(asset => `
-Photo ${asset.number}:
-- Title: ${asset.title}
-- AI Caption: ${asset.ai_caption}
-- AI Description: ${asset.ai_description}
-- User Caption: ${asset.user_caption}
-- Tags: ${asset.tags}
-- User Tags: ${asset.user_tags}
-- Identified People: ${asset.people || asset.user_people || 'No people identified'}
-- Location: ${asset.city}${asset.state ? ', ' + asset.state : ''}${asset.country ? ', ' + asset.country : ''}
-- Date: ${asset.asset_date}
-`).join('\n')}
-
-Select exactly ${targetCount} photos that best match the theme "${aiSupplementalPrompt}". 
-
-CRITICAL: You MUST select exactly ${targetCount} photos - never fewer, never more.
-
-PEOPLE PRIORITY RULES:
-- If the prompt mentions a specific person's name, look for photos containing that person
-- Match both full names (in parentheses) and display names when searching for people
-- Consider relationship context: if prompt mentions "Grandmother", look for photos tagged with Grandmother relationship
-- If multiple people are mentioned, prioritize photos containing the primary person first
-- If insufficient photos with the mentioned people exist, fill remaining slots with photos containing other family members
-
-LOCATION PRIORITY RULES:
-- If the prompt mentions a specific location, prioritize photos from that location first
-- If you have enough location-specific photos to fill the quota (${targetCount} photos), use only those
-- If you don't have enough location-specific photos, fill the remaining slots with the most thematically relevant photos from other locations
-- When mixing location and thematic photos, prioritize location photos first, then fill remaining slots with thematic photos
-- **CRITICAL**: If NO location-specific photos exist, you MUST select ${targetCount} photos from other locations based on thematic relevance
-- EXAMPLE: If prompt is "Miami Vacation" and you only have 1 Miami photo but need 2 photos, select the Miami photo + 1 most relevant non-Miami photo
-- EXAMPLE: If prompt is "Chicago Vacation" but NO Chicago photos exist, select ${targetCount} most thematically relevant photos from any location
-
-FINAL REMINDER: You MUST return exactly ${targetCount} photo numbers, even if it means selecting photos from different locations or themes. NEVER return fewer than ${targetCount} photos.
-
-Return ONLY JSON with the selected photo numbers and your reasoning.`
+            text: AI_PROMPTS.PHOTO_SELECTION.userPrompt(availableAssets.length, targetCount, aiSupplementalPrompt, assetData)
           }
         ]
       }
@@ -1214,6 +1094,15 @@ Return ONLY JSON with the selected photo numbers and your reasoning.`
 
   console.log('🎯 DEBUG - About to make OpenAI request at:', new Date().toISOString());
   console.log('🎯 DEBUG - Payload size:', JSON.stringify(payload).length, 'characters');
+  
+  // Log the full prompt for verification (truncate if extremely large)
+  const fullPrompt = payload.input[0].content[0].text;
+  if (fullPrompt.length < 5000) {
+    console.log('📝 PHOTO SELECTION PROMPT (full):\n', fullPrompt);
+  } else {
+    console.log('📝 PHOTO SELECTION PROMPT (first 2000 chars):\n', fullPrompt.substring(0, 2000));
+    console.log('📝 PHOTO SELECTION PROMPT (last 1000 chars):\n', '...' + fullPrompt.substring(fullPrompt.length - 1000));
+  }
   
   const response = await makeOpenAIRequest(payload);
   console.log('🎯 DEBUG - OpenAI response received at:', new Date().toISOString());
@@ -1678,13 +1567,11 @@ async function findPhotosByLocationHierarchy(allAssets, targetLocation, targetCo
 
 export {
   aiCropRecommendation,
-  selectPhotos,
-  generateStory,
+  selectPhotosByAttributes,
   generateStoryFromAttributes,
   analyzePhotoShape,
   analyzeImage,
   analyzeText,
-  selectPhotosByAttributes,
   makeOpenAIRequest,
   parseOpenAIResponse
 };

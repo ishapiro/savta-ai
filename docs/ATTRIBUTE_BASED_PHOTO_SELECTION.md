@@ -2,43 +2,43 @@
 
 ## Overview
 
-This document describes the new attribute-based photo selection approach that replaces the previous image URL analysis method. The new approach is faster, more accurate, and leverages existing AI analysis done during photo upload.
+This document describes the attribute-based photo selection approach that is now the primary (and only) method for intelligent photo selection. This approach is faster, more accurate, and leverages existing AI analysis done during photo upload.
 
-## Problem
+## Problem (Historical Context)
 
-The previous approach had several issues:
+The previous approach (now removed) had several issues:
 1. **Slow performance**: Analyzing image URLs with OpenAI Vision API was time-consuming
 2. **Redundant analysis**: Photos were already analyzed during upload for captions, tags, people, and locations
 3. **Limited context**: Visual analysis couldn't leverage the rich metadata already available
 4. **No location/date prioritization**: Couldn't prioritize photos based on specific locations or dates mentioned in prompts
 
-## Solution
+## Current Solution
 
-The new approach uses database attributes instead of image URLs for photo selection:
+The attribute-based approach uses database attributes instead of image URLs for photo selection:
 
-### Key Changes
+### Key Features
 
-1. **New `selectPhotosByAttributes()` function** in `server/utils/openai-client.js`
+1. **`selectPhotosByAttributes()` function** in `server/utils/openai-client.js`
    - Takes asset data with attributes (captions, tags, people, locations, dates)
    - Takes the memory book's `ai_supplemental_prompt`
    - Uses OpenAI to select photos based on text attributes and prompt matching
    - Prioritizes location and date matches from the prompt
 
-2. **Updated `/api/ai/magic-memory` endpoint**
-   - Now requires `memoryBookId` instead of photo URLs
+2. **`/api/ai/magic-memory` endpoint**
+   - Requires `memoryBookId` instead of photo URLs
    - Fetches the memory book's `ai_supplemental_prompt` and validates it's set
    - Fetches asset data from the photo selection pool
-   - Uses attribute-based selection instead of image analysis
+   - Uses attribute-based selection
    - Updates the memory book with results automatically
 
-3. **Enhanced frontend integration**
+3. **Frontend integration**
    - Frontend creates memory book template first with `ai_supplemental_prompt`
    - Calls AI endpoint with just the memory book ID
-   - Simplified API calls (no need to send photo URLs)
+   - No need to send photo URLs
 
 ### Selection Criteria
 
-The new selection algorithm prioritizes:
+The selection algorithm prioritizes:
 
 1. **Location matching**: If prompt mentions a city/state/country, prioritize photos from that location
 2. **Date matching**: If prompt mentions a date/time period, prioritize photos with dates close to that time
@@ -59,20 +59,7 @@ The new selection algorithm prioritizes:
 
 ## API Changes
 
-### Old API Call
-```javascript
-// Frontend sent photo URLs
-const aiRes = await $fetch('/api/ai/magic-memory', {
-  method: 'POST',
-  body: {
-    photos: photoUrls,
-    userId: user.id,
-    photo_count: 3
-  }
-})
-```
-
-### New API Call
+### Current API Call
 ```javascript
 // Frontend sends memory book ID
 const aiRes = await $fetch('/api/ai/magic-memory', {
@@ -96,7 +83,7 @@ const aiRes = await $fetch('/api/ai/magic-memory', {
 
 ## Validation
 
-The new approach includes several validation steps:
+The approach includes several validation steps:
 
 1. **Memory book validation**: Ensures `ai_supplemental_prompt` is set before processing
 2. **Asset validation**: Verifies assets exist and are approved
@@ -105,17 +92,27 @@ The new approach includes several validation steps:
 
 ## Testing
 
-A test script is available at `tests/test_attribute_based_selection.js` that validates:
-- Location-based selection
-- Keyword-based selection
+Test scripts validate:
+- Location-based selection (`tests/test_location_hierarchy.js`)
+- Keyword-based selection (`tests/test_attribute_based_selection.js`)
 - Correct photo count selection
 - Reasoning quality
+- Story generation from selected photos (`tests/test_story_generation_attributes.js`)
+
+## Legacy Code Removal (March 2025)
+
+The following legacy functions have been removed from `server/utils/openai-client.js`:
+- `selectPhotos()` - Old image URL-based selection
+- `generateStory()` - Old image URL-based story generation
+- `ai-prompts.js` - Unused prompts file
+
+**Rationale**: The attribute-based approach is superior in every metric (performance, accuracy, context) and has been the primary method for over a year. Removal of dead code improves maintainability.
 
 ## Migration Notes
 
-- Existing memory books will continue to work
-- The retry functionality has been updated to use the new approach
-- PDF generation still works with the old approach for backward compatibility
+- Existing memory books continue to work
+- The retry functionality uses the modern approach
+- PDF generation works with the current approach
 - No database schema changes required
 
 ## Future Enhancements
