@@ -41,7 +41,7 @@
 
     <!-- Main Content -->
     <div class="relative z-10 w-full flex-1 flex flex-col justify-center" v-if="!showRestrictedOverlay">
-      <div class="w-full px-4 sm:px-[5px] lg:px-[8px] py-6 sm:py-6 lg:py-8">
+      <div class="w-full px-1 sm:px-2 lg:px-3 xl:px-4 py-6 sm:py-6 lg:py-8">
         <!-- Compact Top Section: Logo + Headline -->
         <div class="mb-4 sm:mb-6">
           <!-- Logo -->
@@ -51,47 +51,77 @@
           
           <!-- Headline -->
           <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-center text-brand-secondary leading-tight tracking-tight animate-fade-in">
-            Craft special <br class="sm:hidden" />memories <span class="text-brand-highlight">without the fuss</span>
+            Photos Come In. <br class="sm:hidden" />Beautiful Cards <span class="text-brand-highlight">Go Out. Automatically.</span>
           </h1>
+          
+          <!-- Subheadline -->
+          <p class="text-center text-sm sm:text-base text-brand-primary/70 mt-2 px-4">
+            Family texts photos OR you upload them—Savta does everything else
+          </p>
         </div>
 
         <!-- Main Grid: Content + Card -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start">
-          <!-- Left Column: Description + CTA -->
-          <div class="space-y-4 sm:space-y-4 animate-fade-in-left">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 items-start">
+          <!-- Left Column: Description + CTA (2/3 width) -->
+          <div class="lg:col-span-2 space-y-4 sm:space-y-4 animate-fade-in-left">
             <!-- Short Description -->
-            <p class="text-sm sm:text-base lg:text-lg text-brand-primary/80 leading-relaxed">
-              Savta.ai is not another photo printing service. We handle the creative work for you—no dragging, no dropping, no design skills needed. 
+            <p class="text-xs sm:text-sm text-brand-primary/80 leading-loose">
+              Not a DIY tool. AI handles design and delivery. You just collect photos.
             </p>
 
             <!-- Quick Benefits -->
             <div class="space-y-2">
               <div class="flex items-start gap-2">
-                <span class="text-brand-highlight font-bold text-lg mt-0.5">💬</span>
-                <p class="text-xs sm:text-sm text-brand-primary/70"><strong>Two easy ways to collect photos:</strong> Family texts them, or you upload yours</p>
+                <span class="text-brand-highlight font-bold text-lg mt-0.5">📤💬</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70"><strong>Collect photos two ways:</strong> Upload from any device OR family texts them to Savta (no app needed)</p>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-brand-highlight font-bold text-lg mt-0.5">📱</span>
-                <p class="text-xs sm:text-sm text-brand-primary/70">Share via text messages — No app needed, just texting</p>
+                <span class="text-brand-secondary font-bold text-lg mt-0.5">🤖</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70"><strong>AI curates and designs automatically:</strong> Best photos selected, layouts created, no design skills needed</p>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-brand-highlight font-bold text-lg mt-0.5">📤</span>
-                <p class="text-xs sm:text-sm text-brand-primary/70">Upload from phone, computer, or cloud storage</p>
+                <span class="text-brand-accent font-bold text-lg mt-0.5">✨</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70"><strong>Heartwarming captions written by AI:</strong> Personal stories generated from your family's memories</p>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-brand-secondary font-bold text-lg mt-0.5">✨</span>
-                <p class="text-xs sm:text-sm text-brand-primary/70">AI writes heartwarming captions and stories</p>
+                <span class="text-brand-highlight font-bold text-lg mt-0.5">📬</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70"><strong>Auto-delivered to loved ones:</strong> Share digitally or printed and mailed—completely automatic</p>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-brand-accent font-bold text-lg mt-0.5">📬</span>
-                <p class="text-xs sm:text-sm text-brand-primary/70">Beautiful cards delivered to loved ones</p>
+                <span class="text-brand-primary font-bold text-lg mt-0.5">⏱️</span>
+                <p class="text-xs sm:text-sm text-brand-primary/70"><strong>Set it and forget it:</strong> Create once or set up recurring deliveries (monthly, quarterly, holidays)</p>
               </div>
             </div>
 
-            <!-- CTA + Badge -->
-            <div class="flex flex-col items-center sm:items-start gap-3 pt-2">
+            <!-- Differentiator Box -->
+            <div class="bg-brand-accent/10 border border-brand-accent/20 rounded-lg p-4 space-y-2">
+              <p class="font-semibold text-brand-secondary text-sm">
+                Why Savta vs. Shutterfly or iPhone collage apps?
+              </p>
+              <ul class="text-xs text-brand-primary/70 space-y-1.5 ml-1">
+                <li class="flex items-start gap-2">
+                  <span class="text-brand-highlight mt-0.5">✅</span>
+                  <span><strong>Family can TEXT photos</strong> (no app, no login, no nagging)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-brand-highlight mt-0.5">✅</span>
+                  <span><strong>AI designs everything</strong> (no dragging, no layout decisions)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-brand-highlight mt-0.5">✅</span>
+                  <span><strong>Auto-delivered</strong> (no project management)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-brand-highlight mt-0.5">✅</span>
+                  <span><strong>Recurring option</strong> (monthly cards without lifting a finger)</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- CTA + Badge (Mobile/Tablet only) -->
+            <div class="lg:hidden flex flex-col items-center sm:items-start gap-3 pt-2">
               <Button
-                label="Get Started"
+                label="Create Your First Card"
                 class="bg-brand-header hover:bg-brand-secondary text-white rounded-lg py-3 px-8 text-base font-semibold border-0 transition-colors w-full sm:w-auto"
                 @click="openMagicMemoryDialog('quick')"
               />
@@ -102,24 +132,37 @@
             </div>
           </div>
 
-          <!-- Right Column: Sample Memory Card Stack -->
-          <div class="hidden lg:flex lg:items-center lg:justify-center animate-fade-in-right" style="animation-delay: 0.2s;">
+          <!-- Right Column: Sample Memory Card Stack (1/3 width) -->
+          <div class="lg:col-span-1 hidden lg:flex lg:flex-col lg:items-center lg:justify-start animate-fade-in-right gap-6" style="animation-delay: 0.2s;">
             <!-- Stacked memory cards visual - 7:5 aspect ratio -->
-            <div class="relative" style="width: 280px; height: 200px;">
+            <div class="relative" style="width: 240px; height: 172px;">
               <!-- Back card -->
-              <div class="absolute top-4 left-2.5 bg-white rounded-lg shadow-lg border border-brand-navigation/10 transform -rotate-3 opacity-40 overflow-hidden" style="width: 256px; height: 183px;">
+              <div class="absolute top-3 left-2 bg-white rounded-lg shadow-lg border border-brand-navigation/10 transform -rotate-3 opacity-40 overflow-hidden" style="width: 220px; height: 157px;">
                 <img src="/sample-memory-card-v2.jpg" alt="Memory card" class="w-full h-full object-contain bg-white" />
               </div>
               
               <!-- Middle card -->
-              <div class="absolute top-2 left-1 bg-white rounded-lg shadow-xl border border-brand-navigation/10 transform -rotate-1 opacity-60 overflow-hidden" style="width: 256px; height: 183px;">
+              <div class="absolute top-2 left-1 bg-white rounded-lg shadow-xl border border-brand-navigation/10 transform -rotate-1 opacity-60 overflow-hidden" style="width: 220px; height: 157px;">
                 <img src="/sample-memory-card-v2.jpg" alt="Memory card" class="w-full h-full object-contain bg-white" />
               </div>
               
               <!-- Front card -->
-              <div class="absolute top-0 left-0 bg-white rounded-lg shadow-2xl border border-brand-navigation/20 overflow-hidden" style="width: 256px; height: 183px;">
+              <div class="absolute top-0 left-0 bg-white rounded-lg shadow-2xl border border-brand-navigation/20 overflow-hidden" style="width: 220px; height: 157px;">
                 <img src="/sample-memory-card-v2.jpg" alt="Sample memory card created by Savta" class="w-full h-full object-contain bg-white" />
               </div>
+            </div>
+
+            <!-- CTA + Badge (Desktop only) -->
+            <div class="flex flex-col items-center gap-3">
+              <Button
+                label="Create Your First Card"
+                class="bg-brand-header hover:bg-brand-secondary text-white rounded-lg py-3 px-8 text-base font-semibold border-0 transition-colors w-full"
+                @click="openMagicMemoryDialog('quick')"
+              />
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
+                Early Access
+              </span>
             </div>
           </div>
         </div>
